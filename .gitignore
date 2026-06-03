@@ -30,8 +30,15 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files — NUNCA subir secrets a Git
+.env.local
+.env.*.local
+# .env.example SÍ se puede subir (sin valores)
+
+# PWA service worker (generado automáticamente)
+/public/sw.js
+/public/workbox-*.js
+/public/worker-*.js
 
 # vercel
 .vercel
