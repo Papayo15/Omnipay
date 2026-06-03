@@ -3,10 +3,8 @@ import { sendPaymentNotification } from "@/lib/notify";
 
 export const runtime = "edge";
 
-// Webhook handler — Stripe only (Wise permanently retired)
-// On checkout.session.completed:
-//   1. Fire outbound transfer (visa_direct | stripe_connect | airwallex | stablecoin)
-//   2. Send Twilio SMS/WhatsApp to recipient
+// Webhook Stripe — checkout.session.completed → dispersión inmediata
+// Flujo: Stripe captura pago → webhook → Visa Direct / Wise / Airwallex / Binance Pay → SMS
 
 async function verifyHMAC(payload: string, secret: string, signature: string): Promise<boolean> {
   try {
@@ -25,18 +23,29 @@ async function verifyHMAC(payload: string, secret: string, signature: string): P
 }
 
 interface StripeResult {
-  ok: boolean; completed: boolean;
-  amount: number; currency: string;
-  recipientPhone: string; auditUrl: string; sessionId: string;
-  bankToken: string; bankName: string; country: string;
-  receiverName: string; targetCurrency: string; sourceCurrency: string;
-  outboundRail: string; paymentIntentId: string;
+  ok: boolean;
+  completed: boolean;
+  amount: number;
+  netAmount: number;
+  currency: string;
+  recipientPhone: string;
+  auditUrl: string;
+  sessionId: string;
+  bankToken: string;
+  bankName: string;
+  country: string;
+  receiverName: string;
+  targetCurrency: string;
+  sourceCurrency: string;
+  outboundRail: string;
+  paymentIntentId: string;
 }
 
 const EMPTY_RESULT: StripeResult = {
-  ok: false, completed: false, amount: 0, currency: "", recipientPhone: "",
-  auditUrl: "", sessionId: "", bankToken: "", bankName: "", country: "",
-  receiverName: "", targetCurrency: "", sourceCurrency: "", outboundRail: "", paymentIntentId: "",
+  ok: false, completed: false, amount: 0, netAmount: 0, currency: "",
+  recipientPhone: "", auditUrl: "", sessionId: "", bankToken: "", bankName: "",
+  country: "", receiverName: "", targetCurrency: "", sourceCurrency: "",
+  outboundRail: "", paymentIntentId: "",
 };
 
 async function verifyStripe(rawBody: string, sigHeader: string): Promise<StripeResult> {
@@ -57,11 +66,14 @@ async function verifyStripe(rawBody: string, sigHeader: string): Promise<StripeR
 
   const session = (event.data as Record<string, unknown>)?.object as Record<string, unknown> | undefined;
   const meta    = session?.metadata as Record<string, unknown> | undefined;
+  const grossAmount = Number(session?.amount_total ?? 0) / 100;
+  const netAmount   = meta?.net_amount ? Number(meta.net_amount) : parseFloat((grossAmount * (1 - 0.0025)).toFixed(2));
 
   return {
     ok, completed: true,
-    amount:          Number(session?.amount_total ?? 0) / 100,
-    currency:        String(session?.currency ?? "mxn").toUpperCase(),
+    amount:          grossAmount,
+    netAmount,
+    currency:        String(session?.currency ?? "cad").toUpperCase(),
     recipientPhone:  String(meta?.recipient_phone  ?? ""),
     auditUrl:        String(meta?.audit_url        ?? ""),
     sessionId:       String(session?.id            ?? ""),
@@ -71,7 +83,7 @@ async function verifyStripe(rawBody: string, sigHeader: string): Promise<StripeR
     receiverName:    String(meta?.receiver_name    ?? ""),
     targetCurrency:  String(meta?.target_currency  ?? session?.currency ?? ""),
     sourceCurrency:  String(meta?.source_currency  ?? ""),
-    outboundRail:    String(meta?.outbound_rail    ?? ""),
+    outboundRail:    String(meta?.outbound_rail    ?? "visa_direct"),
     paymentIntentId: String(session?.payment_intent ?? ""),
   };
 }
@@ -81,7 +93,7 @@ export async function POST(req: NextRequest) {
   const stripeHdr = req.headers.get("stripe-signature") ?? "";
 
   if (!stripeHdr) {
-    return NextResponse.json({ error: "unknown provider" }, { status: 400 });
+    return NextResponse.json({ error: "missing stripe-signature header" }, { status: 400 });
   }
 
   const result = await verifyStripe(rawBody, stripeHdr);
@@ -90,10 +102,10 @@ export async function POST(req: NextRequest) {
   if (result.completed) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
-    // ── Conciliation bridge — fire-and-forget outbound transfer ──
-    if (result.outboundRail && result.bankToken) {
+    // ── Dispersión inmediata — fire-and-forget según outbound_rail ──
+    if (result.bankToken) {
       const bridgeBody = JSON.stringify({
-        amount:          result.amount,
+        amount:          result.netAmount,
         currency:        result.currency.toLowerCase(),
         targetCurrency:  result.targetCurrency || result.currency.toLowerCase(),
         sourceCurrency:  result.sourceCurrency || result.currency.toLowerCase(),
@@ -101,7 +113,6 @@ export async function POST(req: NextRequest) {
         bankName:        result.bankName,
         country:         result.country,
         receiverName:    result.receiverName,
-        receiverToken:   result.bankToken,
         feeAmount:       parseFloat((result.amount * 0.0025).toFixed(2)),
         paymentIntentId: result.paymentIntentId,
       });
@@ -111,27 +122,28 @@ export async function POST(req: NextRequest) {
         case "visa_direct":
           fetch(`${appUrl}/api/payment/stripe/visa-direct`, { method: "POST", headers: h, body: bridgeBody }).catch(console.error);
           break;
-        case "stripe_connect":
-          fetch(`${appUrl}/api/payment/stripe/connect`, { method: "POST", headers: h, body: bridgeBody }).catch(console.error);
+        case "wise":
+          fetch(`${appUrl}/api/payment/wise`, { method: "POST", headers: h, body: bridgeBody }).catch(console.error);
           break;
         case "airwallex":
           fetch(`${appUrl}/api/payment/airwallex`, { method: "POST", headers: h, body: bridgeBody }).catch(console.error);
           break;
-        case "flutterwave":
-          fetch(`${appUrl}/api/payment/flutterwave`, { method: "POST", headers: h, body: bridgeBody }).catch(console.error);
+        case "binance_pay":
+          fetch(`${appUrl}/api/payment/binance_pay`, { method: "POST", headers: h, body: bridgeBody }).catch(console.error);
           break;
-        case "stablecoin":
-          fetch(`${appUrl}/api/payment/stablecoin`, { method: "POST", headers: h, body: bridgeBody }).catch(console.error);
-          break;
+        default:
+          // Sin riel definido — defecto a Visa Direct
+          fetch(`${appUrl}/api/payment/stripe/visa-direct`, { method: "POST", headers: h, body: bridgeBody }).catch(console.error);
       }
     }
 
-    // ── Always: Twilio SMS/WhatsApp ──
+    // ── SMS Twilio — comprobante cifrado al receptor ──
     if (result.recipientPhone && result.auditUrl) {
-      sendPaymentNotification(result.recipientPhone, result.auditUrl, result.amount, result.currency)
+      sendPaymentNotification(result.recipientPhone, result.auditUrl, result.netAmount, result.currency)
         .catch(() => {});
     }
   }
 
+  // Siempre 200 para evitar reintentos de Stripe
   return NextResponse.json({ received: true });
 }

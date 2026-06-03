@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import ProcessingMessages from "@/components/ProcessingMessages";
 import { buildReceiptURL, type ReceiptPayload } from "@/lib/payload";
-import { AIRWALLEX_COUNTRIES, FLUTTERWAVE_COUNTRIES, STABLECOIN_COUNTRIES } from "@/constants/rails";
+import { AIRWALLEX_COUNTRIES, BINANCE_PAY_COUNTRIES } from "@/constants/rails";
 import { usePaymentStore } from "@/lib/store/paymentStore";
 
 export default function ProcesandoPage() {
@@ -45,11 +45,9 @@ export default function ProcesandoPage() {
   function getOutboundRail(cn: string, token: string): string {
     if (AIRWALLEX_COUNTRIES.has(cn)) return "airwallex";
     const digits = token.replace(/\D/g, "");
-    if (digits.length === 16) return "visa_direct";       // tarjeta → Visa Direct siempre
-    if (FLUTTERWAVE_COUNTRIES.has(cn)) return "flutterwave"; // África sin tarjeta
-    if (STABLECOIN_COUNTRIES.has(cn)) return "stablecoin";   // sancionados
-    if (digits.length > 0) return "stripe_connect";          // cuenta bancaria
-    return "";
+    if (digits.length === 16) return "visa_direct";    // tarjeta → Visa Direct
+    if (BINANCE_PAY_COUNTRIES.has(cn)) return "binance_pay";
+    return "stripe";
   }
 
   async function executePayment() {
@@ -58,8 +56,8 @@ export default function ProcesandoPage() {
     try {
       const p = decodedPayload;
 
-      // ── Stripe (inbound card / local method) ──
-      if (rail === "stripe") {
+      // ── Stripe (entrada global — inicia Checkout Session) ──
+      if (rail === "stripe" || rail === "visa_direct") {
         const amt   = p?.a  ?? amount;
         const cur   = p?.c  ?? currency;
         const bName = p?.nb ?? bankName;
@@ -68,6 +66,7 @@ export default function ProcesandoPage() {
 
         const outboundRail = getOutboundRail(cn, token);
         const auditUrl = await makeAuditUrl({ txId: "", amt, cur, bName, cn, tt: "terminal", rl: "stripe" });
+        const netAmount = parseFloat((amt * (1 - 0.0025)).toFixed(2));
 
         const res = await fetch("/api/payment/stripe", {
           method: "POST",
@@ -78,8 +77,9 @@ export default function ProcesandoPage() {
             bankName: bName,
             recipientPhone: recipientPhone || "",
             auditUrl,
-            sourceCountry: sourceCountry || "MX",
-            // Conciliation metadata
+            sourceCountry: sourceCountry || "CA",
+            netAmount,
+            // Conciliation metadata → webhook → dispersión inmediata
             ...(token.trim() ? {
               bankToken:      token,
               country:        cn,
@@ -149,61 +149,26 @@ export default function ProcesandoPage() {
         if (data.status === "pending") await pollStatus("airwallex", txId);
         else router.push("/resultado?s=success");
 
-      // ── Stablecoin (Binance Pay — Rusia + países restringidos) ──
-      } else if (rail === "flutterwave") {
-        const amt  = p?.a  ?? amount;
-        const tgt  = p?.c  ?? currency;
-        const src  = p?.sc ?? (sourceCurrency || tgt);
-        const rn   = p?.rn ?? (receiverName || recipientName || "Receptor");
-        const fee  = p?.f  ?? parseFloat((amt * 0.0025).toFixed(2));
-        const bTkn = p?.t  ?? accountId;
-        const bNm  = p?.nb ?? bankName;
-        const cn   = p?.cn ?? country;
-
-        const res = await fetch("/api/payment/flutterwave", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount: amt, currency: src, targetCurrency: tgt,
-            bankToken: bTkn, bankName: bNm, country: cn,
-            receiverName: rn, feeAmount: fee,
-          }),
-        });
-        const data = await res.json() as { tx_id?: string; status?: string; error?: string };
-        if (!res.ok || data.error) throw new Error(data.error ?? "Error Flutterwave");
-
-        const txId = data.tx_id ?? "";
-        setTxId(txId); setTxReference(txId); setTxStatus("success");
-
-        if (recipientPhone && txId) {
-          const notifyUrl = await makeAuditUrl({
-            txId, amt, cur: tgt, bName: bNm, cn,
-            tt: transactionType ?? "remesa", rl: "flutterwave",
-            sa: senderAmount || undefined, sc: sourceCurrency || undefined,
-          });
-          fetch("/api/webhooks/notify", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tx_id: txId, rail: "flutterwave", amount: amt, currency: tgt, recipient_phone: recipientPhone, audit_url: notifyUrl }),
-          }).catch(() => {});
-        }
-
-        if (data.status === "pending") await pollStatus("flutterwave", txId);
-        else router.push("/resultado?s=success");
-
-      } else if (rail === "stablecoin") {
+      // ── Binance Pay (mercados restringidos / Rusia) ──
+      } else if (rail === "binance_pay") {
         const amt  = p?.a ?? amount;
         const cur  = p?.c ?? currency;
         const fee  = p?.f ?? parseFloat((amt * 0.0025).toFixed(2));
         const rTkn = p?.t ?? accountId;
+        const cn   = p?.cn ?? country;
 
-        const res = await fetch("/api/payment/stablecoin", {
+        const res = await fetch("/api/payment/binance_pay", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ receiverToken: rTkn, amount: amt, feeAmount: fee, currency: cur }),
+          body: JSON.stringify({
+            receiverToken: rTkn, bankToken: rTkn,
+            amount: amt, feeAmount: fee, currency: cur, country: cn,
+            receiverName: p?.rn ?? (receiverName || recipientName || "Receptor"),
+          }),
         });
         const data = await res.json() as { tx_id?: string; status?: string; error?: string };
 
-        if (!res.ok || data.error) throw new Error(data.error ?? "Error stablecoin bridge");
+        if (!res.ok || data.error) throw new Error(data.error ?? "Error Binance Pay");
 
         const txId = data.tx_id ?? "";
         setTxId(txId); setTxReference(txId); setTxStatus("success");
@@ -211,12 +176,12 @@ export default function ProcesandoPage() {
         if (recipientPhone && txId) {
           const notifyUrl = await makeAuditUrl({
             txId, amt, cur, bName: bankName, cn: country,
-            tt: transactionType ?? "remesa", rl: "stablecoin",
+            tt: transactionType ?? "remesa", rl: "binance_pay",
           });
           fetch("/api/webhooks/notify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tx_id: txId, rail: "stablecoin", amount: amt, currency: cur, recipient_phone: recipientPhone, audit_url: notifyUrl }),
+            body: JSON.stringify({ tx_id: txId, rail: "binance_pay", amount: amt, currency: cur, recipient_phone: recipientPhone, audit_url: notifyUrl }),
           }).catch(() => {});
         }
 

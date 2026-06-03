@@ -5,14 +5,18 @@ import { encrypt, decrypt, hmacSign, hmacVerify } from "./crypto";
 import type { Rail } from "@/constants/rails";
 import { calcFees } from "@/constants/fees";
 
-// Clave de sesión pública — derivada del NEXT_PUBLIC_APP_URL
-// La clave real del HMAC vive en el servidor (Edge Function)
-const CLIENT_SECRET = process.env.NEXT_PUBLIC_APP_URL ?? "omnipay-dev-secret";
+// LINK_SECRET se inyecta en el cliente vía NEXT_PUBLIC_APP_URL como semilla pública.
+// La firma real con LINK_SECRET (server-side) se realiza en Edge Functions.
+// En cliente se usa la URL como clave derivada para cifrar localmente.
+const CLIENT_KEY = process.env.NEXT_PUBLIC_APP_URL ?? "omnipay-dev-secret";
+
+// Expiración estricta de 5 minutos para todos los links de pago
+const LINK_TTL_MS = 5 * 60 * 1000;
 
 export interface PaymentPayload {
   v: 1;
   ts: number;    // timestamp creación (unix ms)
-  ex: number;    // expiración: ts + 15 min
+  ex: number;    // expiración: ts + 5 min
   a: number;     // amount (en moneda destino)
   c: string;     // currency code (moneda destino)
   m: "A" | "B"; // mode
@@ -23,11 +27,10 @@ export interface PaymentPayload {
   nb: string;    // nombre banco receptor
   cn: string;    // country code receptor
   rn: string;    // nombre receptor (del banco)
-  // Campos opcionales para remesas transfronterizas
   sc?: string;   // source currency ("USD")
-  sa?: number;   // sender amount en moneda origen (100)
-  fx?: number;   // tipo de cambio aplicado (17.40)
-  tt?: "remesa" | "terminal" | "importacion"; // tipo de transacción
+  sa?: number;   // sender amount en moneda origen
+  fx?: number;   // tipo de cambio aplicado
+  tt?: "remesa" | "terminal" | "importacion";
   h?: string;    // HMAC signature (excluida al firmar)
 }
 
@@ -40,7 +43,6 @@ interface BuildPayloadInput {
   bankName: string;
   country: string;
   receiverName: string;
-  // Opcionales para remesas
   sourceCurrency?: string;
   senderAmount?: number;
   exchangeRate?: number;
@@ -55,7 +57,7 @@ export async function buildPayload(input: BuildPayloadInput): Promise<string> {
   const payload: PaymentPayload = {
     v: 1,
     ts: now,
-    ex: now + 5 * 60 * 1000,
+    ex: now + LINK_TTL_MS,
     a: input.amount,
     c: input.currency,
     m: input.mode,
@@ -67,26 +69,24 @@ export async function buildPayload(input: BuildPayloadInput): Promise<string> {
     cn: input.country,
     rn: input.receiverName,
     ...(input.sourceCurrency && { sc: input.sourceCurrency }),
-    ...(input.senderAmount && { sa: input.senderAmount }),
-    ...(input.exchangeRate && { fx: input.exchangeRate }),
+    ...(input.senderAmount   && { sa: input.senderAmount }),
+    ...(input.exchangeRate   && { fx: input.exchangeRate }),
     ...(input.transactionType && { tt: input.transactionType }),
   };
 
-  // Firma HMAC sobre el payload sin el campo h
   const dataToSign = JSON.stringify({ ...payload });
-  payload.h = await hmacSign(dataToSign, CLIENT_SECRET);
+  payload.h = await hmacSign(dataToSign, CLIENT_KEY);
 
-  // Comprimir y cifrar
   const json = JSON.stringify(payload);
   const compressed = deflateSync(new TextEncoder().encode(json));
-  return encrypt(compressed, CLIENT_SECRET);
+  return encrypt(compressed, CLIENT_KEY);
 }
 
 // Decodifica, descifra, descomprime y verifica el payload de la URL
 export async function parsePayload(encoded: string): Promise<PaymentPayload> {
   let decompressed: Uint8Array;
   try {
-    const decrypted = await decrypt(encoded, CLIENT_SECRET);
+    const decrypted = await decrypt(encoded, CLIENT_KEY);
     decompressed = inflateSync(decrypted);
   } catch {
     throw new Error("invalid_payload");
@@ -99,20 +99,17 @@ export async function parsePayload(encoded: string): Promise<PaymentPayload> {
     throw new Error("invalid_payload");
   }
 
-  // Verificar expiración
   if (Date.now() > payload.ex) {
     throw new Error("expired");
   }
 
-  // Verificar versión
   if (payload.v !== 1) {
     throw new Error("invalid_version");
   }
 
-  // Verificar HMAC
   const { h, ...rest } = payload;
   const dataToVerify = JSON.stringify(rest);
-  const valid = await hmacVerify(dataToVerify, CLIENT_SECRET, h ?? "");
+  const valid = await hmacVerify(dataToVerify, CLIENT_KEY, h ?? "");
   if (!valid) {
     throw new Error("invalid_signature");
   }
@@ -122,7 +119,7 @@ export async function parsePayload(encoded: string): Promise<PaymentPayload> {
 
 // ── Comprobante auditable (sin número de cuenta, solo para verificación) ──
 export interface ReceiptPayload {
-  id: string;   // tx_id de Wise/Airwallex/Stripe
+  id: string;   // tx_id de Stripe / Wise / Airwallex
   a: number;    // amount en moneda destino
   c: string;    // currency destino
   nb: string;   // nombre banco destino (nunca el número de cuenta)
@@ -137,7 +134,7 @@ export interface ReceiptPayload {
 export async function buildReceiptURL(receipt: ReceiptPayload, baseUrl?: string): Promise<string> {
   const json = JSON.stringify(receipt);
   const compressed = deflateSync(new TextEncoder().encode(json));
-  const encoded = await encrypt(compressed, CLIENT_SECRET);
+  const encoded = await encrypt(compressed, CLIENT_KEY);
   const base = baseUrl ?? (typeof window !== "undefined" ? window.location.origin : "");
   return `${base}/resultado?r=${encoded}`;
 }
@@ -145,7 +142,7 @@ export async function buildReceiptURL(receipt: ReceiptPayload, baseUrl?: string)
 export async function parseReceiptURL(encoded: string): Promise<ReceiptPayload> {
   let decompressed: Uint8Array;
   try {
-    const decrypted = await decrypt(encoded, CLIENT_SECRET);
+    const decrypted = await decrypt(encoded, CLIENT_KEY);
     decompressed = inflateSync(decrypted);
   } catch {
     throw new Error("invalid_receipt");

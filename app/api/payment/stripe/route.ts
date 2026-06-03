@@ -20,7 +20,8 @@ interface StripeCheckoutRequest {
   receiverName?: string;
   targetCurrency?: string;
   sourceCurrency?: string;
-  outboundRail?: string;     // "visa_direct" | "stripe_connect" | "airwallex" | "stablecoin" | ""
+  outboundRail?: string;     // "visa_direct" | "wise" | "airwallex" | "binance_pay"
+  netAmount?: number;        // amount after fee deduction (for webhook dispersion)
 }
 
 // Dynamic payment methods by source country
@@ -64,10 +65,14 @@ export async function POST(req: NextRequest) {
     const cancelUrl  = `${appUrl}/resultado?s=error`;
 
     const amountCents = Math.round(data.amount * 100);
-    const currency    = data.currency.toLowerCase();
+    const currency    = (data.currency || "cad").toLowerCase();
+
+    // CAD as fallback currency when origin doesn't define one (Canada hub)
+    const effectiveCurrency = currency || "cad";
+    const netAmount = data.netAmount ?? data.amount;
 
     const params = new URLSearchParams({
-      "line_items[0][price_data][currency]": currency,
+      "line_items[0][price_data][currency]": effectiveCurrency,
       "line_items[0][price_data][unit_amount]": String(amountCents),
       "line_items[0][price_data][product_data][name]": data.description || "Pago OmniPay",
       "line_items[0][price_data][product_data][description]":
@@ -76,6 +81,8 @@ export async function POST(req: NextRequest) {
       mode: "payment",
       success_url: successUrl,
       cancel_url:  cancelUrl,
+      // Statement descriptor obligatorio (Stripe Canada · Sole Proprietorship)
+      "payment_intent_data[statement_descriptor]": "OMNIPAY",
       // Notification metadata
       ...(data.recipientPhone ? { "metadata[recipient_phone]": data.recipientPhone } : {}),
       ...(data.auditUrl        ? { "metadata[audit_url]":       data.auditUrl }       : {}),
@@ -87,10 +94,12 @@ export async function POST(req: NextRequest) {
       ...(data.targetCurrency ? { "metadata[target_currency]":  data.targetCurrency } : {}),
       ...(data.sourceCurrency ? { "metadata[source_currency]":  data.sourceCurrency } : {}),
       ...(data.outboundRail   ? { "metadata[outbound_rail]":    data.outboundRail }   : {}),
+      // Net amount to disburse after fee (stored for webhook bridge)
+      "metadata[net_amount]":  String(netAmount),
     });
 
     // Dynamic payment methods based on source country
-    const methods = getPaymentMethods(currency, data.sourceCountry);
+    const methods = getPaymentMethods(effectiveCurrency, data.sourceCountry);
     methods.forEach((m) => params.append("payment_method_types[]", m));
 
     const session = await stripePost("/checkout/sessions", params) as {

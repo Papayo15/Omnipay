@@ -20,7 +20,8 @@ import { getFXRate } from "@/lib/fx";
 import { usePaymentStore } from "@/lib/store/paymentStore";
 
 const DEFAULT_ORIGIN = COUNTRIES.find((c) => c.code === "MX") ?? DEFAULT_COUNTRY;
-const STABLECOIN_COUNTRIES = ["RU","VE","NG","PK","EG","TR","GH","KE","UG","TZ"];
+// Países que usan Binance Pay (mercados restringidos / control cambiario)
+const BINANCE_PAY_COUNTRIES = ["RU","VE","PK","TR","IR","SY","CU"];
 
 export default function UniversalForm() {
   const router = useRouter();
@@ -85,7 +86,7 @@ export default function UniversalForm() {
   }
 
   function getRail(): Rail {
-    if (STABLECOIN_COUNTRIES.includes(destCountry.code)) return "stablecoin";
+    if (BINANCE_PAY_COUNTRIES.includes(destCountry.code)) return "binance_pay";
     return selectRailByTransactionType(isCrossCountry ? "remesa" : "terminal", destCountry.code, accountId);
   }
 

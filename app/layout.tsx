@@ -6,23 +6,22 @@ import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 
-const SUPPORTED = ["es", "en", "ru", "de", "zh", "ja", "ko", "hi", "fr", "nl"] as const;
+const SUPPORTED = ["es", "en", "de"] as const;
+type SupportedLocale = (typeof SUPPORTED)[number];
 
 async function loadLocale() {
   const h = await headers();
-  const lang = (h.get("accept-language") ?? "es")
+  // next-intl middleware sets x-next-intl-locale; fallback to Accept-Language
+  const fromMiddleware = h.get("x-next-intl-locale") ?? "";
+  const fromHeader = (h.get("accept-language") ?? "es")
     .split(",")[0].split(";")[0].split("-")[0].toLowerCase();
-  const locale = (SUPPORTED as readonly string[]).includes(lang) ? lang : "es";
+  const raw = (SUPPORTED as readonly string[]).includes(fromMiddleware)
+    ? fromMiddleware
+    : fromHeader;
+  const locale = (SUPPORTED as readonly string[]).includes(raw) ? (raw as SupportedLocale) : "es";
   switch (locale) {
     case "en": return { locale, messages: (await import("../messages/en.json")).default };
-    case "ru": return { locale, messages: (await import("../messages/ru.json")).default };
     case "de": return { locale, messages: (await import("../messages/de.json")).default };
-    case "zh": return { locale, messages: (await import("../messages/zh.json")).default };
-    case "ja": return { locale, messages: (await import("../messages/ja.json")).default };
-    case "ko": return { locale, messages: (await import("../messages/ko.json")).default };
-    case "hi": return { locale, messages: (await import("../messages/hi.json")).default };
-    case "fr": return { locale, messages: (await import("../messages/fr.json")).default };
-    case "nl": return { locale, messages: (await import("../messages/nl.json")).default };
     default:   return { locale: "es", messages: (await import("../messages/es.json")).default };
   }
 }
