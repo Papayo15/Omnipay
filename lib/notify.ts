@@ -1,15 +1,16 @@
-// SMS automático post-dispersión — stateless, fire-and-forget
-// Enviado SOLO desde el webhook del servidor, nunca desde el cliente
+// SMS automático post-pago — stateless, fire-and-forget
+// Enviado SOLO desde el webhook del servidor, nunca desde el cliente.
 
 function fmt(amount: number, currency: string): string {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency }).format(amount);
 }
 
 export async function sendPaymentNotification(
-  phone: string,     // E.164 format: "+525512345678"
-  auditUrl: string,  // /resultado?r=...  (comprobante cifrado con LINK_SECRET)
+  phone: string,       // E.164: "+525512345678"
+  receiptUrl: string,  // /resultado?r=... (comprobante sin PII)
   amount: number,
-  currency: string
+  currency: string,
+  merchantName?: string
 ): Promise<void> {
   const sid        = process.env.TWILIO_ACCOUNT_SID;
   const token      = process.env.TWILIO_AUTH_TOKEN;
@@ -18,7 +19,9 @@ export async function sendPaymentNotification(
   if (!sid || !token || !fromNumber || !phone) return;
 
   const amountStr = fmt(amount, currency);
-  const body = `OmniPay: Recibiste ${amountStr}. Comprobante: ${auditUrl}`;
+  const body = merchantName
+    ? `OmniPay: Pago de ${amountStr} en ${merchantName}. Comprobante: ${receiptUrl}`
+    : `OmniPay: Recibiste ${amountStr}. Comprobante: ${receiptUrl}`;
 
   const params = new URLSearchParams({ From: fromNumber, To: phone, Body: body });
 
@@ -29,5 +32,5 @@ export async function sendPaymentNotification(
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: params.toString(),
-  }).catch(() => { /* non-critical — no bloquea la dispersión */ });
+  }).catch(() => { /* non-critical */ });
 }

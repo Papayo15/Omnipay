@@ -3,296 +3,214 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronRight, Store, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-import AmountInput from "@/components/AmountInput";
-import CommissionToggle from "@/components/CommissionToggle";
-import FeeBreakdown from "@/components/FeeBreakdown";
-import MerchantSavings from "@/components/MerchantSavings";
-import CountrySelector from "@/components/CountrySelector";
-import BankCombobox from "@/components/BankCombobox";
-import AccountInput from "@/components/AccountInput";
-import ShareButton from "@/components/ShareButton";
-import { buildPayload, buildPaymentURL } from "@/lib/payload";
-import { selectRailByTransactionType } from "@/constants/rails";
-import { DEFAULT_COUNTRY, type Country } from "@/constants/countries";
-import { BANKS_BY_COUNTRY, getUSRouting, getAccountInputMeta, type BankInfo } from "@/constants/banks";
-import { calcFees } from "@/constants/fees";
-import { usePaymentStore } from "@/lib/store/paymentStore";
+import { ArrowLeft, Store, ChevronRight } from "lucide-react";
+import AmountField from "@/components/AmountField";
+import ShareSheet from "@/components/ShareSheet";
 
-type Step = "type" | "amount" | "account" | "share";
-type CobrarType = "business" | "family";
+type Step = "amount" | "share";
 
 export default function CobrarPage() {
-  const router = useRouter();
   const t = useTranslations("cobrar");
-  const [step, setStep] = useState<Step>("type");
-  const [cobrarType, setCobrarType] = useState<CobrarType>("family");
-  const [amount, setAmount] = useState(0);
-  const [mode, setMode] = useState<"A" | "B">("A");
-  const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
-  const [selectedBank, setSelectedBank] = useState<BankInfo | null>(null);
-  const [detectedBank, setDetectedBank] = useState<BankInfo | null>(null);
-  const [accountId, setAccountId] = useState("");
-  const [invoiceRef, setInvoiceRef] = useState("");
-  const [concept, setConcept] = useState("");
+  const router = useRouter();
+
+  const [step, setStep] = useState<Step>("amount");
+  const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("MXN");
+  const [clientPhone, setClientPhone] = useState("");
+  const [merchantName, setMerchantName] = useState("");
+  const [merchantPhone, setMerchantPhone] = useState("");
   const [paymentUrl, setPaymentUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const clearAll = usePaymentStore((s) => s.clearAll);
+  const amountNum = parseFloat(amount) || 0;
+  const canContinue = amountNum > 0 && clientPhone.trim().length >= 7;
+  const fee = amountNum > 0 ? amountNum * 0.01 : 0;
 
-  const steps: Step[] = ["type", "amount", "account", "share"];
-  const stepIndex = steps.indexOf(step);
+  const CURRENCIES = ["MXN", "USD", "CAD", "EUR", "BRL", "COP"];
 
-  function handleCountryChange(c: Country) {
-    setCountry(c);
-    setAccountId("");
-    const banks = BANKS_BY_COUNTRY[c.code] ?? [];
-    setSelectedBank(banks[0] ?? null);
-  }
-
-  function handleAccountChange(val: string, autoDetected?: BankInfo) {
-    setAccountId(val);
-    if (autoDetected) {
-      setDetectedBank(autoDetected);
-      setSelectedBank(autoDetected);
-    }
-  }
-
-  function buildBankToken(): string {
-    const base = accountId.trim();
-    if (country.code === "US" && selectedBank) {
-      const routing = getUSRouting(selectedBank.id) ?? selectedBank.routing ?? "";
-      return `${routing}|${base}`;
-    }
-    return base;
-  }
-
-  async function handleGenerate() {
-    if (!accountId.trim() || amount <= 0) return;
+  async function generateLink() {
+    if (!canContinue) return;
     setLoading(true);
     setError("");
     try {
-      const rail = selectRailByTransactionType("terminal");
-      const bankToken = buildBankToken();
-
-      const encoded = await buildPayload({
-        amount,
-        currency: country.currency,
-        mode,
-        rail,
-        bankToken,
-        bankName: selectedBank?.name ?? country.name,
-        country: country.code,
-        receiverName: cobrarType === "business"
-          ? (concept || selectedBank?.name || "Negocio")
-          : (selectedBank?.name ?? "Familiar"),
-        transactionType: "terminal",
+      const res = await fetch("/api/cobrar/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: amountNum,
+          currency,
+          clientPhone: clientPhone.trim(),
+          merchantPhone: merchantPhone.trim(),
+          merchantName: merchantName.trim() || "Comercio",
+        }),
       });
-
-      const url = buildPaymentURL(encoded);
-      setPaymentUrl(url);
+      const data = await res.json() as { checkout_url?: string; error?: string };
+      if (!res.ok || data.error) throw new Error(data.error ?? t("error_generic"));
+      setPaymentUrl(data.checkout_url ?? "");
       setStep("share");
     } catch (e) {
-      setError("Error al generar el cobro. Intenta de nuevo.");
-      console.error(e);
+      setError(e instanceof Error ? e.message : t("error_generic"));
     } finally {
       setLoading(false);
     }
   }
 
-  const { receiverGets, fee } = amount > 0 ? calcFees(amount, mode) : { receiverGets: 0, fee: 0 };
-  const amountLabel = amount > 0
-    ? new Intl.NumberFormat("es-MX", { style: "currency", currency: country.currency }).format(amount)
-    : "";
+  const fmtAmt = (n: number) =>
+    new Intl.NumberFormat("es-MX", { style: "currency", currency }).format(n);
 
-  const accountMeta = selectedBank
-    ? getAccountInputMeta(selectedBank.accountType)
-    : { label: "Número de cuenta", placeholder: "Número de cuenta" };
-
-  function goBack() {
-    if (step === "type") router.back();
-    else if (step === "amount") setStep("type");
-    else if (step === "account") setStep("amount");
-    else if (step === "share") setStep("account");
-  }
+  const shareMessage = `${t("share_message", {
+    amount: fmtAmt(amountNum),
+    merchant: merchantName || t("merchant_default"),
+  })}`;
 
   return (
-    <main className="flex flex-col min-h-screen bg-[#0f172a] px-5 pt-10 pb-10">
+    <main className="flex flex-col min-h-screen bg-[#0f172a] px-5 pt-6 pb-10">
+
+      {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <button
-          onClick={goBack}
-          className="p-2 rounded-xl hover:bg-slate-800 transition-colors touch-manipulation"
+          onClick={() => step === "share" ? setStep("amount") : router.push("/")}
+          className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
         >
-          <ArrowLeft className="w-6 h-6 text-slate-400" />
+          <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-2xl font-bold text-white">{t("title")}</h1>
-      </div>
-
-      <div className="flex gap-2 mb-8">
-        {steps.map((s, i) => (
-          <div
-            key={s}
-            className={`h-1 flex-1 rounded-full transition-colors ${
-              stepIndex >= i ? "bg-emerald-500" : "bg-slate-700"
-            }`}
-          />
-        ))}
+        <div className="flex items-center gap-2">
+          <Store className="w-5 h-5 text-emerald-400" />
+          <h1 className="text-white font-bold text-lg">{t("title")}</h1>
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
 
-        {step === "type" && (
-          <motion.div key="type" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex flex-col gap-4 flex-1">
-            <p className="text-slate-400 text-center mb-2">{t("type_title")}</p>
-
-            <button
-              onClick={() => { setCobrarType("business"); setStep("amount"); }}
-              className="w-full border border-emerald-700/50 bg-emerald-900/20 rounded-2xl p-5 flex items-center gap-4 hover:bg-emerald-900/40 touch-manipulation transition-colors text-left"
-            >
-              <div className="bg-emerald-900/60 rounded-xl p-3">
-                <Store className="w-6 h-6 text-emerald-400" />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">{t("type_business")}</p>
-                <p className="text-slate-400 text-sm">{t("type_business_sub")}</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-500" />
-            </button>
-
-            <button
-              onClick={() => { setCobrarType("family"); setStep("amount"); }}
-              className="w-full border border-slate-700 rounded-2xl p-5 flex items-center gap-4 hover:bg-slate-800/40 touch-manipulation transition-colors text-left"
-            >
-              <div className="bg-slate-800 rounded-xl p-3">
-                <Users className="w-6 h-6 text-slate-300" />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">{t("type_family")}</p>
-                <p className="text-slate-400 text-sm">{t("type_family_sub")}</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-500" />
-            </button>
-          </motion.div>
-        )}
-
+        {/* Step 1: amount + phones */}
         {step === "amount" && (
-          <motion.div key="amount" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-5 flex-1">
-            <p className="text-slate-400 text-center">{t("how_much")}</p>
-            <AmountInput value={amount} currency={country.currency} onChange={setAmount} />
+          <motion.div
+            key="amount"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="flex flex-col gap-5"
+          >
+            <p className="text-slate-400 text-sm">{t("step_amount_hint")}</p>
 
-            {cobrarType === "business" && (
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-slate-400 text-sm">{t("invoice_ref")}</label>
-                  <input
-                    type="text"
-                    value={invoiceRef}
-                    onChange={(e) => setInvoiceRef(e.target.value)}
-                    placeholder="Ej. FAC-2024-001"
-                    className="bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-slate-400 text-sm">{t("concept")}</label>
-                  <input
-                    type="text"
-                    value={concept}
-                    onChange={(e) => setConcept(e.target.value)}
-                    placeholder="Ej. Servicios de diseño"
-                    className="bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                  />
-                </div>
+            {/* Currency selector */}
+            <div className="flex gap-2 flex-wrap">
+              {CURRENCIES.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCurrency(c)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    currency === c
+                      ? "bg-emerald-600 border-emerald-500 text-white"
+                      : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+
+            <AmountField
+              value={amount}
+              onChange={setAmount}
+              currency={currency}
+              label={t("amount_label")}
+            />
+
+            {amountNum > 0 && (
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-slate-400">
+                {t("fee_note", { fee: fmtAmt(fee) })}
+                <span className="text-white ml-1">{fmtAmt(amountNum - fee)}</span>
               </div>
             )}
 
-            <MerchantSavings amount={amount} currency={country.currency} />
-            <CommissionToggle mode={mode} onChange={setMode} transactionType="terminal" />
-            <FeeBreakdown amount={amount} currency={country.currency} mode={mode} transactionType="terminal" />
-
-            <div className="mt-auto">
-              <button
-                disabled={amount <= 0}
-                onClick={() => {
-                  setStep("account");
-                  if (!selectedBank) {
-                    const banks = BANKS_BY_COUNTRY[country.code] ?? [];
-                    setSelectedBank(banks[0] ?? null);
-                  }
-                }}
-                className="w-full bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold text-lg py-5 rounded-2xl flex items-center justify-center gap-2 transition-colors touch-manipulation"
-              >
-                {t("to_which_account")} <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {step === "account" && (
-          <motion.div key="account" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-5 flex-1">
-            <p className="text-slate-400 text-center">{t("to_which_account")}</p>
-            <CountrySelector value={country.code} onChange={handleCountryChange} />
-            <BankCombobox
-              country={country.code}
-              value={selectedBank?.id ?? ""}
-              detectedBank={detectedBank}
-              onChange={(bank) => { setSelectedBank(bank); setDetectedBank(null); setAccountId(""); }}
+            {/* Merchant name */}
+            <input
+              type="text"
+              value={merchantName}
+              onChange={(e) => setMerchantName(e.target.value)}
+              placeholder={t("merchant_name_placeholder")}
+              className="bg-slate-800/60 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none transition-colors"
             />
-            <AccountInput
-              label={accountMeta.label}
-              placeholder={accountMeta.placeholder}
-              value={accountId}
-              country={country.code}
-              onChange={handleAccountChange}
-            />
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-            <div className="mt-auto">
-              <button
-                disabled={!accountId.trim() || loading}
-                onClick={handleGenerate}
-                className="w-full bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold text-lg py-5 rounded-2xl transition-colors touch-manipulation flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>{t("generate")} <ChevronRight className="w-5 h-5" /></>
-                )}
-              </button>
-            </div>
-          </motion.div>
-        )}
 
-        {step === "share" && (
-          <motion.div key="share" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-5 flex-1">
-            <div className="bg-emerald-900/30 border border-emerald-700/50 rounded-2xl p-4 text-center">
-              <p className="text-slate-400 text-sm">{t("share_title")}</p>
-              <p className="text-emerald-400 text-3xl font-bold mt-1">
-                {new Intl.NumberFormat("es-MX", { style: "currency", currency: country.currency }).format(amount)}
-              </p>
-              {cobrarType === "business" && (invoiceRef || concept) && (
-                <div className="mt-2 text-left bg-slate-800/40 rounded-xl px-4 py-2">
-                  {invoiceRef && <p className="text-slate-400 text-xs">Ref: <span className="text-white">{invoiceRef}</span></p>}
-                  {concept && <p className="text-slate-400 text-xs">Concepto: <span className="text-white">{concept}</span></p>}
-                </div>
+            {/* Merchant phone */}
+            <input
+              type="tel"
+              value={merchantPhone}
+              onChange={(e) => setMerchantPhone(e.target.value)}
+              placeholder={t("merchant_phone_placeholder")}
+              className="bg-slate-800/60 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none transition-colors"
+            />
+
+            {/* Client phone */}
+            <input
+              type="tel"
+              value={clientPhone}
+              onChange={(e) => setClientPhone(e.target.value)}
+              placeholder={t("client_phone_placeholder")}
+              className={`bg-slate-800/60 border rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none transition-colors ${
+                clientPhone.length > 0 && clientPhone.length < 7
+                  ? "border-red-600/60 focus:border-red-500"
+                  : "border-slate-700 focus:border-emerald-500"
+              }`}
+            />
+            <p className="text-slate-600 text-xs -mt-3">{t("client_phone_hint")}</p>
+
+            {error && (
+              <div className="bg-red-900/30 border border-red-700/50 rounded-xl px-4 py-3 text-red-300 text-sm">
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={generateLink}
+              disabled={!canContinue || loading}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all rounded-2xl py-4 text-white font-bold text-base flex items-center justify-center gap-2 touch-manipulation"
+            >
+              {loading ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                />
+              ) : (
+                <>
+                  {t("generate_button")}
+                  <ChevronRight className="w-5 h-5" />
+                </>
               )}
-              <p className="text-slate-400 text-sm mt-2">
-                {t("business_receives")}{" "}
-                <span className="text-emerald-300 font-semibold">
-                  {new Intl.NumberFormat("es-MX", { style: "currency", currency: country.currency }).format(receiverGets)}
-                </span>
-                {" · "}{t("commission")}:{" "}
-                <span className="text-slate-500">
-                  {new Intl.NumberFormat("es-MX", { style: "currency", currency: country.currency }).format(fee)}
-                </span>
-              </p>
-              <p className="text-slate-600 text-xs mt-1">{t("valid_15")}</p>
+            </button>
+          </motion.div>
+        )}
+
+        {/* Step 2: share the link */}
+        {step === "share" && (
+          <motion.div
+            key="share"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="flex flex-col gap-6"
+          >
+            <div className="bg-emerald-900/30 border border-emerald-700/40 rounded-2xl p-5 text-center">
+              <p className="text-emerald-400 text-xs uppercase tracking-wider mb-1">{t("amount_to_collect")}</p>
+              <p className="text-white text-4xl font-bold">{fmtAmt(amountNum)}</p>
+              {merchantName && <p className="text-emerald-300/70 text-sm mt-1">{merchantName}</p>}
+              <p className="text-slate-500 text-xs mt-2">{t("fee_note", { fee: fmtAmt(fee) })}{fmtAmt(amountNum - fee)}</p>
             </div>
 
-            <ShareButton url={paymentUrl} amount={amountLabel} transactionType="terminal" />
+            <div className="flex flex-col gap-2">
+              <p className="text-slate-400 text-sm font-medium">{t("share_hint")}</p>
+              <ShareSheet url={paymentUrl} message={shareMessage} />
+            </div>
 
-            <button onClick={() => { clearAll(); router.push("/"); }} className="text-slate-500 text-sm text-center mt-2 touch-manipulation">
-              {t("back_home")}
+            <button
+              onClick={() => { setStep("amount"); setAmount(""); setClientPhone(""); setPaymentUrl(""); setError(""); }}
+              className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl py-3 text-slate-300 text-sm transition-colors"
+            >
+              {t("new_charge")}
             </button>
           </motion.div>
         )}
