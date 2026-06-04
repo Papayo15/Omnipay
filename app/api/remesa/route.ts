@@ -145,9 +145,9 @@ export async function POST(req: NextRequest) {
 
     let result: { tx_id: string; status: string; rail: string };
     switch (rail) {
-      case "thunes":    result = await sendViaThunes(data);    break;
-      case "bridge":    result = await sendViaBridge(data);    break;
-      default:          result = await sendViaAirwallex(data); break;
+      case "thunes":      result = await sendViaThunes(data);    break;
+      case "p2p_pending": result = await sendViaBridge(data);    break;
+      default:            result = await sendViaAirwallex(data); break;
     }
 
     return NextResponse.json(result);

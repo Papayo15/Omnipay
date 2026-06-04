@@ -1,34 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseCobrarLink } from "@/lib/link";
+import { parseCobrarLink, parseRemesaLink } from "@/lib/link";
 
 export const runtime = "edge";
 
-// GET /api/cobrar/verify?t=...&s=...
-// Verifica la firma del link de cobro antes de mostrárselo al cliente.
-// Si el link es válido devuelve los datos del pago para mostrar en /pagar.
+// GET /api/cobrar/verify?t=...&s=...&type=cobro|remesa
+// Verifica la firma HMAC del link antes de mostrarlo al receptor.
+// Devuelve los datos del pago para que /pagar se adapte (camaleón).
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get("t") ?? "";
   const sig   = searchParams.get("s") ?? "";
+  const type  = searchParams.get("type") ?? "cobro";
+  const secret = process.env.LINK_SECRET ?? "dev-secret";
 
   if (!token || !sig) {
-    return NextResponse.json({ ok: false, error: "Missing parameters" }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "Parámetros faltantes" }, { status: 400 });
   }
 
-  const payload = await parseCobrarLink(token, sig, process.env.LINK_SECRET ?? "dev-secret");
+  if (type === "remesa") {
+    const payload = await parseRemesaLink(token, sig, secret);
+    if (!payload) {
+      return NextResponse.json({ ok: false, error: "expired" }, { status: 401 });
+    }
+    return NextResponse.json({
+      ok: true,
+      data: {
+        type:           "remesa",
+        amount:         payload.amount,
+        currency:       payload.currency,
+        targetCurrency: payload.targetCurrency,
+        targetAmount:   payload.targetAmount,
+        name:           payload.senderName ?? payload.senderPhone,
+      },
+    });
+  }
 
+  // type=cobro (default)
+  const payload = await parseCobrarLink(token, sig, secret);
   if (!payload) {
-    return NextResponse.json({ ok: false, error: "Link inválido o expirado (5 min)" }, { status: 401 });
+    return NextResponse.json({ ok: false, error: "expired" }, { status: 401 });
   }
-
   return NextResponse.json({
     ok: true,
     data: {
-      a: payload.a,
-      c: payload.c,
-      n: payload.n,
-      u: payload.u,  // Stripe Checkout URL
+      type:        "cobro",
+      amount:      payload.a,
+      currency:    payload.c,
+      name:        payload.n,
+      checkoutUrl: payload.u,
     },
   });
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Send, Store, Zap, Shield } from "lucide-react";
@@ -7,6 +8,14 @@ import { useTranslations } from "next-intl";
 
 export default function Home() {
   const t = useTranslations("home");
+  const [merchantId,   setMerchantId]   = useState("");
+  const [merchantName, setMerchantName] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setMerchantId(localStorage.getItem("omnipay_merchant_id")   ?? "");
+    setMerchantName(localStorage.getItem("omnipay_merchant_name") ?? "");
+  }, []);
 
   return (
     <main className="flex flex-col min-h-screen bg-[#0f172a] px-5 pt-16 pb-10">
@@ -24,30 +33,42 @@ export default function Home() {
         <p className="text-slate-400 text-sm text-center max-w-xs">{t("tagline")}</p>
       </motion.div>
 
-      {/* Two main buttons */}
       <div className="flex flex-col gap-5 flex-1 justify-center max-w-sm mx-auto w-full">
 
-        {/* COBRAR — Clip Killer */}
+        {/* COBRAR */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
           <Link href="/cobrar" className="block">
-            <div className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all duration-150 rounded-2xl p-7 flex items-center gap-5 shadow-2xl shadow-emerald-900/50 touch-manipulation cursor-pointer">
+            <div className="relative w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all duration-150 rounded-2xl p-7 flex items-center gap-5 shadow-2xl shadow-emerald-900/50 touch-manipulation cursor-pointer">
+              {/* Badge de estado del comercio */}
+              {merchantId ? (
+                <span className="absolute top-3 right-3 flex items-center gap-1 bg-emerald-900/60 border border-emerald-500/40 rounded-full px-2 py-0.5 text-emerald-300 text-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                  {merchantName || "Cuenta activa"}
+                </span>
+              ) : (
+                <span className="absolute top-3 right-3 bg-amber-500/20 border border-amber-400/40 rounded-full px-2 py-0.5 text-amber-300 text-xs">
+                  Configurar
+                </span>
+              )}
               <div className="bg-emerald-500 rounded-xl p-3 flex-shrink-0">
                 <Store className="w-9 h-9 text-white" />
               </div>
               <div className="text-left">
                 <p className="text-xl font-bold text-white leading-tight">{t("cobrar_title")}</p>
-                <p className="text-emerald-200 text-sm mt-1">{t("cobrar_sub")}</p>
+                <p className="text-emerald-200 text-sm mt-1">
+                  {merchantId && merchantName ? merchantName : t("cobrar_sub")}
+                </p>
                 <p className="text-emerald-300/70 text-xs mt-0.5">{t("cobrar_tag")}</p>
               </div>
             </div>
           </Link>
         </motion.div>
 
-        {/* REMESA — Western Union Killer */}
+        {/* REMESA */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -69,7 +90,7 @@ export default function Home() {
 
       </div>
 
-      {/* Footer trust badges */}
+      {/* Footer */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

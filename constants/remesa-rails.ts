@@ -1,43 +1,75 @@
-// Selección de riel para remesas internacionales
-// OmniPay no toca el dinero — delega a infraestructura licenciada
+// Selección de riel para remesas — cobertura global
+// OmniPay no toca el dinero — delega a infraestructura licenciada con MSB en 130+ países
 
-export type RemesaRail = "airwallex" | "thunes" | "bridge";
+export type RemesaRail = "airwallex" | "thunes" | "p2p_pending";
 
-// Airwallex: USA, Canadá, Europa, LATAM
+// ── Airwallex — USA, Canadá, Europa, LATAM, Pacífico, Medio Oriente, Asia Central
 const AIRWALLEX_COUNTRIES = new Set([
-  "US","CA","MX","BR","CO","CL","PE","AR","UY","PY","EC","BO","GT","SV","HN","CR","DO",
-  "GB","DE","FR","ES","IT","NL","PT","BE","AT","SE","NO","DK","FI","IE","PL",
-  "AU","NZ","SG",
+  // Norteamérica
+  "US","CA","MX",
+  // LATAM
+  "BR","CO","CL","PE","AR","UY","PY","EC","BO","GT","SV","HN","CR","DO","PA","JM",
+  // Europa Occidental
+  "GB","DE","FR","ES","IT","NL","PT","BE","AT","SE","NO","DK","FI","IE","PL","CH",
+  // Europa del Este
+  "RO","HU","CZ","UA","GR","SK","HR","BG",
+  // Pacífico
+  "AU","NZ","SG","JP","KR","HK","TW",
+  // Medio Oriente
+  "AE","SA","QA","KW","BH","OM","JO","IL","TR",
+  // Asia Central
+  "KZ","UZ","GE","AM","AZ",
 ]);
 
-// Thunes: Asia + África (red de wallets móviles y bancaria)
+// ── Thunes — Asia del Sur/SE + África (wallets móviles: M-Pesa, GCash, UPI, bKash…)
 const THUNES_COUNTRIES = new Set([
-  "CN","IN","PH","ID","VN","TH","MY","KR","JP","HK","TW","PK","BD","LK","MM",
-  "NG","GH","KE","TZ","ZA","UG","SN","CI","CM","RW","ET","EG","MA","TN",
+  // Asia del Sur
+  "IN","PK","BD","LK","NP",
+  // Sudeste Asiático
+  "PH","ID","VN","TH","MY","MM",
+  // África del Este
+  "KE","TZ","UG","RW","ET","ZM","MZ","ZW",
+  // África del Oeste
+  "NG","GH","SN","CI","CM","BF","ML",
+  // África del Norte
+  "EG","MA","TN","DZ",
+  // Sudáfrica
+  "ZA",
+  // Oriente Medio (no cubierto por Airwallex)
+  "LB",
+  // Asia ampliada
+  "CN",
 ]);
 
-// Bridge.xyz: Rusia y mercados con restricciones de divisas (stablecoin bridge)
-const BRIDGE_COUNTRIES = new Set([
-  "RU","VE","TR","IR","BY","CU","SY",
+// ── p2p_pending — Países con restricciones OFAC (Bridge.xyz es empresa US — no puede operar)
+// TODO: integrar procesador P2P no-OFAC (Telegram Pay API, corredores locales crypto-fiat)
+const P2P_PENDING = new Set([
+  "RU","IR","BY","SY","CU",
+  // VE y TR sí pueden usar Airwallex/Thunes dependiendo del corredor — mover aquí si se bloquean
 ]);
 
 export function selectRemesaRail(targetCountry: string): RemesaRail {
   const c = targetCountry.toUpperCase();
+  if (P2P_PENDING.has(c))     return "p2p_pending";
+  if (THUNES_COUNTRIES.has(c)) return "thunes";
   if (AIRWALLEX_COUNTRIES.has(c)) return "airwallex";
-  if (THUNES_COUNTRIES.has(c))    return "thunes";
-  if (BRIDGE_COUNTRIES.has(c))    return "bridge";
-  return "airwallex"; // fallback: Airwallex tiene mayor cobertura global
+  return "airwallex"; // fallback — Airwallex tiene cobertura global como base
 }
 
 export const RAIL_NAMES: Record<RemesaRail, string> = {
-  airwallex: "Airwallex",
-  thunes:    "Thunes",
-  bridge:    "Bridge.xyz",
+  airwallex:   "Airwallex",
+  thunes:      "Thunes",
+  p2p_pending: "Próximamente",
 };
 
-// Estimación de tiempo de llegada por riel
 export const RAIL_ETA: Record<RemesaRail, string> = {
-  airwallex: "Instantáneo – 2 horas",
-  thunes:    "Minutos – 24 horas",
-  bridge:    "2 – 24 horas",
+  airwallex:   "Instantáneo – 2 horas",
+  thunes:      "Minutos – 24 horas",
+  p2p_pending: "No disponible",
+};
+
+export const RAIL_COVERAGE_NOTE: Record<RemesaRail, string> = {
+  airwallex:   "Visa Direct OCT + banco local",
+  thunes:      "M-Pesa · GCash · UPI · bKash · MTN · 130+ países",
+  p2p_pending: "Servicio en construcción para esta región",
 };
