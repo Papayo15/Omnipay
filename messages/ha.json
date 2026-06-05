@@ -55,7 +55,14 @@
     "account_trust": "Katunan debit · ta Wise/Thunes",
     "processing_note": "Za ka karbi SMS da zarar an rika",
     "error_invalid_account": "Bayanan asusun ba daidai ba ne. Duba ka sake gwadawa.",
-    "retry_account": "Gwada da wani asusun"
+    "retry_account": "Gwada da wani asusun",
+    "receive_mode_card": "Katunan debit",
+    "receive_mode_bank": "Asusun banki",
+    "card_number_label": "Lambar katunan (lambobi 16)",
+    "card_hint_text": "Visa, Mastercard ko UnionPay · lambobi 16",
+    "account_trust_card": "Katunan debit · ta Paysend / Visa Direct",
+    "processing_note_card": "Kud̃inka zai isa katunan ka cikin dakika",
+    "error_card_not_eligible": "Wannan katunan ba shi da cancanta ga ajiyen kudi na kasashen waje. Gwada wani katunan ko yi amfani da asusun banki."
   },
   "remesa": {
     "title": "Aika kuɗi",

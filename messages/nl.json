@@ -55,7 +55,14 @@
     "account_trust": "Betaalpas · via Wise/Thunes",
     "processing_note": "U ontvangt een sms bij bijschrijving",
     "error_invalid_account": "Onjuiste rekeninggegevens. Controleer en probeer opnieuw.",
-    "retry_account": "Probeer met een andere rekening"
+    "retry_account": "Probeer met een andere rekening",
+    "receive_mode_card": "Debetkaart",
+    "receive_mode_bank": "Bankrekening",
+    "card_number_label": "Kaartnummer (16 cijfers)",
+    "card_hint_text": "Visa, Mastercard of UnionPay · 16 cijfers",
+    "account_trust_card": "Debetkaart · via Paysend / Visa Direct",
+    "processing_note_card": "Je geld komt in seconden op je kaart",
+    "error_card_not_eligible": "Deze kaart is niet geschikt voor internationale stortingen. Probeer een andere kaart of gebruik een bankrekening."
   },
   "remesa": {
     "title": "Overmaking sturen",

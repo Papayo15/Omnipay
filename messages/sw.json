@@ -55,7 +55,14 @@
     "account_trust": "Kadi ya debit · kupitia Wise/Thunes",
     "processing_note": "Utapokea SMS unapopokea pesa",
     "error_invalid_account": "Maelezo ya akaunti si sahihi. Angalia na jaribu tena.",
-    "retry_account": "Jaribu na akaunti nyingine"
+    "retry_account": "Jaribu na akaunti nyingine",
+    "receive_mode_card": "Kadi ya debit",
+    "receive_mode_bank": "Akaunti ya benki",
+    "card_number_label": "Namba ya kadi (tarakimu 16)",
+    "card_hint_text": "Visa, Mastercard au UnionPay · tarakimu 16",
+    "account_trust_card": "Kadi ya debit · kupitia Paysend / Visa Direct",
+    "processing_note_card": "Pesa yako itafika kwa sekunde kwenye kadi yako",
+    "error_card_not_eligible": "Kadi hii haistahili amana za kimataifa. Jaribu kadi nyingine au tumia akaunti ya benki."
   },
   "remesa": {
     "title": "Tuma pesa",

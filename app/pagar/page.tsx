@@ -4,12 +4,12 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, AlertCircle, Shield, Clock } from "lucide-react";
+import { ArrowLeft, AlertCircle, Shield, Clock, CreditCard, Building2 } from "lucide-react";
 import { getAccountValidation } from "@/lib/wise-accounts";
 
 // Pantalla camaleón — se transforma según type=cobro|remesa
 // Cobro:  "Vas a PAGAR $X a [tienda]"    → redirige a Stripe Checkout
-// Remesa: "Vas a RECIBIR $X de [nombre]" → input inteligente por país → Wise/Thunes
+// Remesa: "Vas a RECIBIR $X de [nombre]" → selector tarjeta/banco → Paysend o Wise
 
 interface LinkData {
   type: "cobro" | "remesa";
@@ -24,8 +24,28 @@ interface LinkData {
   sig?: string;
 }
 
+type ReceiveMode = "card" | "bank";
+
 function fmt(n: number, c: string) {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency: c }).format(n);
+}
+
+// Luhn algorithm — validates any Visa/MC/UnionPay card number
+function luhn(num: string): boolean {
+  const digits = num.replace(/\D/g, "");
+  if (digits.length !== 16) return false;
+  let sum = 0;
+  for (let i = 0; i < 16; i++) {
+    let d = parseInt(digits[i], 10);
+    if ((16 - i) % 2 === 0) { d *= 2; if (d > 9) d -= 9; }
+    sum += d;
+  }
+  return sum % 10 === 0;
+}
+
+function formatCardDisplay(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 16);
+  return digits.replace(/(.{4})/g, "$1 ").trim();
 }
 
 function PagarContent() {
@@ -33,18 +53,20 @@ function PagarContent() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const [data, setData]                     = useState<LinkData | null>(null);
-  const [error, setError]                   = useState("");
-  const [loading, setLoading]               = useState(true);
+  const [data, setData]                       = useState<LinkData | null>(null);
+  const [error, setError]                     = useState("");
+  const [loading, setLoading]                 = useState(true);
+  const [receiveMode, setReceiveMode]         = useState<ReceiveMode>("card");
+  const [recipientCard, setRecipientCard]     = useState("");
   const [recipientAccount, setRecipientAccount] = useState("");
-  const [recipientName, setRecipientName]   = useState("");
-  const [executing, setExecuting]           = useState(false);
-  const [timeLeft, setTimeLeft]             = useState(600);
+  const [recipientName, setRecipientName]     = useState("");
+  const [executing, setExecuting]             = useState(false);
+  const [timeLeft, setTimeLeft]               = useState(600);
 
   const type    = params.get("type") ?? "cobro";
   const isCobro = type === "cobro";
 
-  // Validación del input según país destino
+  // Validación del input de cuenta bancaria según país destino (modo banco)
   const accountValidation = useMemo(
     () => getAccountValidation(data?.targetCountry ?? ""),
     [data?.targetCountry],
@@ -81,23 +103,42 @@ function PagarContent() {
   }
 
   async function handleRemesa() {
-    if (!accountOk) return;
+    if (!canProceed) return;
     setExecuting(true);
     try {
+      const body =
+        receiveMode === "card"
+          ? {
+              token:         data?.token,
+              sig:           data?.sig,
+              receiveMode:   "card" as const,
+              recipientCard: recipientCard.replace(/\s/g, ""),
+              recipientName: recipientName.trim(),
+            }
+          : {
+              token:            data?.token,
+              sig:              data?.sig,
+              receiveMode:      "bank" as const,
+              recipientAccount: recipientAccount.trim(),
+              recipientName:    recipientName.trim(),
+            };
+
       const res = await fetch("/api/remesa/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token:            data?.token,
-          sig:              data?.sig,
-          recipientAccount: recipientAccount.trim(),
-          recipientName:    recipientName.trim(),
-        }),
+        body: JSON.stringify(body),
       });
-      const result = await res.json() as { status?: string; receipt_url?: string; error?: string; errorCode?: string };
+      const result = await res.json() as {
+        status?: string; receipt_url?: string; error?: string; errorCode?: string;
+      };
       if (!res.ok || result.error) {
-        if (result.errorCode === "INVALID_ACCOUNT") {
+        if (result.errorCode === "INVALID_ACCOUNT" || result.errorCode === "CARD_NOT_FOUND") {
           setError(t("error_invalid_account"));
+          setExecuting(false);
+          return;
+        }
+        if (result.errorCode === "CARD_NOT_ELIGIBLE") {
+          setError(t("error_card_not_eligible"));
           setExecuting(false);
           return;
         }
@@ -117,16 +158,33 @@ function PagarContent() {
     ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/50"
     : "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/50";
 
-  const accountIsValid = accountValidation.validate(recipientAccount);
-  const accountOk      = !isCobro
-    ? accountIsValid && recipientName.trim().length >= 2
-    : true;
+  const cardOk    = luhn(recipientCard);
+  const bankOk    = accountValidation.validate(recipientAccount);
+  const nameOk    = recipientName.trim().length >= 2;
+  const inputOk   = receiveMode === "card" ? cardOk : bankOk;
+  const canProceed = !isCobro ? (inputOk && nameOk) : true;
 
-  const accountBorderClass = recipientAccount.length === 0
+  const cardBorderClass = recipientCard.length === 0
     ? "border-slate-700 focus:border-indigo-500"
-    : accountIsValid
+    : cardOk
       ? "border-emerald-600/60 focus:border-emerald-500"
       : "border-slate-600 focus:border-indigo-500";
+
+  const bankBorderClass = recipientAccount.length === 0
+    ? "border-slate-700 focus:border-indigo-500"
+    : bankOk
+      ? "border-emerald-600/60 focus:border-emerald-500"
+      : "border-slate-600 focus:border-indigo-500";
+
+  const trustText = isCobro
+    ? t("stripe_trust")
+    : receiveMode === "card"
+      ? t("account_trust_card")
+      : t("account_trust");
+
+  const processingText = receiveMode === "card"
+    ? t("processing_note_card")
+    : t("processing_note");
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0f172a]">
@@ -135,13 +193,14 @@ function PagarContent() {
     </div>
   );
 
+  const isRetryableError = error === t("error_invalid_account") || error === t("error_card_not_eligible");
+
   if (error && !executing) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f172a] px-6 text-center gap-4">
       <div className="bg-red-500/10 rounded-full p-5"><AlertCircle className="w-10 h-10 text-red-400" /></div>
       <h2 className="text-xl font-bold text-white">{t("cannot_process")}</h2>
       <p className="text-slate-400 text-sm">{error}</p>
-      {/* Retry button for invalid account — link still valid */}
-      {error === t("error_invalid_account") ? (
+      {isRetryableError ? (
         <button onClick={() => setError("")}
           className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl touch-manipulation">
           {t("retry_account")}
@@ -204,10 +263,10 @@ function PagarContent() {
           </div>
         )}
 
-        {/* Input inteligente por país (solo remesa) */}
+        {/* Inputs (solo remesa) */}
         {!isCobro && (
           <div className="flex flex-col gap-3">
-            {/* Nombre del titular */}
+            {/* Nombre */}
             <input
               type="text"
               value={recipientName}
@@ -216,38 +275,79 @@ function PagarContent() {
               className="bg-slate-800/60 border border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none transition-colors"
             />
 
-            {/* Cuenta bancaria — formato según país destino */}
-            <div className="flex flex-col gap-1">
-              <label className="text-slate-400 text-sm font-medium">
-                {accountValidation.label}
-              </label>
-              <input
-                type={accountValidation.inputMode === "numeric" ? "tel" : "text"}
-                inputMode={accountValidation.inputMode}
-                value={recipientAccount}
-                onChange={(e) => setRecipientAccount(e.target.value)}
-                placeholder={accountValidation.placeholder}
-                maxLength={accountValidation.maxLength + 5}
-                className={`bg-slate-800/60 border rounded-xl px-4 py-4 text-white placeholder-slate-600 focus:outline-none transition-colors text-base tracking-wide ${accountBorderClass}`}
-              />
-              <p className="text-slate-600 text-xs leading-relaxed">{accountValidation.hint}</p>
+            {/* Selector tarjeta / banco */}
+            <div className="flex rounded-xl overflow-hidden border border-slate-700 bg-slate-800/40">
+              <button
+                onClick={() => setReceiveMode("card")}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
+                  receiveMode === "card"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                {t("receive_mode_card")}
+              </button>
+              <button
+                onClick={() => setReceiveMode("bank")}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
+                  receiveMode === "bank"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <Building2 className="w-4 h-4" />
+                {t("receive_mode_bank")}
+              </button>
             </div>
+
+            {/* Input tarjeta */}
+            {receiveMode === "card" && (
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-sm font-medium">{t("card_number_label")}</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={recipientCard}
+                  onChange={(e) => setRecipientCard(formatCardDisplay(e.target.value))}
+                  placeholder="1234 5678 9012 3456"
+                  maxLength={19}
+                  className={`bg-slate-800/60 border rounded-xl px-4 py-4 text-white placeholder-slate-600 focus:outline-none transition-colors text-base tracking-widest ${cardBorderClass}`}
+                />
+                <p className="text-slate-600 text-xs">{t("card_hint_text")}</p>
+              </div>
+            )}
+
+            {/* Input cuenta bancaria */}
+            {receiveMode === "bank" && (
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 text-sm font-medium">{accountValidation.label}</label>
+                <input
+                  type={accountValidation.inputMode === "numeric" ? "tel" : "text"}
+                  inputMode={accountValidation.inputMode}
+                  value={recipientAccount}
+                  onChange={(e) => setRecipientAccount(e.target.value)}
+                  placeholder={accountValidation.placeholder}
+                  maxLength={accountValidation.maxLength + 5}
+                  className={`bg-slate-800/60 border rounded-xl px-4 py-4 text-white placeholder-slate-600 focus:outline-none transition-colors text-base tracking-wide ${bankBorderClass}`}
+                />
+                <p className="text-slate-600 text-xs leading-relaxed">{accountValidation.hint}</p>
+              </div>
+            )}
           </div>
         )}
 
         {/* Trust badge */}
         <div className="flex items-center gap-2 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
           <Shield className="w-4 h-4 text-indigo-400 flex-shrink-0" />
-          <p className="text-slate-400 text-xs">
-            {isCobro ? t("stripe_trust") : t("account_trust")}
-          </p>
+          <p className="text-slate-400 text-xs">{trustText}</p>
         </div>
 
         {/* CTA */}
         <div className="mt-auto flex flex-col gap-3">
           <button
             onClick={isCobro ? handleCobro : handleRemesa}
-            disabled={executing || !accountOk || timeLeft === 0}
+            disabled={executing || !canProceed || timeLeft === 0}
             className={`w-full ${accentBg} disabled:opacity-40 active:scale-95 transition-all text-white font-bold text-lg py-5 rounded-2xl shadow-2xl touch-manipulation flex items-center justify-center gap-2`}
           >
             {executing ? (
@@ -260,7 +360,7 @@ function PagarContent() {
             )}
           </button>
           <p className="text-slate-600 text-xs text-center">
-            {isCobro ? t("stripe_redirect_note") : t("processing_note")}
+            {isCobro ? t("stripe_redirect_note") : processingText}
           </p>
         </div>
 

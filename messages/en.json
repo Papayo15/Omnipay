@@ -55,7 +55,14 @@
     "account_trust": "Debit card · via Wise/Thunes",
     "processing_note": "You'll receive an SMS when it credits",
     "error_invalid_account": "Incorrect account details. Please verify and try again.",
-    "retry_account": "Try with another account"
+    "retry_account": "Try with another account",
+    "receive_mode_card": "Debit card",
+    "receive_mode_bank": "Bank account",
+    "card_number_label": "Card number (16 digits)",
+    "card_hint_text": "Visa, Mastercard or UnionPay · 16 digits",
+    "account_trust_card": "Debit card · via Paysend / Visa Direct",
+    "processing_note_card": "Your money will arrive in seconds to your card",
+    "error_card_not_eligible": "This card is not eligible for international deposits. Try with a different card or use bank account."
   },
   "remesa": {
     "title": "Send remittance",

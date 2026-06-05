@@ -55,7 +55,14 @@
     "account_trust": "Дебетовая карта · через Wise/Thunes",
     "processing_note": "Вы получите SMS при зачислении",
     "error_invalid_account": "Неверные данные счёта. Проверьте и попробуйте снова.",
-    "retry_account": "Попробовать с другим счётом"
+    "retry_account": "Попробовать с другим счётом",
+    "receive_mode_card": "Дебетовая карта",
+    "receive_mode_bank": "Банковский счёт",
+    "card_number_label": "Номер карты (16 цифр)",
+    "card_hint_text": "Visa, Mastercard или UnionPay · 16 цифр",
+    "account_trust_card": "Дебетовая карта · через Paysend / Visa Direct",
+    "processing_note_card": "Деньги поступят на карту через несколько секунд",
+    "error_card_not_eligible": "Эта карта не поддерживает международные зачисления. Попробуйте другую карту или используйте банковский счёт."
   },
   "remesa": {
     "title": "Отправить перевод",

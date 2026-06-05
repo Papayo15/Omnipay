@@ -3,16 +3,17 @@ import Stripe from "stripe";
 import { parseRemesaLink, buildReceiptURL } from "@/lib/link";
 import { selectRemesaRail } from "@/constants/remesa-rails";
 import { getWiseAccountType, buildWiseAccountDetails } from "@/lib/wise-accounts";
+import { executePaysend } from "@/lib/paysend";
 
 // POST /api/remesa/execute
-// El receptor confirma su cuenta. Este endpoint:
+// El receptor confirma su método de cobro. Este endpoint:
 //   1. Verifica HMAC del link (stateless)
 //   2. Verifica que el emisor pagó en Stripe
-//   3. Dispersa vía Wise (170+ países) o Thunes (China/wallets móviles)
-//   4. Repone balance Wise via Stripe Instant Payout (asíncrono)
+//   3. Dispersa vía Paysend (push a tarjeta 16 dígitos) o Wise (cuenta bancaria)
+//   4. Repone balances Paysend + Wise via Stripe Instant Payout (asíncrono)
 //   5. Genera comprobante firmado HMAC
 
-// ── Wise balance check ────────────────────────────────────────────────────────
+// ── Balance checks ─────────────────────────────────────────────────────────────
 
 async function getWiseCADBalance(profileId: string, apiKey: string): Promise<number> {
   try {
@@ -43,7 +44,6 @@ async function executeWise(
     "Content-Type": "application/json",
   };
 
-  // Create recipient account with country-specific details
   const accountRes = await fetch("https://api.wise.com/v1/accounts", {
     method: "POST", headers,
     body: JSON.stringify({
@@ -57,12 +57,10 @@ async function executeWise(
   const account = await accountRes.json() as { id?: number; errors?: Array<{ message: string }> };
   if (!accountRes.ok || !account.id) {
     const msg = account.errors?.[0]?.message ?? String(accountRes.status);
-    // 422 from Wise = invalid account details → recoverable error
     if (accountRes.status === 422) throw Object.assign(new Error(msg), { code: "INVALID_ACCOUNT" });
     throw new Error(`Wise account: ${msg}`);
   }
 
-  // Quote
   const quoteRes = await fetch(`https://api.wise.com/v3/profiles/${profileId}/quotes`, {
     method: "POST", headers,
     body: JSON.stringify({ sourceCurrency: "CAD", targetCurrency, sourceAmount }),
@@ -74,7 +72,6 @@ async function executeWise(
     throw new Error(`Wise quote: ${msg}`);
   }
 
-  // Transfer — embed phones in reference for webhook tracking
   const reference = `OP|r:${recipientPhone}|s:${senderPhone}`.slice(0, 50);
   const transferRes = await fetch("https://api.wise.com/v1/transfers", {
     method: "POST", headers,
@@ -88,7 +85,6 @@ async function executeWise(
   const transfer = await transferRes.json() as { id?: number; errors?: Array<{ message: string }> };
   if (!transferRes.ok || !transfer.id) throw new Error(`Wise transfer: ${transfer.errors?.[0]?.message ?? transferRes.status}`);
 
-  // Fund from Wise balance
   const fundRes = await fetch(
     `https://api.wise.com/v3/profiles/${profileId}/transfers/${transfer.id}/payments`,
     { method: "POST", headers, body: JSON.stringify({ type: "BALANCE" }) },
@@ -102,24 +98,15 @@ async function executeWise(
   return String(transfer.id);
 }
 
-// ── Thunes transfer ───────────────────────────────────────────────────────────
-
-function thunesService(countryCode: string): string {
-  const walletCountries = new Set(["CN","PH","PK","BD","MM","SN","CI","CM","BF","ML","MW"]);
-  return walletCountries.has(countryCode.toUpperCase()) ? "WALLET" : "BANK_ACCOUNT";
-}
+// ── Thunes transfer (wallets móviles — fallback cuando Paysend no llega) ───────
 
 function thunesPayer(countryCode: string): string {
   const map: Record<string, string> = {
-    CN: "wechat_pay",     PH: "gcash",
-    PK: "jazzcash",       BD: "bkash",
-    MM: "wavemoney",      TZ: "mpesa_tz",
-    ZM: "mpesa_zm",       MZ: "mpesa_mz",
-    UG: "mtn_ug",         ZW: "ecocash",
-    ET: "telebirr",       SN: "orange_money_sn",
-    CI: "orange_money_ci", CM: "mtn_cm",
+    TZ: "mpesa_tz",   ZM: "mpesa_zm",  MZ: "mpesa_mz",
+    UG: "mtn_ug",     ZW: "ecocash",   ET: "telebirr",
+    SN: "orange_money_sn", CI: "orange_money_ci", CM: "mtn_cm",
     BF: "orange_money_bf", ML: "orange_money_ml",
-    LB: "whish_lb",       MW: "airtel_mw",
+    LB: "whish_lb",   MW: "airtel_mw",
   };
   return map[countryCode.toUpperCase()] ?? "bank_account";
 }
@@ -149,7 +136,7 @@ async function executeThunes(
       source:      { amount: sourceAmount, currency: "CAD" },
       destination: {
         amount: targetAmount, currency: targetCurrency, country: targetCountry,
-        service: thunesService(targetCountry),
+        service: "WALLET",
         payer:   { slug: thunesPayer(targetCountry) },
       },
       credit_party_identifier: { msisdn: recipientAccount },
@@ -185,18 +172,26 @@ async function sendSMS(to: string, body: string) {
 interface ExecuteRequest {
   token: string;
   sig: string;
-  recipientAccount: string;  // account number in country-specific format
+  receiveMode: "card" | "bank";
+  recipientCard?: string;      // 16 dígitos sin espacios — solo si receiveMode === "card"
+  recipientAccount?: string;   // CLABE/IBAN/etc. — solo si receiveMode === "bank"
   recipientName: string;
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { token, sig, recipientAccount, recipientName }: ExecuteRequest = await req.json();
+    const body: ExecuteRequest = await req.json();
+    const { token, sig, receiveMode, recipientName } = body;
+    const recipientCard    = body.recipientCard?.replace(/\s/g, "") ?? "";
+    const recipientAccount = body.recipientAccount?.trim() ?? "";
 
-    if (!token || !sig || !recipientAccount?.trim() || !recipientName?.trim()) {
+    if (!token || !sig || !recipientName?.trim()) {
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
-    if (recipientAccount.trim().length < 5) {
+    if (receiveMode === "card" && recipientCard.length !== 16) {
+      return NextResponse.json({ error: "Número de tarjeta inválido", errorCode: "CARD_NOT_FOUND" }, { status: 400 });
+    }
+    if (receiveMode === "bank" && recipientAccount.length < 5) {
       return NextResponse.json({ error: "Cuenta inválida", errorCode: "INVALID_ACCOUNT" }, { status: 400 });
     }
 
@@ -214,56 +209,80 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Pago no completado" }, { status: 401 });
     }
 
-    // Soft balance check — log warning but let Wise reject if actually insufficient
-    const wiseBal = await getWiseCADBalance(process.env.WISE_PROFILE_ID ?? "", process.env.WISE_API_KEY ?? "");
-    if (wiseBal < payload.amount * 1.1) {
-      console.warn(`LOW_WISE_BALANCE: ${wiseBal} CAD available, needed ${payload.amount}`);
+    // Balance checks (soft — solo loguear)
+    if (receiveMode === "bank") {
+      const wiseBal = await getWiseCADBalance(
+        process.env.WISE_PROFILE_ID ?? "",
+        process.env.WISE_API_KEY    ?? "",
+      );
+      if (wiseBal < payload.amount * 1.1) {
+        console.warn(`LOW_WISE_BALANCE: ${wiseBal} CAD available, needed ${payload.amount}`);
+      }
     }
 
-    const rail = selectRemesaRail(payload.targetCountry);
     let txId: string;
+    let railLabel: string;
 
     try {
-      if (rail === "thunes") {
-        txId = await executeThunes(
-          process.env.THUNES_CLIENT_ID ?? "",
-          process.env.THUNES_SECRET    ?? "",
+      if (receiveMode === "card") {
+        // ── Rail Paysend: push a tarjeta Visa/MC/UnionPay ──────────────────────
+        txId = await executePaysend(
+          process.env.PAYSEND_API_KEY ?? "",
           recipientName.trim(),
-          recipientAccount.trim(),
+          recipientCard,
           payload.targetCountry,
           payload.targetCurrency,
           payload.amount,
-          payload.targetAmount,
           payload.senderName ?? "OmniPay Sender",
         );
-      } else if (rail === "wise") {
-        txId = await executeWise(
-          process.env.WISE_PROFILE_ID ?? "",
-          process.env.WISE_API_KEY    ?? "",
-          recipientName.trim(),
-          recipientAccount.trim(),
-          payload.targetCountry,
-          payload.targetCurrency,
-          payload.amount,
-          payload.recipientPhone,
-          payload.senderPhone,
-        );
+        railLabel = "Paysend";
       } else {
-        return NextResponse.json({ error: "Esta región no está disponible aún" }, { status: 503 });
+        // ── Rail Wise / Thunes: cuenta bancaria o wallet móvil ────────────────
+        const rail = selectRemesaRail(payload.targetCountry);
+        if (rail === "p2p_pending") {
+          return NextResponse.json({ error: "Esta región no está disponible aún" }, { status: 503 });
+        }
+        if (rail === "thunes") {
+          txId = await executeThunes(
+            process.env.THUNES_CLIENT_ID ?? "",
+            process.env.THUNES_SECRET    ?? "",
+            recipientName.trim(),
+            recipientAccount,
+            payload.targetCountry,
+            payload.targetCurrency,
+            payload.amount,
+            payload.targetAmount,
+            payload.senderName ?? "OmniPay Sender",
+          );
+          railLabel = "Thunes";
+        } else {
+          txId = await executeWise(
+            process.env.WISE_PROFILE_ID ?? "",
+            process.env.WISE_API_KEY    ?? "",
+            recipientName.trim(),
+            recipientAccount,
+            payload.targetCountry,
+            payload.targetCurrency,
+            payload.amount,
+            payload.recipientPhone,
+            payload.senderPhone,
+          );
+          railLabel = "Wise";
+        }
       }
     } catch (railErr) {
       const err = railErr as Error & { code?: string };
       const errorCode = err.code ?? "TRANSFER_FAILED";
 
-      // Recoverable — recipient can retry with correct account
-      if (errorCode === "INVALID_ACCOUNT") {
+      // Recuperable — el receptor puede reintentar con datos correctos
+      if (errorCode === "INVALID_ACCOUNT" || errorCode === "CARD_NOT_FOUND" || errorCode === "CARD_NOT_ELIGIBLE") {
         return NextResponse.json(
-          { error: "Datos de cuenta incorrectos. Verifica e intenta de nuevo.", errorCode },
+          { error: err.message, errorCode },
           { status: 422 },
         );
       }
 
-      // Insufficient balance — transient, try again later
+      // Balance bajo — transitorio
       if (errorCode === "INSUFFICIENT_FUNDS") {
         return NextResponse.json(
           { error: "Servicio temporalmente no disponible. Intenta en 30 minutos.", errorCode },
@@ -271,7 +290,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Irrecoverable — issue Stripe refund automatically
+      // Límite superado — pedir monto menor o esperar
+      if (errorCode === "LIMIT_EXCEEDED") {
+        return NextResponse.json(
+          { error: "El monto supera el límite de transferencia. Intenta con un monto menor.", errorCode },
+          { status: 422 },
+        );
+      }
+
+      // Irrecuperable → reembolso Stripe automático
       try {
         const refund = await stripe.refunds.create({
           payment_intent: session.payment_intent as string,
@@ -289,7 +316,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Build signed receipt
+    // Comprobante firmado HMAC
     const receiptUrl = await buildReceiptURL(
       {
         id: txId,
@@ -303,16 +330,15 @@ export async function POST(req: NextRequest) {
       secret,
     );
 
-    // SMS to both parties (fire-and-forget)
-    const railLabel = rail === "thunes" ? "Thunes" : "Wise";
+    // SMS a ambas partes (fire-and-forget)
     await Promise.allSettled([
       sendSMS(payload.senderPhone,
         `OmniPay: Tu remesa de ${payload.amount} ${payload.currency} fue aceptada. En proceso vía ${railLabel}. Comprobante: ${receiptUrl}`),
       sendSMS(payload.recipientPhone,
-        `OmniPay: Recibirás ${payload.targetAmount} ${payload.targetCurrency}. En proceso vía ${railLabel}. Comprobante: ${receiptUrl}`),
+        `OmniPay: Recibirás ${payload.targetAmount} ${payload.targetCurrency} vía ${railLabel}. Comprobante: ${receiptUrl}`),
     ]);
 
-    // Stripe Instant Payout to replenish Wise balance (async, non-blocking)
+    // Stripe Instant Payout para reponer el float operativo (async, non-blocking)
     stripe.payouts.create({
       amount:               Math.round(payload.amount * 100),
       currency:             "cad",
@@ -320,7 +346,7 @@ export async function POST(req: NextRequest) {
       statement_descriptor: "OMNIPAY_REPLEN",
     }).catch((e: Error) => console.warn("Stripe replenishment payout failed:", e.message));
 
-    return NextResponse.json({ status: "processing", receipt_url: receiptUrl, rail });
+    return NextResponse.json({ status: "processing", receipt_url: receiptUrl, rail: railLabel });
   } catch (err) {
     console.error("Remesa execute error:", err);
     return NextResponse.json(

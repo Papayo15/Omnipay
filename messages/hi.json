@@ -55,7 +55,14 @@
     "account_trust": "डेबिट कार्ड · Wise/Thunes के माध्यम से",
     "processing_note": "क्रेडिट होने पर SMS मिलेगा",
     "error_invalid_account": "खाता विवरण गलत है। सत्यापित करें और पुनः प्रयास करें।",
-    "retry_account": "दूसरे खाते से प्रयास करें"
+    "retry_account": "दूसरे खाते से प्रयास करें",
+    "receive_mode_card": "डेबिट कार्ड",
+    "receive_mode_bank": "बैंक खाता",
+    "card_number_label": "कार्ड नंबर (16 अंक)",
+    "card_hint_text": "Visa, Mastercard या UnionPay · 16 अंक",
+    "account_trust_card": "डेबिट कार्ड · Paysend / Visa Direct के माध्यम से",
+    "processing_note_card": "आपके पैसे सेकंडों में आपके कार्ड पर आ जाएंगे",
+    "error_card_not_eligible": "यह कार्ड अंतरराष्ट्रीय जमा के लिए योग्य नहीं है। कोई अन्य कार्ड आज़माएं या बैंक खाता उपयोग करें।"
   },
   "remesa": {
     "title": "रेमिटेंस भेजें",

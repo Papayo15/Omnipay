@@ -55,7 +55,14 @@
     "account_trust": "Tarjeta de débito · vía Wise/Thunes",
     "processing_note": "Recibirás un SMS cuando se acredite",
     "error_invalid_account": "Datos de cuenta incorrectos. Verifica e intenta de nuevo.",
-    "retry_account": "Intentar con otra cuenta"
+    "retry_account": "Intentar con otra cuenta",
+    "receive_mode_card": "Tarjeta de débito",
+    "receive_mode_bank": "Cuenta bancaria",
+    "card_number_label": "Número de tarjeta (16 dígitos)",
+    "card_hint_text": "Visa, Mastercard o UnionPay · 16 dígitos",
+    "account_trust_card": "Tarjeta de débito · vía Paysend / Visa Direct",
+    "processing_note_card": "Tu dinero llegará en segundos a tu tarjeta",
+    "error_card_not_eligible": "Esta tarjeta no es elegible para depósitos internacionales. Intenta con otra tarjeta o usa cuenta bancaria."
   },
   "remesa": {
     "title": "Enviar remesa",

@@ -55,7 +55,14 @@
     "account_trust": "借记卡 · 通过Wise/Thunes",
     "processing_note": "到账时您将收到短信通知",
     "error_invalid_account": "账户信息不正确，请验证后重试。",
-    "retry_account": "使用其他账户重试"
+    "retry_account": "使用其他账户重试",
+    "receive_mode_card": "借记卡",
+    "receive_mode_bank": "银行账户",
+    "card_number_label": "卡号（16位数字）",
+    "card_hint_text": "Visa、Mastercard 或银联 · 16位数字",
+    "account_trust_card": "借记卡 · 通过 Paysend / Visa Direct",
+    "processing_note_card": "您的钱将在几秒内到达您的卡",
+    "error_card_not_eligible": "此卡不适用于国际存款。请尝试其他卡或使用银行账户。"
   },
   "remesa": {
     "title": "发送汇款",

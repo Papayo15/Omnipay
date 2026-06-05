@@ -55,7 +55,14 @@
     "account_trust": "Debitkarte · via Wise/Thunes",
     "processing_note": "Sie erhalten eine SMS bei Gutschrift",
     "error_invalid_account": "Falsche Kontodaten. Bitte überprüfen und erneut versuchen.",
-    "retry_account": "Mit anderem Konto versuchen"
+    "retry_account": "Mit anderem Konto versuchen",
+    "receive_mode_card": "Debitkarte",
+    "receive_mode_bank": "Bankkonto",
+    "card_number_label": "Kartennummer (16 Ziffern)",
+    "card_hint_text": "Visa, Mastercard oder UnionPay · 16 Ziffern",
+    "account_trust_card": "Debitkarte · über Paysend / Visa Direct",
+    "processing_note_card": "Ihr Geld kommt in Sekunden auf Ihrer Karte an",
+    "error_card_not_eligible": "Diese Karte ist nicht für internationale Einzahlungen geeignet. Versuchen Sie eine andere Karte oder ein Bankkonto."
   },
   "remesa": {
     "title": "Überweisung senden",

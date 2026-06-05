@@ -55,7 +55,14 @@
     "account_trust": "Kartu debit · via Wise/Thunes",
     "processing_note": "Anda akan menerima SMS saat masuk",
     "error_invalid_account": "Data rekening salah. Periksa dan coba lagi.",
-    "retry_account": "Coba dengan rekening lain"
+    "retry_account": "Coba dengan rekening lain",
+    "receive_mode_card": "Kartu debit",
+    "receive_mode_bank": "Rekening bank",
+    "card_number_label": "Nomor kartu (16 digit)",
+    "card_hint_text": "Visa, Mastercard atau UnionPay · 16 digit",
+    "account_trust_card": "Kartu debit · melalui Paysend / Visa Direct",
+    "processing_note_card": "Uang Anda akan tiba dalam hitungan detik di kartu",
+    "error_card_not_eligible": "Kartu ini tidak memenuhi syarat untuk setoran internasional. Coba kartu lain atau gunakan rekening bank."
   },
   "remesa": {
     "title": "Kirim remitansi",

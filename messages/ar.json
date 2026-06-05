@@ -55,7 +55,14 @@
     "account_trust": "بطاقة الخصم · عبر Wise/Thunes",
     "processing_note": "ستتلقى رسالة SMS عند الإيداع",
     "error_invalid_account": "بيانات الحساب غير صحيحة. تحقق وحاول مرة أخرى.",
-    "retry_account": "المحاولة بحساب آخر"
+    "retry_account": "المحاولة بحساب آخر",
+    "receive_mode_card": "بطاقة الخصم",
+    "receive_mode_bank": "حساب مصرفي",
+    "card_number_label": "رقم البطاقة (16 رقمًا)",
+    "card_hint_text": "Visa أو Mastercard أو UnionPay · 16 رقمًا",
+    "account_trust_card": "بطاقة الخصم · عبر Paysend / Visa Direct",
+    "processing_note_card": "سيصل أموالك في ثوانٍ إلى بطاقتك",
+    "error_card_not_eligible": "هذه البطاقة غير مؤهلة للإيداعات الدولية. جرب بطاقة أخرى أو استخدم حسابًا مصرفيًا."
   },
   "remesa": {
     "title": "إرسال تحويل",

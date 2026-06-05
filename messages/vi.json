@@ -55,7 +55,14 @@
     "account_trust": "Thẻ ghi nợ · qua Wise/Thunes",
     "processing_note": "Bạn sẽ nhận SMS khi ghi có",
     "error_invalid_account": "Thông tin tài khoản không đúng. Kiểm tra và thử lại.",
-    "retry_account": "Thử với tài khoản khác"
+    "retry_account": "Thử với tài khoản khác",
+    "receive_mode_card": "Thẻ ghi nợ",
+    "receive_mode_bank": "Tài khoản ngân hàng",
+    "card_number_label": "Số thẻ (16 chữ số)",
+    "card_hint_text": "Visa, Mastercard hoặc UnionPay · 16 chữ số",
+    "account_trust_card": "Thẻ ghi nợ · qua Paysend / Visa Direct",
+    "processing_note_card": "Tiền sẽ đến thẻ của bạn trong vài giây",
+    "error_card_not_eligible": "Thẻ này không đủ điều kiện nạp tiền quốc tế. Thử thẻ khác hoặc dùng tài khoản ngân hàng."
   },
   "remesa": {
     "title": "Gửi kiều hối",

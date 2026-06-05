@@ -55,7 +55,14 @@
     "account_trust": "Banka kartı · Wise/Thunes üzerinden",
     "processing_note": "Alındığında SMS alacaksınız",
     "error_invalid_account": "Hesap bilgileri hatalı. Kontrol edip tekrar deneyin.",
-    "retry_account": "Başka hesapla dene"
+    "retry_account": "Başka hesapla dene",
+    "receive_mode_card": "Banka kartı",
+    "receive_mode_bank": "Banka hesabı",
+    "card_number_label": "Kart numarası (16 hane)",
+    "card_hint_text": "Visa, Mastercard veya UnionPay · 16 hane",
+    "account_trust_card": "Banka kartı · Paysend / Visa Direct aracılığıyla",
+    "processing_note_card": "Paranız saniyeler içinde kartınıza ulaşacak",
+    "error_card_not_eligible": "Bu kart uluslararası para yatırma için uygun değil. Başka bir kart deneyin veya banka hesabı kullanın."
   },
   "remesa": {
     "title": "Havale Gönder",

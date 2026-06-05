@@ -55,7 +55,14 @@
     "account_trust": "ዴቢት ካርድ · በWise/Thunes",
     "processing_note": "ሲገባ SMS ይደርስዎታል",
     "error_invalid_account": "የሒሳብ መረጃ ትክክል አይደለም። ያረጋግጡ እና እንደገና ይሞክሩ።",
-    "retry_account": "በሌላ ሒሳብ ይሞክሩ"
+    "retry_account": "በሌላ ሒሳብ ይሞክሩ",
+    "receive_mode_card": "የዴቢት ካርድ",
+    "receive_mode_bank": "የባንክ ሒሳብ",
+    "card_number_label": "የካርድ ቁጥር (16 አሃዞች)",
+    "card_hint_text": "Visa፣ Mastercard ወይም UnionPay · 16 አሃዞች",
+    "account_trust_card": "የዴቢት ካርድ · በPaysend / Visa Direct",
+    "processing_note_card": "ገንዘብዎ ወደ ካርድዎ በሰከንዶች ውስጥ ይደርሳል",
+    "error_card_not_eligible": "ይህ ካርድ ለዓለም አቀፍ ክፍያ ብቁ አይደለም። ሌላ ካርድ ይሞክሩ ወይም የባንክ ሒሳብ ይጠቀሙ።"
   },
   "remesa": {
     "title": "ገንዘብ ይላኩ",

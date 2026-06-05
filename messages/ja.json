@@ -55,7 +55,14 @@
     "account_trust": "デビットカード · Wise/Thunes経由",
     "processing_note": "入金時にSMSが届きます",
     "error_invalid_account": "口座情報が正しくありません。確認して再試行してください。",
-    "retry_account": "別の口座で試す"
+    "retry_account": "別の口座で試す",
+    "receive_mode_card": "デビットカード",
+    "receive_mode_bank": "銀行口座",
+    "card_number_label": "カード番号（16桁）",
+    "card_hint_text": "Visa、Mastercard、またはUnionPay · 16桁",
+    "account_trust_card": "デビットカード · Paysend / Visa Direct 経由",
+    "processing_note_card": "数秒でカードにお金が届きます",
+    "error_card_not_eligible": "このカードは国際入金に対応していません。別のカードを試すか、銀行口座をご利用ください。"
   },
   "remesa": {
     "title": "送金",
