@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: blob: https:",
             "frame-src https://js.stripe.com https://hooks.stripe.com",
-            "connect-src 'self' https://ipinfo.io https://open.er-api.com https://api.stripe.com https://api.airwallex.com https://api.thunes.com",
+            "connect-src 'self' https://ipinfo.io https://open.er-api.com https://api.stripe.com https://api.wise.com https://api.thunes.com",
             "media-src 'self' blob:",
           ].join("; "),
         },

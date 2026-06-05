@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         type:           "remesa",
         amount:         payload.amount,
         currency:       payload.currency,
+        targetCountry:  payload.targetCountry,
         targetCurrency: payload.targetCurrency,
         targetAmount:   payload.targetAmount,
         name:           payload.senderName ?? payload.senderPhone,

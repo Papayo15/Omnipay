@@ -50,7 +50,10 @@
     "expired_link": "This link has expired (10 min). Ask for a new one.",
     "cannot_process": "Cannot process",
     "go_home": "Go home",
-    "error_generic": "Processing error. Please try again."
+    "error_generic": "Processing error. Please try again.",
+    "your_name_label": "Your full name",
+    "account_trust": "Debit card · via Wise/Thunes",
+    "processing_note": "You'll receive an SMS when it credits"
   },
   "remesa": {
     "title": "Send remittance",
@@ -95,7 +98,10 @@
     "receipt_id": "Tracking ID",
     "receipt_merchant": "Merchant / Sender",
     "receipt_date": "Date",
-    "receipt_note": "Authentic receipt. Contains no card or bank account data."
+    "receipt_note": "Authentic receipt. Contains no card or bank account data.",
+    "processing_remesa": "Remittance in progress!",
+    "wise_eta_note": "Transfer arrives in 1-2 business days. You will receive an SMS when it credits.",
+    "new_remesa": "New remittance"
   },
   "share": {
     "copy": "Copy link",

@@ -50,7 +50,10 @@
     "expired_link": "Dieser Link ist abgelaufen (10 Min). Fordern Sie einen neuen an.",
     "cannot_process": "Kann nicht verarbeitet werden",
     "go_home": "Zur Startseite",
-    "error_generic": "Verarbeitungsfehler. Bitte erneut versuchen."
+    "error_generic": "Verarbeitungsfehler. Bitte erneut versuchen.",
+    "your_name_label": "Vollständiger Name",
+    "account_trust": "Debitkarte · via Wise/Thunes",
+    "processing_note": "Sie erhalten eine SMS bei Gutschrift"
   },
   "remesa": {
     "title": "Überweisung senden",
@@ -95,7 +98,10 @@
     "receipt_id": "Tracking-ID",
     "receipt_merchant": "Händler / Absender",
     "receipt_date": "Datum",
-    "receipt_note": "Authentische Quittung. Enthält keine Karten- oder Bankdaten."
+    "receipt_note": "Authentische Quittung. Enthält keine Karten- oder Bankdaten.",
+    "processing_remesa": "Überweisung in Bearbeitung!",
+    "wise_eta_note": "Überweisung kommt in 1-2 Werktagen. SMS bei Gutschrift.",
+    "new_remesa": "Neue Überweisung"
   },
   "share": {
     "copy": "Link kopieren",

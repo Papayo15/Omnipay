@@ -89,7 +89,7 @@ export interface RemesaPayload {
   senderName?: string;      // nombre emisor (para mostrar al receptor)
   recipientPhone: string;   // celular receptor (E.164)
   recipientName?: string;   // nombre receptor
-  senderCardToken: string;  // token Airwallex del emisor — cifrado AES-256, nunca el PAN
+  stripeSessionId: string;  // Stripe Checkout session ID para verificar pago antes de ejecutar
   ts: number;               // timestamp
 }
 

@@ -38,7 +38,7 @@ export default function CobrarPage() {
   const amountNum   = parseFloat(amount) || 0;
   const fee         = amountNum * 0.01;
   const canContinue = amountNum > 0 && clientPhone.trim().length >= 7;
-  const CURRENCIES  = ["MXN","USD","CAD","EUR","BRL","COP","GBP","AUD","SGD","ARS","CLP","PEN","COP"];
+  const CURRENCIES  = ["MXN","USD","CAD","EUR","BRL","COP","GBP","AUD","SGD","ARS","CLP","PEN"];
 
   async function handleSetup() {
     if (!setupName.trim()) return;

@@ -50,7 +50,10 @@
     "expired_link": "ሊንኩ ጊዜ አልፎታል (10 ደቂቃ)። አዲስ ይጠይቁ።",
     "cannot_process": "ማስኬድ አይቻልም",
     "go_home": "መነሻ ገጽ",
-    "error_generic": "የማስኬጃ ስህተት። እንደገና ይሞክሩ።"
+    "error_generic": "የማስኬጃ ስህተት። እንደገና ይሞክሩ።",
+    "your_name_label": "ሙሉ ስም",
+    "account_trust": "ዴቢት ካርድ · በWise/Thunes",
+    "processing_note": "ሲገባ SMS ይደርስዎታል"
   },
   "remesa": {
     "title": "ገንዘብ ይላኩ",
@@ -95,7 +98,10 @@
     "receipt_id": "የመከታተያ ID",
     "receipt_merchant": "ነጋዴ / ላኪ",
     "receipt_date": "ቀን",
-    "receipt_note": "ትክክለኛ ደረሰኝ። የካርድ ዳታ የለም።"
+    "receipt_note": "ትክክለኛ ደረሰኝ። የካርድ ዳታ የለም።",
+    "processing_remesa": "ሬሚታንስ በሂደት ላይ!",
+    "wise_eta_note": "ዝውውሩ በ1-2 የሥራ ቀናት ይደርሳል። ሲገባ SMS።",
+    "new_remesa": "አዲስ ሬሚታንስ"
   },
   "share": {
     "copy": "ሊንክ ቅዱ",

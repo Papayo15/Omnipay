@@ -50,7 +50,10 @@
     "expired_link": "Kiungo kimeisha muda (dakika 10). Omba kipya.",
     "cannot_process": "Haiwezekani kushughulikia",
     "go_home": "Kurasa kuu",
-    "error_generic": "Hitilafu ya usindikaji. Jaribu tena."
+    "error_generic": "Hitilafu ya usindikaji. Jaribu tena.",
+    "your_name_label": "Jina kamili",
+    "account_trust": "Kadi ya debit · kupitia Wise/Thunes",
+    "processing_note": "Utapokea SMS unapopokea pesa"
   },
   "remesa": {
     "title": "Tuma pesa",
@@ -95,7 +98,10 @@
     "receipt_id": "Namba ya ufuatiliaji",
     "receipt_merchant": "Mfanyabiashara / Mtumaji",
     "receipt_date": "Tarehe",
-    "receipt_note": "Risiti halisi. Haina data ya kadi."
+    "receipt_note": "Risiti halisi. Haina data ya kadi.",
+    "processing_remesa": "Uhamisho unashughulikiwa!",
+    "wise_eta_note": "Uhamisho unafika ndani ya siku 1-2 za kazi. SMS utakapopokea.",
+    "new_remesa": "Uhamisho mpya"
   },
   "share": {
     "copy": "Nakili kiungo",

@@ -5,20 +5,22 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, AlertCircle, Shield, Clock } from "lucide-react";
+import { getCountry } from "@/constants/countries";
 
 // Pantalla camaleón — se transforma según type=cobro|remesa
-// Cobro:  "Vas a PAGAR $X a [tienda]"   → redirige a Stripe Checkout
-// Remesa: "Vas a RECIBIR $X de [nombre]" → captura tarjeta receptor → ejecuta push
+// Cobro:  "Vas a PAGAR $X a [tienda]"    → redirige a Stripe Checkout
+// Remesa: "Vas a RECIBIR $X de [nombre]" → captura cuenta bancaria → Wise/Thunes
 
 interface LinkData {
   type: "cobro" | "remesa";
   amount: number;
   currency: string;
-  name: string;          // comercio (cobro) o nombre del emisor (remesa)
+  name: string;
+  targetCountry?: string;
   targetCurrency?: string;
   targetAmount?: number;
-  checkoutUrl?: string;  // solo cobro
-  token?: string;        // token completo (para ejecutar remesa)
+  checkoutUrl?: string;
+  token?: string;
   sig?: string;
 }
 
@@ -31,12 +33,13 @@ function PagarContent() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const [data, setData]           = useState<LinkData | null>(null);
-  const [error, setError]         = useState("");
-  const [loading, setLoading]     = useState(true);
-  const [card, setCard]           = useState("");
-  const [executing, setExecuting] = useState(false);
-  const [timeLeft, setTimeLeft]   = useState(600); // 10 min
+  const [data, setData]                         = useState<LinkData | null>(null);
+  const [error, setError]                       = useState("");
+  const [loading, setLoading]                   = useState(true);
+  const [recipientCard, setRecipientCard] = useState("");
+  const [recipientName, setRecipientName] = useState("");
+  const [executing, setExecuting]               = useState(false);
+  const [timeLeft, setTimeLeft]                 = useState(600);
 
   const type = params.get("type") ?? "cobro";
 
@@ -55,7 +58,6 @@ function PagarContent() {
       .finally(() => setLoading(false));
   }, [params, t, type]);
 
-  // Countdown 10 min
   useEffect(() => {
     if (!data) return;
     const id = setInterval(() => setTimeLeft((s) => {
@@ -72,31 +74,41 @@ function PagarContent() {
   }
 
   async function handleRemesa() {
-    const digits = card.replace(/\D/g, "");
-    if (digits.length !== 16) return;
+    if (!accountOk) return;
     setExecuting(true);
     try {
       const res = await fetch("/api/remesa/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          token:             data?.token,
-          sig:               data?.sig,
-          recipientCard:     digits,
+          token:         data?.token,
+          sig:           data?.sig,
+          recipientCard: cardDigits,
+          recipientName: recipientName.trim(),
         }),
       });
-      const result = await res.json() as { tx_id?: string; error?: string };
+      const result = await res.json() as { status?: string; receipt_url?: string; error?: string };
       if (!res.ok || result.error) throw new Error(result.error ?? t("error_generic"));
-      const appUrl = window.location.origin;
-      router.push(`/resultado?s=success&tx=${result.tx_id ?? ""}`);
+      const rParam = new URL(result.receipt_url ?? window.location.origin).searchParams.get("r") ?? "";
+      router.push(`/resultado?s=success&r=${encodeURIComponent(rParam)}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("error_generic"));
       setExecuting(false);
     }
   }
 
-  const mins = Math.floor(timeLeft / 60);
-  const secs = String(timeLeft % 60).padStart(2, "0");
+  const mins      = Math.floor(timeLeft / 60);
+  const secs      = String(timeLeft % 60).padStart(2, "0");
+  const isCobro   = type === "cobro";
+  const accentBg  = isCobro
+    ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/50"
+    : "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/50";
+  const cardDigits = recipientCard.replace(/\D/g, "");
+  const accountOk  = !isCobro
+    ? cardDigits.length === 16 && recipientName.trim().length >= 2
+    : true;
+
+  const destCountry = data?.targetCountry ? getCountry(data.targetCountry) : null;
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0f172a]">
@@ -115,10 +127,6 @@ function PagarContent() {
   );
 
   if (!data) return null;
-
-  const isCobro  = type === "cobro";
-  const accentBg = isCobro ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/50" : "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/50";
-  const cardOk   = !isCobro ? card.replace(/\D/g, "").length === 16 : true;
 
   return (
     <main className="flex flex-col min-h-screen bg-[#0f172a] px-5 pt-6 pb-10">
@@ -149,7 +157,7 @@ function PagarContent() {
               <p className="text-white font-bold text-xl mt-1">{data.name}</p>
               <div className="mt-4">
                 <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">{t("you_receive")}</p>
-                <p className="text-emerald-400 text-5xl font-bold">
+                <p className="text-indigo-300 text-5xl font-bold">
                   {fmt(data.targetAmount ?? data.amount, data.targetCurrency ?? data.currency)}
                 </p>
                 {data.targetCurrency && data.targetCurrency !== data.currency && (
@@ -170,34 +178,43 @@ function PagarContent() {
           </div>
         )}
 
-        {/* Campo de tarjeta (solo remesa) */}
+        {/* Tarjeta de débito del receptor (solo remesa) */}
         {!isCobro && (
-          <div className="flex flex-col gap-2">
-            <label className="text-slate-400 text-sm">{t("your_card_label")}</label>
+          <div className="flex flex-col gap-3">
             <input
-              type="tel"
-              inputMode="numeric"
-              maxLength={19}
-              value={card.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim()}
-              onChange={(e) => setCard(e.target.value)}
-              placeholder="0000 0000 0000 0000"
-              className={`bg-slate-800/60 border rounded-xl px-4 py-4 text-white text-xl font-mono tracking-widest placeholder-slate-600 focus:outline-none transition-colors ${
-                card.replace(/\D/g, "").length === 16
-                  ? "border-emerald-600/60 focus:border-emerald-500"
-                  : card.length > 0
-                  ? "border-slate-600 focus:border-indigo-500"
-                  : "border-slate-700 focus:border-indigo-500"
-              }`}
+              type="text"
+              value={recipientName}
+              onChange={(e) => setRecipientName(e.target.value)}
+              placeholder={t("your_name_label")}
+              className="bg-slate-800/60 border border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none transition-colors"
             />
-            <p className="text-slate-600 text-xs">{t("card_hint")}</p>
+            <div className="flex flex-col gap-1">
+              <label className="text-slate-400 text-sm">{t("your_card_label")}</label>
+              <input
+                type="tel"
+                inputMode="numeric"
+                maxLength={19}
+                value={recipientCard.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim()}
+                onChange={(e) => setRecipientCard(e.target.value)}
+                placeholder="0000 0000 0000 0000"
+                className={`bg-slate-800/60 border rounded-xl px-4 py-4 text-white text-xl font-mono tracking-widest placeholder-slate-600 focus:outline-none transition-colors ${
+                  cardDigits.length === 16
+                    ? "border-emerald-600/60 focus:border-emerald-500"
+                    : cardDigits.length > 0
+                    ? "border-slate-600 focus:border-indigo-500"
+                    : "border-slate-700 focus:border-indigo-500"
+                }`}
+              />
+              <p className="text-slate-600 text-xs">{t("card_hint")}</p>
+            </div>
           </div>
         )}
 
         {/* Trust badge */}
         <div className="flex items-center gap-2 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-          <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <Shield className="w-4 h-4 text-indigo-400 flex-shrink-0" />
           <p className="text-slate-400 text-xs">
-            {isCobro ? t("stripe_trust") : t("card_trust")}
+            {isCobro ? t("stripe_trust") : t("account_trust")}
           </p>
         </div>
 
@@ -205,7 +222,7 @@ function PagarContent() {
         <div className="mt-auto flex flex-col gap-3">
           <button
             onClick={isCobro ? handleCobro : handleRemesa}
-            disabled={executing || !cardOk || timeLeft === 0}
+            disabled={executing || !accountOk || timeLeft === 0}
             className={`w-full ${accentBg} disabled:opacity-40 active:scale-95 transition-all text-white font-bold text-lg py-5 rounded-2xl shadow-2xl touch-manipulation flex items-center justify-center gap-2`}
           >
             {executing ? (
@@ -218,7 +235,7 @@ function PagarContent() {
             )}
           </button>
           <p className="text-slate-600 text-xs text-center">
-            {isCobro ? t("stripe_redirect_note") : t("instant_note")}
+            {isCobro ? t("stripe_redirect_note") : t("processing_note")}
           </p>
         </div>
 

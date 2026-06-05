@@ -50,7 +50,10 @@
     "expired_link": "Este link ya expiró (10 min). Pide uno nuevo.",
     "cannot_process": "No se puede procesar",
     "go_home": "Ir al inicio",
-    "error_generic": "Error al procesar. Intenta de nuevo."
+    "error_generic": "Error al procesar. Intenta de nuevo.",
+    "your_name_label": "Tu nombre completo",
+    "account_trust": "Tarjeta de débito · vía Wise/Thunes",
+    "processing_note": "Recibirás un SMS cuando se acredite"
   },
   "remesa": {
     "title": "Enviar remesa",
@@ -95,7 +98,10 @@
     "receipt_id": "ID de rastreo",
     "receipt_merchant": "Comercio / Emisor",
     "receipt_date": "Fecha",
-    "receipt_note": "Comprobante auténtico. No contiene datos de tarjeta ni cuenta bancaria."
+    "receipt_note": "Comprobante auténtico. No contiene datos de tarjeta ni cuenta bancaria.",
+    "processing_remesa": "¡Remesa en proceso!",
+    "wise_eta_note": "La transferencia llega en 1-2 días hábiles. Recibirás SMS cuando se acredite.",
+    "new_remesa": "Nueva remesa"
   },
   "share": {
     "copy": "Copiar link",

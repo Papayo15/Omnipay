@@ -50,7 +50,10 @@
     "expired_link": "Hanyar haɗi ta ƙare (minti 10). Nemi sabuwa.",
     "cannot_process": "Ba za a iya sarrafa ba",
     "go_home": "Shafin gida",
-    "error_generic": "Kuskuren sarrafa. Yi ƙoƙarin sake."
+    "error_generic": "Kuskuren sarrafa. Yi ƙoƙarin sake.",
+    "your_name_label": "Cikakken suna",
+    "account_trust": "Katunan debit · ta Wise/Thunes",
+    "processing_note": "Za ka karbi SMS da zarar an rika"
   },
   "remesa": {
     "title": "Aika kuɗi",
@@ -95,7 +98,10 @@
     "receipt_id": "ID na bin diddigin",
     "receipt_merchant": "Dan kasuwa / Mai aika",
     "receipt_date": "Kwanan wata",
-    "receipt_note": "Rasiti na ainihi. Babu bayanan katunan."
+    "receipt_note": "Rasiti na ainihi. Babu bayanan katunan.",
+    "processing_remesa": "Ana aika kuɗin!",
+    "wise_eta_note": "Canja wurin zai isa cikin kwanaki 1-2. Za ka karbi SMS.",
+    "new_remesa": "Sabon aika kuɗi"
   },
   "share": {
     "copy": "Kwafi hanyar haɗi",

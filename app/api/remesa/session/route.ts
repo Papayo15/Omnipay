@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
 import { buildRemesaLink } from "@/lib/link";
 
-export const runtime = "edge";
-
 // POST /api/remesa/session
-// Construye el RemesaPayload firmado que el emisor compartirá con el receptor.
-// El senderCardToken (ya cifrado con AES-256) viaja dentro del link firmado HMAC.
+// Crea un Stripe Checkout session para cobrar al emisor y construye el link HMAC
+// firmado con el stripeSessionId embebido. El receptor usa el link para recibir.
 
 interface RemesaSessionRequest {
   amount: number;
@@ -17,7 +16,6 @@ interface RemesaSessionRequest {
   senderName?: string;
   recipientPhone: string;
   recipientName?: string;
-  senderCardToken: string; // token Airwallex ya cifrado con AES-256
 }
 
 export async function POST(req: NextRequest) {
@@ -29,12 +27,45 @@ export async function POST(req: NextRequest) {
     if (!data.amount || data.amount <= 0) {
       return NextResponse.json({ error: "Monto inválido" }, { status: 400 });
     }
-    if (!data.senderCardToken) {
-      return NextResponse.json({ error: "Token de tarjeta requerido" }, { status: 400 });
-    }
     if (!data.recipientPhone && !data.recipientName) {
       return NextResponse.json({ error: "Datos del receptor requeridos" }, { status: 400 });
     }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
+
+    const amountCents = Math.round(data.amount * 100);
+    const feeCents   = Math.round(amountCents * 0.01);
+
+    const session = await stripe.checkout.sessions.create({
+      mode:           "payment",
+      payment_method_types: ["card"],
+      line_items: [{
+        price_data: {
+          currency:     data.currency.toLowerCase(),
+          unit_amount:  amountCents,
+          product_data: {
+            name: `Remesa OmniPay → ${data.targetCountry}`,
+            description: `${data.targetAmount} ${data.targetCurrency} para ${data.recipientName ?? data.recipientPhone}`,
+          },
+        },
+        quantity: 1,
+      }],
+      payment_intent_data: {
+        application_fee_amount: feeCents,
+      },
+      success_url: `${appUrl}/remesa?paid=1`,
+      cancel_url:  `${appUrl}/remesa`,
+      metadata: {
+        remesaType:     "outbound",
+        senderPhone:    data.senderPhone,
+        senderName:     data.senderName ?? "",
+        recipientPhone: data.recipientPhone,
+        recipientName:  data.recipientName ?? "",
+        targetCountry:  data.targetCountry,
+        targetCurrency: data.targetCurrency,
+        targetAmount:   String(data.targetAmount),
+      },
+    });
 
     const shareLink = await buildRemesaLink(
       {
@@ -47,13 +78,13 @@ export async function POST(req: NextRequest) {
         senderName:      data.senderName,
         recipientPhone:  data.recipientPhone,
         recipientName:   data.recipientName,
-        senderCardToken: data.senderCardToken,
+        stripeSessionId: session.id,
       },
       appUrl,
       secret
     );
 
-    return NextResponse.json({ share_link: shareLink });
+    return NextResponse.json({ checkout_url: session.url, share_link: shareLink });
   } catch (err) {
     console.error("Remesa session error:", err);
     return NextResponse.json(

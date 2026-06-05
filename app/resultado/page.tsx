@@ -13,17 +13,16 @@ function ResultadoContent() {
   const params = useSearchParams();
 
   const status  = params.get("s");
-  const receipt = params.get("r");   // "dataB64.sigB64" — firmado server-side
+  const receipt = params.get("r");
 
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
-  const [verified, setVerified]       = useState<boolean | null>(null); // null = loading
+  const [verified, setVerified]       = useState<boolean | null>(null);
 
-  const isSuccess = status === "success" || !!receipt;
+  const isSuccess  = status === "success" || !!receipt;
+  const isRemesa   = receiptData?.tt === "remesa";
 
   useEffect(() => {
     if (!receipt) { setVerified(null); return; }
-
-    // Verificar firma server-side antes de mostrar
     fetch(`/api/receipt/verify?r=${encodeURIComponent(receipt)}`)
       .then((r) => r.json())
       .then((d: { ok: boolean; data?: ReceiptData }) => {
@@ -37,7 +36,6 @@ function ResultadoContent() {
     return new Intl.NumberFormat("es-MX", { style: "currency", currency: c }).format(n);
   }
 
-  // Comprobante con firma inválida
   if (receipt && verified === false) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f172a] px-6 text-center gap-4">
@@ -49,7 +47,6 @@ function ResultadoContent() {
     );
   }
 
-  // Verificando comprobante...
   if (receipt && verified === null) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#0f172a]">
@@ -71,23 +68,24 @@ function ResultadoContent() {
           <>
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
               transition={{ delay: 0.15, type: "spring", stiffness: 400 }}
-              className={`rounded-full p-8 ${receiptData?.tt === "remesa" ? "bg-indigo-500/10" : "bg-emerald-500/10"}`}>
-              {receiptData?.tt === "remesa"
+              className={`rounded-full p-8 ${isRemesa ? "bg-indigo-500/10" : "bg-emerald-500/10"}`}>
+              {isRemesa
                 ? <Send className="w-20 h-20 text-indigo-400" />
                 : <CheckCircle className="w-20 h-20 text-emerald-400" />}
             </motion.div>
 
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">
-                {receiptData?.tt === "remesa" ? t("success_remesa") : t("success_cobro")}
+                {isRemesa ? t("processing_remesa") : t("success_cobro")}
               </h1>
               {receiptData && (
-                <p className="text-emerald-400 text-2xl font-semibold">{fmt(receiptData.a, receiptData.c)}</p>
+                <p className={`text-2xl font-semibold ${isRemesa ? "text-indigo-400" : "text-emerald-400"}`}>
+                  {fmt(receiptData.a, receiptData.c)}
+                </p>
               )}
               {receiptData?.n && <p className="text-slate-400 text-sm mt-1">{receiptData.n}</p>}
             </div>
 
-            {/* Bouncing dots */}
             <div className="flex gap-2">
               {["bg-indigo-400","bg-emerald-400","bg-amber-400","bg-pink-400"].map((color, i) => (
                 <motion.div key={i} className={`w-3 h-3 rounded-full ${color}`}
@@ -116,10 +114,20 @@ function ResultadoContent() {
               </div>
             )}
 
+            {/* Nota ETA Wise (solo remesa verificada) */}
+            {isRemesa && verified && (
+              <div className="w-full bg-indigo-900/20 border border-indigo-700/30 rounded-2xl px-4 py-3 text-indigo-300 text-sm text-center">
+                {t("wise_eta_note")}
+              </div>
+            )}
+
             <div className="flex flex-col gap-3 w-full">
-              <button onClick={() => router.push("/cobrar")}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg py-5 rounded-2xl touch-manipulation transition-colors">
-                {t("new_charge")}
+              <button
+                onClick={() => router.push(isRemesa ? "/remesa" : "/cobrar")}
+                className={`w-full text-white font-bold text-lg py-5 rounded-2xl touch-manipulation transition-colors ${
+                  isRemesa ? "bg-indigo-600 hover:bg-indigo-500" : "bg-emerald-600 hover:bg-emerald-500"
+                }`}>
+                {isRemesa ? t("new_remesa") : t("new_charge")}
               </button>
               <button onClick={() => router.push("/")}
                 className="w-full border border-slate-700 hover:bg-slate-800/40 text-slate-300 font-medium py-4 rounded-2xl touch-manipulation transition-colors flex items-center justify-center gap-2">

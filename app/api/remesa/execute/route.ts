@@ -1,177 +1,262 @@
 import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
 import { parseRemesaLink, buildReceiptURL } from "@/lib/link";
-import { decrypt } from "@/lib/crypto";
-import { sendPaymentNotification } from "@/lib/notify";
 import { selectRemesaRail } from "@/constants/remesa-rails";
 
-export const runtime = "edge";
-
 // POST /api/remesa/execute
-// Ejecuta la transferencia tarjeta-a-tarjeta cuando el receptor acepta.
-// 1. Verifica y decodifica el RemesaPayload firmado
-// 2. Descifra el token AES-256 del emisor → obtiene token Airwallex
-// 3. Llama a Airwallex: pull de tarjeta emisor + push OCT a tarjeta receptor
-// 4. Genera comprobante firmado y envía SMS a ambos
+// El receptor confirma su cuenta bancaria. Este endpoint:
+//   1. Verifica HMAC del link (stateless)
+//   2. Verifica que el emisor pagó en Stripe
+//   3. Dispersa vía Wise (cuentas bancarias) o Thunes (wallets móviles/China)
+//   4. Genera comprobante firmado HMAC
 
-async function getAirwallexToken(): Promise<string> {
-  const res = await fetch("https://api.airwallex.com/api/v1/authentication/login", {
+// ── Helpers Wise ──────────────────────────────────────────────────────────────
+
+function wiseAccountType(countryCode: string): string {
+  const map: Record<string, string> = {
+    MX: "mexican_account", US: "aba",     CA: "canadian",
+    GB: "sort_code",       AU: "australian",
+    BR: "brazil",          IN: "indian",  JP: "japan",
+    KR: "privatBank",      SG: "singaporean",
+    NZ: "newzealand",      HK: "hongkong", TH: "thailand",
+    VN: "vietnam",         ID: "indonesian",
+    AE: "emirates",        SA: "saudi_arabian",
+  };
+  const sepa = new Set(["DE","FR","ES","IT","NL","PT","BE","AT","SE","NO","DK","FI",
+    "IE","PL","RO","HU","CZ","GR","SK","HR","BG","CH","EE","LV","LT","LU","MT","CY",
+    "SI","IS","LI"]);
+  if (sepa.has(countryCode.toUpperCase())) return "iban";
+  return map[countryCode.toUpperCase()] ?? "iban";
+}
+
+async function executeWise(
+  profileId: string,
+  apiKey: string,
+  recipientAccountName: string,
+  recipientAccount: string,
+  targetCountry: string,
+  targetCurrency: string,
+  sourceAmount: number,
+): Promise<string> {
+  const headers = {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  };
+
+  const accountRes = await fetch("https://api.wise.com/v1/accounts", {
+    method: "POST", headers,
+    body: JSON.stringify({
+      profile:           profileId,
+      accountHolderName: recipientAccountName,
+      currency:          targetCurrency,
+      type:              wiseAccountType(targetCountry),
+      details: { legalType: "PRIVATE", accountNumber: recipientAccount },
+    }),
+  });
+  const account = await accountRes.json() as { id?: number; error?: string };
+  if (!accountRes.ok || !account.id) throw new Error(`Wise account: ${account.error ?? accountRes.status}`);
+
+  const quoteRes = await fetch(`https://api.wise.com/v3/profiles/${profileId}/quotes`, {
+    method: "POST", headers,
+    body: JSON.stringify({ sourceCurrency: "CAD", targetCurrency, sourceAmount }),
+  });
+  const quote = await quoteRes.json() as { id?: string; error?: string };
+  if (!quoteRes.ok || !quote.id) throw new Error(`Wise quote: ${quote.error ?? quoteRes.status}`);
+
+  const transferRes = await fetch("https://api.wise.com/v1/transfers", {
+    method: "POST", headers,
+    body: JSON.stringify({
+      targetAccount:         account.id,
+      quoteUuid:             quote.id,
+      customerTransactionId: crypto.randomUUID(),
+      details: { reference: "OmniPay remesa" },
+    }),
+  });
+  const transfer = await transferRes.json() as { id?: number; error?: string };
+  if (!transferRes.ok || !transfer.id) throw new Error(`Wise transfer: ${transfer.error ?? transferRes.status}`);
+
+  const fundRes = await fetch(
+    `https://api.wise.com/v3/profiles/${profileId}/transfers/${transfer.id}/payments`,
+    { method: "POST", headers, body: JSON.stringify({ type: "BALANCE" }) },
+  );
+  if (!fundRes.ok) {
+    const e = await fundRes.json() as { error?: string };
+    throw new Error(`Wise fund: ${e.error ?? fundRes.status}`);
+  }
+  return String(transfer.id);
+}
+
+// ── Helpers Thunes ────────────────────────────────────────────────────────────
+
+function thunesService(countryCode: string): string {
+  const walletCountries = new Set(["CN","PH","PK","BD","MM","SN","CI","CM","BF","ML","MW"]);
+  return walletCountries.has(countryCode.toUpperCase()) ? "WALLET" : "BANK_ACCOUNT";
+}
+
+function thunesPayer(countryCode: string): string {
+  const map: Record<string, string> = {
+    CN: "wechat_pay",     PH: "gcash",
+    PK: "jazzcash",       BD: "bkash",
+    MM: "wavemoney",      TZ: "mpesa_tz",
+    ZM: "mpesa_zm",       MZ: "mpesa_mz",
+    UG: "mtn_ug",         ZW: "ecocash",
+    ET: "telebirr",       SN: "orange_money_sn",
+    CI: "orange_money_ci", CM: "mtn_cm",
+    BF: "orange_money_bf", ML: "orange_money_ml",
+    LB: "whish_lb",       MW: "airtel_mw",
+  };
+  return map[countryCode.toUpperCase()] ?? "bank_account";
+}
+
+async function executeThunes(
+  clientId: string,
+  secret: string,
+  recipientAccountName: string,
+  recipientAccount: string,
+  targetCountry: string,
+  targetCurrency: string,
+  sourceAmount: number,
+  targetAmount: number,
+  senderName: string,
+): Promise<string> {
+  const auth = Buffer.from(`${clientId}:${secret}`).toString("base64");
+  const nameParts = senderName.split(" ");
+  const senderLast  = nameParts.slice(1).join(" ") || nameParts[0];
+  const senderFirst = nameParts[0];
+  const recipParts  = recipientAccountName.split(" ");
+  const recipLast   = recipParts.slice(1).join(" ") || recipParts[0];
+  const recipFirst  = recipParts[0];
+
+  const res = await fetch("https://api.thunes.com/v2/money-transfer/transactions", {
+    method: "POST",
+    headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      external_id: crypto.randomUUID(),
+      source:      { amount: sourceAmount, currency: "CAD" },
+      destination: {
+        amount: targetAmount, currency: targetCurrency, country: targetCountry,
+        service: thunesService(targetCountry),
+        payer:   { slug: thunesPayer(targetCountry) },
+      },
+      credit_party_identifier: { msisdn: recipientAccount },
+      sender:      { lastname: senderLast,  firstname: senderFirst, address: { country: "CA" } },
+      beneficiary: { lastname: recipLast,   firstname: recipFirst },
+    }),
+  });
+  const data = await res.json() as { id?: string | number; error?: string };
+  if (!res.ok || !data.id) throw new Error(`Thunes: ${data.error ?? res.status}`);
+  return String(data.id);
+}
+
+// ── SMS ───────────────────────────────────────────────────────────────────────
+
+async function sendSMS(to: string, body: string) {
+  const sid   = process.env.TWILIO_ACCOUNT_SID;
+  const token = process.env.TWILIO_AUTH_TOKEN;
+  const from  = process.env.TWILIO_PHONE_NUMBER;
+  if (!sid || !token || !from || !to) return;
+  const phone = to.startsWith("+") ? to : `+${to.replace(/\D/g, "")}`;
+  await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
     method: "POST",
     headers: {
-      "x-client-id": process.env.AIRWALLEX_CLIENT_ID ?? "",
-      "x-api-key":   process.env.AIRWALLEX_API_KEY   ?? "",
-      "Content-Type": "application/json",
+      Authorization: `Basic ${Buffer.from(`${sid}:${token}`).toString("base64")}`,
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-  });
-  if (!res.ok) throw new Error("Airwallex auth failed");
-  const { token } = await res.json() as { token: string };
-  return token;
+    body: new URLSearchParams({ To: phone, From: from, Body: body }).toString(),
+  }).catch(() => {});
+}
+
+// ── Handler ───────────────────────────────────────────────────────────────────
+
+interface ExecuteRequest {
+  token: string;
+  sig: string;
+  recipientCard: string;   // 16 dígitos de la tarjeta de débito del receptor
+  recipientName: string;   // nombre del titular
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { token, sig, recipientCard } = await req.json() as {
-      token?: string;
-      sig?: string;
-      recipientCard?: string;
-    };
+    const { token, sig, recipientCard, recipientName }: ExecuteRequest = await req.json();
 
-    const secret = process.env.LINK_SECRET ?? "dev-secret";
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-
-    if (!token || !sig || !recipientCard) {
+    if (!token || !sig || !recipientCard?.trim() || !recipientName?.trim()) {
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
-
-    const digits = recipientCard.replace(/\D/g, "");
-    if (digits.length !== 16) {
-      return NextResponse.json({ error: "Tarjeta del receptor inválida" }, { status: 400 });
+    const cardDigits = recipientCard.replace(/\D/g, "");
+    if (cardDigits.length !== 16) {
+      return NextResponse.json({ error: "Tarjeta de débito inválida" }, { status: 400 });
     }
 
-    // 1. Verificar y decodificar el payload firmado
+    const secret = process.env.LINK_SECRET        ?? "dev-secret";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
     const payload = await parseRemesaLink(token, sig, secret);
     if (!payload) {
       return NextResponse.json({ error: "Link inválido o expirado" }, { status: 401 });
     }
 
-    // 2. Descifrar token AES-256 del emisor (senderCardToken es string base64url)
-    const senderTokenBuf = await decrypt(payload.senderCardToken, secret);
-    const senderToken = new TextDecoder().decode(senderTokenBuf);
+    const stripe  = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
+    const session = await stripe.checkout.sessions.retrieve(payload.stripeSessionId);
+    if (session.payment_status !== "paid") {
+      return NextResponse.json({ error: "Pago no completado" }, { status: 401 });
+    }
 
     const rail = selectRemesaRail(payload.targetCountry);
-
     let txId: string;
 
     if (rail === "thunes") {
-      // ── Thunes: pull+push para Asia/África ───────────────────────
-      const auth = btoa(`${process.env.THUNES_CLIENT_ID}:${process.env.THUNES_SECRET}`);
-      const res = await fetch("https://api.thunes.com/v2/money-transfer/transactions", {
-        method: "POST",
-        headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          external_id:         `omnipay-${Date.now()}`,
-          source_currency:     payload.currency,
-          destination_currency: payload.targetCurrency,
-          source_amount:       payload.amount,
-          payer: {
-            payment_method:   "DEBIT_CARD",
-            card_token:       senderToken,
-          },
-          beneficiary: {
-            country:          payload.targetCountry,
-            first_name:       (payload.recipientName ?? "").split(" ")[0] || "Receptor",
-            last_name:        (payload.recipientName ?? "").split(" ").slice(1).join(" ") || "OmniPay",
-            msisdn:           payload.recipientPhone,
-            card_number:      digits,
-          },
-          service: { id: 1 },
-        }),
-      });
-      if (!res.ok) throw new Error(`Thunes: ${await res.text()}`);
-      const result = await res.json() as { id: number };
-      txId = String(result.id);
-
+      txId = await executeThunes(
+        process.env.THUNES_CLIENT_ID ?? "",
+        process.env.THUNES_SECRET    ?? "",
+        recipientName.trim(),
+        cardDigits,
+        payload.targetCountry,
+        payload.targetCurrency,
+        payload.amount,
+        payload.targetAmount,
+        payload.senderName ?? "OmniPay Sender",
+      );
+    } else if (rail === "wise") {
+      txId = await executeWise(
+        process.env.WISE_PROFILE_ID ?? "",
+        process.env.WISE_API_KEY    ?? "",
+        recipientName.trim(),
+        cardDigits,
+        payload.targetCountry,
+        payload.targetCurrency,
+        payload.amount,
+      );
     } else {
-      // ── Airwallex: pull+push (default para LATAM/EU/USA/Asia) ────
-      const awToken = await getAirwallexToken();
-      const headers = { Authorization: `Bearer ${awToken}`, "Content-Type": "application/json" };
-      const requestId = crypto.randomUUID();
-
-      const res = await fetch("https://api.airwallex.com/api/v1/pa/payment_intents/create", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          request_id:     requestId,
-          amount:         payload.amount,
-          currency:       payload.currency,
-          merchant_order_id: `omnipay-${Date.now()}`,
-          descriptor:     "OmniPay Remesa",
-          // Cobro al emisor (payment_consent del token)
-          payment_method_options: {
-            card: {
-              payment_consent_id: senderToken,
-              auto_capture:       true,
-            },
-          },
-          // Push al receptor (Visa Direct OCT)
-          payout: {
-            amount:       payload.targetAmount,
-            currency:     payload.targetCurrency,
-            destination: {
-              type:         "card",
-              card_number:  digits,
-              country_code: payload.targetCountry,
-            },
-          },
-        }),
-      });
-      if (!res.ok) throw new Error(`Airwallex: ${await res.text()}`);
-      const result = await res.json() as { id: string; status: string };
-      txId = result.id;
+      return NextResponse.json({ error: "Esta región no está disponible aún" }, { status: 503 });
     }
 
-    // 3. Generar comprobante firmado y enviar SMS a ambos
     const receiptUrl = await buildReceiptURL(
       {
-        id:  txId,
-        a:   payload.targetAmount,
-        c:   payload.targetCurrency,
-        n:   payload.senderName ?? payload.senderPhone,
-        ts:  Date.now(),
-        tt:  "remesa",
+        id: txId,
+        a:  payload.targetAmount,
+        c:  payload.targetCurrency,
+        n:  payload.senderName ?? payload.senderPhone,
+        ts: Date.now(),
+        tt: "remesa",
       },
       appUrl,
-      secret
+      secret,
     );
 
-    const senderMsg = `OmniPay: Tu remesa de ${payload.amount} ${payload.currency} fue aceptada. Comprobante: ${receiptUrl}`;
-    const recipMsg  = `OmniPay: Recibiste ${payload.targetAmount} ${payload.targetCurrency}. Comprobante: ${receiptUrl}`;
-
+    const railLabel = rail === "thunes" ? "Thunes" : "Wise";
     await Promise.allSettled([
-      payload.senderPhone    ? sendSMS(payload.senderPhone,    senderMsg) : Promise.resolve(),
-      payload.recipientPhone ? sendSMS(payload.recipientPhone, recipMsg)  : Promise.resolve(),
+      sendSMS(payload.senderPhone,
+        `OmniPay: Tu remesa de ${payload.amount} ${payload.currency} fue aceptada. En proceso vía ${railLabel}. Comprobante: ${receiptUrl}`),
+      sendSMS(payload.recipientPhone,
+        `OmniPay: Recibirás ${payload.targetAmount} ${payload.targetCurrency}. En proceso vía ${railLabel}. Comprobante: ${receiptUrl}`),
     ]);
 
-    return NextResponse.json({ tx_id: txId, status: "completed", receipt_url: receiptUrl });
+    return NextResponse.json({ status: "processing", receipt_url: receiptUrl, rail });
   } catch (err) {
     console.error("Remesa execute error:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Error al procesar transferencia" },
-      { status: 500 }
+      { error: err instanceof Error ? err.message : "Error al procesar la remesa" },
+      { status: 500 },
     );
   }
-}
-
-// ── Helpers ──────────────────────────────────────────────────────
-
-async function sendSMS(phone: string, body: string): Promise<void> {
-  const sid   = process.env.TWILIO_ACCOUNT_SID  ?? "";
-  const token = process.env.TWILIO_AUTH_TOKEN   ?? "";
-  const from  = process.env.TWILIO_PHONE_NUMBER ?? "";
-  if (!sid || !token || !from) return;
-  const params = new URLSearchParams({ From: from, To: phone, Body: body });
-  await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
-    method: "POST",
-    headers: { Authorization: "Basic " + btoa(`${sid}:${token}`), "Content-Type": "application/x-www-form-urlencoded" },
-    body: params.toString(),
-  }).catch(() => {});
 }

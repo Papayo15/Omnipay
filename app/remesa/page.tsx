@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Send, ChevronRight, AlertTriangle, Clock } from "lucide-react";
@@ -12,21 +12,22 @@ import { COUNTRIES, type Country } from "@/constants/countries";
 import { selectRemesaRail, RAIL_ETA } from "@/constants/remesa-rails";
 import { getFXRate } from "@/lib/fx";
 
-type Step = "origin" | "sender_card" | "recipient" | "share";
+type Step = "origin" | "recipient" | "share";
 
 const DEFAULT_ORIGIN = COUNTRIES.find((c) => c.code === "CA") ?? COUNTRIES[0];
 const DEFAULT_DEST   = COUNTRIES.find((c) => c.code === "MX") ?? COUNTRIES[1];
-const KYC_THRESHOLD  = 1000; // USD equivalent — aviso informativo
+const KYC_THRESHOLD  = 1000;
 
 export default function RemesaPage() {
   const t = useTranslations("remesa");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const paid = searchParams.get("paid") === "1";
 
   const [step, setStep]               = useState<Step>("origin");
   const [originCountry, setOrigin]    = useState<Country>(DEFAULT_ORIGIN);
   const [destCountry, setDest]        = useState<Country>(DEFAULT_DEST);
   const [amount, setAmount]           = useState("");
-  const [senderCard, setSenderCard]   = useState("");
   const [senderName, setSenderName]   = useState("");
   const [senderPhone, setSenderPhone] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
@@ -37,15 +38,26 @@ export default function RemesaPage() {
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState("");
 
+  // Al volver de Stripe con ?paid=1, recuperar el link del sessionStorage
+  useEffect(() => {
+    if (paid) {
+      const saved = sessionStorage.getItem("omnipay_remesa_link");
+      if (saved) {
+        setShareLink(saved);
+        setStep("share");
+        sessionStorage.removeItem("omnipay_remesa_link");
+      }
+    }
+  }, [paid]);
+
   const amountNum  = parseFloat(amount) || 0;
   const destAmount = fxRate && amountNum > 0 ? parseFloat((amountNum * fxRate).toFixed(2)) : null;
   const rail       = selectRemesaRail(destCountry.code);
   const eta        = RAIL_ETA[rail];
   const showKyc    = amountNum >= KYC_THRESHOLD;
 
-  const senderDigits = senderCard.replace(/\D/g, "");
-  const canGoRecipient = senderDigits.length === 16 && senderName.trim().length >= 2 && senderPhone.trim().length >= 7;
-  const canShare = recipientPhone.trim().length >= 7 || recipientName.trim().length >= 2;
+  const canGoRecipient = amountNum > 0 && senderName.trim().length >= 2 && senderPhone.trim().length >= 7;
+  const canShare       = recipientPhone.trim().length >= 7 || recipientName.trim().length >= 2;
 
   const fetchFX = useCallback(async () => {
     if (originCountry.currency === destCountry.currency) { setFxRate(1); return; }
@@ -65,17 +77,7 @@ export default function RemesaPage() {
     setLoading(true);
     setError("");
     try {
-      // 1. Tokenizar tarjeta del emisor server-side (Airwallex)
-      const tokenRes = await fetch("/api/remesa/tokenize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cardNumber: senderDigits }),
-      });
-      const tokenData = await tokenRes.json() as { token?: string; error?: string };
-      if (!tokenRes.ok || tokenData.error) throw new Error(tokenData.error ?? t("error_tokenize"));
-
-      // 2. Generar link firmado con el token cifrado
-      const linkRes = await fetch("/api/remesa/session", {
+      const res = await fetch("/api/remesa/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -88,25 +90,24 @@ export default function RemesaPage() {
           senderName:     senderName.trim(),
           recipientPhone: recipientPhone.trim(),
           recipientName:  recipientName.trim() || undefined,
-          senderCardToken: tokenData.token,
         }),
       });
-      const linkData = await linkRes.json() as { share_link?: string; error?: string };
-      if (!linkRes.ok || linkData.error) throw new Error(linkData.error ?? t("error_generic"));
+      const data = await res.json() as { checkout_url?: string; share_link?: string; error?: string };
+      if (!res.ok || data.error) throw new Error(data.error ?? t("error_generic"));
 
-      setShareLink(linkData.share_link ?? "");
-      setStep("share");
+      // Guardar link antes de redirigir — el state de React no sobrevive el redirect
+      sessionStorage.setItem("omnipay_remesa_link", data.share_link ?? "");
+      window.location.href = data.checkout_url ?? "/remesa";
     } catch (e) {
       setError(e instanceof Error ? e.message : t("error_generic"));
-    } finally {
       setLoading(false);
     }
   }
 
-  const shareMessage = `${t("share_message", {
+  const shareMessage = t("share_message", {
     amount: fmt(amountNum, originCountry.currency),
     dest:   destAmount ? fmt(destAmount, destCountry.currency) : "",
-  })}`;
+  });
 
   return (
     <main className="flex flex-col min-h-screen bg-[#0f172a] px-5 pt-6 pb-10">
@@ -114,8 +115,7 @@ export default function RemesaPage() {
       <div className="flex items-center gap-3 mb-8">
         <button onClick={() => {
           if (step === "share")          setStep("recipient");
-          else if (step === "recipient") setStep("sender_card");
-          else if (step === "sender_card") setStep("origin");
+          else if (step === "recipient") setStep("origin");
           else router.push("/");
         }} className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
           <ArrowLeft className="w-5 h-5" />
@@ -126,18 +126,18 @@ export default function RemesaPage() {
         </div>
       </div>
 
-      {/* Step dots */}
+      {/* Step dots — 3 pasos */}
       <div className="flex gap-2 mb-8">
-        {(["origin","sender_card","recipient","share"] as Step[]).map((s, i) => (
+        {(["origin", "recipient", "share"] as Step[]).map((s, i) => (
           <div key={s} className={`h-1 flex-1 rounded-full transition-colors ${
-            ["origin","sender_card","recipient","share"].indexOf(step) >= i ? "bg-indigo-500" : "bg-slate-700"
+            (["origin", "recipient", "share"] as Step[]).indexOf(step) >= i ? "bg-indigo-500" : "bg-slate-700"
           }`} />
         ))}
       </div>
 
       <AnimatePresence mode="wait">
 
-        {/* ORIGIN — monto + países */}
+        {/* ORIGIN — monto + países + datos del emisor */}
         {step === "origin" && (
           <motion.div key="origin" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
             className="flex flex-col gap-5">
@@ -174,40 +174,18 @@ export default function RemesaPage() {
               </div>
             )}
 
-            <button disabled={amountNum <= 0} onClick={() => setStep("sender_card")}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 active:scale-95 transition-all rounded-2xl py-4 text-white font-bold flex items-center justify-center gap-2 touch-manipulation">
-              {t("next")} <ChevronRight className="w-5 h-5" />
-            </button>
-          </motion.div>
-        )}
-
-        {/* SENDER CARD — emisor ingresa su tarjeta */}
-        {step === "sender_card" && (
-          <motion.div key="sender_card" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-            className="flex flex-col gap-4">
-            <p className="text-slate-400 text-sm">{t("sender_card_hint")}</p>
-            <input type="text" value={senderName} onChange={(e) => setSenderName(e.target.value)}
-              placeholder={t("sender_name")}
-              className="bg-slate-800/60 border border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none transition-colors"
-            />
-            <input type="tel" value={senderPhone} onChange={(e) => setSenderPhone(e.target.value)}
-              placeholder={t("sender_phone")}
-              className="bg-slate-800/60 border border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none transition-colors"
-            />
-            <div className="flex flex-col gap-1">
-              <label className="text-slate-400 text-sm">{t("sender_card_label")}</label>
-              <input
-                type="tel" inputMode="numeric" maxLength={19}
-                value={senderCard.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim()}
-                onChange={(e) => setSenderCard(e.target.value)}
-                placeholder="0000 0000 0000 0000"
-                className={`bg-slate-800/60 border rounded-xl px-4 py-4 text-white text-xl font-mono tracking-widest placeholder-slate-600 focus:outline-none transition-colors ${
-                  senderDigits.length === 16 ? "border-emerald-600/60 focus:border-emerald-500"
-                  : senderDigits.length > 0  ? "border-slate-600 focus:border-indigo-500"
-                  : "border-slate-700 focus:border-indigo-500"}`}
+            {/* Datos del emisor */}
+            <div className="flex flex-col gap-3 pt-1">
+              <input type="text" value={senderName} onChange={(e) => setSenderName(e.target.value)}
+                placeholder={t("sender_name")}
+                className="bg-slate-800/60 border border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none transition-colors"
               />
-              <p className="text-slate-600 text-xs">{t("sender_card_hint2")}</p>
+              <input type="tel" value={senderPhone} onChange={(e) => setSenderPhone(e.target.value)}
+                placeholder={t("sender_phone")}
+                className="bg-slate-800/60 border border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none transition-colors"
+              />
             </div>
+
             <button disabled={!canGoRecipient} onClick={() => setStep("recipient")}
               className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 active:scale-95 transition-all rounded-2xl py-4 text-white font-bold flex items-center justify-center gap-2 touch-manipulation">
               {t("next")} <ChevronRight className="w-5 h-5" />
@@ -234,14 +212,15 @@ export default function RemesaPage() {
             {error && <div className="bg-red-900/30 border border-red-700/50 rounded-xl px-4 py-3 text-red-300 text-sm">{error}</div>}
             <button disabled={!canShare || loading} onClick={generateRemesaLink}
               className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 active:scale-95 transition-all rounded-2xl py-4 text-white font-bold flex items-center justify-center gap-2 touch-manipulation">
-              {loading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                className="w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+              {loading
+                ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
                 : <>{t("generate_link")} <ChevronRight className="w-5 h-5" /></>}
             </button>
           </motion.div>
         )}
 
-        {/* SHARE */}
+        {/* SHARE — link listo para compartir */}
         {step === "share" && (
           <motion.div key="share" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
             className="flex flex-col gap-6">
@@ -260,7 +239,10 @@ export default function RemesaPage() {
               <p className="text-slate-400 text-sm font-medium">{t("share_hint")}</p>
               <ShareSheet url={shareLink} message={shareMessage} />
             </div>
-            <button onClick={() => { setStep("origin"); setAmount(""); setSenderCard(""); setRecipientPhone(""); setShareLink(""); setError(""); }}
+            <button onClick={() => {
+              setStep("origin"); setAmount(""); setSenderName(""); setSenderPhone("");
+              setRecipientPhone(""); setRecipientName(""); setShareLink(""); setError("");
+            }}
               className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl py-3 text-slate-300 text-sm transition-colors">
               {t("new_remesa")}
             </button>
