@@ -53,7 +53,9 @@
     "error_generic": "خطأ في المعالجة.",
     "your_name_label": "الاسم الكامل",
     "account_trust": "بطاقة الخصم · عبر Wise/Thunes",
-    "processing_note": "ستتلقى رسالة SMS عند الإيداع"
+    "processing_note": "ستتلقى رسالة SMS عند الإيداع",
+    "error_invalid_account": "بيانات الحساب غير صحيحة. تحقق وحاول مرة أخرى.",
+    "retry_account": "المحاولة بحساب آخر"
   },
   "remesa": {
     "title": "إرسال تحويل",

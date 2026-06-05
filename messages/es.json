@@ -53,7 +53,9 @@
     "error_generic": "Error al procesar. Intenta de nuevo.",
     "your_name_label": "Tu nombre completo",
     "account_trust": "Tarjeta de débito · vía Wise/Thunes",
-    "processing_note": "Recibirás un SMS cuando se acredite"
+    "processing_note": "Recibirás un SMS cuando se acredite",
+    "error_invalid_account": "Datos de cuenta incorrectos. Verifica e intenta de nuevo.",
+    "retry_account": "Intentar con otra cuenta"
   },
   "remesa": {
     "title": "Enviar remesa",

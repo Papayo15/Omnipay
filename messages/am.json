@@ -53,7 +53,9 @@
     "error_generic": "የማስኬጃ ስህተት። እንደገና ይሞክሩ።",
     "your_name_label": "ሙሉ ስም",
     "account_trust": "ዴቢት ካርድ · በWise/Thunes",
-    "processing_note": "ሲገባ SMS ይደርስዎታል"
+    "processing_note": "ሲገባ SMS ይደርስዎታል",
+    "error_invalid_account": "የሒሳብ መረጃ ትክክል አይደለም። ያረጋግጡ እና እንደገና ይሞክሩ።",
+    "retry_account": "በሌላ ሒሳብ ይሞክሩ"
   },
   "remesa": {
     "title": "ገንዘብ ይላኩ",

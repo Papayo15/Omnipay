@@ -53,7 +53,9 @@
     "error_generic": "Verarbeitungsfehler. Bitte erneut versuchen.",
     "your_name_label": "Vollständiger Name",
     "account_trust": "Debitkarte · via Wise/Thunes",
-    "processing_note": "Sie erhalten eine SMS bei Gutschrift"
+    "processing_note": "Sie erhalten eine SMS bei Gutschrift",
+    "error_invalid_account": "Falsche Kontodaten. Bitte überprüfen und erneut versuchen.",
+    "retry_account": "Mit anderem Konto versuchen"
   },
   "remesa": {
     "title": "Überweisung senden",

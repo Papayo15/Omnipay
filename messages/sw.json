@@ -53,7 +53,9 @@
     "error_generic": "Hitilafu ya usindikaji. Jaribu tena.",
     "your_name_label": "Jina kamili",
     "account_trust": "Kadi ya debit · kupitia Wise/Thunes",
-    "processing_note": "Utapokea SMS unapopokea pesa"
+    "processing_note": "Utapokea SMS unapopokea pesa",
+    "error_invalid_account": "Maelezo ya akaunti si sahihi. Angalia na jaribu tena.",
+    "retry_account": "Jaribu na akaunti nyingine"
   },
   "remesa": {
     "title": "Tuma pesa",

@@ -53,7 +53,9 @@
     "error_generic": "处理错误。",
     "your_name_label": "全名",
     "account_trust": "借记卡 · 通过Wise/Thunes",
-    "processing_note": "到账时您将收到短信通知"
+    "processing_note": "到账时您将收到短信通知",
+    "error_invalid_account": "账户信息不正确，请验证后重试。",
+    "retry_account": "使用其他账户重试"
   },
   "remesa": {
     "title": "发送汇款",

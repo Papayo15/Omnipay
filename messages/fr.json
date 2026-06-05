@@ -53,7 +53,9 @@
     "error_generic": "Erreur de traitement.",
     "your_name_label": "Nom complet",
     "account_trust": "Carte de débit · via Wise/Thunes",
-    "processing_note": "Vous recevrez un SMS à la réception"
+    "processing_note": "Vous recevrez un SMS à la réception",
+    "error_invalid_account": "Coordonnées bancaires incorrectes. Vérifiez et réessayez.",
+    "retry_account": "Essayer avec un autre compte"
   },
   "remesa": {
     "title": "Envoyer un virement",

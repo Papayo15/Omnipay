@@ -53,7 +53,9 @@
     "error_generic": "Ошибка обработки.",
     "your_name_label": "Полное имя",
     "account_trust": "Дебетовая карта · через Wise/Thunes",
-    "processing_note": "Вы получите SMS при зачислении"
+    "processing_note": "Вы получите SMS при зачислении",
+    "error_invalid_account": "Неверные данные счёта. Проверьте и попробуйте снова.",
+    "retry_account": "Попробовать с другим счётом"
   },
   "remesa": {
     "title": "Отправить перевод",

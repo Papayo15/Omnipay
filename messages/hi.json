@@ -53,7 +53,9 @@
     "error_generic": "त्रुटि।",
     "your_name_label": "पूरा नाम",
     "account_trust": "डेबिट कार्ड · Wise/Thunes के माध्यम से",
-    "processing_note": "क्रेडिट होने पर SMS मिलेगा"
+    "processing_note": "क्रेडिट होने पर SMS मिलेगा",
+    "error_invalid_account": "खाता विवरण गलत है। सत्यापित करें और पुनः प्रयास करें।",
+    "retry_account": "दूसरे खाते से प्रयास करें"
   },
   "remesa": {
     "title": "रेमिटेंस भेजें",

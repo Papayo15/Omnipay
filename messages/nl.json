@@ -53,7 +53,9 @@
     "error_generic": "Verwerkingsfout.",
     "your_name_label": "Volledige naam",
     "account_trust": "Betaalpas · via Wise/Thunes",
-    "processing_note": "U ontvangt een sms bij bijschrijving"
+    "processing_note": "U ontvangt een sms bij bijschrijving",
+    "error_invalid_account": "Onjuiste rekeninggegevens. Controleer en probeer opnieuw.",
+    "retry_account": "Probeer met een andere rekening"
   },
   "remesa": {
     "title": "Overmaking sturen",

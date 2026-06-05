@@ -53,7 +53,9 @@
     "error_generic": "Processing error. Please try again.",
     "your_name_label": "Your full name",
     "account_trust": "Debit card · via Wise/Thunes",
-    "processing_note": "You'll receive an SMS when it credits"
+    "processing_note": "You'll receive an SMS when it credits",
+    "error_invalid_account": "Incorrect account details. Please verify and try again.",
+    "retry_account": "Try with another account"
   },
   "remesa": {
     "title": "Send remittance",

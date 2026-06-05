@@ -53,7 +53,9 @@
     "error_generic": "Error pemrosesan.",
     "your_name_label": "Nama lengkap",
     "account_trust": "Kartu debit · via Wise/Thunes",
-    "processing_note": "Anda akan menerima SMS saat masuk"
+    "processing_note": "Anda akan menerima SMS saat masuk",
+    "error_invalid_account": "Data rekening salah. Periksa dan coba lagi.",
+    "retry_account": "Coba dengan rekening lain"
   },
   "remesa": {
     "title": "Kirim remitansi",

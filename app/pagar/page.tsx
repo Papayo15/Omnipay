@@ -1,15 +1,15 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, AlertCircle, Shield, Clock } from "lucide-react";
-import { getCountry } from "@/constants/countries";
+import { getAccountValidation } from "@/lib/wise-accounts";
 
 // Pantalla camaleón — se transforma según type=cobro|remesa
 // Cobro:  "Vas a PAGAR $X a [tienda]"    → redirige a Stripe Checkout
-// Remesa: "Vas a RECIBIR $X de [nombre]" → captura cuenta bancaria → Wise/Thunes
+// Remesa: "Vas a RECIBIR $X de [nombre]" → input inteligente por país → Wise/Thunes
 
 interface LinkData {
   type: "cobro" | "remesa";
@@ -33,15 +33,22 @@ function PagarContent() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const [data, setData]                         = useState<LinkData | null>(null);
-  const [error, setError]                       = useState("");
-  const [loading, setLoading]                   = useState(true);
-  const [recipientCard, setRecipientCard] = useState("");
-  const [recipientName, setRecipientName] = useState("");
-  const [executing, setExecuting]               = useState(false);
-  const [timeLeft, setTimeLeft]                 = useState(600);
+  const [data, setData]                     = useState<LinkData | null>(null);
+  const [error, setError]                   = useState("");
+  const [loading, setLoading]               = useState(true);
+  const [recipientAccount, setRecipientAccount] = useState("");
+  const [recipientName, setRecipientName]   = useState("");
+  const [executing, setExecuting]           = useState(false);
+  const [timeLeft, setTimeLeft]             = useState(600);
 
-  const type = params.get("type") ?? "cobro";
+  const type    = params.get("type") ?? "cobro";
+  const isCobro = type === "cobro";
+
+  // Validación del input según país destino
+  const accountValidation = useMemo(
+    () => getAccountValidation(data?.targetCountry ?? ""),
+    [data?.targetCountry],
+  );
 
   useEffect(() => {
     const token = params.get("t") ?? "";
@@ -81,14 +88,21 @@ function PagarContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          token:         data?.token,
-          sig:           data?.sig,
-          recipientCard: cardDigits,
-          recipientName: recipientName.trim(),
+          token:            data?.token,
+          sig:              data?.sig,
+          recipientAccount: recipientAccount.trim(),
+          recipientName:    recipientName.trim(),
         }),
       });
-      const result = await res.json() as { status?: string; receipt_url?: string; error?: string };
-      if (!res.ok || result.error) throw new Error(result.error ?? t("error_generic"));
+      const result = await res.json() as { status?: string; receipt_url?: string; error?: string; errorCode?: string };
+      if (!res.ok || result.error) {
+        if (result.errorCode === "INVALID_ACCOUNT") {
+          setError(t("error_invalid_account"));
+          setExecuting(false);
+          return;
+        }
+        throw new Error(result.error ?? t("error_generic"));
+      }
       const rParam = new URL(result.receipt_url ?? window.location.origin).searchParams.get("r") ?? "";
       router.push(`/resultado?s=success&r=${encodeURIComponent(rParam)}`);
     } catch (e) {
@@ -97,18 +111,22 @@ function PagarContent() {
     }
   }
 
-  const mins      = Math.floor(timeLeft / 60);
-  const secs      = String(timeLeft % 60).padStart(2, "0");
-  const isCobro   = type === "cobro";
-  const accentBg  = isCobro
+  const mins     = Math.floor(timeLeft / 60);
+  const secs     = String(timeLeft % 60).padStart(2, "0");
+  const accentBg = isCobro
     ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/50"
     : "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/50";
-  const cardDigits = recipientCard.replace(/\D/g, "");
-  const accountOk  = !isCobro
-    ? cardDigits.length === 16 && recipientName.trim().length >= 2
+
+  const accountIsValid = accountValidation.validate(recipientAccount);
+  const accountOk      = !isCobro
+    ? accountIsValid && recipientName.trim().length >= 2
     : true;
 
-  const destCountry = data?.targetCountry ? getCountry(data.targetCountry) : null;
+  const accountBorderClass = recipientAccount.length === 0
+    ? "border-slate-700 focus:border-indigo-500"
+    : accountIsValid
+      ? "border-emerald-600/60 focus:border-emerald-500"
+      : "border-slate-600 focus:border-indigo-500";
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0f172a]">
@@ -117,12 +135,20 @@ function PagarContent() {
     </div>
   );
 
-  if (error) return (
+  if (error && !executing) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f172a] px-6 text-center gap-4">
       <div className="bg-red-500/10 rounded-full p-5"><AlertCircle className="w-10 h-10 text-red-400" /></div>
       <h2 className="text-xl font-bold text-white">{t("cannot_process")}</h2>
       <p className="text-slate-400 text-sm">{error}</p>
-      <button onClick={() => router.push("/")} className="text-indigo-400 text-sm touch-manipulation">{t("go_home")}</button>
+      {/* Retry button for invalid account — link still valid */}
+      {error === t("error_invalid_account") ? (
+        <button onClick={() => setError("")}
+          className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl touch-manipulation">
+          {t("retry_account")}
+        </button>
+      ) : (
+        <button onClick={() => router.push("/")} className="text-indigo-400 text-sm touch-manipulation">{t("go_home")}</button>
+      )}
     </div>
   );
 
@@ -178,9 +204,10 @@ function PagarContent() {
           </div>
         )}
 
-        {/* Tarjeta de débito del receptor (solo remesa) */}
+        {/* Input inteligente por país (solo remesa) */}
         {!isCobro && (
           <div className="flex flex-col gap-3">
+            {/* Nombre del titular */}
             <input
               type="text"
               value={recipientName}
@@ -188,24 +215,22 @@ function PagarContent() {
               placeholder={t("your_name_label")}
               className="bg-slate-800/60 border border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none transition-colors"
             />
+
+            {/* Cuenta bancaria — formato según país destino */}
             <div className="flex flex-col gap-1">
-              <label className="text-slate-400 text-sm">{t("your_card_label")}</label>
+              <label className="text-slate-400 text-sm font-medium">
+                {accountValidation.label}
+              </label>
               <input
-                type="tel"
-                inputMode="numeric"
-                maxLength={19}
-                value={recipientCard.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim()}
-                onChange={(e) => setRecipientCard(e.target.value)}
-                placeholder="0000 0000 0000 0000"
-                className={`bg-slate-800/60 border rounded-xl px-4 py-4 text-white text-xl font-mono tracking-widest placeholder-slate-600 focus:outline-none transition-colors ${
-                  cardDigits.length === 16
-                    ? "border-emerald-600/60 focus:border-emerald-500"
-                    : cardDigits.length > 0
-                    ? "border-slate-600 focus:border-indigo-500"
-                    : "border-slate-700 focus:border-indigo-500"
-                }`}
+                type={accountValidation.inputMode === "numeric" ? "tel" : "text"}
+                inputMode={accountValidation.inputMode}
+                value={recipientAccount}
+                onChange={(e) => setRecipientAccount(e.target.value)}
+                placeholder={accountValidation.placeholder}
+                maxLength={accountValidation.maxLength + 5}
+                className={`bg-slate-800/60 border rounded-xl px-4 py-4 text-white placeholder-slate-600 focus:outline-none transition-colors text-base tracking-wide ${accountBorderClass}`}
               />
-              <p className="text-slate-600 text-xs">{t("card_hint")}</p>
+              <p className="text-slate-600 text-xs leading-relaxed">{accountValidation.hint}</p>
             </div>
           </div>
         )}

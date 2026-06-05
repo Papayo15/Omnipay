@@ -53,7 +53,9 @@
     "error_generic": "İşlem hatası.",
     "your_name_label": "Tam ad",
     "account_trust": "Banka kartı · Wise/Thunes üzerinden",
-    "processing_note": "Alındığında SMS alacaksınız"
+    "processing_note": "Alındığında SMS alacaksınız",
+    "error_invalid_account": "Hesap bilgileri hatalı. Kontrol edip tekrar deneyin.",
+    "retry_account": "Başka hesapla dene"
   },
   "remesa": {
     "title": "Havale Gönder",

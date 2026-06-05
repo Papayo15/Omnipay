@@ -53,7 +53,9 @@
     "error_generic": "Kuskuren sarrafa. Yi ƙoƙarin sake.",
     "your_name_label": "Cikakken suna",
     "account_trust": "Katunan debit · ta Wise/Thunes",
-    "processing_note": "Za ka karbi SMS da zarar an rika"
+    "processing_note": "Za ka karbi SMS da zarar an rika",
+    "error_invalid_account": "Bayanan asusun ba daidai ba ne. Duba ka sake gwadawa.",
+    "retry_account": "Gwada da wani asusun"
   },
   "remesa": {
     "title": "Aika kuɗi",

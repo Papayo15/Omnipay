@@ -53,7 +53,9 @@
     "error_generic": "Erro ao processar.",
     "your_name_label": "Nome completo",
     "account_trust": "Cartão de débito · via Wise/Thunes",
-    "processing_note": "Você receberá um SMS quando cair"
+    "processing_note": "Você receberá um SMS quando cair",
+    "error_invalid_account": "Dados da conta incorretos. Verifique e tente novamente.",
+    "retry_account": "Tentar com outra conta"
   },
   "remesa": {
     "title": "Enviar remessa",

@@ -53,7 +53,9 @@
     "error_generic": "처리 오류.",
     "your_name_label": "전체 이름",
     "account_trust": "직불카드 · Wise/Thunes 경유",
-    "processing_note": "입금 시 SMS를 받게 됩니다"
+    "processing_note": "입금 시 SMS를 받게 됩니다",
+    "error_invalid_account": "계좌 정보가 잘못되었습니다. 확인 후 다시 시도하세요.",
+    "retry_account": "다른 계좌로 시도"
   },
   "remesa": {
     "title": "송금 보내기",

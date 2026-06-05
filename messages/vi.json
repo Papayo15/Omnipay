@@ -53,7 +53,9 @@
     "error_generic": "Lỗi xử lý.",
     "your_name_label": "Họ và tên",
     "account_trust": "Thẻ ghi nợ · qua Wise/Thunes",
-    "processing_note": "Bạn sẽ nhận SMS khi ghi có"
+    "processing_note": "Bạn sẽ nhận SMS khi ghi có",
+    "error_invalid_account": "Thông tin tài khoản không đúng. Kiểm tra và thử lại.",
+    "retry_account": "Thử với tài khoản khác"
   },
   "remesa": {
     "title": "Gửi kiều hối",

@@ -53,7 +53,9 @@
     "error_generic": "処理エラー。",
     "your_name_label": "フルネーム",
     "account_trust": "デビットカード · Wise/Thunes経由",
-    "processing_note": "入金時にSMSが届きます"
+    "processing_note": "入金時にSMSが届きます",
+    "error_invalid_account": "口座情報が正しくありません。確認して再試行してください。",
+    "retry_account": "別の口座で試す"
   },
   "remesa": {
     "title": "送金",
