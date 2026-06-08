@@ -91,7 +91,8 @@
     "share_message": "J'ai envoyé {amount} ({dest}) via OmniPay. Ouvrez pour recevoir (10 min):",
     "new_remesa": "Nouveau virement",
     "error_tokenize": "Erreur carte. Vérifiez les données.",
-    "error_generic": "Erreur. Réessayez."
+    "error_generic": "Erreur. Réessayez.",
+    "charge_cad": "Facturé en CAD (sans frais FX Stripe)"
   },
   "resultado": {
     "success_cobro": "Paiement reçu!",

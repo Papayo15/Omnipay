@@ -91,7 +91,8 @@
     "share_message": "أرسلت {amount} ({dest}) عبر OmniPay. افتح الرابط للاستلام (10 دقائق):",
     "new_remesa": "تحويل جديد",
     "error_tokenize": "خطأ في البطاقة. تحقق من البيانات.",
-    "error_generic": "خطأ. حاول مرة أخرى."
+    "error_generic": "خطأ. حاول مرة أخرى.",
+    "charge_cad": "يُحصَّل بالدولار الكندي (بدون رسوم FX Stripe)"
   },
   "resultado": {
     "success_cobro": "تم استلام الدفع!",

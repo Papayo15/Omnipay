@@ -91,7 +91,8 @@
     "share_message": "Hallo, ich habe dir {amount} ({dest}) über OmniPay gesendet. Öffne den Link (10 Min gültig):",
     "new_remesa": "Neue Überweisung",
     "error_tokenize": "Fehler beim Verarbeiten Ihrer Karte.",
-    "error_generic": "Fehler beim Generieren. Bitte erneut versuchen."
+    "error_generic": "Fehler beim Generieren. Bitte erneut versuchen.",
+    "charge_cad": "In CAD berechnet (ohne Stripe-FX-Gebühr)"
   },
   "resultado": {
     "success_cobro": "Zahlung erhalten!",

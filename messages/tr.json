@@ -91,7 +91,8 @@
     "share_message": "OmniPay ile {amount} ({dest}) gönderdim. Kartınıza almak için linki açın (10 dk):",
     "new_remesa": "Yeni havale",
     "error_tokenize": "Kart hatası. Verileri kontrol edin.",
-    "error_generic": "Hata. Tekrar deneyin."
+    "error_generic": "Hata. Tekrar deneyin.",
+    "charge_cad": "CAD olarak tahsil edilir (Stripe FX ücreti yok)"
   },
   "resultado": {
     "success_cobro": "Ödeme alındı!",

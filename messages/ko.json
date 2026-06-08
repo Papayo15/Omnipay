@@ -91,7 +91,8 @@
     "share_message": "OmniPay로 {amount}({dest})를 보냈습니다. 카드로 받으려면 링크 열기(10분):",
     "new_remesa": "새 송금",
     "error_tokenize": "카드 오류. 데이터를 확인하세요.",
-    "error_generic": "오류. 다시 시도하세요."
+    "error_generic": "오류. 다시 시도하세요.",
+    "charge_cad": "CAD로 청구 (Stripe FX 수수료 없음)"
   },
   "resultado": {
     "success_cobro": "결제 완료!",

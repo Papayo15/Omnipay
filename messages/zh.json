@@ -91,7 +91,8 @@
     "share_message": "我通过OmniPay发送了{amount}（{dest}）。打开链接接收到您的卡（有效期10分钟）：",
     "new_remesa": "新汇款",
     "error_tokenize": "卡片处理错误。请检查数据。",
-    "error_generic": "生成失败，请重试。"
+    "error_generic": "生成失败，请重试。",
+    "charge_cad": "以CAD收费（无Stripe FX费）"
   },
   "resultado": {
     "success_cobro": "收款成功！",

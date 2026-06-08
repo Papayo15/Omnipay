@@ -91,7 +91,8 @@
     "share_message": "በ OmniPay {amount} ({dest}) ልኬልዎታለሁ። ለመቀበል ሊንኩን ይክፈቱ (10 ደቂቃ):",
     "new_remesa": "አዲስ ዝውውር",
     "error_tokenize": "የካርድ ስህተት። ዝርዝሮቹን ያረጋግጡ።",
-    "error_generic": "ስህተት። እንደገና ይሞክሩ።"
+    "error_generic": "ስህተት። እንደገና ይሞክሩ።",
+    "charge_cad": "በ CAD ይከፈላል (Stripe FX ክፍያ የለም)"
   },
   "resultado": {
     "success_cobro": "ክፍያ ተቀብሏል!",

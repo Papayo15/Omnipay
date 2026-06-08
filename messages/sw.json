@@ -91,7 +91,8 @@
     "share_message": "Nimetuma {amount} ({dest}) kupitia OmniPay. Fungua kupokea (dakika 10):",
     "new_remesa": "Uhamisho mpya",
     "error_tokenize": "Hitilafu ya kadi. Angalia maelezo.",
-    "error_generic": "Hitilafu. Jaribu tena."
+    "error_generic": "Hitilafu. Jaribu tena.",
+    "charge_cad": "Inachajiwa kwa CAD (bila ada ada ya FX Stripe)"
   },
   "resultado": {
     "success_cobro": "Malipo yamepokelewa!",

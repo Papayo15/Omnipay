@@ -91,7 +91,8 @@
     "share_message": "Na aika {amount} ({dest}) ta OmniPay. Buɗe don karɓa (minti 10):",
     "new_remesa": "Sabon canja wurin",
     "error_tokenize": "Kuskuren katunan. Duba bayanan.",
-    "error_generic": "Kuskure. Yi ƙoƙarin sake."
+    "error_generic": "Kuskure. Yi ƙoƙarin sake.",
+    "charge_cad": "Ana cajin a CAD (babu kudin FX Stripe)"
   },
   "resultado": {
     "success_cobro": "An karɓi biyan kuɗi!",

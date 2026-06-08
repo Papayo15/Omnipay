@@ -91,7 +91,8 @@
     "share_message": "Saya mengirim {amount} ({dest}) via OmniPay. Buka tautan untuk menerima di kartu (10 menit):",
     "new_remesa": "Remitansi baru",
     "error_tokenize": "Error kartu. Periksa data.",
-    "error_generic": "Error. Coba lagi."
+    "error_generic": "Error. Coba lagi.",
+    "charge_cad": "Ditagih dalam CAD (tanpa biaya FX Stripe)"
   },
   "resultado": {
     "success_cobro": "Pembayaran diterima!",

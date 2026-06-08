@@ -91,7 +91,8 @@
     "share_message": "OmniPay経由で{amount}（{dest}）を送りました。カードで受け取るにはリンクを開いてください（10分）:",
     "new_remesa": "新しい送金",
     "error_tokenize": "カードエラー。データを確認してください。",
-    "error_generic": "エラー。再試行してください。"
+    "error_generic": "エラー。再試行してください。",
+    "charge_cad": "CADで請求（StripeのFX手数料なし）"
   },
   "resultado": {
     "success_cobro": "入金完了！",

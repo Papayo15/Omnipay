@@ -91,7 +91,8 @@
     "share_message": "Отправил(а) {amount} ({dest}) через OmniPay. Откройте ссылку для получения (10 мин):",
     "new_remesa": "Новый перевод",
     "error_tokenize": "Ошибка карты. Проверьте данные.",
-    "error_generic": "Ошибка. Попробуйте снова."
+    "error_generic": "Ошибка. Попробуйте снова.",
+    "charge_cad": "Оплата в CAD (без комиссии Stripe FX)"
   },
   "resultado": {
     "success_cobro": "Платёж получен!",

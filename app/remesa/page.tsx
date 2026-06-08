@@ -33,7 +33,10 @@ export default function RemesaPage() {
   const [recipientPhone, setRecipientPhone] = useState("");
   const [recipientName, setRecipientName]   = useState("");
   const [shareLink, setShareLink]     = useState("");
-  const [fxRate, setFxRate]           = useState<number | null>(null);
+  // cadRate: sender_currency → CAD (para cobrar siempre en CAD y evitar doble conversión)
+  const [cadRate, setCadRate]         = useState<number | null>(null);
+  // destFxRate: CAD → destination_currency (para quote del receptor)
+  const [destFxRate, setDestFxRate]   = useState<number | null>(null);
   const [fxLoading, setFxLoading]     = useState(false);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState("");
@@ -50,22 +53,36 @@ export default function RemesaPage() {
     }
   }, [paid]);
 
-  const amountNum  = parseFloat(amount) || 0;
-  const destAmount = fxRate && amountNum > 0 ? parseFloat((amountNum * fxRate).toFixed(2)) : null;
-  const rail       = selectRemesaRail(destCountry.code);
-  const eta        = RAIL_ETA[rail];
-  const showKyc    = amountNum >= KYC_THRESHOLD;
+  const amountNum   = parseFloat(amount) || 0;
+  const isOriginCAD = originCountry.currency === "CAD";
 
-  const canGoRecipient = amountNum > 0 && senderName.trim().length >= 2 && senderPhone.trim().length >= 7;
+  // Monto en CAD que se cobrará a Stripe — UNA sola conversión FX (CAD→destino)
+  const cadAmount   = amountNum > 0
+    ? (isOriginCAD ? amountNum : cadRate ? parseFloat((amountNum * cadRate).toFixed(2)) : null)
+    : null;
+
+  // Lo que recibirá el receptor (CAD menos 1% fee, convertido a moneda destino)
+  const destAmount  = cadAmount && destFxRate
+    ? parseFloat((cadAmount * 0.99 * destFxRate).toFixed(2))
+    : null;
+
+  const rail    = selectRemesaRail(destCountry.code);
+  const eta     = RAIL_ETA[rail];
+  const showKyc = (cadAmount ?? 0) >= KYC_THRESHOLD;
+
+  const canGoRecipient = (cadAmount ?? 0) > 0 && senderName.trim().length >= 2 && senderPhone.trim().length >= 7;
   const canShare       = recipientPhone.trim().length >= 7 || recipientName.trim().length >= 2;
 
   const fetchFX = useCallback(async () => {
-    if (originCountry.currency === destCountry.currency) { setFxRate(1); return; }
     setFxLoading(true);
-    const r = await getFXRate(originCountry.currency, destCountry.currency);
-    setFxRate(r);
+    const [cr, dr] = await Promise.all([
+      isOriginCAD ? Promise.resolve(1) : getFXRate(originCountry.currency, "CAD"),
+      destCountry.currency === "CAD" ? Promise.resolve(1) : getFXRate("CAD", destCountry.currency),
+    ]);
+    setCadRate(cr);
+    setDestFxRate(dr);
     setFxLoading(false);
-  }, [originCountry.currency, destCountry.currency]);
+  }, [originCountry.currency, destCountry.currency, isOriginCAD]);
 
   useEffect(() => { if (amountNum > 0) fetchFX(); }, [amountNum, fetchFX]);
 
@@ -74,6 +91,7 @@ export default function RemesaPage() {
   }
 
   async function generateRemesaLink() {
+    if (!cadAmount) return;
     setLoading(true);
     setError("");
     try {
@@ -81,11 +99,12 @@ export default function RemesaPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount:         amountNum,
-          currency:       originCountry.currency,
+          // Siempre en CAD — evita doble conversión FX (Stripe + Wise)
+          amount:         cadAmount,
+          currency:       "cad",
           targetCountry:  destCountry.code,
           targetCurrency: destCountry.currency,
-          targetAmount:   destAmount ?? amountNum,
+          targetAmount:   destAmount ?? cadAmount,
           senderPhone:    senderPhone.trim(),
           senderName:     senderName.trim(),
           recipientPhone: recipientPhone.trim(),
@@ -147,21 +166,37 @@ export default function RemesaPage() {
 
             {/* FX preview */}
             {amountNum > 0 && (
-              <div className="bg-indigo-900/20 border border-indigo-700/30 rounded-xl px-4 py-3">
+              <div className="bg-indigo-900/20 border border-indigo-700/30 rounded-xl px-4 py-3 flex flex-col gap-1.5">
                 {fxLoading ? <p className="text-slate-500 text-sm">{t("calculating")}</p>
-                  : destAmount !== null ? (
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-slate-400 text-xs">{t("recipient_gets")}</p>
-                        <p className="text-indigo-300 text-xl font-bold">{fmt(destAmount, destCountry.currency)}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-slate-500 text-xs">{t("eta")}</p>
-                        <div className="flex items-center gap-1 text-slate-400 text-xs">
-                          <Clock className="w-3 h-3" /><span>{eta}</span>
+                  : destAmount !== null && cadAmount !== null ? (
+                    <>
+                      {/* Monto a cobrar en CAD */}
+                      {!isOriginCAD && (
+                        <div className="flex justify-between items-center">
+                          <p className="text-slate-500 text-xs">{t("charge_cad")}</p>
+                          <p className="text-slate-300 text-sm font-semibold">{fmt(cadAmount, "CAD")}</p>
+                        </div>
+                      )}
+                      {/* Receptor recibe */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-slate-400 text-xs">{t("recipient_gets")}</p>
+                          <p className="text-indigo-300 text-xl font-bold">{fmt(destAmount, destCountry.currency)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-slate-500 text-xs">{t("eta")}</p>
+                          <div className="flex items-center gap-1 text-slate-400 text-xs">
+                            <Clock className="w-3 h-3" /><span>{eta}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                      {/* Rate line */}
+                      {destFxRate && (
+                        <p className="text-slate-600 text-xs">
+                          1 CAD = {destFxRate.toFixed(2)} {destCountry.currency} · OmniPay 1%
+                        </p>
+                      )}
+                    </>
                   ) : <p className="text-slate-500 text-sm">{t("rate_unavailable")}</p>}
               </div>
             )}

@@ -91,7 +91,8 @@
     "share_message": "Ik heb {amount} ({dest}) verstuurd via OmniPay. Open de link om op je kaart te ontvangen (10 min):",
     "new_remesa": "Nieuwe overmaking",
     "error_tokenize": "Kaartfout. Controleer de gegevens.",
-    "error_generic": "Fout. Probeer opnieuw."
+    "error_generic": "Fout. Probeer opnieuw.",
+    "charge_cad": "Gefactureerd in CAD (geen Stripe FX-kosten)"
   },
   "resultado": {
     "success_cobro": "Betaling ontvangen!",

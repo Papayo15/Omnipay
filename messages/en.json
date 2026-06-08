@@ -91,7 +91,8 @@
     "share_message": "Hi, I sent you {amount} ({dest}) via OmniPay. Open the link to receive money to your card (valid 10 min):",
     "new_remesa": "New remittance",
     "error_tokenize": "Error processing your card. Check the details.",
-    "error_generic": "Error generating the transfer. Please try again."
+    "error_generic": "Error generating the transfer. Please try again.",
+    "charge_cad": "Charged in CAD (no Stripe FX fee)"
   },
   "resultado": {
     "success_cobro": "Payment received!",

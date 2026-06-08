@@ -91,7 +91,8 @@
     "share_message": "Tôi đã gửi {amount} ({dest}) qua OmniPay. Mở liên kết nhận vào thẻ (10 phút):",
     "new_remesa": "Kiều hối mới",
     "error_tokenize": "Lỗi thẻ. Kiểm tra dữ liệu.",
-    "error_generic": "Lỗi. Thử lại."
+    "error_generic": "Lỗi. Thử lại.",
+    "charge_cad": "Tính bằng CAD (không phí FX Stripe)"
   },
   "resultado": {
     "success_cobro": "Đã nhận thanh toán!",

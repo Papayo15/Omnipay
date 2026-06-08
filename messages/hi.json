@@ -91,7 +91,8 @@
     "share_message": "मैंने OmniPay के जरिए {amount} ({dest}) भेजा। कार्ड पर पाने के लिए खोलें (10 मिनट):",
     "new_remesa": "नया रेमिटेंस",
     "error_tokenize": "कार्ड त्रुटि। डेटा जांचें।",
-    "error_generic": "त्रुटि। पुनः प्रयास करें।"
+    "error_generic": "त्रुटि। पुनः प्रयास करें।",
+    "charge_cad": "CAD में चार्ज (Stripe FX शुल्क नहीं)"
   },
   "resultado": {
     "success_cobro": "भुगतान प्राप्त हुआ!",
