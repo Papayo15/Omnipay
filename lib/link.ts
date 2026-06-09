@@ -60,7 +60,7 @@ export async function buildCobrarLink(
   const full: CobrarPayload = { ...payload, ts: Date.now() };
   const encoded = base64urlEncode(JSON.stringify(full));
   const sig = await hmacSign(encoded, secret);
-  return `${baseUrl}/pagar?t=${encoded}&s=${sig}&type=cobro`;
+  return `${baseUrl}/pagar?t=${encoded}&s=${sig}&type=cobro`; // v1 legacy
 }
 
 export async function parseCobrarLink(
@@ -101,7 +101,7 @@ export async function buildRemesaLink(
   const full: RemesaPayload = { ...payload, ts: Date.now() };
   const encoded = base64urlEncode(JSON.stringify(full));
   const sig = await hmacSign(encoded, secret);
-  return `${baseUrl}/pagar?t=${encoded}&s=${sig}&type=remesa`;
+  return `${baseUrl}/pagar?t=${encoded}&s=${sig}&type=remesa`; // v1 legacy
 }
 
 export async function parseRemesaLink(
@@ -161,5 +161,80 @@ export function parseReceiptURL(token: string): ReceiptData | null {
   try {
     const dataB64 = token.includes(".") ? token.slice(0, token.lastIndexOf(".")) : token;
     return JSON.parse(new TextDecoder().decode(base64urlDecode(dataB64))) as ReceiptData;
+  } catch { return null; }
+}
+
+// ── V2 TOKENS — flujo invertido: receptor genera link, pagador paga embebido ─────
+// El encryptedPayload contiene la cuenta bancaria + teléfonos, cifrado en AES-256-GCM.
+// El monto en CAD NO se guarda en el token (se recalcula con FX en vivo en /api/pay/intent).
+
+export interface CobrarPayloadV2 {
+  v: 2;
+  recipientName: string;
+  encryptedPayload: string;  // AES-256-GCM → { account, recipientPhone, senderPhone }
+  amount: number;            // monto en la moneda local del comercio
+  currency: string;          // "MXN" para cobros en México
+  ts: number;
+}
+
+export interface RemesaPayloadV2 {
+  v: 2;
+  recipientName: string;
+  encryptedPayload: string;  // AES-256-GCM → { account, recipientPhone, senderPhone }
+  receiveAmount: number;     // monto que quiere recibir el receptor (e.g., 1000)
+  receiveCurrency: string;   // moneda del receptor (e.g., "MXN")
+  targetCountry: string;     // país del receptor para enrutamiento Wise (e.g., "MX")
+  ts: number;
+}
+
+export async function buildCobrarV2Link(
+  payload: Omit<CobrarPayloadV2, "ts">,
+  baseUrl: string,
+  secret: string,
+): Promise<string> {
+  const full: CobrarPayloadV2 = { ...payload, ts: Date.now() };
+  const encoded = base64urlEncode(JSON.stringify(full));
+  const sig = await hmacSign(encoded, secret);
+  return `${baseUrl}/?t=${encoded}&s=${sig}&type=cobro`;
+}
+
+export async function buildRemesaV2Link(
+  payload: Omit<RemesaPayloadV2, "ts">,
+  baseUrl: string,
+  secret: string,
+): Promise<string> {
+  const full: RemesaPayloadV2 = { ...payload, ts: Date.now() };
+  const encoded = base64urlEncode(JSON.stringify(full));
+  const sig = await hmacSign(encoded, secret);
+  return `${baseUrl}/?t=${encoded}&s=${sig}&type=remesa`;
+}
+
+export async function parseCobrarV2Link(
+  token: string,
+  sig: string,
+  secret: string,
+): Promise<CobrarPayloadV2 | null> {
+  const ok = await hmacVerify(token, secret, sig);
+  if (!ok) return null;
+  try {
+    const payload = JSON.parse(new TextDecoder().decode(base64urlDecode(token))) as CobrarPayloadV2;
+    if (payload.v !== 2) return null;
+    if (Date.now() > payload.ts + TTL_MS) return null;
+    return payload;
+  } catch { return null; }
+}
+
+export async function parseRemesaV2Link(
+  token: string,
+  sig: string,
+  secret: string,
+): Promise<RemesaPayloadV2 | null> {
+  const ok = await hmacVerify(token, secret, sig);
+  if (!ok) return null;
+  try {
+    const payload = JSON.parse(new TextDecoder().decode(base64urlDecode(token))) as RemesaPayloadV2;
+    if (payload.v !== 2) return null;
+    if (Date.now() > payload.ts + TTL_MS) return null;
+    return payload;
   } catch { return null; }
 }
