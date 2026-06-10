@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -183,6 +184,7 @@ function PaymentForm({
   onSuccess: (piId: string) => void;
   onError:   (msg: string) => void;
 }) {
+  const t        = useTranslations("page");
   const stripe   = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -200,7 +202,7 @@ function PaymentForm({
 
     if (error) {
       setLoading(false);
-      setErr(error.message ?? "Error al autorizar el pago.");
+      setErr(error.message ?? t("pay_error_default"));
       return;
     }
     if (paymentIntent?.id) {
@@ -216,7 +218,7 @@ function PaymentForm({
   if (!stripe) {
     return (
       <div className="text-center py-6 space-y-2">
-        <p className="text-slate-400 text-sm">Cargando formulario de pago…</p>
+        <p className="text-slate-400 text-sm">{t("checkout_loading")}</p>
         <p className="text-slate-600 text-xs">
           Si esto persiste, verifica que <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> esté configurada en Vercel.
         </p>
@@ -233,17 +235,80 @@ function PaymentForm({
         disabled={loading || !stripe}
         className="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:opacity-50 transition-all text-white py-4 rounded-2xl font-semibold text-lg"
       >
-        {loading ? "Autorizando…" : `Liquidar Factura — ${payLabel}`}
+        {loading ? t("checkout_paying") : t("checkout_pay_btn", { amount: payLabel })}
       </button>
       <p className="text-center text-xs text-slate-500">
-        🔒 Cifrado por Stripe · Nunca guardamos tu tarjeta
+        {t("checkout_trust")}
       </p>
     </div>
   );
 }
 
+// ── Locale → default country/currency mapping ─────────────────────────────────
+const LOCALE_DEFAULTS: Record<string, { code: string; name: string; currency: string }> = {
+  "es-MX": { code: "MX", name: "México",         currency: "MXN" },
+  "es-CO": { code: "CO", name: "Colombia",        currency: "COP" },
+  "es-AR": { code: "AR", name: "Argentina",       currency: "ARS" },
+  "es-CL": { code: "CL", name: "Chile",           currency: "CLP" },
+  "es-PE": { code: "PE", name: "Perú",            currency: "PEN" },
+  "es-VE": { code: "VE", name: "Venezuela",       currency: "USD" },
+  "es-EC": { code: "EC", name: "Ecuador",         currency: "USD" },
+  "es-GT": { code: "GT", name: "Guatemala",       currency: "GTQ" },
+  "es-DO": { code: "DO", name: "Rep. Dominicana", currency: "DOP" },
+  "es-BO": { code: "BO", name: "Bolivia",         currency: "BOB" },
+  "es-PY": { code: "PY", name: "Paraguay",        currency: "PYG" },
+  "es-UY": { code: "UY", name: "Uruguay",         currency: "UYU" },
+  "es-CR": { code: "CR", name: "Costa Rica",      currency: "CRC" },
+  "es-HN": { code: "HN", name: "Honduras",        currency: "HNL" },
+  "es-SV": { code: "SV", name: "El Salvador",     currency: "USD" },
+  "es-NI": { code: "NI", name: "Nicaragua",       currency: "NIO" },
+  "es-PA": { code: "PA", name: "Panamá",          currency: "USD" },
+  "es":    { code: "ES", name: "España",          currency: "EUR" },
+  "pt-BR": { code: "BR", name: "Brasil",          currency: "BRL" },
+  "pt":    { code: "PT", name: "Portugal",        currency: "EUR" },
+  "en-CA": { code: "CA", name: "Canadá",          currency: "CAD" },
+  "en-US": { code: "US", name: "Estados Unidos",  currency: "USD" },
+  "en-AU": { code: "AU", name: "Australia",       currency: "AUD" },
+  "en-GB": { code: "GB", name: "Reino Unido",     currency: "GBP" },
+  "en-NZ": { code: "NZ", name: "Nueva Zelanda",   currency: "NZD" },
+  "en-IN": { code: "IN", name: "India",           currency: "INR" },
+  "en-SG": { code: "SG", name: "Singapur",        currency: "SGD" },
+  "en-PH": { code: "PH", name: "Filipinas",       currency: "PHP" },
+  "en-NG": { code: "NG", name: "Nigeria",         currency: "NGN" },
+  "en-GH": { code: "GH", name: "Ghana",           currency: "GHS" },
+  "en-KE": { code: "KE", name: "Kenia",           currency: "KES" },
+  "en-ZA": { code: "ZA", name: "Sudáfrica",       currency: "ZAR" },
+  "fr-FR": { code: "FR", name: "Francia",         currency: "EUR" },
+  "fr":    { code: "FR", name: "Francia",         currency: "EUR" },
+  "de":    { code: "DE", name: "Alemania",        currency: "EUR" },
+  "it":    { code: "IT", name: "Italia",          currency: "EUR" },
+  "nl":    { code: "NL", name: "Países Bajos",    currency: "EUR" },
+  "ja":    { code: "JP", name: "Japón",           currency: "JPY" },
+  "ko":    { code: "KR", name: "Corea del Sur",   currency: "KRW" },
+  "zh":    { code: "CN", name: "China",           currency: "CNY" },
+  "zh-TW": { code: "HK", name: "Hong Kong",       currency: "HKD" },
+  "hi":    { code: "IN", name: "India",           currency: "INR" },
+  "ar":    { code: "SA", name: "Arabia Saudita",  currency: "SAR" },
+  "ar-AE": { code: "AE", name: "Emiratos Árabes", currency: "AED" },
+  "ru":    { code: "RU", name: "Rusia",           currency: "RUB" },
+  "tr":    { code: "TR", name: "Turquía",         currency: "TRY" },
+  "id":    { code: "ID", name: "Indonesia",       currency: "IDR" },
+  "vi":    { code: "VN", name: "Vietnam",         currency: "VND" },
+  "sw":    { code: "KE", name: "Kenia",           currency: "KES" },
+  "ha":    { code: "NG", name: "Nigeria",         currency: "NGN" },
+  "am":    { code: "ET", name: "Etiopía",         currency: "ETB" },
+};
+
+function getLocaleDefault(browserLocale: string) {
+  if (LOCALE_DEFAULTS[browserLocale]) return LOCALE_DEFAULTS[browserLocale];
+  const lang = browserLocale.split("-")[0];
+  return LOCALE_DEFAULTS[lang] ?? { code: "MX", name: "México", currency: "MXN" };
+}
+
 // ── Main One-Page App ─────────────────────────────────────────────────────────
 export default function Home() {
+  const t    = useTranslations("page");
+  useLocale(); // ensures locale context is loaded
   const [step, setStep] = useState<Step>("loading");
 
   // — form —
@@ -282,15 +347,21 @@ export default function Home() {
   const [piId,         setPiId]         = useState<string | null>(null);
   const [errorMsg,     setErrorMsg]     = useState("");
 
-  // ── URL detection ────────────────────────────────────────────────────────
+  // ── URL detection + locale-based country default ─────────────────────────
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const t = p.get("t");
-    const s = p.get("s");
-    if (t && s) {
-      setTokenData({ token: t, sig: s, type: p.get("type") ?? "remesa" });
+    const p   = new URLSearchParams(window.location.search);
+    const tok = p.get("t");
+    const sig = p.get("s");
+    if (tok && sig) {
+      setTokenData({ token: tok, sig, type: p.get("type") ?? "remesa" });
       setStep("checkout_init");
     } else {
+      // Auto-set country/currency from browser locale
+      const loc = navigator.language ?? "es-MX";
+      const def = getLocaleDefault(loc);
+      setCountry(def.code);
+      setCountryName(def.name);
+      setCurrency(def.currency);
       setStep("create");
     }
   }, []);
@@ -347,7 +418,7 @@ export default function Home() {
         setSecsLeft(570);
         setStep("checkout");
       } catch {
-        if (!cancelled) { setErrorMsg("Error de conexión."); setStep("error"); }
+        if (!cancelled) { setErrorMsg(t("error_connection")); setStep("error"); }
       }
     })();
 
@@ -382,7 +453,7 @@ export default function Home() {
           setTimeout(() => setStep("done"), 800);
         } else if (data.status === "payment_failed") {
           clearInterval(iv);
-          setErrorMsg("La transacción no fue procesada. No se realizó ningún cargo.");
+          setErrorMsg(t("error_default"));
           setStep("error");
         }
       } catch {}
@@ -412,16 +483,16 @@ export default function Home() {
   // ── Handlers ────────────────────────────────────────────────────────────
   async function handleCreate() {
     if (!name.trim() || !account.trim() || !amount) {
-      setFormError("Completa todos los campos obligatorios.");
+      setFormError(t("error_required"));
       return;
     }
     if (!validateAccount(account, country, linkMode === "remesa" ? receiveMode : "bank")) {
-      setFormError("El número de cuenta no es válido para el país seleccionado.");
+      setFormError(t("error_account"));
       return;
     }
     const parsed = parseFloat(amount);
     if (!parsed || parsed <= 0) {
-      setFormError("Ingresa un importe válido mayor a cero.");
+      setFormError(t("error_amount"));
       return;
     }
 
@@ -457,13 +528,13 @@ export default function Home() {
         body: JSON.stringify(body),
       });
       const data = await res.json() as { share_link?: string; quote?: ShareQuote; error?: string };
-      if (!res.ok) { setFormError(data.error ?? "Error al generar el enlace de cobro."); return; }
+      if (!res.ok) { setFormError(data.error ?? t("error_link")); return; }
 
       setShareLink(data.share_link ?? "");
       setShareQuote(data.quote ?? null);
       setStep("share");
     } catch {
-      setFormError("Error de conexión. Intenta de nuevo.");
+      setFormError(t("error_connection"));
     } finally {
       setSubmitting(false);
     }
@@ -476,10 +547,10 @@ export default function Home() {
   }
 
   function buildShareMsg(): string {
-    const who = name.trim() || "El proveedor";
+    const who = name.trim() || "…";
     return linkMode === "remesa" && shareQuote
-      ? `${who} te solicita la liquidación de su factura de servicios.\nLiquida aquí: ${shareLink}`
-      : `${who} te solicita el pago de sus honorarios por ${fmt(parseFloat(amount || "0"), currency)}.\nLiquida aquí: ${shareLink}`;
+      ? t("wa_msg_corporate", { who, link: shareLink })
+      : t("wa_msg_individual", { who, amount: fmt(parseFloat(amount || "0"), currency), link: shareLink });
   }
 
   async function openWhatsApp() {
@@ -528,9 +599,7 @@ export default function Home() {
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center gap-4">
         <Zap className="w-10 h-10 text-indigo-400 animate-pulse" />
         <p className="text-slate-400 text-sm">
-          {step === "checkout_init"
-            ? "Consultando tipo de cambio interbancario…"
-            : "Iniciando…"}
+          {step === "checkout_init" ? t("loading_fx") : t("loading_init")}
         </p>
       </main>
     );
@@ -541,12 +610,9 @@ export default function Home() {
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5">
         <div className="text-5xl">⏳</div>
-        <h2 className="text-xl font-semibold text-white">Aviso del Sistema</h2>
+        <h2 className="text-xl font-semibold text-white">{t("liquidity_title")}</h2>
         <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
-          Nuestras líneas de procesamiento comercial están experimentando un alto
-          volumen de liquidaciones. Para garantizar la integridad de su transacción,
-          abriremos nuevos bloques de procesamiento en 15 minutos. Agradecemos
-          su comprensión.
+          {t("liquidity_msg")}
         </p>
       </main>
     );
@@ -555,9 +621,9 @@ export default function Home() {
   // ── PROGRESS ──────────────────────────────────────────────────────────────
   if (step === "progress") {
     const progressLabels = [
-      "Instrumento de pago validado…",
-      "Transacción autorizada…",
-      `Procesando liquidación a ${summary?.recipientName ?? "el proveedor"}…`,
+      t("progress_step1"),
+      t("progress_step2"),
+      t("progress_step3", { name: summary?.recipientName ?? "…" }),
     ];
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 gap-8">
@@ -587,10 +653,9 @@ export default function Home() {
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5 max-w-sm mx-auto w-full">
         <CheckCircle2 className="w-16 h-16 text-emerald-400" />
-        <h2 className="text-2xl font-bold text-white">¡Pago Procesado!</h2>
+        <h2 className="text-2xl font-bold text-white">{t("done_title")}</h2>
         <p className="text-slate-400 text-sm max-w-xs">
-          La liquidación de honorarios ha sido procesada exitosamente.{" "}
-          {summary?.recipientName ?? "El proveedor"} recibirá confirmación por SMS.
+          {t("done_msg", { name: summary?.recipientName ?? "…" })}
         </p>
         <div className="w-full space-y-3 mt-2">
           <button
@@ -598,14 +663,14 @@ export default function Home() {
             className="w-full bg-[#25D366] hover:bg-[#1fb85a] active:scale-95 transition-all text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2"
           >
             <Send className="w-4 h-4" />
-            Compartir comprobante por WhatsApp
+            {t("done_whatsapp")}
           </button>
           <button
             onClick={() => window.open(buildTelegramLink(typeof window !== "undefined" ? window.location.href : "", buildReceiptMsg()), "_blank")}
             className="w-full bg-[#229ED9] hover:bg-[#1a8ec0] active:scale-95 transition-all text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2"
           >
             <Send className="w-4 h-4" />
-            Compartir comprobante por Telegram
+            {t("done_telegram")}
           </button>
         </div>
       </main>
@@ -617,15 +682,15 @@ export default function Home() {
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5">
         <AlertCircle className="w-14 h-14 text-red-400" />
-        <h2 className="text-xl font-semibold text-white">Error en la Transacción</h2>
+        <h2 className="text-xl font-semibold text-white">{t("error_title")}</h2>
         <p className="text-slate-400 text-sm max-w-xs">
-          {errorMsg || "No pudimos procesar la solicitud. No se hizo ningún cargo."}
+          {errorMsg || t("error_default")}
         </p>
         <button
           onClick={() => { setStep("create"); setErrorMsg(""); }}
           className="text-indigo-400 text-sm underline mt-2"
         >
-          Reiniciar
+          {t("error_reset")}
         </button>
       </main>
     );
@@ -639,28 +704,28 @@ export default function Home() {
           onClick={() => setStep("create")}
           className="flex items-center gap-1 text-slate-400 text-sm mb-8 hover:text-white transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Nuevo cobro
+          <ArrowLeft className="w-4 h-4" /> {t("share_back")}
         </button>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-6 text-center">
           <CheckCircle2 className="w-14 h-14 text-emerald-400" />
 
           <div>
-            <h2 className="text-2xl font-bold text-white mb-2">¡Enlace de Cobro Generado!</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">{t("share_title")}</h2>
             {shareQuote ? (
               <p className="text-slate-400 text-sm">
-                Estimado de liquidación:{" "}
+                {t("share_quote_label")}{" "}
                 <span className="text-white font-medium">
                   ~{fmt(shareQuote.estimatedOriginAmount, shareQuote.originCurrency)}
                 </span>
                 <br />
                 <span className="text-xs text-slate-500">
-                  El importe exacto se calcula con tipo de cambio interbancario al momento de liquidar.
+                  {t("share_quote_note")}
                 </span>
               </p>
             ) : (
               <p className="text-slate-400 text-sm">
-                El cliente verá el importe al abrir el enlace.
+                {t("share_no_quote")}
               </p>
             )}
           </div>
@@ -668,7 +733,7 @@ export default function Home() {
           {/* Link preview */}
           {shareLink && (
             <div className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-2 text-center">
-              <p className="text-slate-500 text-xs mb-0.5">Tu enlace de cobro</p>
+              <p className="text-slate-500 text-xs mb-0.5">{t("share_link_label")}</p>
               <p className="text-slate-300 text-xs font-mono break-all leading-relaxed">
                 {shareLink.length > 60 ? shareLink.slice(0, 57) + "…" : shareLink}
               </p>
@@ -681,22 +746,22 @@ export default function Home() {
               className="w-full bg-[#25D366] hover:bg-[#1fb85a] active:scale-95 transition-all text-white py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2"
             >
               <Send className="w-5 h-5" />
-              Enviar al Cliente por WhatsApp
+              {t("share_whatsapp")}
             </button>
             <button
               onClick={openTelegram}
               className="w-full bg-[#229ED9] hover:bg-[#1a8ec0] active:scale-95 transition-all text-white py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2"
             >
               <Send className="w-5 h-5" />
-              Enviar al Cliente por Telegram
+              {t("share_telegram")}
             </button>
             <button
               onClick={handleCopy}
               className="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2"
             >
               {copied
-                ? <><Check className="w-4 h-4 text-emerald-400" /> ¡Copiado!</>
-                : <><Copy className="w-4 h-4" /> Copiar enlace</>
+                ? <><Check className="w-4 h-4 text-emerald-400" /> {t("share_copied")}</>
+                : <><Copy className="w-4 h-4" /> {t("share_copy")}</>
               }
             </button>
           </div>
@@ -717,16 +782,16 @@ export default function Home() {
             <Zap className="w-6 h-6 text-indigo-400" />
             <span className="text-lg font-bold text-white">OmniPay</span>
           </div>
-          <span className="text-xs text-slate-500 ml-8">Invoice Matrix · Servicios Profesionales</span>
+          <span className="text-xs text-slate-500 ml-8">{t("checkout_subtitle")}</span>
         </div>
 
         {/* Summary card */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-6 text-center">
           <p className="text-slate-400 text-xs mb-1 uppercase tracking-wide">
-            Solicitud de Pago Comercial
+            {t("checkout_invoice_label")}
           </p>
           <p className="text-white text-sm font-medium mb-3">
-            {summary.recipientName} · Factura por Servicios Prestados
+            {t("checkout_invoice_for", { name: summary.recipientName })}
           </p>
 
           {summary.type === "remesa" && summary.receiveAmount && summary.receiveCurrency ? (
@@ -735,16 +800,16 @@ export default function Home() {
                 {fmt(summary.receiveAmount, summary.receiveCurrency)}
               </p>
               <p className="text-white font-semibold text-xl mb-1">
-                Total a Liquidar: {fmt(summary.cadAmount, "CAD")}
+                {t("checkout_total")} {fmt(summary.cadAmount, "CAD")}
               </p>
               {summary.wiseRate && (
                 <p className="text-slate-400 text-xs">
-                  1 CAD = {summary.wiseRate.toFixed(4)} {summary.receiveCurrency} · tipo de cambio interbancario
+                  {t("checkout_rate", { rate: summary.wiseRate.toFixed(4), currency: summary.receiveCurrency })}
                 </p>
               )}
               {summary.payoutMode === "INSTANT" && (
                 <p className="text-amber-400 text-xs mt-1">
-                  ⚡ Procesamiento prioritario (+1% tarifa de red)
+                  {t("checkout_instant_badge")}
                 </p>
               )}
             </>
@@ -753,13 +818,13 @@ export default function Home() {
               <p className="text-3xl font-bold text-white mb-1">
                 {fmt(summary.amount ?? summary.cadAmount, summary.currency ?? "CAD")}
               </p>
-              <p className="text-slate-400 text-xs">Importe total de la factura</p>
+              <p className="text-slate-400 text-xs">{t("checkout_invoice_amount")}</p>
             </>
           )}
 
           <div className="flex items-center justify-center gap-1 mt-3 text-slate-500 text-xs">
             <Clock className="w-3 h-3" />
-            <span>Cotización vigente {mins}:{secs}</span>
+            <span>{t("checkout_quote_valid", { mins, secs })}</span>
           </div>
         </div>
 
@@ -800,7 +865,7 @@ export default function Home() {
               : "text-slate-400 hover:text-slate-200 bg-transparent"
           }`}
         >
-          <Store className="w-4 h-4" /> Cliente Individual
+          <Store className="w-4 h-4" /> {t("toggle_individual")}
         </button>
         <button
           onClick={() => setLinkMode("remesa")}
@@ -810,7 +875,7 @@ export default function Home() {
               : "text-slate-400 hover:text-slate-200 bg-transparent"
           }`}
         >
-          <Building2 className="w-4 h-4" /> Empresa / Corporativo
+          <Building2 className="w-4 h-4" /> {t("toggle_corporate")}
         </button>
       </div>
 
@@ -820,24 +885,24 @@ export default function Home() {
         {/* Provider name */}
         <div>
           <label className="block text-xs text-slate-400 mb-1">
-            Proveedor / Profesionista
+            {t("label_provider")}
           </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={linkMode === "cobro" ? "Dr. López Dental" : "Corporativo Bancomer S.A."}
+            placeholder={linkMode === "cobro" ? t("placeholder_individual") : t("placeholder_corporate")}
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm"
           />
         </div>
 
         {/* Country */}
         <div>
-          <label className="block text-xs text-slate-400 mb-1">País destino</label>
+          <label className="block text-xs text-slate-400 mb-1">{t("label_country")}</label>
           <input
             list="countries-list"
             value={countryName}
             onChange={(e) => handleCountryChange(e.target.value)}
-            placeholder="Escribe o selecciona un país…"
+            placeholder={t("placeholder_country")}
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm"
           />
           <datalist id="countries-list">
@@ -851,12 +916,12 @@ export default function Home() {
         {linkMode === "remesa" && (
           <div>
             <label className="block text-xs text-slate-400 mb-1">
-              Método de liquidación al proveedor
+              {t("label_method")}
             </label>
             <div className="flex gap-2">
               {(["bank", "card", "wallet"] as ReceiveMode[]).map((m) => {
                 const Icon  = m === "bank" ? Building2 : m === "card" ? CreditCard : Smartphone;
-                const label = m === "bank" ? "Transferencia" : m === "card" ? "Tarjeta Corp." : "Billetera";
+                const label = m === "bank" ? t("mode_bank") : m === "card" ? t("mode_card") : t("mode_wallet");
                 return (
                   <button
                     key={m}
@@ -891,7 +956,7 @@ export default function Home() {
         {/* Amount + Currency */}
         <div className="flex gap-2">
           <div className="flex-1">
-            <label className="block text-xs text-slate-400 mb-1">Importe de la Factura</label>
+            <label className="block text-xs text-slate-400 mb-1">{t("label_amount")}</label>
             <input
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -901,7 +966,7 @@ export default function Home() {
             />
           </div>
           <div className="w-24">
-            <label className="block text-xs text-slate-400 mb-1">Moneda</label>
+            <label className="block text-xs text-slate-400 mb-1">{t("label_currency")}</label>
             <input
               value={currency}
               onChange={(e) => setCurrency(e.target.value.toUpperCase().slice(0, 3))}
@@ -914,7 +979,7 @@ export default function Home() {
         {/* Provider phone */}
         <div>
           <label className="block text-xs text-slate-400 mb-1">
-            Teléfono del proveedor
+            {t("label_provider_phone")}
           </label>
           <input
             value={recipientPhone}
@@ -928,7 +993,7 @@ export default function Home() {
         {/* Client phone */}
         <div>
           <label className="block text-xs text-slate-400 mb-1">
-            Teléfono del cliente (opcional)
+            {t("label_client_phone")}
           </label>
           <input
             value={senderPhone}
@@ -950,25 +1015,25 @@ export default function Home() {
           disabled={submitting}
           className="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:opacity-50 transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2"
         >
-          {submitting ? "Procesando…" : "Generar Enlace de Cobro"}
+          {submitting ? t("btn_generating") : t("btn_generate")}
         </button>
 
         <p className="text-center text-xs text-slate-600 pb-2">
-          🔒 Los datos de cuenta viajan cifrados — OmniPay no los almacena
+          {t("footer_security")}
         </p>
 
         {/* ── Banner de instalación PWA ── */}
         {!installDone && installPrompt && (
           <div className="flex items-center justify-between gap-3 bg-[#00C9C8]/10 border border-[#00C9C8]/30 rounded-2xl px-4 py-3">
             <div>
-              <p className="text-[#00C9C8] text-sm font-medium">Instala OmniPay</p>
-              <p className="text-slate-400 text-xs">Accede directo desde tu celular</p>
+              <p className="text-[#00C9C8] text-sm font-medium">{t("pwa_title")}</p>
+              <p className="text-slate-400 text-xs">{t("pwa_subtitle")}</p>
             </div>
             <button
               onClick={handleInstall}
               className="bg-[#00C9C8] text-slate-900 text-sm font-semibold px-4 py-2 rounded-xl whitespace-nowrap"
             >
-              Instalar
+              {t("pwa_btn")}
             </button>
           </div>
         )}
@@ -976,16 +1041,13 @@ export default function Home() {
         {/* iOS: instrucciones manuales */}
         {!installDone && showIosHint && !installPrompt && (
           <div className="bg-[#00C9C8]/10 border border-[#00C9C8]/30 rounded-2xl px-4 py-3 space-y-1">
-            <p className="text-[#00C9C8] text-sm font-medium">Instala OmniPay en tu iPhone</p>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              Toca <span className="text-white">Compartir</span> (□↑) en Safari →{" "}
-              <span className="text-white">Agregar a inicio</span> → <span className="text-white">Agregar</span>
-            </p>
+            <p className="text-[#00C9C8] text-sm font-medium">{t("pwa_ios_title")}</p>
+            <p className="text-slate-400 text-xs leading-relaxed">{t("pwa_ios_steps")}</p>
             <button
               onClick={() => setShowIosHint(false)}
               className="text-slate-600 text-xs underline"
             >
-              Ya la instalé
+              {t("pwa_ios_done")}
             </button>
           </div>
         )}
