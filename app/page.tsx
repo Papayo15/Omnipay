@@ -56,29 +56,78 @@ interface ShareQuote {
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const COUNTRIES = [
-  { code: "MX", name: "México",           currency: "MXN" },
-  { code: "US", name: "Estados Unidos",   currency: "USD" },
-  { code: "CA", name: "Canadá",           currency: "CAD" },
-  { code: "GB", name: "Reino Unido",      currency: "GBP" },
-  { code: "DE", name: "Alemania",         currency: "EUR" },
-  { code: "FR", name: "Francia",          currency: "EUR" },
-  { code: "ES", name: "España",           currency: "EUR" },
-  { code: "IT", name: "Italia",           currency: "EUR" },
-  { code: "NL", name: "Países Bajos",     currency: "EUR" },
-  { code: "PT", name: "Portugal",         currency: "EUR" },
-  { code: "AU", name: "Australia",        currency: "AUD" },
-  { code: "JP", name: "Japón",            currency: "JPY" },
-  { code: "IN", name: "India",            currency: "INR" },
-  { code: "BR", name: "Brasil",           currency: "BRL" },
-  { code: "CO", name: "Colombia",         currency: "COP" },
-  { code: "PE", name: "Perú",             currency: "PEN" },
-  { code: "CL", name: "Chile",            currency: "CLP" },
-  { code: "AR", name: "Argentina",        currency: "ARS" },
-  { code: "NG", name: "Nigeria",          currency: "NGN" },
-  { code: "KE", name: "Kenia",            currency: "KES" },
-  { code: "GH", name: "Ghana",            currency: "GHS" },
-  { code: "PH", name: "Filipinas",        currency: "PHP" },
-  { code: "CN", name: "China",            currency: "CNY" },
+  // América del Norte
+  { code: "MX", name: "México",              currency: "MXN" },
+  { code: "US", name: "Estados Unidos",      currency: "USD" },
+  { code: "CA", name: "Canadá",              currency: "CAD" },
+  // América Central
+  { code: "GT", name: "Guatemala",           currency: "GTQ" },
+  { code: "SV", name: "El Salvador",         currency: "USD" },
+  { code: "HN", name: "Honduras",            currency: "HNL" },
+  { code: "NI", name: "Nicaragua",           currency: "NIO" },
+  { code: "CR", name: "Costa Rica",          currency: "CRC" },
+  { code: "PA", name: "Panamá",              currency: "USD" },
+  // Caribe
+  { code: "DO", name: "Rep. Dominicana",     currency: "DOP" },
+  { code: "CU", name: "Cuba",               currency: "CUP" },
+  { code: "HT", name: "Haití",              currency: "HTG" },
+  { code: "JM", name: "Jamaica",             currency: "JMD" },
+  // América del Sur
+  { code: "CO", name: "Colombia",            currency: "COP" },
+  { code: "VE", name: "Venezuela",           currency: "USD" },
+  { code: "EC", name: "Ecuador",             currency: "USD" },
+  { code: "PE", name: "Perú",               currency: "PEN" },
+  { code: "BO", name: "Bolivia",             currency: "BOB" },
+  { code: "CL", name: "Chile",              currency: "CLP" },
+  { code: "AR", name: "Argentina",           currency: "ARS" },
+  { code: "UY", name: "Uruguay",             currency: "UYU" },
+  { code: "PY", name: "Paraguay",            currency: "PYG" },
+  { code: "BR", name: "Brasil",             currency: "BRL" },
+  // Europa
+  { code: "GB", name: "Reino Unido",         currency: "GBP" },
+  { code: "DE", name: "Alemania",            currency: "EUR" },
+  { code: "FR", name: "Francia",             currency: "EUR" },
+  { code: "ES", name: "España",             currency: "EUR" },
+  { code: "IT", name: "Italia",             currency: "EUR" },
+  { code: "NL", name: "Países Bajos",        currency: "EUR" },
+  { code: "PT", name: "Portugal",            currency: "EUR" },
+  { code: "BE", name: "Bélgica",            currency: "EUR" },
+  { code: "CH", name: "Suiza",              currency: "CHF" },
+  { code: "SE", name: "Suecia",             currency: "SEK" },
+  { code: "NO", name: "Noruega",             currency: "NOK" },
+  { code: "DK", name: "Dinamarca",           currency: "DKK" },
+  { code: "PL", name: "Polonia",             currency: "PLN" },
+  { code: "RO", name: "Rumania",             currency: "RON" },
+  { code: "TR", name: "Turquía",             currency: "TRY" },
+  // Asia
+  { code: "IN", name: "India",              currency: "INR" },
+  { code: "CN", name: "China",              currency: "CNY" },
+  { code: "JP", name: "Japón",              currency: "JPY" },
+  { code: "KR", name: "Corea del Sur",       currency: "KRW" },
+  { code: "PH", name: "Filipinas",           currency: "PHP" },
+  { code: "ID", name: "Indonesia",           currency: "IDR" },
+  { code: "MY", name: "Malasia",             currency: "MYR" },
+  { code: "TH", name: "Tailandia",           currency: "THB" },
+  { code: "VN", name: "Vietnam",             currency: "VND" },
+  { code: "SG", name: "Singapur",            currency: "SGD" },
+  { code: "HK", name: "Hong Kong",           currency: "HKD" },
+  { code: "PK", name: "Pakistán",            currency: "PKR" },
+  { code: "BD", name: "Bangladesh",          currency: "BDT" },
+  { code: "SA", name: "Arabia Saudita",      currency: "SAR" },
+  { code: "AE", name: "Emiratos Árabes",     currency: "AED" },
+  { code: "IL", name: "Israel",             currency: "ILS" },
+  // Oceanía
+  { code: "AU", name: "Australia",           currency: "AUD" },
+  { code: "NZ", name: "Nueva Zelanda",       currency: "NZD" },
+  // África
+  { code: "NG", name: "Nigeria",             currency: "NGN" },
+  { code: "KE", name: "Kenia",              currency: "KES" },
+  { code: "GH", name: "Ghana",              currency: "GHS" },
+  { code: "ZA", name: "Sudáfrica",           currency: "ZAR" },
+  { code: "EG", name: "Egipto",             currency: "EGP" },
+  { code: "MA", name: "Marruecos",           currency: "MAD" },
+  { code: "TZ", name: "Tanzania",            currency: "TZS" },
+  { code: "SN", name: "Senegal",             currency: "XOF" },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -164,6 +213,17 @@ function PaymentForm({
       ? fmt(summary.cadAmount, "CAD")
       : fmt(summary.amount ?? summary.cadAmount, summary.currency ?? "CAD");
 
+  if (!stripe) {
+    return (
+      <div className="text-center py-6 space-y-2">
+        <p className="text-slate-400 text-sm">Cargando formulario de pago…</p>
+        <p className="text-slate-600 text-xs">
+          Si esto persiste, verifica que <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> esté configurada en Vercel.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <PaymentElement options={{ layout: "tabs" }} />
@@ -190,6 +250,7 @@ export default function Home() {
   const [linkMode,       setLinkMode]     = useState<LinkMode>("cobro");
   const [name,           setName]         = useState("");
   const [country,        setCountry]      = useState("MX");
+  const [countryName,    setCountryName]  = useState("México");
   const [account,        setAccount]      = useState("");
   const [amount,         setAmount]       = useState("");
   const [currency,       setCurrency]     = useState("MXN");
@@ -302,12 +363,21 @@ export default function Home() {
     return () => clearInterval(iv);
   }, [step, piId]);
 
-  // ── Auto-fill currency when country changes ──────────────────────────────
-  useEffect(() => {
-    const c = COUNTRIES.find((c) => c.code === country);
-    if (c) setCurrency(c.currency);
+  // ── Auto-fill currency + code when countryName changes ──────────────────
+  function handleCountryChange(input: string) {
+    setCountryName(input);
     setAccount("");
-  }, [country]);
+    const match = COUNTRIES.find(
+      (c) => c.name.toLowerCase() === input.toLowerCase()
+    );
+    if (match) {
+      setCountry(match.code);
+      setCurrency(match.currency);
+    } else {
+      // País no reconocido — el usuario puede escribir la moneda manualmente
+      setCountry(input || "N/A");
+    }
+  }
 
   // ── Handlers ────────────────────────────────────────────────────────────
   async function handleCreate() {
@@ -382,12 +452,28 @@ export default function Home() {
       : `${who} te solicita el pago de sus honorarios por ${fmt(parseFloat(amount || "0"), currency)}.\nLiquida aquí: ${shareLink}`;
   }
 
-  function openWhatsApp() {
-    window.open(buildWhatsAppLink(buildShareMsg()), "_blank");
+  async function openWhatsApp() {
+    const msg = buildShareMsg();
+    // Web Share API — abre el selector nativo de apps en móvil (más confiable que deeplinks)
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ text: msg });
+        return;
+      } catch {}
+    }
+    // Fallback desktop: deeplink wa.me
+    window.open(buildWhatsAppLink(msg), "_blank");
   }
 
-  function openTelegram() {
-    window.open(buildTelegramLink(shareLink, buildShareMsg()), "_blank");
+  async function openTelegram() {
+    const msg = buildShareMsg();
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ text: msg });
+        return;
+      } catch {}
+    }
+    window.open(buildTelegramLink(shareLink, msg), "_blank");
   }
 
   function buildReceiptMsg(): string {
@@ -706,16 +792,19 @@ export default function Home() {
 
         {/* Country */}
         <div>
-          <label className="block text-xs text-slate-400 mb-1">País del cliente pagador</label>
-          <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm"
-          >
+          <label className="block text-xs text-slate-400 mb-1">País destino</label>
+          <input
+            list="countries-list"
+            value={countryName}
+            onChange={(e) => handleCountryChange(e.target.value)}
+            placeholder="Escribe o selecciona un país…"
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm"
+          />
+          <datalist id="countries-list">
             {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.name}</option>
+              <option key={c.code} value={c.name} />
             ))}
-          </select>
+          </datalist>
         </div>
 
         {/* Disbursement method (corporate only) */}
