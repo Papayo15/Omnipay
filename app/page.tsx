@@ -12,6 +12,7 @@ import {
   Zap, Building2, CreditCard, Smartphone, Send, Store,
   ArrowLeft, CheckCircle2, AlertCircle, Clock, Copy, Check,
 } from "lucide-react";
+import { buildWhatsAppLink, buildTelegramLink, buildOmniPayMessage } from "@/lib/messaging";
 
 // ── Stripe singleton ──────────────────────────────────────────────────────────
 const stripePromise = loadStripe(
@@ -374,13 +375,31 @@ export default function Home() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  function openWhatsApp() {
+  function buildShareMsg(): string {
     const who = name.trim() || "El proveedor";
-    const msg =
-      linkMode === "remesa" && shareQuote
-        ? `${who} te solicita la liquidación de su factura de servicios.\nLiquida aquí: ${shareLink}`
-        : `${who} te solicita el pago de sus honorarios por ${fmt(parseFloat(amount || "0"), currency)}.\nLiquida aquí: ${shareLink}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+    return linkMode === "remesa" && shareQuote
+      ? `${who} te solicita la liquidación de su factura de servicios.\nLiquida aquí: ${shareLink}`
+      : `${who} te solicita el pago de sus honorarios por ${fmt(parseFloat(amount || "0"), currency)}.\nLiquida aquí: ${shareLink}`;
+  }
+
+  function openWhatsApp() {
+    window.open(buildWhatsAppLink(buildShareMsg()), "_blank");
+  }
+
+  function openTelegram() {
+    window.open(buildTelegramLink(shareLink, buildShareMsg()), "_blank");
+  }
+
+  function buildReceiptMsg(): string {
+    return buildOmniPayMessage({
+      clientName:    "Cliente",
+      transactionId: piId ?? "—",
+      amount:        summary?.cadAmount ?? 0,
+      currency:      "CAD",
+      concept:       "Servicios Profesionales",
+      date:          new Date().toLocaleDateString("es-MX", { day: "2-digit", month: "long", year: "numeric" }),
+      trackingUrl:   typeof window !== "undefined" ? window.location.href : "",
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -450,13 +469,29 @@ export default function Home() {
   // ── DONE ──────────────────────────────────────────────────────────────────
   if (step === "done") {
     return (
-      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5">
+      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5 max-w-sm mx-auto w-full">
         <CheckCircle2 className="w-16 h-16 text-emerald-400" />
         <h2 className="text-2xl font-bold text-white">¡Pago Procesado!</h2>
         <p className="text-slate-400 text-sm max-w-xs">
           La liquidación de honorarios ha sido procesada exitosamente.{" "}
           {summary?.recipientName ?? "El proveedor"} recibirá confirmación por SMS.
         </p>
+        <div className="w-full space-y-3 mt-2">
+          <button
+            onClick={() => window.open(buildWhatsAppLink(buildReceiptMsg()), "_blank")}
+            className="w-full bg-[#25D366] hover:bg-[#1fb85a] active:scale-95 transition-all text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2"
+          >
+            <Send className="w-4 h-4" />
+            Compartir comprobante por WhatsApp
+          </button>
+          <button
+            onClick={() => window.open(buildTelegramLink(typeof window !== "undefined" ? window.location.href : "", buildReceiptMsg()), "_blank")}
+            className="w-full bg-[#229ED9] hover:bg-[#1a8ec0] active:scale-95 transition-all text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2"
+          >
+            <Send className="w-4 h-4" />
+            Compartir comprobante por Telegram
+          </button>
+        </div>
       </main>
     );
   }
@@ -521,6 +556,13 @@ export default function Home() {
             >
               <Send className="w-5 h-5" />
               Enviar al Cliente por WhatsApp
+            </button>
+            <button
+              onClick={openTelegram}
+              className="w-full bg-[#229ED9] hover:bg-[#1a8ec0] active:scale-95 transition-all text-white py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2"
+            >
+              <Send className="w-5 h-5" />
+              Enviar al Cliente por Telegram
             </button>
             <button
               onClick={handleCopy}
