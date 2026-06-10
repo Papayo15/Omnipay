@@ -301,10 +301,10 @@ export default function Home() {
     const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e); };
     window.addEventListener("beforeinstallprompt", handler);
 
-    // iOS Safari: detecta si no está en modo standalone y muestra instrucciones
+    // iOS Safari: detecta si no está en modo standalone y muestra instrucciones (con delay)
     const isIos        = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    if (isIos && !isStandalone) setShowIosHint(true);
+    if (isIos && !isStandalone) setTimeout(() => setShowIosHint(true), 3000);
 
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
@@ -393,16 +393,19 @@ export default function Home() {
   // ── Auto-fill currency + code when countryName changes ──────────────────
   function handleCountryChange(input: string) {
     setCountryName(input);
-    setAccount("");
     const match = COUNTRIES.find(
       (c) => c.name.toLowerCase() === input.toLowerCase()
     );
     if (match) {
-      setCountry(match.code);
-      setCurrency(match.currency);
+      // Solo limpiar cuenta si el país realmente cambió a otro reconocido
+      if (match.code !== country) {
+        setAccount("");
+        setCountry(match.code);
+        setCurrency(match.currency);
+      }
     } else {
-      // País no reconocido — el usuario puede escribir la moneda manualmente
       setCountry(input || "N/A");
+      // No limpiar cuenta ni moneda mientras el usuario escribe caracteres parciales
     }
   }
 
@@ -661,6 +664,16 @@ export default function Home() {
               </p>
             )}
           </div>
+
+          {/* Link preview */}
+          {shareLink && (
+            <div className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-2 text-center">
+              <p className="text-slate-500 text-xs mb-0.5">Tu enlace de cobro</p>
+              <p className="text-slate-300 text-xs font-mono break-all leading-relaxed">
+                {shareLink.length > 60 ? shareLink.slice(0, 57) + "…" : shareLink}
+              </p>
+            </div>
+          )}
 
           <div className="w-full space-y-3">
             <button
