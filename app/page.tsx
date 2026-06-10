@@ -58,77 +58,77 @@ interface ShareQuote {
 // ── Data ──────────────────────────────────────────────────────────────────────
 const COUNTRIES = [
   // América del Norte
-  { code: "MX", name: "México",              currency: "MXN" },
-  { code: "US", name: "Estados Unidos",      currency: "USD" },
-  { code: "CA", name: "Canadá",              currency: "CAD" },
+  { code: "MX", name: "México",              currency: "MXN", phone: "+52" },
+  { code: "US", name: "Estados Unidos",      currency: "USD", phone: "+1"  },
+  { code: "CA", name: "Canadá",              currency: "CAD", phone: "+1"  },
   // América Central
-  { code: "GT", name: "Guatemala",           currency: "GTQ" },
-  { code: "SV", name: "El Salvador",         currency: "USD" },
-  { code: "HN", name: "Honduras",            currency: "HNL" },
-  { code: "NI", name: "Nicaragua",           currency: "NIO" },
-  { code: "CR", name: "Costa Rica",          currency: "CRC" },
-  { code: "PA", name: "Panamá",              currency: "USD" },
+  { code: "GT", name: "Guatemala",           currency: "GTQ", phone: "+502" },
+  { code: "SV", name: "El Salvador",         currency: "USD", phone: "+503" },
+  { code: "HN", name: "Honduras",            currency: "HNL", phone: "+504" },
+  { code: "NI", name: "Nicaragua",           currency: "NIO", phone: "+505" },
+  { code: "CR", name: "Costa Rica",          currency: "CRC", phone: "+506" },
+  { code: "PA", name: "Panamá",              currency: "USD", phone: "+507" },
   // Caribe
-  { code: "DO", name: "Rep. Dominicana",     currency: "DOP" },
-  { code: "CU", name: "Cuba",               currency: "CUP" },
-  { code: "HT", name: "Haití",              currency: "HTG" },
-  { code: "JM", name: "Jamaica",             currency: "JMD" },
+  { code: "DO", name: "Rep. Dominicana",     currency: "DOP", phone: "+1"   },
+  { code: "CU", name: "Cuba",               currency: "CUP", phone: "+53"  },
+  { code: "HT", name: "Haití",              currency: "HTG", phone: "+509" },
+  { code: "JM", name: "Jamaica",             currency: "JMD", phone: "+1"   },
   // América del Sur
-  { code: "CO", name: "Colombia",            currency: "COP" },
-  { code: "VE", name: "Venezuela",           currency: "USD" },
-  { code: "EC", name: "Ecuador",             currency: "USD" },
-  { code: "PE", name: "Perú",               currency: "PEN" },
-  { code: "BO", name: "Bolivia",             currency: "BOB" },
-  { code: "CL", name: "Chile",              currency: "CLP" },
-  { code: "AR", name: "Argentina",           currency: "ARS" },
-  { code: "UY", name: "Uruguay",             currency: "UYU" },
-  { code: "PY", name: "Paraguay",            currency: "PYG" },
-  { code: "BR", name: "Brasil",             currency: "BRL" },
+  { code: "CO", name: "Colombia",            currency: "COP", phone: "+57"  },
+  { code: "VE", name: "Venezuela",           currency: "USD", phone: "+58"  },
+  { code: "EC", name: "Ecuador",             currency: "USD", phone: "+593" },
+  { code: "PE", name: "Perú",               currency: "PEN", phone: "+51"  },
+  { code: "BO", name: "Bolivia",             currency: "BOB", phone: "+591" },
+  { code: "CL", name: "Chile",              currency: "CLP", phone: "+56"  },
+  { code: "AR", name: "Argentina",           currency: "ARS", phone: "+54"  },
+  { code: "UY", name: "Uruguay",             currency: "UYU", phone: "+598" },
+  { code: "PY", name: "Paraguay",            currency: "PYG", phone: "+595" },
+  { code: "BR", name: "Brasil",             currency: "BRL", phone: "+55"  },
   // Europa
-  { code: "GB", name: "Reino Unido",         currency: "GBP" },
-  { code: "DE", name: "Alemania",            currency: "EUR" },
-  { code: "FR", name: "Francia",             currency: "EUR" },
-  { code: "ES", name: "España",             currency: "EUR" },
-  { code: "IT", name: "Italia",             currency: "EUR" },
-  { code: "NL", name: "Países Bajos",        currency: "EUR" },
-  { code: "PT", name: "Portugal",            currency: "EUR" },
-  { code: "BE", name: "Bélgica",            currency: "EUR" },
-  { code: "CH", name: "Suiza",              currency: "CHF" },
-  { code: "SE", name: "Suecia",             currency: "SEK" },
-  { code: "NO", name: "Noruega",             currency: "NOK" },
-  { code: "DK", name: "Dinamarca",           currency: "DKK" },
-  { code: "PL", name: "Polonia",             currency: "PLN" },
-  { code: "RO", name: "Rumania",             currency: "RON" },
-  { code: "TR", name: "Turquía",             currency: "TRY" },
+  { code: "GB", name: "Reino Unido",         currency: "GBP", phone: "+44"  },
+  { code: "DE", name: "Alemania",            currency: "EUR", phone: "+49"  },
+  { code: "FR", name: "Francia",             currency: "EUR", phone: "+33"  },
+  { code: "ES", name: "España",             currency: "EUR", phone: "+34"  },
+  { code: "IT", name: "Italia",             currency: "EUR", phone: "+39"  },
+  { code: "NL", name: "Países Bajos",        currency: "EUR", phone: "+31"  },
+  { code: "PT", name: "Portugal",            currency: "EUR", phone: "+351" },
+  { code: "BE", name: "Bélgica",            currency: "EUR", phone: "+32"  },
+  { code: "CH", name: "Suiza",              currency: "CHF", phone: "+41"  },
+  { code: "SE", name: "Suecia",             currency: "SEK", phone: "+46"  },
+  { code: "NO", name: "Noruega",             currency: "NOK", phone: "+47"  },
+  { code: "DK", name: "Dinamarca",           currency: "DKK", phone: "+45"  },
+  { code: "PL", name: "Polonia",             currency: "PLN", phone: "+48"  },
+  { code: "RO", name: "Rumania",             currency: "RON", phone: "+40"  },
+  { code: "TR", name: "Turquía",             currency: "TRY", phone: "+90"  },
   // Asia
-  { code: "IN", name: "India",              currency: "INR" },
-  { code: "CN", name: "China",              currency: "CNY" },
-  { code: "JP", name: "Japón",              currency: "JPY" },
-  { code: "KR", name: "Corea del Sur",       currency: "KRW" },
-  { code: "PH", name: "Filipinas",           currency: "PHP" },
-  { code: "ID", name: "Indonesia",           currency: "IDR" },
-  { code: "MY", name: "Malasia",             currency: "MYR" },
-  { code: "TH", name: "Tailandia",           currency: "THB" },
-  { code: "VN", name: "Vietnam",             currency: "VND" },
-  { code: "SG", name: "Singapur",            currency: "SGD" },
-  { code: "HK", name: "Hong Kong",           currency: "HKD" },
-  { code: "PK", name: "Pakistán",            currency: "PKR" },
-  { code: "BD", name: "Bangladesh",          currency: "BDT" },
-  { code: "SA", name: "Arabia Saudita",      currency: "SAR" },
-  { code: "AE", name: "Emiratos Árabes",     currency: "AED" },
-  { code: "IL", name: "Israel",             currency: "ILS" },
+  { code: "IN", name: "India",              currency: "INR", phone: "+91"  },
+  { code: "CN", name: "China",              currency: "CNY", phone: "+86"  },
+  { code: "JP", name: "Japón",              currency: "JPY", phone: "+81"  },
+  { code: "KR", name: "Corea del Sur",       currency: "KRW", phone: "+82"  },
+  { code: "PH", name: "Filipinas",           currency: "PHP", phone: "+63"  },
+  { code: "ID", name: "Indonesia",           currency: "IDR", phone: "+62"  },
+  { code: "MY", name: "Malasia",             currency: "MYR", phone: "+60"  },
+  { code: "TH", name: "Tailandia",           currency: "THB", phone: "+66"  },
+  { code: "VN", name: "Vietnam",             currency: "VND", phone: "+84"  },
+  { code: "SG", name: "Singapur",            currency: "SGD", phone: "+65"  },
+  { code: "HK", name: "Hong Kong",           currency: "HKD", phone: "+852" },
+  { code: "PK", name: "Pakistán",            currency: "PKR", phone: "+92"  },
+  { code: "BD", name: "Bangladesh",          currency: "BDT", phone: "+880" },
+  { code: "SA", name: "Arabia Saudita",      currency: "SAR", phone: "+966" },
+  { code: "AE", name: "Emiratos Árabes",     currency: "AED", phone: "+971" },
+  { code: "IL", name: "Israel",             currency: "ILS", phone: "+972" },
   // Oceanía
-  { code: "AU", name: "Australia",           currency: "AUD" },
-  { code: "NZ", name: "Nueva Zelanda",       currency: "NZD" },
+  { code: "AU", name: "Australia",           currency: "AUD", phone: "+61"  },
+  { code: "NZ", name: "Nueva Zelanda",       currency: "NZD", phone: "+64"  },
   // África
-  { code: "NG", name: "Nigeria",             currency: "NGN" },
-  { code: "KE", name: "Kenia",              currency: "KES" },
-  { code: "GH", name: "Ghana",              currency: "GHS" },
-  { code: "ZA", name: "Sudáfrica",           currency: "ZAR" },
-  { code: "EG", name: "Egipto",             currency: "EGP" },
-  { code: "MA", name: "Marruecos",           currency: "MAD" },
-  { code: "TZ", name: "Tanzania",            currency: "TZS" },
-  { code: "SN", name: "Senegal",             currency: "XOF" },
+  { code: "NG", name: "Nigeria",             currency: "NGN", phone: "+234" },
+  { code: "KE", name: "Kenia",              currency: "KES", phone: "+254" },
+  { code: "GH", name: "Ghana",              currency: "GHS", phone: "+233" },
+  { code: "ZA", name: "Sudáfrica",           currency: "ZAR", phone: "+27"  },
+  { code: "EG", name: "Egipto",             currency: "EGP", phone: "+20"  },
+  { code: "MA", name: "Marruecos",           currency: "MAD", phone: "+212" },
+  { code: "TZ", name: "Tanzania",            currency: "TZS", phone: "+255" },
+  { code: "SN", name: "Senegal",             currency: "XOF", phone: "+221" },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -356,12 +356,14 @@ export default function Home() {
       setTokenData({ token: tok, sig, type: p.get("type") ?? "remesa" });
       setStep("checkout_init");
     } else {
-      // Auto-set country/currency from browser locale
+      // Auto-set country/currency/phone prefix from browser locale
       const loc = navigator.language ?? "es-MX";
       const def = getLocaleDefault(loc);
       setCountry(def.code);
       setCountryName(def.name);
       setCurrency(def.currency);
+      const prefix = COUNTRIES.find((c) => c.code === def.code)?.phone;
+      if (prefix) setRPhone(prefix + " ");
       setStep("create");
     }
   }, []);
@@ -461,22 +463,22 @@ export default function Home() {
     return () => clearInterval(iv);
   }, [step, piId]);
 
-  // ── Auto-fill currency + code when countryName changes ──────────────────
+  // ── Auto-fill currency + phone prefix when countryName changes ──────────
   function handleCountryChange(input: string) {
     setCountryName(input);
     const match = COUNTRIES.find(
       (c) => c.name.toLowerCase() === input.toLowerCase()
     );
-    if (match) {
-      // Solo limpiar cuenta si el país realmente cambió a otro reconocido
-      if (match.code !== country) {
-        setAccount("");
-        setCountry(match.code);
-        setCurrency(match.currency);
-      }
-    } else {
+    if (match && match.code !== country) {
+      setAccount("");
+      setCountry(match.code);
+      setCurrency(match.currency);
+      // Auto-rellenar prefijo telefónico si el campo está vacío o solo tiene el prefijo anterior
+      const currentPrefix = COUNTRIES.find((c) => c.code === country)?.phone ?? "";
+      const bare = recipientPhone.trim().replace(currentPrefix, "").trim();
+      if (!bare) setRPhone(match.phone + " ");
+    } else if (!match) {
       setCountry(input || "N/A");
-      // No limpiar cuenta ni moneda mientras el usuario escribe caracteres parciales
     }
   }
 
