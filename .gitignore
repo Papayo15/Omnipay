@@ -35,8 +35,7 @@ yarn-error.log*
 .env.*.local
 # .env.example SÍ se puede subir (sin valores)
 
-# PWA service worker (generado automáticamente)
-/public/sw.js
+# PWA service worker generado por next-pwa (no aplica — usamos sw.js manual)
 /public/workbox-*.js
 /public/worker-*.js
 

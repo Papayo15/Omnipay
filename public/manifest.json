@@ -1,22 +1,25 @@
 {
-  "name": "OmniPay Protocol",
+  "name": "OmniPay",
   "short_name": "OmniPay",
-  "description": "Transfiere dinero directo de banco a banco en todo el mundo",
+  "description": "Cobra y envía dinero a cualquier país en segundos",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
-  "theme_color": "#6366f1",
+  "theme_color": "#00C9C8",
   "orientation": "portrait",
+  "categories": ["finance", "business"],
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

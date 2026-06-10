@@ -271,6 +271,12 @@ export default function Home() {
   const [summary,       setSummary]       = useState<PaySummary | null>(null);
   const [secsLeft,      setSecsLeft]      = useState(570);
 
+  // — PWA install —
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [showIosHint,   setShowIosHint]   = useState(false);
+  const [installDone,   setInstallDone]   = useState(false);
+
   // — progress —
   const [progressStep, setProgressStep] = useState(0);
   const [piId,         setPiId]         = useState<string | null>(null);
@@ -288,6 +294,27 @@ export default function Home() {
       setStep("create");
     }
   }, []);
+
+  // ── PWA install prompt ───────────────────────────────────────────────────
+  useEffect(() => {
+    // Android/Chrome: captura el evento beforeinstallprompt para mostrar botón propio
+    const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener("beforeinstallprompt", handler);
+
+    // iOS Safari: detecta si no está en modo standalone y muestra instrucciones
+    const isIos        = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+    if (isIos && !isStandalone) setShowIosHint(true);
+
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  async function handleInstall() {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === "accepted") { setInstallDone(true); setInstallPrompt(null); }
+  }
 
   // ── Fetch PaymentIntent ──────────────────────────────────────────────────
   useEffect(() => {
@@ -913,9 +940,42 @@ export default function Home() {
           {submitting ? "Procesando…" : "Generar Enlace de Cobro"}
         </button>
 
-        <p className="text-center text-xs text-slate-600 pb-4">
+        <p className="text-center text-xs text-slate-600 pb-2">
           🔒 Los datos de cuenta viajan cifrados — OmniPay no los almacena
         </p>
+
+        {/* ── Banner de instalación PWA ── */}
+        {!installDone && installPrompt && (
+          <div className="flex items-center justify-between gap-3 bg-[#00C9C8]/10 border border-[#00C9C8]/30 rounded-2xl px-4 py-3">
+            <div>
+              <p className="text-[#00C9C8] text-sm font-medium">Instala OmniPay</p>
+              <p className="text-slate-400 text-xs">Accede directo desde tu celular</p>
+            </div>
+            <button
+              onClick={handleInstall}
+              className="bg-[#00C9C8] text-slate-900 text-sm font-semibold px-4 py-2 rounded-xl whitespace-nowrap"
+            >
+              Instalar
+            </button>
+          </div>
+        )}
+
+        {/* iOS: instrucciones manuales */}
+        {!installDone && showIosHint && !installPrompt && (
+          <div className="bg-[#00C9C8]/10 border border-[#00C9C8]/30 rounded-2xl px-4 py-3 space-y-1">
+            <p className="text-[#00C9C8] text-sm font-medium">Instala OmniPay en tu iPhone</p>
+            <p className="text-slate-400 text-xs leading-relaxed">
+              Toca <span className="text-white">Compartir</span> (□↑) en Safari →{" "}
+              <span className="text-white">Agregar a inicio</span> → <span className="text-white">Agregar</span>
+            </p>
+            <button
+              onClick={() => setShowIosHint(false)}
+              className="text-slate-600 text-xs underline"
+            >
+              Ya la instalé
+            </button>
+          </div>
+        )}
 
       </div>
     </main>

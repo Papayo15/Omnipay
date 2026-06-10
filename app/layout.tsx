@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   description: "Transfiere dinero directo de banco a banco en todo el mundo. Sin terminales. Sin tarjetas.",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "OmniPay" },
+  icons: { apple: "/icon-192.png" },
   openGraph: {
     title: "OmniPay Protocol",
     description: "Te están pidiendo dinero. Paga en segundos.",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#6366f1",
+  themeColor: "#00C9C8",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -33,6 +34,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} className={geist.variable}>
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+              navigator.serviceWorker.register('/sw.js');
+            });
+          }
+        ` }} />
       </head>
       <body className="min-h-screen flex flex-col bg-[#0f172a] text-[#f8fafc] antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>

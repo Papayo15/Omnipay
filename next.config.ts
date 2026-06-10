@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: blob: https:",
             "frame-src https://js.stripe.com https://hooks.stripe.com",
+            "worker-src 'self'",
             "connect-src 'self' https://ipinfo.io https://open.er-api.com https://api.stripe.com https://api.wise.com https://api.thunes.com",
             "media-src 'self' blob:",
           ].join("; "),
