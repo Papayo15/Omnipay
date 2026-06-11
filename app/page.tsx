@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useEffect, useState, useCallback } from "react";
+import { useLocale } from "next-intl";
+import PAGE_MESSAGES from "@/lib/pageMessages";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -53,6 +54,35 @@ interface ShareQuote {
   receiveCurrency:        string;
   estimatedOriginAmount:  number;
   originCurrency:         string;
+}
+
+// ── Country → UI locale mapping ───────────────────────────────────────────────
+const COUNTRY_LOCALE: Record<string, string> = {
+  MX:"es", GT:"es", SV:"es", HN:"es", NI:"es", CR:"es", PA:"es",
+  DO:"es", CU:"es", HT:"fr", JM:"en",
+  CO:"es", VE:"es", EC:"es", PE:"es", BO:"es", CL:"es", AR:"es",
+  UY:"es", PY:"es", BR:"pt",
+  GB:"en", DE:"de", FR:"fr", ES:"es", IT:"it", NL:"nl", PT:"pt",
+  BE:"fr", CH:"de", SE:"en", NO:"en", DK:"en", PL:"en", RO:"en", TR:"tr",
+  IN:"hi", CN:"zh", JP:"ja", KR:"ko", PH:"en", ID:"id", MY:"en",
+  TH:"en", VN:"vi", SG:"en", HK:"zh", PK:"en", BD:"en",
+  SA:"ar", AE:"ar", IL:"en",
+  AU:"en", NZ:"en",
+  NG:"ha", KE:"sw", GH:"en", ZA:"en", EG:"ar", MA:"ar", TZ:"sw", SN:"fr",
+};
+
+// ── Client-side t() — interpolates {param} placeholders ──────────────────────
+function makeT(locale: string) {
+  const msgs = PAGE_MESSAGES[locale] ?? PAGE_MESSAGES["es"];
+  return function t(key: string, params?: Record<string, string>): string {
+    let str = msgs[key] ?? PAGE_MESSAGES["en"]?.[key] ?? key;
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        str = str.replaceAll(`{${k}}`, v);
+      });
+    }
+    return str;
+  };
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -179,12 +209,13 @@ function PaymentForm({
   summary,
   onSuccess,
   onError,
+  t,
 }: {
   summary:   PaySummary;
   onSuccess: (piId: string) => void;
   onError:   (msg: string) => void;
+  t:         (key: string, params?: Record<string, string>) => string;
 }) {
-  const t        = useTranslations("page");
   const stripe   = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -307,8 +338,9 @@ function getLocaleDefault(browserLocale: string) {
 
 // ── Main One-Page App ─────────────────────────────────────────────────────────
 export default function Home() {
-  const t    = useTranslations("page");
-  useLocale(); // ensures locale context is loaded
+  const serverLocale = useLocale();
+  const [uiLocale, setUiLocale] = useState(serverLocale);
+  const t = useCallback(makeT(uiLocale), [uiLocale]);
   const [step, setStep] = useState<Step>("loading");
 
   // — form —
@@ -356,7 +388,7 @@ export default function Home() {
       setTokenData({ token: tok, sig, type: p.get("type") ?? "remesa" });
       setStep("checkout_init");
     } else {
-      // Auto-set country/currency/phone prefix from browser locale
+      // Auto-set country/currency/phone prefix + UI language from browser locale
       const loc = navigator.language ?? "es-MX";
       const def = getLocaleDefault(loc);
       setCountry(def.code);
@@ -364,6 +396,8 @@ export default function Home() {
       setCurrency(def.currency);
       const prefix = COUNTRIES.find((c) => c.code === def.code)?.phone;
       if (prefix) setRPhone(prefix + " ");
+      const initLocale = COUNTRY_LOCALE[def.code] ?? loc.split("-")[0] ?? "es";
+      setUiLocale(initLocale);
       setStep("create");
     }
   }, []);
@@ -463,7 +497,7 @@ export default function Home() {
     return () => clearInterval(iv);
   }, [step, piId]);
 
-  // ── Auto-fill currency + phone prefix when countryName changes ──────────
+  // ── Auto-fill currency + phone prefix + UI language when country changes ─
   function handleCountryChange(input: string) {
     setCountryName(input);
     const match = COUNTRIES.find(
@@ -473,7 +507,10 @@ export default function Home() {
       setAccount("");
       setCountry(match.code);
       setCurrency(match.currency);
-      // Auto-rellenar prefijo telefónico si el campo está vacío o solo tiene el prefijo anterior
+      // Cambiar idioma de la UI al idioma del país seleccionado
+      const newLocale = COUNTRY_LOCALE[match.code] ?? "en";
+      setUiLocale(newLocale);
+      // Auto-rellenar prefijo telefónico
       const currentPrefix = COUNTRIES.find((c) => c.code === country)?.phone ?? "";
       const bare = recipientPhone.trim().replace(currentPrefix, "").trim();
       if (!bare) setRPhone(match.phone + " ");
@@ -839,6 +876,7 @@ export default function Home() {
             summary={summary}
             onSuccess={(id) => { setPiId(id); setProgressStep(0); setStep("progress"); }}
             onError={(msg) => { setErrorMsg(msg); setStep("error"); }}
+            t={t}
           />
         </Elements>
       </main>
