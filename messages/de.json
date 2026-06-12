@@ -185,6 +185,11 @@
     "pwa_ios_done": "Bereits installiert",
     "wa_msg_corporate": "{who} fordert die Begleichung seiner Dienstleistungsrechnung.\nHier bezahlen: {link}",
     "wa_msg_individual": "{who} fordert die Zahlung seiner Honorare für {amount}.\nHier bezahlen: {link}",
-    "pay_error_default": "Fehler bei der Zahlungsautorisierung."
+    "pay_error_default": "Fehler bei der Zahlungsautorisierung.",
+    "checkout_fee_title": "Gebührenaufschlüsselung",
+    "checkout_fee_wise": "Wise (Überweisung)",
+    "checkout_fee_stripe": "Stripe (Verarbeitung)",
+    "checkout_fee_omnipay": "OmniPay (Plattform 1%)",
+    "checkout_fee_you_send": "Sie senden"
   }
 }

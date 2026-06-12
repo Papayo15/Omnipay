@@ -185,6 +185,11 @@
     "pwa_ios_done": "已安装",
     "wa_msg_corporate": "{who}请求结算其服务发票。\n在此支付：{link}",
     "wa_msg_individual": "{who}请求支付{amount}的专业费用。\n在此支付：{link}",
-    "pay_error_default": "支付授权错误。"
+    "pay_error_default": "支付授权错误。",
+    "checkout_fee_title": "费用明细",
+    "checkout_fee_wise": "Wise（汇款）",
+    "checkout_fee_stripe": "Stripe（处理费）",
+    "checkout_fee_omnipay": "OmniPay（平台费 1%）",
+    "checkout_fee_you_send": "您支付"
   }
 }

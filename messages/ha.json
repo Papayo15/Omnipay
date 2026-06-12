@@ -185,6 +185,11 @@
     "pwa_ios_done": "An riga an saka",
     "wa_msg_corporate": "{who} yana neman sasanta takardars ta biya ta ayyuka.\nBiya anan: {link}",
     "wa_msg_individual": "{who} yana neman biyan kuɗin ƙwararru na {amount}.\nBiya anan: {link}",
-    "pay_error_default": "Kuskure wajen ba da izini ga biya."
+    "pay_error_default": "Kuskure wajen ba da izini ga biya.",
+    "checkout_fee_title": "Bayani na kuɗi",
+    "checkout_fee_wise": "Wise (canja wuri)",
+    "checkout_fee_stripe": "Stripe (aiwatarwa)",
+    "checkout_fee_omnipay": "OmniPay (dandali 1%)",
+    "checkout_fee_you_send": "Kana aika"
   }
 }

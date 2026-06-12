@@ -185,6 +185,11 @@
     "pwa_ios_done": "Imesanikishwa tayari",
     "wa_msg_corporate": "{who} anaomba makubaliano ya ankara yake ya huduma.\nLipa hapa: {link}",
     "wa_msg_individual": "{who} anaomba malipo ya ada yake ya kitaalamu ya {amount}.\nLipa hapa: {link}",
-    "pay_error_default": "Hitilafu ya idhini ya malipo."
+    "pay_error_default": "Hitilafu ya idhini ya malipo.",
+    "checkout_fee_title": "Muhtasari wa ada",
+    "checkout_fee_wise": "Wise (uhamisho)",
+    "checkout_fee_stripe": "Stripe (usindikaji)",
+    "checkout_fee_omnipay": "OmniPay (jukwaa 1%)",
+    "checkout_fee_you_send": "Unatuma"
   }
 }

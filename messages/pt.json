@@ -185,6 +185,11 @@
     "pwa_ios_done": "Já instalei",
     "wa_msg_corporate": "{who} solicita a liquidação de sua fatura de serviços.\nPague aqui: {link}",
     "wa_msg_individual": "{who} solicita o pagamento de seus honorários por {amount}.\nPague aqui: {link}",
-    "pay_error_default": "Erro ao autorizar o pagamento."
+    "pay_error_default": "Erro ao autorizar o pagamento.",
+    "checkout_fee_title": "Detalhamento de taxas",
+    "checkout_fee_wise": "Wise (transferência)",
+    "checkout_fee_stripe": "Stripe (processamento)",
+    "checkout_fee_omnipay": "OmniPay (plataforma 1%)",
+    "checkout_fee_you_send": "Você envia"
   }
 }

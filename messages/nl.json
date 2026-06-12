@@ -185,6 +185,11 @@
     "pwa_ios_done": "Al geïnstalleerd",
     "wa_msg_corporate": "{who} verzoekt betaling van zijn servicefactuur.\nBetaal hier: {link}",
     "wa_msg_individual": "{who} verzoekt betaling van zijn honorarium voor {amount}.\nBetaal hier: {link}",
-    "pay_error_default": "Fout bij autoriseren van betaling."
+    "pay_error_default": "Fout bij autoriseren van betaling.",
+    "checkout_fee_title": "Kostenopbouw",
+    "checkout_fee_wise": "Wise (overboeking)",
+    "checkout_fee_stripe": "Stripe (verwerking)",
+    "checkout_fee_omnipay": "OmniPay (platform 1%)",
+    "checkout_fee_you_send": "U stuurt"
   }
 }

@@ -185,6 +185,11 @@
     "pwa_ios_done": "Đã cài đặt",
     "wa_msg_corporate": "{who} yêu cầu thanh toán hóa đơn dịch vụ.\nThanh toán tại đây: {link}",
     "wa_msg_individual": "{who} yêu cầu thanh toán thù lao chuyên nghiệp {amount}.\nThanh toán tại đây: {link}",
-    "pay_error_default": "Lỗi ủy quyền thanh toán."
+    "pay_error_default": "Lỗi ủy quyền thanh toán.",
+    "checkout_fee_title": "Chi tiết phí",
+    "checkout_fee_wise": "Wise (chuyển khoản)",
+    "checkout_fee_stripe": "Stripe (xử lý)",
+    "checkout_fee_omnipay": "OmniPay (nền tảng 1%)",
+    "checkout_fee_you_send": "Bạn gửi"
   }
 }

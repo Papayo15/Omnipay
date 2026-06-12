@@ -185,6 +185,11 @@
     "pwa_ios_done": "Already installed",
     "wa_msg_corporate": "{who} requests settlement of their service invoice.\nPay here: {link}",
     "wa_msg_individual": "{who} requests payment of their professional fees for {amount}.\nPay here: {link}",
-    "pay_error_default": "Error authorizing the payment."
+    "pay_error_default": "Error authorizing the payment.",
+    "checkout_fee_title": "Fee breakdown",
+    "checkout_fee_wise": "Wise (wire transfer)",
+    "checkout_fee_stripe": "Stripe (processing)",
+    "checkout_fee_omnipay": "OmniPay (platform 1%)",
+    "checkout_fee_you_send": "You send"
   }
 }

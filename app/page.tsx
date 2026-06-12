@@ -36,6 +36,12 @@ type Step =
 type LinkMode    = "cobro" | "remesa";
 type ReceiveMode = "bank" | "card" | "wallet";
 
+interface FeeBreakdown {
+  wiseFee:    number;
+  omniPayFee: number;
+  stripeFee:  number;
+}
+
 interface PaySummary {
   type:             "cobro" | "remesa";
   recipientName:    string;
@@ -47,6 +53,7 @@ interface PaySummary {
   payoutMode?:      string;
   amount?:          number;
   currency?:        string;
+  feeBreakdown?:    FeeBreakdown;
 }
 
 interface ShareQuote {
@@ -838,14 +845,41 @@ export default function Home() {
               <p className="text-3xl font-bold text-indigo-400 mb-1">
                 {fmt(summary.receiveAmount, summary.receiveCurrency)}
               </p>
-              <p className="text-white font-semibold text-xl mb-1">
-                {t("checkout_total")} {fmt(summary.cadAmount, "CAD")}
-              </p>
               {summary.wiseRate && (
-                <p className="text-slate-400 text-xs">
+                <p className="text-slate-400 text-xs mb-3">
                   {t("checkout_rate", { rate: summary.wiseRate.toFixed(4), currency: summary.receiveCurrency })}
                 </p>
               )}
+
+              {/* Desglose de tarifas */}
+              {summary.feeBreakdown && (
+                <div className="w-full bg-slate-900/60 rounded-xl px-4 py-3 mb-3 space-y-1.5 text-left">
+                  <p className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-2">
+                    {t("checkout_fee_title")}
+                  </p>
+                  <div className="flex justify-between text-xs text-slate-300">
+                    <span>{t("checkout_fee_you_send")}</span>
+                    <span className="font-mono">{fmt(summary.netCAD ?? 0, "CAD")}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-400">
+                    <span>{t("checkout_fee_wise")}</span>
+                    <span className="font-mono">+ {fmt(summary.feeBreakdown.wiseFee, "CAD")}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-400">
+                    <span>{t("checkout_fee_omnipay")}</span>
+                    <span className="font-mono">+ {fmt(summary.feeBreakdown.omniPayFee, "CAD")}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-400">
+                    <span>{t("checkout_fee_stripe")}</span>
+                    <span className="font-mono">+ {fmt(summary.feeBreakdown.stripeFee, "CAD")}</span>
+                  </div>
+                  <div className="border-t border-slate-700 pt-1.5 flex justify-between text-sm font-semibold text-white">
+                    <span>{t("checkout_total")}</span>
+                    <span className="font-mono">{fmt(summary.cadAmount, "CAD")}</span>
+                  </div>
+                </div>
+              )}
+
               {summary.payoutMode === "INSTANT" && (
                 <p className="text-amber-400 text-xs mt-1">
                   {t("checkout_instant_badge")}

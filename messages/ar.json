@@ -185,6 +185,11 @@
     "pwa_ios_done": "مثبت بالفعل",
     "wa_msg_corporate": "{who} يطلب تسوية فاتورة خدماته.\nادفع هنا: {link}",
     "wa_msg_individual": "{who} يطلب دفع أتعابه المهنية بمبلغ {amount}.\nادفع هنا: {link}",
-    "pay_error_default": "خطأ في ترخيص الدفع."
+    "pay_error_default": "خطأ في ترخيص الدفع.",
+    "checkout_fee_title": "تفاصيل الرسوم",
+    "checkout_fee_wise": "Wise (تحويل)",
+    "checkout_fee_stripe": "Stripe (معالجة)",
+    "checkout_fee_omnipay": "OmniPay (منصة 1%)",
+    "checkout_fee_you_send": "ترسل"
   }
 }

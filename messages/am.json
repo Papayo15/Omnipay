@@ -185,6 +185,11 @@
     "pwa_ios_done": "ቀድሞ ተጭኗል",
     "wa_msg_corporate": "{who} የአገልግሎት ደረሰኙን ለመቋጨት ይጠይቃሉ።\nእዚህ ይክፈሉ: {link}",
     "wa_msg_individual": "{who} የ{amount} ሙያዊ ክፍያ ይጠይቃሉ።\nእዚህ ይክፈሉ: {link}",
-    "pay_error_default": "የክፍያ ፈቃድ ስህተት።"
+    "pay_error_default": "የክፍያ ፈቃድ ስህተት።",
+    "checkout_fee_title": "የክፍያ ዝርዝር",
+    "checkout_fee_wise": "Wise (ዝውውር)",
+    "checkout_fee_stripe": "Stripe (ሂደት)",
+    "checkout_fee_omnipay": "OmniPay (መድረክ 1%)",
+    "checkout_fee_you_send": "የምትልክ"
   }
 }

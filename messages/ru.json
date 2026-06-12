@@ -185,6 +185,11 @@
     "pwa_ios_done": "Уже установлено",
     "wa_msg_corporate": "{who} запрашивает оплату счёта за услуги.\nОплатить здесь: {link}",
     "wa_msg_individual": "{who} запрашивает оплату профессионального гонорара на сумму {amount}.\nОплатить здесь: {link}",
-    "pay_error_default": "Ошибка авторизации платежа."
+    "pay_error_default": "Ошибка авторизации платежа.",
+    "checkout_fee_title": "Детализация комиссий",
+    "checkout_fee_wise": "Wise (перевод)",
+    "checkout_fee_stripe": "Stripe (обработка)",
+    "checkout_fee_omnipay": "OmniPay (платформа 1%)",
+    "checkout_fee_you_send": "Вы отправляете"
   }
 }

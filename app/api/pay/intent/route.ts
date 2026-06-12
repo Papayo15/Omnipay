@@ -14,11 +14,20 @@ import { parseCobrarV2Link, parseRemesaV2Link } from "@/lib/link";
 //            El webhook lo desencripta y tiene todo para ejecutar Wise + SMS.
 
 // ── Fee structure: STANDARD vs INSTANT (NEXT_PUBLIC_PAYOUT_MODE) ─────────────
-const SPEI_FLAT   = 0.20;   // costo Wise por transferencia (SPEI / wire flat)
-const OMNIPAY_NET = 1.00;   // ganancia neta fija OmniPay por transacción
-const STRIPE_FLAT = 0.30;   // fee fijo Stripe por transacción
-const STRIPE_BASE = 0.029;  // 2.9% Stripe
-const STRIPE_INST = 0.01;   // +1% Stripe Instant Payout — solo modo INSTANT
+//
+// cadAmount = (netCAD + SPEI_FLAT + STRIPE_FLAT) / (1 - OMNIPAY_PCT - stripeRate)
+//
+// Desglose visible al pagador:
+//   wiseFee     = SPEI_FLAT
+//   omniPayFee  = cadAmount × OMNIPAY_PCT
+//   stripeFee   = cadAmount × stripeRate + STRIPE_FLAT
+//   netCAD + wiseFee + omniPayFee + stripeFee = cadAmount  ✓
+//
+const SPEI_FLAT    = 0.20;   // costo Wise por transferencia (SPEI / wire flat)
+const OMNIPAY_PCT  = 0.01;   // 1% OmniPay sobre el total cargado en Stripe
+const STRIPE_FLAT  = 0.30;   // fee fijo Stripe por transacción
+const STRIPE_BASE  = 0.029;  // 2.9% Stripe
+const STRIPE_INST  = 0.01;   // +1% Stripe Instant Payout — solo modo INSTANT
 
 // ── Balance de Wise (kill switch de liquidez) ─────────────────────────────────
 async function getWiseCADBalance(): Promise<number> {
@@ -102,10 +111,15 @@ export async function POST(req: NextRequest) {
       const mode       = (process.env.NEXT_PUBLIC_PAYOUT_MODE ?? "STANDARD").toUpperCase();
       const stripeRate = mode === "INSTANT" ? STRIPE_BASE + STRIPE_INST : STRIPE_BASE;
 
-      const wiseRate   = await getWiseLiveRate("CAD", payload.receiveCurrency);
-      const netCAD     = payload.receiveAmount / wiseRate;
-      const omniPayCAD = netCAD + SPEI_FLAT + OMNIPAY_NET; // netCAD + $1.20
-      const cadAmount  = (omniPayCAD + STRIPE_FLAT) / (1 - stripeRate);
+      const wiseRate  = await getWiseLiveRate("CAD", payload.receiveCurrency);
+      const netCAD    = payload.receiveAmount / wiseRate;
+      // Fórmula circular resuelta: 1% OmniPay sobre el total que ve Stripe
+      const cadAmount = (netCAD + SPEI_FLAT + STRIPE_FLAT) / (1 - OMNIPAY_PCT - stripeRate);
+
+      // Desglose de tarifas para mostrar al pagador
+      const omniPayFee = cadAmount * OMNIPAY_PCT;
+      const stripeFee  = cadAmount * stripeRate + STRIPE_FLAT;
+      const wiseFee    = SPEI_FLAT;
 
       // Kill switch: bloquear si el float Wise no alcanza para cubrir el envío
       const wiseCadBalance = await getWiseCADBalance();
@@ -144,6 +158,11 @@ export async function POST(req: NextRequest) {
           targetCountry:   payload.targetCountry,
           payoutMode:      mode,
           stripeFeePct:    stripeRate,
+          feeBreakdown: {
+            wiseFee:    parseFloat(wiseFee.toFixed(2)),
+            omniPayFee: parseFloat(omniPayFee.toFixed(2)),
+            stripeFee:  parseFloat(stripeFee.toFixed(2)),
+          },
         },
       });
     }

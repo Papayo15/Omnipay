@@ -185,6 +185,11 @@
     "pwa_ios_done": "Déjà installé",
     "wa_msg_corporate": "{who} vous demande le règlement de sa facture de services.\nPayez ici : {link}",
     "wa_msg_individual": "{who} vous demande le paiement de ses honoraires pour {amount}.\nPayez ici : {link}",
-    "pay_error_default": "Erreur lors de l'autorisation du paiement."
+    "pay_error_default": "Erreur lors de l'autorisation du paiement.",
+    "checkout_fee_title": "Détail des frais",
+    "checkout_fee_wise": "Wise (virement)",
+    "checkout_fee_stripe": "Stripe (traitement)",
+    "checkout_fee_omnipay": "OmniPay (plateforme 1%)",
+    "checkout_fee_you_send": "Vous envoyez"
   }
 }

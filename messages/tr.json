@@ -185,6 +185,11 @@
     "pwa_ios_done": "Zaten yüklü",
     "wa_msg_corporate": "{who} hizmet faturasının ödenmesini talep ediyor.\nBuradan ödeyin: {link}",
     "wa_msg_individual": "{who} {amount} tutarındaki profesyonel ücretin ödenmesini talep ediyor.\nBuradan ödeyin: {link}",
-    "pay_error_default": "Ödeme yetkilendirme hatası."
+    "pay_error_default": "Ödeme yetkilendirme hatası.",
+    "checkout_fee_title": "Ücret dökümü",
+    "checkout_fee_wise": "Wise (havale)",
+    "checkout_fee_stripe": "Stripe (işlem)",
+    "checkout_fee_omnipay": "OmniPay (platform %1)",
+    "checkout_fee_you_send": "Gönderiyorsunuz"
   }
 }

@@ -185,6 +185,11 @@
     "pwa_ios_done": "Già installato",
     "wa_msg_corporate": "{who} richiede la liquidazione della sua fattura di servizi.\nPaga qui: {link}",
     "wa_msg_individual": "{who} richiede il pagamento dei suoi onorari per {amount}.\nPaga qui: {link}",
-    "pay_error_default": "Errore nell'autorizzazione del pagamento."
+    "pay_error_default": "Errore nell'autorizzazione del pagamento.",
+    "checkout_fee_title": "Riepilogo tariffe",
+    "checkout_fee_wise": "Wise (bonifico)",
+    "checkout_fee_stripe": "Stripe (elaborazione)",
+    "checkout_fee_omnipay": "OmniPay (piattaforma 1%)",
+    "checkout_fee_you_send": "Invii"
   }
 }

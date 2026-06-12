@@ -185,6 +185,11 @@
     "pwa_ios_done": "インストール済み",
     "wa_msg_corporate": "{who}がサービス請求書の決済を要求しています。\nここで支払う: {link}",
     "wa_msg_individual": "{who}が{amount}の専門報酬の支払いを要求しています。\nここで支払う: {link}",
-    "pay_error_default": "支払い承認エラー。"
+    "pay_error_default": "支払い承認エラー。",
+    "checkout_fee_title": "手数料の内訳",
+    "checkout_fee_wise": "Wise（送金手数料）",
+    "checkout_fee_stripe": "Stripe（処理手数料）",
+    "checkout_fee_omnipay": "OmniPay（プラットフォーム 1%）",
+    "checkout_fee_you_send": "お支払い額"
   }
 }

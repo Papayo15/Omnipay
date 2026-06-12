@@ -185,6 +185,11 @@
     "pwa_ios_done": "पहले से इंस्टॉल है",
     "wa_msg_corporate": "{who} अपने सेवा चालान के निपटान का अनुरोध कर रहा है।\nयहां भुगतान करें: {link}",
     "wa_msg_individual": "{who} {amount} के पेशेवर शुल्क के भुगतान का अनुरोध कर रहा है।\nयहां भुगतान करें: {link}",
-    "pay_error_default": "भुगतान अधिकृत करने में त्रुटि।"
+    "pay_error_default": "भुगतान अधिकृत करने में त्रुटि।",
+    "checkout_fee_title": "शुल्क विवरण",
+    "checkout_fee_wise": "Wise (ट्रांसफर)",
+    "checkout_fee_stripe": "Stripe (प्रसंस्करण)",
+    "checkout_fee_omnipay": "OmniPay (प्लेटफॉर्म 1%)",
+    "checkout_fee_you_send": "आप भेजते हैं"
   }
 }

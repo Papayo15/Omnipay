@@ -185,6 +185,11 @@
     "pwa_ios_done": "이미 설치됨",
     "wa_msg_corporate": "{who}가 서비스 청구서 결제를 요청합니다.\n여기서 결제: {link}",
     "wa_msg_individual": "{who}가 {amount}의 전문 보수 결제를 요청합니다.\n여기서 결제: {link}",
-    "pay_error_default": "결제 승인 오류."
+    "pay_error_default": "결제 승인 오류.",
+    "checkout_fee_title": "수수료 내역",
+    "checkout_fee_wise": "Wise (송금)",
+    "checkout_fee_stripe": "Stripe (처리)",
+    "checkout_fee_omnipay": "OmniPay (플랫폼 1%)",
+    "checkout_fee_you_send": "보내는 금액"
   }
 }

@@ -185,6 +185,11 @@
     "pwa_ios_done": "Sudah terinstal",
     "wa_msg_corporate": "{who} meminta penyelesaian faktur layanannya.\nBayar di sini: {link}",
     "wa_msg_individual": "{who} meminta pembayaran honorarium profesionalnya sebesar {amount}.\nBayar di sini: {link}",
-    "pay_error_default": "Kesalahan otorisasi pembayaran."
+    "pay_error_default": "Kesalahan otorisasi pembayaran.",
+    "checkout_fee_title": "Rincian biaya",
+    "checkout_fee_wise": "Wise (transfer)",
+    "checkout_fee_stripe": "Stripe (pemrosesan)",
+    "checkout_fee_omnipay": "OmniPay (platform 1%)",
+    "checkout_fee_you_send": "Anda kirim"
   }
 }
