@@ -80,20 +80,20 @@ export function getAccountValidation(countryCode: string): AccountValidation {
     case "US":
       return {
         inputMode: "numeric", supported: true,
-        label:       "Routing (9 digits) + Account Number",
-        placeholder: "021000021 / 1234567890",
+        label:       "Routing - Account number",
+        placeholder: "021000021-1234567890",
         minLength: 14, maxLength: 26,
-        hint: "9-digit routing number followed by your account number (no spaces)",
-        validate: (v) => /^\d{14,26}$/.test(v.replace(/[\s/]/g, "")),
+        hint: "Format: 9-digit routing · account number  →  e.g. 021000021-1234567890",
+        validate: (v) => /^\d{9}-?\d{5,17}$/.test(v.replace(/\s/g, "")),
       };
     case "CA":
       return {
         inputMode: "numeric", supported: true,
-        label:       "Transit (5) + Institution (3) + Account",
-        placeholder: "00123 004 1234567",
+        label:       "Transit - Institution - Account",
+        placeholder: "00123-004-1234567",
         minLength: 13, maxLength: 17,
-        hint: "5-digit transit + 3-digit institution + account number (your bank app → Account Details)",
-        validate: (v) => /^\d{13,17}$/.test(v.replace(/[\s/]/g, "")),
+        hint: "Format: 5-digit transit · 3-digit institution · account  →  e.g. 00123-004-1234567",
+        validate: (v) => /^\d{5}-?\d{3}-?\d{5,9}$/.test(v.replace(/\s/g, "")),
       };
     case "BR":
       return {
@@ -196,11 +196,11 @@ export function getAccountValidation(countryCode: string): AccountValidation {
     case "AU":
       return {
         inputMode: "numeric", supported: true,
-        label:       "BSB (6 digits) + Account Number",
-        placeholder: "062000 / 12345678",
+        label:       "BSB - Account number",
+        placeholder: "062000-12345678",
         minLength: 12, maxLength: 16,
-        hint: "6-digit BSB (no hyphen) + account number — find both in your banking app",
-        validate: (v) => /^\d{12,16}$/.test(v.replace(/[\s/-]/g, "")),
+        hint: "Format: 6-digit BSB · account number  →  e.g. 062000-12345678",
+        validate: (v) => /^\d{6}-?\d{6,10}$/.test(v.replace(/\s/g, "")),
       };
     case "NZ":
       return {
@@ -214,11 +214,11 @@ export function getAccountValidation(countryCode: string): AccountValidation {
     case "JP":
       return {
         inputMode: "numeric", supported: true,
-        label:       "Bank code + Branch + Account",
-        placeholder: "0001 (bank) + 001 (branch) + 1234567 (account)",
-        minLength: 7, maxLength: 14,
-        hint: "4-digit bank code + 3-digit branch code + 7-digit account number",
-        validate: (v) => /^\d{7,14}$/.test(v.replace(/[\s/]/g, "")),
+        label:       "Bank code - Branch - Account",
+        placeholder: "0001-001-1234567",
+        minLength: 7, maxLength: 16,
+        hint: "Format: 4-digit bank code · 3-digit branch · 7-digit account  →  e.g. 0001-001-1234567",
+        validate: (v) => /^\d{4}-?\d{3}-?\d{7}$/.test(v.replace(/\s/g, "")),
       };
     case "KR":
       return {
@@ -241,11 +241,11 @@ export function getAccountValidation(countryCode: string): AccountValidation {
     case "HK":
       return {
         inputMode: "numeric", supported: true,
-        label:       "Bank code + Account number (HK)",
-        placeholder: "Bank (3) + Branch (3) + Account (9-12)",
-        minLength: 9, maxLength: 15,
-        hint: "Hong Kong bank code (3) + branch code (3) + account number",
-        validate: (v) => /^\d{9,15}$/.test(v.replace(/[\s-]/g, "")),
+        label:       "Bank - Branch - Account (HK)",
+        placeholder: "012-345-678901234",
+        minLength: 9, maxLength: 17,
+        hint: "Format: 3-digit bank · 3-digit branch · 6-9 digit account  →  e.g. 012-345-678901234",
+        validate: (v) => /^\d{3}-?\d{3}-?\d{6,9}$/.test(v.replace(/\s/g, "")),
       };
     case "MY":
       return {
@@ -427,20 +427,22 @@ export function buildWiseAccountDetails(
   switch (c) {
     case "MX":
       return { clabe: clean };
-    case "US":
-      return { abartn: clean.slice(0, 9), accountNumber: clean.slice(9) };
-    case "CA":
-      return {
-        transitNo:     clean.slice(0, 5),
-        institutionNo: clean.slice(5, 8),
-        accountNumber: clean.slice(8),
-      };
+    case "US": {
+      const d = clean.replace(/-/g, "");
+      return { abartn: d.slice(0, 9), accountNumber: d.slice(9) };
+    }
+    case "CA": {
+      const d = clean.replace(/-/g, "");
+      return { transitNo: d.slice(0, 5), institutionNo: d.slice(5, 8), accountNumber: d.slice(8) };
+    }
     case "BR":
       return { legalType: "PRIVATE", taxId: clean };
     case "IN":
       return { address: { country: "IN" }, accountType: "UPI", upi: accountInput.trim() };
-    case "AU":
-      return { bsbCode: clean.slice(0, 6), accountNumber: clean.slice(6) };
+    case "AU": {
+      const d = clean.replace(/-/g, "");
+      return { bsbCode: d.slice(0, 6), accountNumber: d.slice(6) };
+    }
     case "NZ":
       return { accountNumber: clean };
     case "NG":
@@ -451,12 +453,10 @@ export function buildWiseAccountDetails(
       return { accountNumber: clean };
     case "CO":
       return { accountNumber: clean };
-    case "JP":
-      return {
-        bankCode:      clean.slice(0, 4),
-        branchCode:    clean.slice(4, 7),
-        accountNumber: clean.slice(7),
-      };
+    case "JP": {
+      const d = clean.replace(/-/g, "");
+      return { bankCode: d.slice(0, 4), branchCode: d.slice(4, 7), accountNumber: d.slice(7) };
+    }
     case "KR":
       return { accountNumber: clean };
     case "PE":
@@ -465,8 +465,10 @@ export function buildWiseAccountDetails(
       return { accountNumber: clean };
     case "SG":
       return { accountNumber: clean };
-    case "HK":
-      return { bankCode: clean.slice(0, 3), branchCode: clean.slice(3, 6), accountNumber: clean.slice(6) };
+    case "HK": {
+      const d = clean.replace(/-/g, "");
+      return { bankCode: d.slice(0, 3), branchCode: d.slice(3, 6), accountNumber: d.slice(6) };
+    }
     case "MY":
       return { accountNumber: clean };
     case "PH":
