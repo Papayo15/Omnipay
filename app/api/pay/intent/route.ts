@@ -23,10 +23,10 @@ import { parseCobrarV2Link, parseRemesaV2Link } from "@/lib/link";
 //   stripeFee   = cadAmount × stripeRate + STRIPE_FLAT
 //   netCAD + wiseFee + omniPayFee + stripeFee = cadAmount  ✓
 //
-const SPEI_FLAT    = 0.20;   // costo Wise por transferencia (SPEI / wire flat)
+const SPEI_FLAT    = 0.50;   // buffer Wise SPEI (cubre variación por corredor)
 const OMNIPAY_PCT  = 0.01;   // 1% OmniPay sobre el total cargado en Stripe
 const STRIPE_FLAT  = 0.30;   // fee fijo Stripe por transacción
-const STRIPE_BASE  = 0.029;  // 2.9% Stripe
+const STRIPE_BASE  = 0.035;  // 3.5% — cubre tarjetas internacionales y Amex
 const STRIPE_INST  = 0.01;   // +1% Stripe Instant Payout — solo modo INSTANT
 
 // ── Balance de Wise (kill switch de liquidez) ─────────────────────────────────
