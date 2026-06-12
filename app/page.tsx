@@ -33,7 +33,6 @@ type Step =
   | "done"
   | "error";
 
-type LinkMode    = "cobro" | "remesa";
 type ReceiveMode = "bank" | "card" | "wallet";
 
 interface FeeBreakdown {
@@ -350,8 +349,7 @@ export default function Home() {
   const t = useCallback(makeT(uiLocale), [uiLocale]);
   const [step, setStep] = useState<Step>("loading");
 
-  // — form —
-  const [linkMode,       setLinkMode]     = useState<LinkMode>("cobro");
+  // — form — (modo único: siempre remesa con conversión CAD)
   const [name,           setName]         = useState("");
   const [country,        setCountry]      = useState("MX");
   const [countryName,    setCountryName]  = useState("México");
@@ -532,7 +530,7 @@ export default function Home() {
       setFormError(t("error_required"));
       return;
     }
-    if (!validateAccount(account, country, linkMode === "remesa" ? receiveMode : "bank")) {
+    if (!validateAccount(account, country, receiveMode)) {
       setFormError(t("error_account"));
       return;
     }
@@ -545,28 +543,18 @@ export default function Home() {
     setFormError("");
     setSubmitting(true);
     try {
-      const isRemesa = linkMode === "remesa";
-      const endpoint = isRemesa ? "/api/remesa/request" : "/api/cobrar/request";
-      const body = isRemesa
-        ? {
-            recipientName:    name.trim(),
-            recipientAccount: account.trim(),
-            receiveMode,
-            receiveAmount:    parsed,
-            receiveCurrency:  currency,
-            targetCountry:    country,
-            originCountry:    "CA",
-            recipientPhone:   recipientPhone.trim() || undefined,
-            senderPhone:      senderPhone.trim() || undefined,
-          }
-        : {
-            recipientName:    name.trim(),
-            recipientAccount: account.trim(),
-            amount:           parsed,
-            currency,
-            recipientPhone:   recipientPhone.trim() || undefined,
-            payerPhone:       senderPhone.trim() || undefined,
-          };
+      const endpoint = "/api/remesa/request";
+      const body = {
+        recipientName:    name.trim(),
+        recipientAccount: account.trim(),
+        receiveMode,
+        receiveAmount:    parsed,
+        receiveCurrency:  currency,
+        targetCountry:    country,
+        originCountry:    "CA",
+        recipientPhone:   recipientPhone.trim() || undefined,
+        senderPhone:      senderPhone.trim() || undefined,
+      };
 
       const res  = await fetch(endpoint, {
         method: "POST",
@@ -594,9 +582,7 @@ export default function Home() {
 
   function buildShareMsg(): string {
     const who = name.trim() || "…";
-    return linkMode === "remesa" && shareQuote
-      ? t("wa_msg_corporate", { who, link: shareLink })
-      : t("wa_msg_individual", { who, amount: fmt(parseFloat(amount || "0"), currency), link: shareLink });
+    return t("wa_msg_corporate", { who, link: shareLink });
   }
 
   async function openWhatsApp() {
@@ -918,7 +904,7 @@ export default function Home() {
   }
 
   // ── CREATE (default) ──────────────────────────────────────────────────────
-  const accInfo = getAccountInfo(country, linkMode === "remesa" ? receiveMode : "bank");
+  const accInfo = getAccountInfo(country, receiveMode);
 
   return (
     <main className="min-h-screen bg-[#0f172a] flex flex-col px-5 pt-10 pb-10 max-w-sm mx-auto w-full">
@@ -929,29 +915,6 @@ export default function Home() {
         <span className="text-lg font-bold text-white">OmniPay</span>
       </div>
 
-      {/* Toggle Individual / Corporativo */}
-      <div className="flex rounded-xl overflow-hidden border border-slate-700 mb-6">
-        <button
-          onClick={() => setLinkMode("cobro")}
-          className={`flex-1 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
-            linkMode === "cobro"
-              ? "bg-emerald-600 text-white"
-              : "text-slate-400 hover:text-slate-200 bg-transparent"
-          }`}
-        >
-          <Store className="w-4 h-4" /> {t("toggle_individual")}
-        </button>
-        <button
-          onClick={() => setLinkMode("remesa")}
-          className={`flex-1 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
-            linkMode === "remesa"
-              ? "bg-indigo-600 text-white"
-              : "text-slate-400 hover:text-slate-200 bg-transparent"
-          }`}
-        >
-          <Building2 className="w-4 h-4" /> {t("toggle_corporate")}
-        </button>
-      </div>
 
       {/* Form fields */}
       <div className="space-y-4 flex-1">
@@ -964,7 +927,7 @@ export default function Home() {
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={linkMode === "cobro" ? t("placeholder_individual") : t("placeholder_corporate")}
+            placeholder={t("placeholder_individual")}
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm"
           />
         </div>
@@ -986,34 +949,32 @@ export default function Home() {
           </datalist>
         </div>
 
-        {/* Disbursement method (corporate only) */}
-        {linkMode === "remesa" && (
-          <div>
-            <label className="block text-xs text-slate-400 mb-1">
-              {t("label_method")}
-            </label>
-            <div className="flex gap-2">
-              {(["bank", "card", "wallet"] as ReceiveMode[]).map((m) => {
-                const Icon  = m === "bank" ? Building2 : m === "card" ? CreditCard : Smartphone;
-                const label = m === "bank" ? t("mode_bank") : m === "card" ? t("mode_card") : t("mode_wallet");
-                return (
-                  <button
-                    key={m}
-                    onClick={() => { setReceiveMode(m); setAccount(""); }}
-                    className={`flex-1 py-2 rounded-xl border text-xs flex flex-col items-center gap-1 transition-colors ${
-                      receiveMode === m
-                        ? "border-indigo-500 bg-indigo-600/20 text-indigo-300"
-                        : "border-slate-700 text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+        {/* Disbursement method */}
+        <div>
+          <label className="block text-xs text-slate-400 mb-1">
+            {t("label_method")}
+          </label>
+          <div className="flex gap-2">
+            {(["bank", "card", "wallet"] as ReceiveMode[]).map((m) => {
+              const Icon  = m === "bank" ? Building2 : m === "card" ? CreditCard : Smartphone;
+              const label = m === "bank" ? t("mode_bank") : m === "card" ? t("mode_card") : t("mode_wallet");
+              return (
+                <button
+                  key={m}
+                  onClick={() => { setReceiveMode(m); setAccount(""); }}
+                  className={`flex-1 py-2 rounded-xl border text-xs flex flex-col items-center gap-1 transition-colors ${
+                    receiveMode === m
+                      ? "border-indigo-500 bg-indigo-600/20 text-indigo-300"
+                      : "border-slate-700 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
 
         {/* Account number */}
         <div>
