@@ -15,6 +15,7 @@ import {
   ArrowLeft, CheckCircle2, AlertCircle, Clock, Copy, Check,
 } from "lucide-react";
 import { buildWhatsAppLink, buildTelegramLink, buildOmniPayMessage } from "@/lib/messaging";
+import { getAccountValidation, SEPA_COUNTRIES, BLOCKED_COUNTRIES } from "@/lib/wise-accounts";
 
 // ── Stripe singleton ──────────────────────────────────────────────────────────
 const stripePromise = loadStripe(
@@ -168,37 +169,43 @@ const COUNTRIES = [
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+// Country code → translation key for the account label
+const COUNTRY_ACCT_KEY: Record<string, string> = {
+  MX: "acct_mx", US: "acct_us", CA: "acct_ca",
+  BR: "acct_br", IN: "acct_in", AU: "acct_au",
+  JP: "acct_jp", NG: "acct_ng", AR: "acct_ar",
+  PE: "acct_pe", GB: "acct_iban",
+  // IBAN countries with own label key already map below via SEPA_COUNTRIES
+};
+
 function getAccountInfo(
   country: string,
   mode: ReceiveMode,
   t: (key: string) => string,
-): { label: string; placeholder: string; inputMode: React.HTMLAttributes<HTMLInputElement>["inputMode"] } {
+): { label: string; placeholder: string; hint: string; inputMode: React.HTMLAttributes<HTMLInputElement>["inputMode"] } {
   if (mode === "card") {
-    return { label: t("acct_card"), placeholder: "1234 5678 9012 3456", inputMode: "numeric" };
+    return { label: t("acct_card"), placeholder: "1234 5678 9012 3456", hint: "", inputMode: "numeric" };
   }
   if (mode === "wallet") {
-    return { label: t("acct_wallet"), placeholder: "+52 55 1234 5678", inputMode: "tel" };
+    return { label: t("acct_wallet"), placeholder: "+52 55 1234 5678", hint: "", inputMode: "tel" };
   }
-  const map: Record<string, { label: string; placeholder: string }> = {
-    MX: { label: t("acct_mx"),                         placeholder: "123456789012345678" },
-    US: { label: t("acct_us"),                         placeholder: "021000021 / 1234567890" },
-    CA: { label: t("acct_ca"),                         placeholder: "00123 / 1234567890" },
-    GB: { label: t("acct_gb"),                         placeholder: "20-00-00 / 12345678" },
-    IN: { label: t("acct_in"),                         placeholder: "HDFC0001234 / 12345678" },
-    BR: { label: t("acct_br"),                         placeholder: "CPF, email or phone" },
-    DE: { label: `${t("acct_iban")} (DE)`,             placeholder: "DE89 3704 0044 0532 0130 00" },
-    FR: { label: `${t("acct_iban")} (FR)`,             placeholder: "FR76 3000 6000 0112 3456 7890 189" },
-    ES: { label: `${t("acct_iban")} (ES)`,             placeholder: "ES91 2100 0418 4502 0005 1332" },
+  const v = getAccountValidation(country);
+  const labelKey = SEPA_COUNTRIES.has(country)
+    ? "acct_iban"
+    : (COUNTRY_ACCT_KEY[country] ?? "acct_default");
+  return {
+    label:     t(labelKey),
+    placeholder: v.placeholder,
+    hint:       v.hint === "blocked" ? "" : v.hint,
+    inputMode:  v.inputMode as React.HTMLAttributes<HTMLInputElement>["inputMode"],
   };
-  return { ...(map[country] ?? { label: t("acct_default"), placeholder: "—" }), inputMode: "text" };
 }
 
 function validateAccount(account: string, country: string, mode: ReceiveMode): boolean {
-  const v = account.replace(/[\s-]/g, "");
-  if (mode === "card")   return /^\d{16}$/.test(v);
-  if (mode === "wallet") return v.length >= 7;
-  if (country === "MX")  return /^\d{18}$/.test(v);
-  return v.length >= 5;
+  if (mode === "card")   return /^\d{16}$/.test(account.replace(/[\s-]/g, ""));
+  if (mode === "wallet") return account.replace(/[\s-]/g, "").length >= 7;
+  if (BLOCKED_COUNTRIES.has(country)) return false;
+  return getAccountValidation(country).validate(account);
 }
 
 function fmt(n: number, currency: string): string {
@@ -950,19 +957,30 @@ export default function Home() {
           </datalist>
         </div>
 
-        {/* Disbursement method — only bank active (Wise); card/wallet pending NIUM credentials */}
+        {/* Blocked country warning */}
+        {BLOCKED_COUNTRIES.has(country) && (
+          <div className="bg-red-900/30 border border-red-700/50 rounded-xl px-4 py-3 text-sm text-red-300 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            <span>{t("country_blocked")}</span>
+          </div>
+        )}
 
-        {/* Account number */}
-        <div>
-          <label className="block text-xs text-slate-400 mb-1">{accInfo.label}</label>
-          <input
-            value={account}
-            onChange={(e) => setAccount(e.target.value)}
-            placeholder={accInfo.placeholder}
-            inputMode={accInfo.inputMode}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm font-mono"
-          />
-        </div>
+        {/* Account number — hidden for blocked countries */}
+        {!BLOCKED_COUNTRIES.has(country) && (
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">{accInfo.label}</label>
+            <input
+              value={account}
+              onChange={(e) => setAccount(e.target.value)}
+              placeholder={accInfo.placeholder}
+              inputMode={accInfo.inputMode}
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm font-mono"
+            />
+            {accInfo.hint && (
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">{accInfo.hint}</p>
+            )}
+          </div>
+        )}
 
         {/* Amount + Currency */}
         <div className="flex gap-2">
