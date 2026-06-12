@@ -171,25 +171,26 @@ const COUNTRIES = [
 function getAccountInfo(
   country: string,
   mode: ReceiveMode,
+  t: (key: string) => string,
 ): { label: string; placeholder: string; inputMode: React.HTMLAttributes<HTMLInputElement>["inputMode"] } {
   if (mode === "card") {
-    return { label: "Número de tarjeta (16 dígitos)", placeholder: "1234 5678 9012 3456", inputMode: "numeric" };
+    return { label: t("acct_card"), placeholder: "1234 5678 9012 3456", inputMode: "numeric" };
   }
   if (mode === "wallet") {
-    return { label: "Número de billetera / teléfono (E.164)", placeholder: "+52 55 1234 5678", inputMode: "tel" };
+    return { label: t("acct_wallet"), placeholder: "+52 55 1234 5678", inputMode: "tel" };
   }
   const map: Record<string, { label: string; placeholder: string }> = {
-    MX: { label: "CLABE (18 dígitos)",               placeholder: "123456789012345678" },
-    US: { label: "Routing + Número de cuenta",        placeholder: "021000021 / 1234567890" },
-    CA: { label: "Transit + Cuenta bancaria",         placeholder: "00123 / 1234567890" },
-    GB: { label: "Sort Code + Cuenta",                placeholder: "20-00-00 / 12345678" },
-    IN: { label: "Cuenta + IFSC",                     placeholder: "HDFC0001234 / 12345678" },
-    BR: { label: "Clave PIX",                         placeholder: "CPF, email o teléfono" },
-    DE: { label: "IBAN (Alemania)",                   placeholder: "DE89 3704 0044 0532 0130 00" },
-    FR: { label: "IBAN (Francia)",                    placeholder: "FR76 3000 6000 0112 3456 7890 189" },
-    ES: { label: "IBAN (España)",                     placeholder: "ES91 2100 0418 4502 0005 1332" },
+    MX: { label: t("acct_mx"),                         placeholder: "123456789012345678" },
+    US: { label: t("acct_us"),                         placeholder: "021000021 / 1234567890" },
+    CA: { label: t("acct_ca"),                         placeholder: "00123 / 1234567890" },
+    GB: { label: t("acct_gb"),                         placeholder: "20-00-00 / 12345678" },
+    IN: { label: t("acct_in"),                         placeholder: "HDFC0001234 / 12345678" },
+    BR: { label: t("acct_br"),                         placeholder: "CPF, email or phone" },
+    DE: { label: `${t("acct_iban")} (DE)`,             placeholder: "DE89 3704 0044 0532 0130 00" },
+    FR: { label: `${t("acct_iban")} (FR)`,             placeholder: "FR76 3000 6000 0112 3456 7890 189" },
+    ES: { label: `${t("acct_iban")} (ES)`,             placeholder: "ES91 2100 0418 4502 0005 1332" },
   };
-  return { ...(map[country] ?? { label: "Cuenta bancaria del proveedor", placeholder: "Número de cuenta" }), inputMode: "text" };
+  return { ...(map[country] ?? { label: t("acct_default"), placeholder: "—" }), inputMode: "text" };
 }
 
 function validateAccount(account: string, country: string, mode: ReceiveMode): boolean {
@@ -904,7 +905,7 @@ export default function Home() {
   }
 
   // ── CREATE (default) ──────────────────────────────────────────────────────
-  const accInfo = getAccountInfo(country, receiveMode);
+  const accInfo = getAccountInfo(country, receiveMode, t);
 
   return (
     <main className="min-h-screen bg-[#0f172a] flex flex-col px-5 pt-10 pb-10 max-w-sm mx-auto w-full">
@@ -949,32 +950,7 @@ export default function Home() {
           </datalist>
         </div>
 
-        {/* Disbursement method */}
-        <div>
-          <label className="block text-xs text-slate-400 mb-1">
-            {t("label_method")}
-          </label>
-          <div className="flex gap-2">
-            {(["bank", "card", "wallet"] as ReceiveMode[]).map((m) => {
-              const Icon  = m === "bank" ? Building2 : m === "card" ? CreditCard : Smartphone;
-              const label = m === "bank" ? t("mode_bank") : m === "card" ? t("mode_card") : t("mode_wallet");
-              return (
-                <button
-                  key={m}
-                  onClick={() => { setReceiveMode(m); setAccount(""); }}
-                  className={`flex-1 py-2 rounded-xl border text-xs flex flex-col items-center gap-1 transition-colors ${
-                    receiveMode === m
-                      ? "border-indigo-500 bg-indigo-600/20 text-indigo-300"
-                      : "border-slate-700 text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        {/* Disbursement method — only bank active (Wise); card/wallet pending NIUM credentials */}
 
         {/* Account number */}
         <div>

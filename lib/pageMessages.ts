@@ -72,7 +72,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (wire transfer)",
     "checkout_fee_stripe": "Stripe (processing)",
     "checkout_fee_omnipay": "OmniPay (platform 1%)",
-    "checkout_fee_you_send": "You send"
+    "checkout_fee_you_send": "You send",
+    "acct_ca": "Transit + Account number",
+    "acct_us": "Routing + Account number",
+    "acct_mx": "CLABE (18 digits)",
+    "acct_gb": "Sort Code + Account number",
+    "acct_in": "Account + IFSC code",
+    "acct_br": "PIX key",
+    "acct_iban": "IBAN",
+    "acct_default": "Bank account number",
+    "acct_card": "Card number (16 digits)",
+    "acct_wallet": "Wallet / Phone number"
   },
   "es": {
     "toggle_individual": "Cliente Individual",
@@ -147,7 +157,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (transferencia)",
     "checkout_fee_stripe": "Stripe (procesamiento)",
     "checkout_fee_omnipay": "OmniPay (plataforma 1%)",
-    "checkout_fee_you_send": "Envías"
+    "checkout_fee_you_send": "Envías",
+    "acct_ca": "Transit + Número de cuenta",
+    "acct_us": "Routing + Número de cuenta",
+    "acct_mx": "CLABE (18 dígitos)",
+    "acct_gb": "Sort Code + Número de cuenta",
+    "acct_in": "Cuenta + código IFSC",
+    "acct_br": "Clave PIX",
+    "acct_iban": "IBAN",
+    "acct_default": "Número de cuenta bancaria",
+    "acct_card": "Número de tarjeta (16 dígitos)",
+    "acct_wallet": "Billetera / Número de teléfono"
   },
   "pt": {
     "toggle_individual": "Cliente Individual",
@@ -222,7 +242,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (transferência)",
     "checkout_fee_stripe": "Stripe (processamento)",
     "checkout_fee_omnipay": "OmniPay (plataforma 1%)",
-    "checkout_fee_you_send": "Você envia"
+    "checkout_fee_you_send": "Você envia",
+    "acct_ca": "Transit + Número da conta",
+    "acct_us": "Routing + Número da conta",
+    "acct_mx": "CLABE (18 dígitos)",
+    "acct_gb": "Sort Code + Número da conta",
+    "acct_in": "Conta + código IFSC",
+    "acct_br": "Chave PIX",
+    "acct_iban": "IBAN",
+    "acct_default": "Número da conta bancária",
+    "acct_card": "Número do cartão (16 dígitos)",
+    "acct_wallet": "Carteira / Número de telefone"
   },
   "fr": {
     "toggle_individual": "Client Individuel",
@@ -297,7 +327,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (virement)",
     "checkout_fee_stripe": "Stripe (traitement)",
     "checkout_fee_omnipay": "OmniPay (plateforme 1%)",
-    "checkout_fee_you_send": "Vous envoyez"
+    "checkout_fee_you_send": "Vous envoyez",
+    "acct_ca": "Transit + Numéro de compte",
+    "acct_us": "Routing + Numéro de compte",
+    "acct_mx": "CLABE (18 chiffres)",
+    "acct_gb": "Sort Code + Numéro de compte",
+    "acct_in": "Compte + code IFSC",
+    "acct_br": "Clé PIX",
+    "acct_iban": "IBAN",
+    "acct_default": "Numéro de compte bancaire",
+    "acct_card": "Numéro de carte (16 chiffres)",
+    "acct_wallet": "Portefeuille / Numéro de téléphone"
   },
   "de": {
     "toggle_individual": "Einzelkunde",
@@ -372,7 +412,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (Überweisung)",
     "checkout_fee_stripe": "Stripe (Verarbeitung)",
     "checkout_fee_omnipay": "OmniPay (Plattform 1%)",
-    "checkout_fee_you_send": "Sie senden"
+    "checkout_fee_you_send": "Sie senden",
+    "acct_ca": "Transit + Kontonummer",
+    "acct_us": "Routing + Kontonummer",
+    "acct_mx": "CLABE (18 Stellen)",
+    "acct_gb": "Sort Code + Kontonummer",
+    "acct_in": "Konto + IFSC-Code",
+    "acct_br": "PIX-Schlüssel",
+    "acct_iban": "IBAN",
+    "acct_default": "Kontonummer",
+    "acct_card": "Kartennummer (16 Stellen)",
+    "acct_wallet": "Wallet / Telefonnummer"
   },
   "it": {
     "toggle_individual": "Cliente Individuale",
@@ -447,7 +497,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (bonifico)",
     "checkout_fee_stripe": "Stripe (elaborazione)",
     "checkout_fee_omnipay": "OmniPay (piattaforma 1%)",
-    "checkout_fee_you_send": "Invii"
+    "checkout_fee_you_send": "Invii",
+    "acct_ca": "Transit + Numero di conto",
+    "acct_us": "Routing + Numero di conto",
+    "acct_mx": "CLABE (18 cifre)",
+    "acct_gb": "Sort Code + Numero di conto",
+    "acct_in": "Conto + codice IFSC",
+    "acct_br": "Chiave PIX",
+    "acct_iban": "IBAN",
+    "acct_default": "Numero di conto bancario",
+    "acct_card": "Numero carta (16 cifre)",
+    "acct_wallet": "Portafoglio / Numero di telefono"
   },
   "nl": {
     "toggle_individual": "Individuele Klant",
@@ -522,7 +582,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (overboeking)",
     "checkout_fee_stripe": "Stripe (verwerking)",
     "checkout_fee_omnipay": "OmniPay (platform 1%)",
-    "checkout_fee_you_send": "U stuurt"
+    "checkout_fee_you_send": "U stuurt",
+    "acct_ca": "Transit + Rekeningnummer",
+    "acct_us": "Routing + Rekeningnummer",
+    "acct_mx": "CLABE (18 cijfers)",
+    "acct_gb": "Sort Code + Rekeningnummer",
+    "acct_in": "Rekening + IFSC-code",
+    "acct_br": "PIX-sleutel",
+    "acct_iban": "IBAN",
+    "acct_default": "Bankrekeningnummer",
+    "acct_card": "Kaartnummer (16 cijfers)",
+    "acct_wallet": "Portemonnee / Telefoonnummer"
   },
   "ja": {
     "toggle_individual": "個人クライアント",
@@ -597,7 +667,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise（送金手数料）",
     "checkout_fee_stripe": "Stripe（処理手数料）",
     "checkout_fee_omnipay": "OmniPay（プラットフォーム 1%）",
-    "checkout_fee_you_send": "お支払い額"
+    "checkout_fee_you_send": "お支払い額",
+    "acct_ca": "Transit + 口座番号",
+    "acct_us": "Routing + 口座番号",
+    "acct_mx": "CLABE（18桁）",
+    "acct_gb": "Sort Code + 口座番号",
+    "acct_in": "口座 + IFSCコード",
+    "acct_br": "PIXキー",
+    "acct_iban": "IBAN",
+    "acct_default": "銀行口座番号",
+    "acct_card": "カード番号（16桁）",
+    "acct_wallet": "ウォレット / 電話番号"
   },
   "ko": {
     "toggle_individual": "개인 고객",
@@ -672,7 +752,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (송금)",
     "checkout_fee_stripe": "Stripe (처리)",
     "checkout_fee_omnipay": "OmniPay (플랫폼 1%)",
-    "checkout_fee_you_send": "보내는 금액"
+    "checkout_fee_you_send": "보내는 금액",
+    "acct_ca": "Transit + 계좌번호",
+    "acct_us": "Routing + 계좌번호",
+    "acct_mx": "CLABE (18자리)",
+    "acct_gb": "Sort Code + 계좌번호",
+    "acct_in": "계좌 + IFSC 코드",
+    "acct_br": "PIX 키",
+    "acct_iban": "IBAN",
+    "acct_default": "은행 계좌번호",
+    "acct_card": "카드 번호 (16자리)",
+    "acct_wallet": "지갑 / 전화번호"
   },
   "zh": {
     "toggle_individual": "个人客户",
@@ -747,7 +837,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise（汇款）",
     "checkout_fee_stripe": "Stripe（处理费）",
     "checkout_fee_omnipay": "OmniPay（平台费 1%）",
-    "checkout_fee_you_send": "您支付"
+    "checkout_fee_you_send": "您支付",
+    "acct_ca": "Transit + 账号",
+    "acct_us": "Routing + 账号",
+    "acct_mx": "CLABE（18位）",
+    "acct_gb": "Sort Code + 账号",
+    "acct_in": "账户 + IFSC代码",
+    "acct_br": "PIX密钥",
+    "acct_iban": "IBAN",
+    "acct_default": "银行账号",
+    "acct_card": "卡号（16位）",
+    "acct_wallet": "钱包 / 电话号码"
   },
   "hi": {
     "toggle_individual": "व्यक्तिगत ग्राहक",
@@ -822,7 +922,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (ट्रांसफर)",
     "checkout_fee_stripe": "Stripe (प्रसंस्करण)",
     "checkout_fee_omnipay": "OmniPay (प्लेटफॉर्म 1%)",
-    "checkout_fee_you_send": "आप भेजते हैं"
+    "checkout_fee_you_send": "आप भेजते हैं",
+    "acct_ca": "Transit + खाता संख्या",
+    "acct_us": "Routing + खाता संख्या",
+    "acct_mx": "CLABE (18 अंक)",
+    "acct_gb": "Sort Code + खाता संख्या",
+    "acct_in": "खाता + IFSC कोड",
+    "acct_br": "PIX कुंजी",
+    "acct_iban": "IBAN",
+    "acct_default": "बैंक खाता संख्या",
+    "acct_card": "कार्ड नंबर (16 अंक)",
+    "acct_wallet": "वॉलेट / फोन नंबर"
   },
   "ar": {
     "toggle_individual": "عميل فردي",
@@ -897,7 +1007,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (تحويل)",
     "checkout_fee_stripe": "Stripe (معالجة)",
     "checkout_fee_omnipay": "OmniPay (منصة 1%)",
-    "checkout_fee_you_send": "ترسل"
+    "checkout_fee_you_send": "ترسل",
+    "acct_ca": "Transit + رقم الحساب",
+    "acct_us": "Routing + رقم الحساب",
+    "acct_mx": "CLABE (18 رقمًا)",
+    "acct_gb": "Sort Code + رقم الحساب",
+    "acct_in": "الحساب + رمز IFSC",
+    "acct_br": "مفتاح PIX",
+    "acct_iban": "IBAN",
+    "acct_default": "رقم الحساب المصرفي",
+    "acct_card": "رقم البطاقة (16 رقمًا)",
+    "acct_wallet": "المحفظة / رقم الهاتف"
   },
   "ru": {
     "toggle_individual": "Частный клиент",
@@ -972,7 +1092,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (перевод)",
     "checkout_fee_stripe": "Stripe (обработка)",
     "checkout_fee_omnipay": "OmniPay (платформа 1%)",
-    "checkout_fee_you_send": "Вы отправляете"
+    "checkout_fee_you_send": "Вы отправляете",
+    "acct_ca": "Transit + Номер счёта",
+    "acct_us": "Routing + Номер счёта",
+    "acct_mx": "CLABE (18 цифр)",
+    "acct_gb": "Sort Code + Номер счёта",
+    "acct_in": "Счёт + код IFSC",
+    "acct_br": "Ключ PIX",
+    "acct_iban": "IBAN",
+    "acct_default": "Номер банковского счёта",
+    "acct_card": "Номер карты (16 цифр)",
+    "acct_wallet": "Кошелёк / Номер телефона"
   },
   "tr": {
     "toggle_individual": "Bireysel Müşteri",
@@ -1047,7 +1177,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (havale)",
     "checkout_fee_stripe": "Stripe (işlem)",
     "checkout_fee_omnipay": "OmniPay (platform %1)",
-    "checkout_fee_you_send": "Gönderiyorsunuz"
+    "checkout_fee_you_send": "Gönderiyorsunuz",
+    "acct_ca": "Transit + Hesap numarası",
+    "acct_us": "Routing + Hesap numarası",
+    "acct_mx": "CLABE (18 hane)",
+    "acct_gb": "Sort Code + Hesap numarası",
+    "acct_in": "Hesap + IFSC kodu",
+    "acct_br": "PIX anahtarı",
+    "acct_iban": "IBAN",
+    "acct_default": "Banka hesap numarası",
+    "acct_card": "Kart numarası (16 hane)",
+    "acct_wallet": "Cüzdan / Telefon numarası"
   },
   "id": {
     "toggle_individual": "Klien Individu",
@@ -1122,7 +1262,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (transfer)",
     "checkout_fee_stripe": "Stripe (pemrosesan)",
     "checkout_fee_omnipay": "OmniPay (platform 1%)",
-    "checkout_fee_you_send": "Anda kirim"
+    "checkout_fee_you_send": "Anda kirim",
+    "acct_ca": "Transit + Nomor rekening",
+    "acct_us": "Routing + Nomor rekening",
+    "acct_mx": "CLABE (18 digit)",
+    "acct_gb": "Sort Code + Nomor rekening",
+    "acct_in": "Rekening + kode IFSC",
+    "acct_br": "Kunci PIX",
+    "acct_iban": "IBAN",
+    "acct_default": "Nomor rekening bank",
+    "acct_card": "Nomor kartu (16 digit)",
+    "acct_wallet": "Dompet / Nomor telepon"
   },
   "vi": {
     "toggle_individual": "Khách hàng cá nhân",
@@ -1197,7 +1347,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (chuyển khoản)",
     "checkout_fee_stripe": "Stripe (xử lý)",
     "checkout_fee_omnipay": "OmniPay (nền tảng 1%)",
-    "checkout_fee_you_send": "Bạn gửi"
+    "checkout_fee_you_send": "Bạn gửi",
+    "acct_ca": "Transit + Số tài khoản",
+    "acct_us": "Routing + Số tài khoản",
+    "acct_mx": "CLABE (18 chữ số)",
+    "acct_gb": "Sort Code + Số tài khoản",
+    "acct_in": "Tài khoản + mã IFSC",
+    "acct_br": "Khóa PIX",
+    "acct_iban": "IBAN",
+    "acct_default": "Số tài khoản ngân hàng",
+    "acct_card": "Số thẻ (16 chữ số)",
+    "acct_wallet": "Ví / Số điện thoại"
   },
   "sw": {
     "toggle_individual": "Mteja Binafsi",
@@ -1272,7 +1432,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (uhamisho)",
     "checkout_fee_stripe": "Stripe (usindikaji)",
     "checkout_fee_omnipay": "OmniPay (jukwaa 1%)",
-    "checkout_fee_you_send": "Unatuma"
+    "checkout_fee_you_send": "Unatuma",
+    "acct_ca": "Transit + Nambari ya akaunti",
+    "acct_us": "Routing + Nambari ya akaunti",
+    "acct_mx": "CLABE (tarakimu 18)",
+    "acct_gb": "Sort Code + Nambari ya akaunti",
+    "acct_in": "Akaunti + nambari ya IFSC",
+    "acct_br": "Ufunguo wa PIX",
+    "acct_iban": "IBAN",
+    "acct_default": "Nambari ya akaunti ya benki",
+    "acct_card": "Nambari ya kadi (tarakimu 16)",
+    "acct_wallet": "Mkoba / Nambari ya simu"
   },
   "ha": {
     "toggle_individual": "Abokin Ciniki Daya",
@@ -1347,7 +1517,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (canja wuri)",
     "checkout_fee_stripe": "Stripe (aiwatarwa)",
     "checkout_fee_omnipay": "OmniPay (dandali 1%)",
-    "checkout_fee_you_send": "Kana aika"
+    "checkout_fee_you_send": "Kana aika",
+    "acct_ca": "Transit + Lambar asusun",
+    "acct_us": "Routing + Lambar asusun",
+    "acct_mx": "CLABE (lambobi 18)",
+    "acct_gb": "Sort Code + Lambar asusun",
+    "acct_in": "Asusun + lambar IFSC",
+    "acct_br": "Makullin PIX",
+    "acct_iban": "IBAN",
+    "acct_default": "Lambar asusun banki",
+    "acct_card": "Lambar kati (lambobi 16)",
+    "acct_wallet": "Walat / Lambar wayar"
   },
   "am": {
     "toggle_individual": "ግለሰብ ደንበኛ",
@@ -1422,7 +1602,17 @@ const PAGE_MESSAGES: Record<string, Record<string, string>> = {
     "checkout_fee_wise": "Wise (ዝውውር)",
     "checkout_fee_stripe": "Stripe (ሂደት)",
     "checkout_fee_omnipay": "OmniPay (መድረክ 1%)",
-    "checkout_fee_you_send": "የምትልክ"
+    "checkout_fee_you_send": "የምትልክ",
+    "acct_ca": "Transit + የሂሳብ ቁጥር",
+    "acct_us": "Routing + የሂሳብ ቁጥር",
+    "acct_mx": "CLABE (18 አሃዝ)",
+    "acct_gb": "Sort Code + የሂሳብ ቁጥር",
+    "acct_in": "ሂሳብ + የIFSC ኮድ",
+    "acct_br": "PIX ቁልፍ",
+    "acct_iban": "IBAN",
+    "acct_default": "የባንክ ሂሳብ ቁጥር",
+    "acct_card": "የካርድ ቁጥር (16 አሃዝ)",
+    "acct_wallet": "ዋሌት / የስልክ ቁጥር"
   }
 };
 export default PAGE_MESSAGES;
