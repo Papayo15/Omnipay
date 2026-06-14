@@ -12,7 +12,7 @@ import {
 } from "@stripe/react-stripe-js";
 import {
   Zap, Building2, CreditCard, Smartphone, Send, Store,
-  ArrowLeft, CheckCircle2, AlertCircle, Clock, Copy, Check,
+  ArrowLeft, CheckCircle2, AlertCircle, Clock, Copy, Check, Download,
 } from "lucide-react";
 import { buildWhatsAppLink, buildTelegramLink, buildOmniPayMessage } from "@/lib/messaging";
 import { getAccountValidation, SEPA_COUNTRIES, BLOCKED_COUNTRIES } from "@/lib/wise-accounts";
@@ -694,6 +694,13 @@ export default function Home() {
           >
             <Send className="w-4 h-4" />
             {t("done_telegram")}
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="w-full bg-slate-700 hover:bg-slate-600 active:scale-95 transition-all text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            {t("done_download")}
           </button>
         </div>
       </main>
