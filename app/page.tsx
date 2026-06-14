@@ -28,7 +28,6 @@ type Step =
   | "create"
   | "share"
   | "checkout_init"
-  | "liquidity_pause"
   | "checkout"
   | "progress"
   | "done"
@@ -51,6 +50,7 @@ interface PaySummary {
   receiveAmount?:   number;
   receiveCurrency?: string;
   payoutMode?:      string;
+  payoutDelayed?:   boolean;
   amount?:          number;
   currency?:        string;
   feeBreakdown?:    FeeBreakdown;
@@ -450,10 +450,6 @@ export default function Home() {
         });
         if (cancelled) return;
 
-        if (res.status === 412) {
-          const d = await res.json() as { insufficient_liquidity?: boolean };
-          if (d.insufficient_liquidity) { setStep("liquidity_pause"); return; }
-        }
         if (!res.ok) {
           const d = await res.json() as { error?: string };
           setErrorMsg(d.error ?? "No se pudo cargar la solicitud de pago.");
@@ -640,19 +636,6 @@ export default function Home() {
         <Zap className="w-10 h-10 text-indigo-400 animate-pulse" />
         <p className="text-slate-400 text-sm">
           {step === "checkout_init" ? t("loading_fx") : t("loading_init")}
-        </p>
-      </main>
-    );
-  }
-
-  // ── LIQUIDITY PAUSE ───────────────────────────────────────────────────────
-  if (step === "liquidity_pause") {
-    return (
-      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5">
-        <div className="text-5xl">⏳</div>
-        <h2 className="text-xl font-semibold text-white">{t("liquidity_title")}</h2>
-        <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
-          {t("liquidity_msg")}
         </p>
       </main>
     );
@@ -877,6 +860,11 @@ export default function Home() {
               {summary.payoutMode === "INSTANT" && (
                 <p className="text-amber-400 text-xs mt-1">
                   {t("checkout_instant_badge")}
+                </p>
+              )}
+              {summary.payoutDelayed && (
+                <p className="text-amber-400 text-xs mt-1">
+                  ⏱ {t("checkout_delayed_badge")}
                 </p>
               )}
             </>

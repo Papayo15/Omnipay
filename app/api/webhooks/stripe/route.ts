@@ -342,6 +342,19 @@ export async function POST(req: NextRequest) {
       // Activación automática: si la credencial del rail preferido no está configurada,
       // el sistema intenta el siguiente. El receptor nunca nota el cambio de proveedor.
 
+      // ── Reposición inmediata del float — se dispara ANTES de intentar Wise ──
+      // Si Wise no tiene fondos, el payout ya está en camino cuando llegue el
+      // próximo reintento automático de Stripe (503 → reintentos hasta 72h).
+      const piObj = await stripe.paymentIntents.retrieve(piId);
+      determinarModoPayout(stripe, piObj.amount / 100).then((modo) => {
+        stripe.payouts.create({
+          amount:               piObj.amount,
+          currency:             piObj.currency,
+          method:               modo === "INSTANT" ? "instant" : "standard",
+          statement_descriptor: "OMNIPAY_REPLEN",
+        }).catch((e: Error) => console.warn(`[webhook] Replenishment (${modo}) failed:`, e.message));
+      }).catch((e: Error) => console.warn("[webhook] determinarModoPayout failed:", e.message));
+
       let txId: string;
       let railLabel: string;
 
@@ -454,23 +467,7 @@ export async function POST(req: NextRequest) {
         senderPhone    ? sendPaymentNotification(senderPhone,    receiptUrl, cadAmount, targetCurrency, recipientName) : Promise.resolve(),
       ]);
 
-      // ── Reposición automática del float Wise ──────────────────────────────
-      // Stripe hace un Instant Payout a la tarjeta Visa de Wise Canada conectada
-      // en el dashboard de Stripe (Settings → Bank accounts & debit cards).
-      // El dinero llega a Wise en minutos, sin mover nada manualmente.
-      // Fire-and-forget: si falla, el float se repone en el siguiente ciclo manual.
-      const piObj = await stripe.paymentIntents.retrieve(piId);
-      const chargedAmount = piObj.amount; // en centavos
-      determinarModoPayout(stripe, chargedAmount / 100).then((modo) => {
-        stripe.payouts.create({
-          amount:               chargedAmount,
-          currency:             piObj.currency,
-          method:               modo === "INSTANT" ? "instant" : "standard",
-          statement_descriptor: "OMNIPAY_REPLEN",
-        }).catch((e: Error) => console.warn(`[webhook] Replenishment (${modo}) failed:`, e.message));
-      }).catch((e: Error) => console.warn("[webhook] determinarModoPayout failed:", e.message));
-
-      console.log(`[webhook] ${railLabel} TX ${txId} — PI ${piId} — replenishment enqueued`);
+      console.log(`[webhook] ${railLabel} TX ${txId} — PI ${piId} — replenishment already enqueued`);
       return NextResponse.json({ received: true, txId, rail: railLabel });
 
     } catch (err) {
@@ -485,8 +482,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true, refunded: true, reason: e.code });
       }
 
-      // Error transitorio → 500 para que Stripe reintente (hasta 72h)
-      return NextResponse.json({ error: e.message }, { status: 500 });
+      // Error transitorio → 503 para que Stripe reintente (hasta 72h)
+      // 503 = "Service Unavailable" — semánticamente correcto para fondos insuficientes
+      return NextResponse.json({ error: e.message }, { status: 503 });
     }
   }
 

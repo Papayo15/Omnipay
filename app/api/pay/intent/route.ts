@@ -121,11 +121,11 @@ export async function POST(req: NextRequest) {
       const stripeFee  = cadAmount * stripeRate + STRIPE_FLAT;
       const wiseFee    = SPEI_FLAT;
 
-      // Kill switch: bloquear si el float Wise no alcanza para cubrir el envío
+      // Modo diferido: si Wise no tiene fondos, el pago igual procede.
+      // El webhook dispara el replenishment payout primero y reintenta con 503
+      // hasta que los fondos lleguen (ventana de 72h de Stripe).
       const wiseCadBalance = await getWiseCADBalance();
-      if (wiseCadBalance < netCAD + 50) {
-        return NextResponse.json({ insufficient_liquidity: true }, { status: 412 });
-      }
+      const payoutDelayed  = wiseCadBalance < netCAD + 50;
 
       const pi = await stripe.paymentIntents.create({
         amount:   Math.round(cadAmount * 100),
@@ -140,6 +140,7 @@ export async function POST(req: NextRequest) {
           net_cad:          netCAD.toFixed(2),
           wise_rate:        wiseRate.toFixed(6),
           payout_mode:      mode,
+          payout_delayed:   String(payoutDelayed),
           ...tokenToMeta(token, sig),
         },
         automatic_payment_methods: { enabled: true },
@@ -158,6 +159,7 @@ export async function POST(req: NextRequest) {
           targetCountry:   payload.targetCountry,
           payoutMode:      mode,
           stripeFeePct:    stripeRate,
+          payoutDelayed,
           feeBreakdown: {
             wiseFee:    parseFloat(wiseFee.toFixed(2)),
             omniPayFee: parseFloat(omniPayFee.toFixed(2)),
