@@ -5,7 +5,7 @@ import { decryptPayload } from "@/lib/accountcrypto";
 import { getWiseAccountType, buildWiseAccountDetails } from "@/lib/wise-accounts";
 import { executePaysend } from "@/lib/paysend";
 import { executeNiumCard, executeNiumWallet } from "@/lib/nium";
-import { sendPaymentNotification } from "@/lib/notify";
+import { sendPaymentNotification, sendAdminWhatsApp } from "@/lib/notify";
 import { buildReceiptURL } from "@/lib/link";
 
 // POST /api/webhooks/stripe
@@ -341,6 +341,14 @@ export async function POST(req: NextRequest) {
       //
       // Activación automática: si la credencial del rail preferido no está configurada,
       // el sistema intenta el siguiente. El receptor nunca nota el cambio de proveedor.
+
+      // ── Alerta admin si el float está bajo ───────────────────────────────────
+      if (meta.payout_delayed === "true") {
+        const cadAmt = parseFloat(meta.cad_amount ?? meta.amount ?? "0");
+        sendAdminWhatsApp(
+          `⚠️ OmniPay float bajo\nPago de $${cadAmt.toFixed(2)} CAD en modo diferido.\nReponer fondos en Wise urgente.`
+        ).catch(() => {});
+      }
 
       // ── Reposición inmediata del float — se dispara ANTES de intentar Wise ──
       // Si Wise no tiene fondos, el payout ya está en camino cuando llegue el

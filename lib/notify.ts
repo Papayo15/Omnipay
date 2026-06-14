@@ -1,4 +1,4 @@
-// SMS automático post-pago — stateless, fire-and-forget
+// Notificaciones post-pago — stateless, fire-and-forget
 // Enviado SOLO desde el webhook del servidor, nunca desde el cliente.
 
 function fmt(amount: number, currency: string): string {
@@ -33,4 +33,16 @@ export async function sendPaymentNotification(
     },
     body: params.toString(),
   }).catch(() => { /* non-critical */ });
+}
+
+// WhatsApp admin alert via CallMeBot (gratuito, personal)
+// Setup: salva +15551234567 como "CallMeBot" en WA → envía "I allow callmebot to send me messages"
+// → recibes tu apiKey en segundos. Luego configura ADMIN_WHATSAPP_PHONE + CALLMEBOT_API_KEY en Vercel.
+export async function sendAdminWhatsApp(message: string): Promise<void> {
+  const phone  = process.env.ADMIN_WHATSAPP_PHONE;
+  const apiKey = process.env.CALLMEBOT_API_KEY;
+  if (!phone || !apiKey) return;
+
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(message)}&apikey=${apiKey}`;
+  await fetch(url).catch(() => { /* non-critical */ });
 }
