@@ -35,20 +35,13 @@ export async function sendPaymentNotification(
   }).catch(() => { /* non-critical */ });
 }
 
-// WhatsApp admin alert via Whin (whin.me — credenciales instantáneas)
-// Configura en Vercel: WHIN_API_TOKEN + ADMIN_WHATSAPP_PHONE (con código de país, ej. 521XXXXXXXXXX)
+// WhatsApp admin alert via CallMeBot (gratuito, personal)
+// Configura en Vercel: CALLMEBOT_API_KEY + ADMIN_WHATSAPP_PHONE (E.164, ej. +529993825321)
 export async function sendAdminWhatsApp(message: string): Promise<void> {
-  const phone = process.env.ADMIN_WHATSAPP_PHONE;
-  const token = process.env.WHIN_API_TOKEN;
-  if (!phone || !token) return;
+  const phone  = process.env.ADMIN_WHATSAPP_PHONE;
+  const apiKey = process.env.CALLMEBOT_API_KEY;
+  if (!phone || !apiKey) return;
 
-  await fetch("https://whin2.p.rapidapi.com/send", {
-    method: "POST",
-    headers: {
-      "X-RapidAPI-Key":  token,
-      "X-RapidAPI-Host": "whin2.p.rapidapi.com",
-      "Content-Type":    "application/json",
-    },
-    body: JSON.stringify({ to: phone, text: message }),
-  }).catch(() => { /* non-critical */ });
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(message)}&apikey=${apiKey}`;
+  await fetch(url).catch(() => { /* non-critical */ });
 }
