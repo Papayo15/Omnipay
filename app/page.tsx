@@ -909,18 +909,118 @@ export default function Home() {
   // ── CREATE (default) ──────────────────────────────────────────────────────
   const accInfo = getAccountInfo(country, receiveMode, t);
 
-  return (
-    <main className="min-h-screen bg-[#0f172a] flex flex-col px-5 pt-10 pb-10 max-w-sm mx-auto w-full">
+  function scrollToForm() {
+    document.getElementById("invoice-form")?.scrollIntoView({ behavior: "smooth" });
+  }
 
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-7">
-        <Zap className="w-6 h-6 text-indigo-400" />
-        <span className="text-lg font-bold text-white">OmniPay</span>
+  return (
+    <main className="min-h-screen bg-[#0f172a] flex flex-col pb-10 w-full">
+
+      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
+      <section className="w-full bg-gradient-to-b from-slate-900 to-[#0f172a] px-6 pt-14 pb-16 text-center">
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <Zap className="w-7 h-7 text-[#00C9C8]" />
+          <span className="text-2xl font-bold text-white tracking-tight">OmniPay Global</span>
+        </div>
+        <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-4">
+          B2B International<br />
+          <span className="text-[#00C9C8]">Settlement Suite</span>
+        </h1>
+        <p className="text-slate-400 text-sm md:text-base max-w-md mx-auto leading-relaxed mb-8">
+          Secure, high-velocity invoice settlement for international freelancers,
+          remote contractors, and digital agencies.<br />
+          <span className="text-slate-500 text-xs mt-1 block">Zero-data-retention · AES-256-GCM · 170+ countries</span>
+        </p>
+        <button
+          onClick={scrollToForm}
+          className="bg-[#00C9C8] hover:bg-[#00b5b5] active:scale-95 transition-all text-slate-900 font-bold px-8 py-3 rounded-2xl text-sm"
+        >
+          Generate Your Invoice Link ↓
+        </button>
+      </section>
+
+      {/* ── FEATURES ─────────────────────────────────────────────────────────── */}
+      <section className="w-full max-w-2xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
+          <div className="text-2xl mb-3">⚡</div>
+          <h3 className="text-white font-semibold text-sm mb-2">Dynamic Invoice Creation</h3>
+          <p className="text-slate-400 text-xs leading-relaxed">
+            Generate cryptographically signed payment links in seconds. Each link is HMAC-SHA256 authenticated and expires automatically.
+          </p>
+        </div>
+        <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
+          <div className="text-2xl mb-3">📋</div>
+          <h3 className="text-white font-semibold text-sm mb-2">Multi-Currency Settlement</h3>
+          <p className="text-slate-400 text-xs leading-relaxed">
+            Real-time Wise interbank FX rates applied at the exact moment of settlement. CLABE · IBAN · ACH · PIX · UPI across 170+ countries.
+          </p>
+        </div>
+        <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
+          <div className="text-2xl mb-3">🔒</div>
+          <h3 className="text-white font-semibold text-sm mb-2">Privacy-by-Design</h3>
+          <p className="text-slate-400 text-xs leading-relaxed">
+            Zero-Data-Retention architecture. All account credentials are AES-256-GCM encrypted client-side and never stored on our servers.
+          </p>
+        </div>
+      </section>
+
+      {/* ── PRICING ──────────────────────────────────────────────────────────── */}
+      <section className="w-full max-w-2xl mx-auto px-6 pb-14">
+        <h2 className="text-white font-bold text-xl text-center mb-2">Transparent Pricing</h2>
+        <p className="text-slate-500 text-xs text-center mb-8">No monthly subscription. No setup fees. Pay only per transaction.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Standard */}
+          <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 flex flex-col gap-4">
+            <div>
+              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Standard Settlement</span>
+              <p className="text-[#00C9C8] text-4xl font-extrabold mt-1">1%</p>
+              <p className="text-slate-400 text-xs mt-1">Platform Processing Fee</p>
+            </div>
+            <ul className="text-slate-400 text-xs space-y-1">
+              <li>✓ 2–3 Business Day delivery</li>
+              <li>✓ Bank transfer rails (SEPA · ACH · PIX · CLABE)</li>
+              <li>✓ 170+ destination countries</li>
+              <li>✓ No hidden fees</li>
+            </ul>
+            <button
+              onClick={scrollToForm}
+              className="mt-auto w-full bg-[#00C9C8] hover:bg-[#00b5b5] active:scale-95 transition-all text-slate-900 font-semibold py-3 rounded-xl text-sm"
+            >
+              Test Live Payment Flow →
+            </button>
+          </div>
+          {/* Instant */}
+          <div className="bg-slate-800/60 border border-indigo-500/40 rounded-2xl p-6 flex flex-col gap-4 relative">
+            <span className="absolute top-4 right-4 bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">FAST</span>
+            <div>
+              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Instant Settlement</span>
+              <p className="text-indigo-400 text-4xl font-extrabold mt-1">2%</p>
+              <p className="text-slate-400 text-xs mt-1">1% Platform + 1% Accelerated Processing</p>
+            </div>
+            <ul className="text-slate-400 text-xs space-y-1">
+              <li>✓ Settled within minutes</li>
+              <li>✓ Debit card rails (Visa Direct · MC Send)</li>
+              <li>✓ Ideal for urgent cross-border payments</li>
+              <li>✓ No hidden fees</li>
+            </ul>
+            <button
+              onClick={scrollToForm}
+              className="mt-auto w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-semibold py-3 rounded-xl text-sm"
+            >
+              Test Live Payment Flow →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FORM ─────────────────────────────────────────────────────────────── */}
+      <div className="w-full max-w-sm mx-auto px-5 pb-4">
+        <h2 className="text-white font-bold text-lg mb-1">Generate Your Invoice Link</h2>
+        <p className="text-slate-500 text-xs mb-6">Fill in the details below to create a secure, encrypted payment link.</p>
       </div>
 
-
       {/* Form fields */}
-      <div className="space-y-4 flex-1">
+      <div id="invoice-form" className="space-y-4 flex-1 max-w-sm mx-auto w-full px-5">
 
         {/* Provider name */}
         <div>

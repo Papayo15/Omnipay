@@ -7,14 +7,14 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 
 export const metadata: Metadata = {
-  title: "OmniPay Protocol",
-  description: "Transfiere dinero directo de banco a banco en todo el mundo. Sin terminales. Sin tarjetas.",
+  title: "OmniPay Global — B2B International Settlement Suite",
+  description: "Secure, transparent B2B payment settlement for international freelancers, remote contractors, and digital agencies. 1% flat fee. Zero data retention.",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "OmniPay" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "OmniPay Global" },
   icons: { apple: "/icon-192.png" },
   openGraph: {
-    title: "OmniPay Protocol",
-    description: "Te están pidiendo dinero. Paga en segundos.",
+    title: "OmniPay Global — B2B Settlement Suite",
+    description: "International invoice settlement with transparent pricing. Standard & Instant tiers available.",
     type: "website",
   },
 };
