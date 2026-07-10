@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getPaysendBalance } from "@/lib/paysend";
 
 // GET /api/admin/stats
 // Panel de reconciliación operacional. Protegido con Bearer token.
@@ -53,19 +52,15 @@ export async function GET(req: NextRequest) {
   const stripeKey   = process.env.STRIPE_SECRET_KEY  ?? "";
   const wiseKey     = process.env.WISE_API_KEY        ?? "";
   const wiseProfile = process.env.WISE_PROFILE_ID     ?? "";
-  const paysendKey  = process.env.PAYSEND_API_KEY     ?? "";
-
-  const [stripeBalance, wiseBalances, wiseTransfers, paysendCAD] = await Promise.allSettled([
+  const [stripeBalance, wiseBalances, wiseTransfers] = await Promise.allSettled([
     new Stripe(stripeKey).balance.retrieve(),
     getWiseBalances(wiseProfile, wiseKey),
     getWiseRecentTransfers(wiseProfile, wiseKey),
-    getPaysendBalance(paysendKey),
   ]);
 
   const stripe = stripeBalance.status === "fulfilled" ? stripeBalance.value : null;
   const wise   = wiseBalances.status  === "fulfilled" ? wiseBalances.value  : [];
   const txs    = wiseTransfers.status === "fulfilled" ? wiseTransfers.value : [];
-  const paysendBal = paysendCAD.status === "fulfilled" ? paysendCAD.value : 0;
 
   const stripeAvailableCAD = stripe?.available
     .filter((b) => b.currency === "cad")
@@ -83,9 +78,6 @@ export async function GET(req: NextRequest) {
       available_cad: stripeAvailableCAD,
       pending_cad:   stripePendingCAD,
     },
-    paysend: {
-      balance_cad: paysendBal,
-    },
     wise: {
       balance_cad: wiseCAD,
       balance_usd: wiseUSD,
@@ -99,8 +91,7 @@ export async function GET(req: NextRequest) {
       created:  t.created,
     })),
     health: {
-      wise_buffer_ok:        wiseCAD >= WISE_MIN_BALANCE_CAD,
-      paysend_buffer_ok:     paysendBal >= WISE_MIN_BALANCE_CAD,
+      wise_buffer_ok:         wiseCAD >= WISE_MIN_BALANCE_CAD,
       stripe_payout_eligible: stripeAvailableCAD > 0,
     },
     timestamp: new Date().toISOString(),

@@ -3,7 +3,6 @@ import Stripe from "stripe";
 import { parseRemesaLink, buildReceiptURL } from "@/lib/link";
 import { selectRemesaRail } from "@/constants/remesa-rails";
 import { getWiseAccountType, buildWiseAccountDetails } from "@/lib/wise-accounts";
-import { executePaysend } from "@/lib/paysend";
 
 // POST /api/remesa/execute
 // El receptor confirma su método de cobro. Este endpoint:
@@ -225,17 +224,11 @@ export async function POST(req: NextRequest) {
 
     try {
       if (receiveMode === "card") {
-        // ── Rail Paysend: push a tarjeta Visa/MC/UnionPay ──────────────────────
-        txId = await executePaysend(
-          process.env.PAYSEND_API_KEY ?? "",
-          recipientName.trim(),
-          recipientCard,
-          payload.targetCountry,
-          payload.targetCurrency,
-          payload.amount,
-          payload.senderName ?? "OmniPay Sender",
+        // Push a tarjeta no disponible (Paysend/NIUM eliminados) → usar P2P en /p2p
+        return NextResponse.json(
+          { error: "Card push no disponible. Usa omnipay.com/p2p para envíos LATAM.", errorCode: "RAIL_UNAVAILABLE" },
+          { status: 503 },
         );
-        railLabel = "Paysend";
       } else {
         // ── Rail Wise / Thunes: cuenta bancaria o wallet móvil ────────────────
         const rail = selectRemesaRail(payload.targetCountry);
