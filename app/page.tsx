@@ -355,7 +355,9 @@ function getLocaleDefault(browserLocale: string) {
 export default function Home() {
   const serverLocale = useLocale();
   const [uiLocale, setUiLocale] = useState(serverLocale);
-  const t = useCallback(makeT(uiLocale), [uiLocale]);
+  const t  = useCallback(makeT(uiLocale), [uiLocale]);
+  const tl = useNextIntlTranslations("landing");
+  const router = useRouter();
   const [step, setStep] = useState<Step>("loading");
 
   // — form — (modo único: siempre remesa con conversión CAD)
@@ -909,11 +911,6 @@ export default function Home() {
 
   // ── CREATE (default) ──────────────────────────────────────────────────────
   const accInfo = getAccountInfo(country, receiveMode, t);
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const tl     = useNextIntlTranslations("landing");
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const router = useRouter();
 
   function scrollToForm() {
     document.getElementById("invoice-form")?.scrollIntoView({ behavior: "smooth" });
