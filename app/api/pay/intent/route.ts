@@ -25,6 +25,7 @@ import { parseCobrarV2Link, parseRemesaV2Link } from "@/lib/link";
 //
 const SPEI_FLAT    = 0.50;   // buffer Wise SPEI (cubre variación por corredor)
 const OMNIPAY_PCT  = 0.01;   // 1% OmniPay sobre el total cargado en Stripe
+const OMNIPAY_MIN  = 1.50;   // mínimo $1.50 CAD por TX (protege envíos pequeños)
 const STRIPE_FLAT  = 0.30;   // fee fijo Stripe por transacción
 const STRIPE_BASE  = 0.035;  // 3.5% — cubre tarjetas internacionales y Amex
 const STRIPE_INST  = 0.01;   // +1% Stripe Instant Payout — solo modo INSTANT
@@ -113,11 +114,14 @@ export async function POST(req: NextRequest) {
 
       const wiseRate  = await getWiseLiveRate("CAD", payload.receiveCurrency);
       const netCAD    = payload.receiveAmount / wiseRate;
-      // Fórmula circular resuelta: 1% OmniPay sobre el total que ve Stripe
-      const cadAmount = (netCAD + SPEI_FLAT + STRIPE_FLAT) / (1 - OMNIPAY_PCT - stripeRate);
+      // Fórmula circular resuelta: 1% OmniPay (mín $1.50 CAD) sobre el total que ve Stripe
+      const cadAmountRaw    = (netCAD + SPEI_FLAT + STRIPE_FLAT) / (1 - OMNIPAY_PCT - stripeRate);
+      const omniPayFeeRaw   = cadAmountRaw * OMNIPAY_PCT;
+      const omniPayFee      = Math.max(omniPayFeeRaw, OMNIPAY_MIN);
+      const omniPayAdj      = omniPayFee - omniPayFeeRaw; // ajuste si aplica mínimo
+      const cadAmount       = cadAmountRaw + omniPayAdj;
 
       // Desglose de tarifas para mostrar al pagador
-      const omniPayFee = cadAmount * OMNIPAY_PCT;
       const stripeFee  = cadAmount * stripeRate + STRIPE_FLAT;
       const wiseFee    = SPEI_FLAT;
 

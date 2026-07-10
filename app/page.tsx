@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations as useNextIntlTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import PAGE_MESSAGES from "@/lib/pageMessages";
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -909,6 +910,11 @@ export default function Home() {
   // ── CREATE (default) ──────────────────────────────────────────────────────
   const accInfo = getAccountInfo(country, receiveMode, t);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const tl     = useNextIntlTranslations("landing");
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const router = useRouter();
+
   function scrollToForm() {
     document.getElementById("invoice-form")?.scrollIntoView({ behavior: "smooth" });
   }
@@ -916,27 +922,50 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#0f172a] flex flex-col pb-10 w-full">
 
-      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section className="w-full bg-gradient-to-b from-slate-900 to-[#0f172a] px-6 pt-14 pb-16 text-center">
+      {/* ── HERO + DOS DIVISIONES ─────────────────────────────────────────────── */}
+      <section className="w-full bg-gradient-to-b from-slate-900 to-[#0f172a] px-6 pt-14 pb-12 text-center">
         <div className="flex items-center justify-center gap-2 mb-6">
           <Zap className="w-7 h-7 text-[#00C9C8]" />
           <span className="text-2xl font-bold text-white tracking-tight">OmniPay Global</span>
         </div>
-        <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-4">
-          B2B International<br />
-          <span className="text-[#00C9C8]">Settlement Suite</span>
-        </h1>
-        <p className="text-slate-400 text-sm md:text-base max-w-md mx-auto leading-relaxed mb-8">
-          Secure, high-velocity invoice settlement for international freelancers,
-          remote contractors, and digital agencies.<br />
-          <span className="text-slate-500 text-xs mt-1 block">Zero-data-retention · AES-256-GCM · 170+ countries</span>
-        </p>
-        <button
-          onClick={scrollToForm}
-          className="bg-[#00C9C8] hover:bg-[#00b5b5] active:scale-95 transition-all text-slate-900 font-bold px-8 py-3 rounded-2xl text-sm"
-        >
-          Generate Your Invoice Link ↓
-        </button>
+        <p className="text-slate-500 text-xs mb-10">Zero-data-retention · AES-256-GCM · 170+ countries</p>
+
+        {/* Dos cards de división */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+
+          {/* B2B */}
+          <button
+            onClick={scrollToForm}
+            className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-[#00C9C8]/60 rounded-2xl p-6 text-left transition-all duration-200 active:scale-[0.98]"
+          >
+            <div className="text-3xl mb-3">💼</div>
+            <h2 className="text-white font-bold text-base mb-1">{tl("b2b_title")}</h2>
+            <p className="text-slate-400 text-xs mb-4 leading-relaxed">{tl("b2b_sub")}</p>
+            <div className="text-[10px] text-slate-500 bg-slate-900/60 rounded-lg px-3 py-1.5 inline-block mb-4">
+              {tl("b2b_badge")}
+            </div>
+            <p className="text-[#00C9C8] text-sm font-semibold group-hover:translate-x-1 transition-transform">
+              {tl("b2b_cta")}
+            </p>
+          </button>
+
+          {/* P2P */}
+          <button
+            onClick={() => router.push("/p2p")}
+            className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/60 rounded-2xl p-6 text-left transition-all duration-200 active:scale-[0.98]"
+          >
+            <div className="text-3xl mb-3">🌍</div>
+            <h2 className="text-white font-bold text-base mb-1">{tl("p2p_title")}</h2>
+            <p className="text-slate-400 text-xs mb-4 leading-relaxed">{tl("p2p_sub")}</p>
+            <div className="text-[10px] text-slate-500 bg-slate-900/60 rounded-lg px-3 py-1.5 inline-block mb-4">
+              {tl("p2p_badge")}
+            </div>
+            <p className="text-emerald-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
+              {tl("p2p_cta")}
+            </p>
+          </button>
+
+        </div>
       </section>
 
       {/* ── FEATURES ─────────────────────────────────────────────────────────── */}
