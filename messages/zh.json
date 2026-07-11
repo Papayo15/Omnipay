@@ -289,6 +289,24 @@
     "label_recipient_phone": "收款人电话（用于通知）",
     "label_payer_phone": "付款人电话（可选）",
     "form_title": "生成收款人链接",
-    "form_sub": "填写以下详细信息。与将向您汇款的人分享链接。"
+    "form_sub": "填写以下详细信息。与将向您汇款的人分享链接。",
+    "payout_toggle_card": "借记卡",
+    "payout_toggle_bank": "银行账户",
+    "card_number_label": "收款人卡号（Visa / Mastercard）",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "预估费用明细",
+    "fee_principal": "收款人收到",
+    "fee_payin": "入账手续费（Ramp / Transak）",
+    "fee_platform": "OmniPay平台费",
+    "fee_network": "网络与交付",
+    "fee_fx_buffer": "汇率保护缓冲",
+    "fee_total": "您发送总计",
+    "fee_route": "路线",
+    "fee_loading": "正在计算费用…",
+    "route_bitso": "Bitso · 转账",
+    "route_wise": "Wise · 全球",
+    "route_wise_emergency": "Wise · 紧急路线",
+    "card_or_bank": "收款人想如何收款？",
+    "error_card_unavailable": "此国家/地区不支持卡付款，已切换至银行转账。"
   }
 }

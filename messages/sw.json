@@ -289,6 +289,24 @@
     "label_recipient_phone": "Simu ya mpokeaji (kwa arifa)",
     "label_payer_phone": "Simu ya mlipaji (hiari)",
     "form_title": "Tengeneza Kiungo cha Mpokeaji",
-    "form_sub": "Jaza maelezo hapa chini. Shiriki kiungo na mtu atakayekutumia pesa."
+    "form_sub": "Jaza maelezo hapa chini. Shiriki kiungo na mtu atakayekutumia pesa.",
+    "payout_toggle_card": "Kadi ya Benki",
+    "payout_toggle_bank": "Akaunti ya Benki",
+    "card_number_label": "Nambari ya Kadi ya Mpokeaji (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Makadirio ya Gharama",
+    "fee_principal": "Mpokeaji Anapata",
+    "fee_payin": "Ada ya Malipo (Ramp / Transak)",
+    "fee_platform": "Ada ya Jukwaa la OmniPay",
+    "fee_network": "Mtandao na Utoaji",
+    "fee_fx_buffer": "Kinga ya FX",
+    "fee_total": "Jumla Unayotuma",
+    "fee_route": "Njia",
+    "fee_loading": "Inakokotoa ada…",
+    "route_bitso": "Bitso · Uhamisho",
+    "route_wise": "Wise · Kimataifa",
+    "route_wise_emergency": "Wise · Njia ya Dharura",
+    "card_or_bank": "Mpokeaji anataka kupokea vipi?",
+    "error_card_unavailable": "Malipo ya kadi hayapatikani kwa nchi hii. Kubadilika kwa uhamisho wa benki."
   }
 }

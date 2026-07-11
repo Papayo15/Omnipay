@@ -289,6 +289,24 @@
     "label_recipient_phone": "Teléfono del receptor (para aviso)",
     "label_payer_phone": "Teléfono del pagador (opcional)",
     "form_title": "Genera el Enlace del Receptor",
-    "form_sub": "Completa los datos. Comparte el enlace con quien te va a enviar el dinero."
+    "form_sub": "Completa los datos. Comparte el enlace con quien te va a enviar el dinero.",
+    "payout_toggle_card": "Tarjeta de Débito",
+    "payout_toggle_bank": "Cuenta Bancaria",
+    "card_number_label": "Número de Tarjeta del Receptor (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Desglose Estimado de Costos",
+    "fee_principal": "El Receptor Recibe",
+    "fee_payin": "Fee de Pago (Ramp / Transak)",
+    "fee_platform": "Fee OmniPay",
+    "fee_network": "Red y Entrega",
+    "fee_fx_buffer": "Buffer de Protección FX",
+    "fee_total": "Total que Envías",
+    "fee_route": "Ruta",
+    "fee_loading": "Calculando costos…",
+    "route_bitso": "Bitso · SPEI",
+    "route_wise": "Wise · Global",
+    "route_wise_emergency": "Wise · Ruta de Emergencia",
+    "card_or_bank": "¿Cómo quiere recibir el dinero el receptor?",
+    "error_card_unavailable": "Pago a tarjeta no disponible para este país. Cambiando a cuenta bancaria."
   }
 }

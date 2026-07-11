@@ -289,6 +289,24 @@
     "label_recipient_phone": "Waya na mai karɓa (don sanarwa)",
     "label_payer_phone": "Waya na mai biya (zaɓi ne)",
     "form_title": "Ƙirƙiri Haɗin Mai Karɓa",
-    "form_sub": "Cika bayanan da ke ƙasa. Raba haɗin tare da wanda zai aika maka kuɗi."
+    "form_sub": "Cika bayanan da ke ƙasa. Raba haɗin tare da wanda zai aika maka kuɗi.",
+    "payout_toggle_card": "Katin Bashi",
+    "payout_toggle_bank": "Asusun Banki",
+    "card_number_label": "Lambar Katin Mai Karba (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Ƙiyasin Tsarin Kudade",
+    "fee_principal": "Mai Karba Zai Samu",
+    "fee_payin": "Kudin Biyan Kuɗi (Ramp / Transak)",
+    "fee_platform": "Kudin Dandamali na OmniPay",
+    "fee_network": "Hanyar sadarwa da Isar da kaya",
+    "fee_fx_buffer": "Kariyar FX Buffer",
+    "fee_total": "Jimillar Da Kuke Aika",
+    "fee_route": "Hanya",
+    "fee_loading": "Ana ƙididdige kudade…",
+    "route_bitso": "Bitso · Canja wuri",
+    "route_wise": "Wise · Duniya",
+    "route_wise_emergency": "Wise · Hanyar Gaggawa",
+    "card_or_bank": "Ta yaya mai karba yake so ya karɓa?",
+    "error_card_unavailable": "Biyan kuɗi ta kati ba ya samuwa a wannan ƙasa. An canza zuwa canja kuɗi na banki."
   }
 }

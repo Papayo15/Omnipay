@@ -1,19 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { executeBitsoSPEI, calcP2PFee } from "@/lib/bitso";
+import { executeBitsoSPEI, executeBitsoCard, calcP2PFee } from "@/lib/bitso";
+import { executeWiseP2P, executeWiseCard } from "@/lib/wise-p2p";
+import { selectP2PRail } from "@/lib/routing";
+import { normalizeOnRamp, verifyOnRampSignature } from "@/lib/onramp";
+import type { OnRampProvider } from "@/lib/onramp";
 import { sendAdminWhatsApp } from "@/lib/notify";
+import type { P2PToken } from "@/app/api/v1/p2p/checkout/route";
 
 // POST /api/v1/p2p/webhook
 //
-// Recibe confirmación de Ramp Network o Transak cuando el USDC llegó a Bitso.
-// Desencripta el partnerOrderId → obtiene { clabe, nombre, amount_mxn }
-// Calcula fee OmniPay → ejecuta SPEI con USDC neto vía Bitso Business API.
+// Provider-agnostic: receives Ramp Network OR Transak confirmation.
+// Switch via NEXT_PUBLIC_ONRAMP_PROVIDER=ramp|transak
 //
-// Idempotente: si el mismo partnerOrderId ya fue procesado (mismo wid en Bitso),
-// Bitso lo rechaza con error duplicado → retornamos 200 de todas formas.
+// On COMPLETED: decrypts token → dual routing:
+//   LATAM (MX/BR/CO/AR) + BITSO_API_KEY → Bitso Business
+//   Everything else OR Bitso fallback     → Wise Canada (same credentials as B2B)
 //
-// Activación: requiere BITSO_API_KEY + BITSO_API_SECRET + RAMP_WEBHOOK_SECRET
+// Card payouts: tries card rail first, falls back to bank if CARD_RAIL_UNAVAILABLE.
+// Idempotent: duplicate partnerOrderId → Bitso/Wise rejects → return 200.
 
-async function decryptP2PToken(token: string, secret: string): Promise<{ clabe: string; nombre: string; amount_mxn: number; created_at: number } | null> {
+async function decryptP2PToken(token: string, secret: string): Promise<P2PToken | null> {
   try {
     const enc         = new TextEncoder();
     const combined    = Buffer.from(token, "base64url");
@@ -23,111 +29,145 @@ async function decryptP2PToken(token: string, secret: string): Promise<{ clabe: 
       "raw", enc.encode(secret.slice(0, 32).padEnd(32, "0")),
       "AES-GCM", false, ["decrypt"],
     );
-    const decrypted   = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, keyMaterial, ciphertext);
-    return JSON.parse(new TextDecoder().decode(decrypted));
+    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, keyMaterial, ciphertext);
+    return JSON.parse(new TextDecoder().decode(decrypted)) as P2PToken;
   } catch { return null; }
 }
 
-async function verifyRampSignature(rawBody: string, sigHeader: string, secret: string): Promise<boolean> {
-  if (!secret) return true; // sin secret configurado → aceptar en dev
-  try {
-    const enc = new TextEncoder();
-    const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-    const sig = await crypto.subtle.sign("HMAC", key, enc.encode(rawBody));
-    const computed = Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
-    // Ramp envía la firma como "sha256=<hex>" o solo el hex según la versión del SDK
-    const incoming = sigHeader.replace(/^sha256=/, "");
-    if (computed.length !== incoming.length) return false;
-    let diff = 0;
-    for (let i = 0; i < computed.length; i++) diff |= computed.charCodeAt(i) ^ incoming.charCodeAt(i);
-    return diff === 0;
-  } catch { return false; }
+async function settle(
+  token:    P2PToken,
+  usdcNet:  number,
+  orderId:  string,
+  isEmergency: boolean,
+): Promise<string> {
+  const {
+    account, payout_method, nombre,
+    target_country, target_currency,
+  } = token;
+
+  const rail = isEmergency ? "wise" : selectP2PRail(target_country);
+
+  // ── Bitso route ──────────────────────────────────────────────────────────
+  if (rail === "bitso") {
+    const key    = process.env.BITSO_API_KEY!;
+    const secret = process.env.BITSO_API_SECRET!;
+
+    if (payout_method === "card") {
+      try {
+        return await executeBitsoCard(key, secret, account, nombre, usdcNet, orderId);
+      } catch (e) {
+        const err = e as Error & { code?: string };
+        if (err.code !== "CARD_RAIL_UNAVAILABLE") throw err;
+        // Card not supported → fall through to Wise card
+      }
+    } else {
+      try {
+        return await executeBitsoSPEI(key, secret, account, nombre, usdcNet, orderId);
+      } catch (e) {
+        const err = e as Error & { code?: string };
+        if (err.code === "INVALID_CLABE") throw err; // permanent — no retry
+        // Transient Bitso error → fall through to Wise
+      }
+    }
+  }
+
+  // ── Wise route (global or Bitso fallback) ────────────────────────────────
+  const profileId = process.env.WISE_PROFILE_ID ?? "";
+  const apiKey    = process.env.WISE_API_KEY    ?? "";
+  if (!profileId || !apiKey) {
+    throw new Error("Wise credentials not configured");
+  }
+
+  // USDC net → CAD (approx 1:1 via existing Wise CAD float — same as B2B pool)
+  // In production: USDC arrives at Bitso → sold for CAD → deposited to Wise CAD balance.
+  // For simplicity, 1 USDC ≈ 0.74 CAD (will be refined with live FX in production).
+  const cadEquiv = usdcNet * 0.74;
+
+  if (payout_method === "card") {
+    try {
+      return await executeWiseCard(profileId, apiKey, nombre, account, target_country, target_currency, cadEquiv, orderId);
+    } catch (e) {
+      const err = e as Error & { code?: string };
+      if (err.code === "CARD_RAIL_UNAVAILABLE") {
+        // Neither Bitso nor Wise supports card for this corridor — error out
+        throw Object.assign(new Error("Card payout not available for this destination"), { code: "CARD_UNAVAILABLE" });
+      }
+      throw err;
+    }
+  }
+
+  return await executeWiseP2P(profileId, apiKey, nombre, account, target_country, target_currency, cadEquiv, orderId);
 }
 
 export async function POST(req: NextRequest) {
-  const bitsoKey    = process.env.BITSO_API_KEY;
-  const bitsoSecret = process.env.BITSO_API_SECRET;
-  const rampSecret  = process.env.RAMP_WEBHOOK_SECRET ?? "";
-  const linkSecret  = process.env.LINK_SECRET ?? "dev-secret";
+  const bitsoKey  = process.env.BITSO_API_KEY;
+  const linkSecret = process.env.LINK_SECRET ?? "dev-secret";
+  const provider  = (process.env.NEXT_PUBLIC_ONRAMP_PROVIDER ?? "ramp") as OnRampProvider;
 
-  if (!bitsoKey || !bitsoSecret) {
-    console.warn("[p2p/webhook] Sin credenciales Bitso — ignorando evento");
-    return NextResponse.json({ received: true });
-  }
+  const rawBody = await req.text();
 
-  const rawBody  = await req.text();
-  const sigHeader = req.headers.get("x-body-signature") ?? req.headers.get("x-ramp-signature") ?? "";
-
-  const valid = await verifyRampSignature(rawBody, sigHeader, rampSecret);
+  // Verify provider signature
+  const valid = await verifyOnRampSignature(rawBody, req.headers, provider);
   if (!valid) return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
 
-  let event: Record<string, unknown>;
-  try { event = JSON.parse(rawBody); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+  let body: Record<string, unknown>;
+  try { body = JSON.parse(rawBody); }
+  catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  // Ramp envía status COMPLETED cuando el USDC llegó a la dirección destino
-  const status         = String(event.status ?? event.type ?? "");
-  const partnerOrderId = String(event.partnerOrderId ?? event.partner_order_id ?? "");
-  const usdcAmount     = parseFloat(String(event.cryptoAmount ?? event.crypto_amount ?? event.amount ?? "0"));
+  // Normalize payload
+  const tx = normalizeOnRamp(body, provider);
 
-  if (!status.toUpperCase().includes("COMPLETE") && !status.toUpperCase().includes("SUCCESS")) {
-    // Evento informativo (pending, processing) → acusar recibo sin acción
-    return NextResponse.json({ received: true, action: "none", status });
+  if (tx.status !== "COMPLETED") {
+    return NextResponse.json({ received: true, action: "none", status: tx.rawStatus });
   }
 
-  if (!partnerOrderId || !usdcAmount) {
-    console.error("[p2p/webhook] Falta partnerOrderId o usdcAmount", event);
+  if (!tx.partnerOrderId || !tx.usdcAmount) {
+    console.error("[p2p/webhook] Missing partnerOrderId or usdcAmount", body);
     return NextResponse.json({ received: true });
   }
 
-  // Desencriptar destino
-  const payload = await decryptP2PToken(partnerOrderId, linkSecret);
-  if (!payload) {
-    console.error("[p2p/webhook] No se pudo desencriptar partnerOrderId");
-    return NextResponse.json({ received: true }); // 200 para no causar reintentos infinitos
+  // Decrypt token
+  const token = await decryptP2PToken(tx.partnerOrderId, linkSecret);
+  if (!token) {
+    console.error("[p2p/webhook] Could not decrypt partnerOrderId");
+    return NextResponse.json({ received: true }); // 200 to stop retries
   }
 
-  const { clabe, nombre, amount_mxn } = payload;
+  const isEmergency    = !bitsoKey; // if no Bitso creds → force Wise
+  const feeUsdc        = calcP2PFee(tx.usdcAmount, isEmergency);
+  const usdcNet        = parseFloat((tx.usdcAmount - feeUsdc).toFixed(6));
 
-  // Calcular fee y USDC neto
-  const feeUsdc  = calcP2PFee(usdcAmount);
-  const usdcNeto = parseFloat((usdcAmount - feeUsdc).toFixed(6));
-
-  if (usdcNeto <= 0) {
-    console.error(`[p2p/webhook] USDC neto negativo (${usdcNeto}) para TX ${partnerOrderId}`);
+  if (usdcNet <= 0) {
+    console.error(`[p2p/webhook] Negative net USDC (${usdcNet}) for ${tx.partnerOrderId}`);
     return NextResponse.json({ received: true });
   }
 
   try {
-    const widId = await executeBitsoSPEI(
-      bitsoKey,
-      bitsoSecret,
-      clabe,
-      nombre,
-      usdcNeto,
-      partnerOrderId.slice(0, 20), // referencia para Bitso
-    );
+    const txId = await settle(token, usdcNet, tx.partnerOrderId.slice(0, 20), isEmergency);
+    const rail = isEmergency ? "wise_emergency" : selectP2PRail(token.target_country);
 
-    // Alerta admin vía WhatsApp
     sendAdminWhatsApp(
-      `✅ OmniPay P2P\n${nombre} recibirá ~$${amount_mxn.toLocaleString()} MXN\nUSDC enviados: ${usdcNeto}\nFee OmniPay: $${feeUsdc.toFixed(2)} USD\nBitso WID: ${widId}`
+      `✅ OmniPay P2P\n${token.nombre} → ${token.amount_target.toLocaleString()} ${token.target_currency}\n` +
+      `USDC neto: ${usdcNet} · Fee: $${feeUsdc.toFixed(2)}\nRail: ${rail} · ID: ${txId}`
     ).catch(() => {});
 
-    console.log(`[p2p/webhook] SPEI ejecutado → Bitso WID ${widId} → CLABE ${clabe.slice(0, 6)}...`);
-    return NextResponse.json({ received: true, widId, clabe_prefix: clabe.slice(0, 6) });
+    return NextResponse.json({ received: true, txId, rail });
 
   } catch (err) {
     const e = err as Error & { code?: string };
-    console.error("[p2p/webhook] Bitso SPEI error:", e.message, e.code);
+    console.error("[p2p/webhook] settlement error:", e.message, e.code);
 
-    // CLABE inválida → 200 (no reintentar, no hay nada que hacer)
-    if (e.code === "INVALID_CLABE") {
+    const permanentCodes = ["INVALID_CLABE", "INVALID_ACCOUNT", "INVALID_CARD", "CARD_UNAVAILABLE"];
+
+    if (permanentCodes.includes(e.code ?? "")) {
       sendAdminWhatsApp(
-        `❌ OmniPay P2P — CLABE inválida\n${nombre}\nCLABE: ${clabe}\nMXN perdidos: $${amount_mxn}`
+        `❌ OmniPay P2P — ${e.code}\n${token.nombre}\nAccount: ${token.account}\n` +
+        `${token.amount_target} ${token.target_currency} · Review urgently`
       ).catch(() => {});
-      return NextResponse.json({ received: true, error: "CLABE inválida — revisar urgente" });
+      return NextResponse.json({ received: true, error: e.message, code: e.code });
     }
 
-    // Error transitorio (balance Bitso bajo, red) → 503 → Ramp reintenta
+    // Transient → 503 so provider retries
     return NextResponse.json({ error: e.message }, { status: 503 });
   }
 }

@@ -289,6 +289,24 @@
     "label_recipient_phone": "هاتف المستلم (للإشعار)",
     "label_payer_phone": "هاتف الدافع (اختياري)",
     "form_title": "إنشاء رابط المستلم",
-    "form_sub": "أدخل التفاصيل أدناه. شارك الرابط مع من سيرسل لك المال."
+    "form_sub": "أدخل التفاصيل أدناه. شارك الرابط مع من سيرسل لك المال.",
+    "payout_toggle_card": "بطاقة الخصم",
+    "payout_toggle_bank": "حساب مصرفي",
+    "card_number_label": "رقم بطاقة المستلم (فيزا / ماستركارد)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "تفصيل التكاليف التقديري",
+    "fee_principal": "المستلم يحصل على",
+    "fee_payin": "رسوم الدفع (Ramp / Transak)",
+    "fee_platform": "رسوم OmniPay",
+    "fee_network": "الشبكة والتسليم",
+    "fee_fx_buffer": "مخزن حماية الصرف",
+    "fee_total": "المجموع الذي ترسله",
+    "fee_route": "المسار",
+    "fee_loading": "جارٍ حساب الرسوم…",
+    "route_bitso": "Bitso · تحويل",
+    "route_wise": "Wise · عالمي",
+    "route_wise_emergency": "Wise · مسار الطوارئ",
+    "card_or_bank": "كيف يريد المستلم أن يستلم؟",
+    "error_card_unavailable": "الدفع بالبطاقة غير متاح لهذا البلد. التبديل إلى التحويل المصرفي."
   }
 }

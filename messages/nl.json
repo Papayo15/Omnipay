@@ -289,6 +289,24 @@
     "label_recipient_phone": "Telefoon ontvanger (voor melding)",
     "label_payer_phone": "Telefoon betaler (optioneel)",
     "form_title": "Genereer Ontvangerslink",
-    "form_sub": "Vul de gegevens hieronder in. Deel de link met degene die u geld zal sturen."
+    "form_sub": "Vul de gegevens hieronder in. Deel de link met degene die u geld zal sturen.",
+    "payout_toggle_card": "Betaalkaart",
+    "payout_toggle_bank": "Bankrekening",
+    "card_number_label": "Kaartnummer Ontvanger (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Geschatte Kostenopstelling",
+    "fee_principal": "Ontvanger Ontvangt",
+    "fee_payin": "Instortingskosten (Ramp / Transak)",
+    "fee_platform": "OmniPay Platformkosten",
+    "fee_network": "Netwerk & Levering",
+    "fee_fx_buffer": "FX Beschermingsbuffer",
+    "fee_total": "Totaal dat U Stuurt",
+    "fee_route": "Route",
+    "fee_loading": "Kosten berekenen…",
+    "route_bitso": "Bitso · Overboeking",
+    "route_wise": "Wise · Wereldwijd",
+    "route_wise_emergency": "Wise · Noodroute",
+    "card_or_bank": "Hoe wil de ontvanger ontvangen?",
+    "error_card_unavailable": "Kaartbetaling niet beschikbaar voor dit land. Overschakeling naar bankoverschrijving."
   }
 }

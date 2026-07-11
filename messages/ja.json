@@ -289,6 +289,24 @@
     "label_recipient_phone": "受取人の電話番号（通知用）",
     "label_payer_phone": "支払人の電話番号（任意）",
     "form_title": "受取人リンクを生成",
-    "form_sub": "以下の詳細を入力してください。送金してくれる人にリンクを共有します。"
+    "form_sub": "以下の詳細を入力してください。送金してくれる人にリンクを共有します。",
+    "payout_toggle_card": "デビットカード",
+    "payout_toggle_bank": "銀行口座",
+    "card_number_label": "受取人カード番号（Visa / Mastercard）",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "推定費用の内訳",
+    "fee_principal": "受取人の受取額",
+    "fee_payin": "入金手数料（Ramp / Transak）",
+    "fee_platform": "OmniPayプラットフォーム手数料",
+    "fee_network": "ネットワーク・配送",
+    "fee_fx_buffer": "FX保護バッファ",
+    "fee_total": "送金合計",
+    "fee_route": "ルート",
+    "fee_loading": "手数料を計算中…",
+    "route_bitso": "Bitso · 送金",
+    "route_wise": "Wise · グローバル",
+    "route_wise_emergency": "Wise · 緊急ルート",
+    "card_or_bank": "受取人はどのように受け取りますか？",
+    "error_card_unavailable": "この国へのカード払いは利用不可。銀行振込に切り替えました。"
   }
 }

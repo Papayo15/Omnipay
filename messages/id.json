@@ -289,6 +289,24 @@
     "label_recipient_phone": "Telepon penerima (untuk pemberitahuan)",
     "label_payer_phone": "Telepon pembayar (opsional)",
     "form_title": "Buat Tautan Penerima",
-    "form_sub": "Isi detail di bawah ini. Bagikan tautan kepada orang yang akan mengirim uang kepada Anda."
+    "form_sub": "Isi detail di bawah ini. Bagikan tautan kepada orang yang akan mengirim uang kepada Anda.",
+    "payout_toggle_card": "Kartu Debit",
+    "payout_toggle_bank": "Rekening Bank",
+    "card_number_label": "Nomor Kartu Penerima (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Perkiraan Rincian Biaya",
+    "fee_principal": "Penerima Mendapatkan",
+    "fee_payin": "Biaya Pembayaran (Ramp / Transak)",
+    "fee_platform": "Biaya Platform OmniPay",
+    "fee_network": "Jaringan & Pengiriman",
+    "fee_fx_buffer": "Buffer Perlindungan FX",
+    "fee_total": "Total yang Anda Kirim",
+    "fee_route": "Rute",
+    "fee_loading": "Menghitung biaya…",
+    "route_bitso": "Bitso · Transfer",
+    "route_wise": "Wise · Global",
+    "route_wise_emergency": "Wise · Rute Darurat",
+    "card_or_bank": "Bagaimana penerima ingin menerima?",
+    "error_card_unavailable": "Pembayaran kartu tidak tersedia untuk negara ini. Beralih ke transfer bank."
   }
 }

@@ -289,6 +289,24 @@
     "label_recipient_phone": "प्राप्तकर्ता का फ़ोन (अधिसूचना के लिए)",
     "label_payer_phone": "भुगतानकर्ता का फ़ोन (वैकल्पिक)",
     "form_title": "रिसीवर लिंक बनाएं",
-    "form_sub": "नीचे विवरण भरें। जो आपको पैसे भेजेगा उसके साथ लिंक शेयर करें।"
+    "form_sub": "नीचे विवरण भरें। जो आपको पैसे भेजेगा उसके साथ लिंक शेयर करें।",
+    "payout_toggle_card": "डेबिट कार्ड",
+    "payout_toggle_bank": "बैंक खाता",
+    "card_number_label": "प्राप्तकर्ता कार्ड नंबर (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "अनुमानित लागत विवरण",
+    "fee_principal": "प्राप्तकर्ता को मिलेगा",
+    "fee_payin": "भुगतान शुल्क (Ramp / Transak)",
+    "fee_platform": "OmniPay प्लेटफ़ॉर्म शुल्क",
+    "fee_network": "नेटवर्क और डिलीवरी",
+    "fee_fx_buffer": "FX सुरक्षा बफर",
+    "fee_total": "कुल भेजें",
+    "fee_route": "मार्ग",
+    "fee_loading": "शुल्क की गणना हो रही है…",
+    "route_bitso": "Bitso · ट्रांसफर",
+    "route_wise": "Wise · वैश्विक",
+    "route_wise_emergency": "Wise · आपातकालीन मार्ग",
+    "card_or_bank": "प्राप्तकर्ता कैसे प्राप्त करना चाहता है?",
+    "error_card_unavailable": "इस देश के लिए कार्ड भुगतान उपलब्ध नहीं। बैंक ट्रांसफर पर स्विच किया।"
   }
 }

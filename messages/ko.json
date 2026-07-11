@@ -289,6 +289,24 @@
     "label_recipient_phone": "수령인 전화번호 (알림용)",
     "label_payer_phone": "지불인 전화번호 (선택사항)",
     "form_title": "수령인 링크 생성",
-    "form_sub": "아래 세부 정보를 입력하세요. 돈을 보내줄 사람과 링크를 공유하세요."
+    "form_sub": "아래 세부 정보를 입력하세요. 돈을 보내줄 사람과 링크를 공유하세요.",
+    "payout_toggle_card": "직불카드",
+    "payout_toggle_bank": "은행 계좌",
+    "card_number_label": "수신자 카드 번호 (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "예상 비용 내역",
+    "fee_principal": "수신자 수령액",
+    "fee_payin": "입금 수수료 (Ramp / Transak)",
+    "fee_platform": "OmniPay 플랫폼 수수료",
+    "fee_network": "네트워크 및 배송",
+    "fee_fx_buffer": "FX 보호 버퍼",
+    "fee_total": "총 송금액",
+    "fee_route": "경로",
+    "fee_loading": "수수료 계산 중…",
+    "route_bitso": "Bitso · 이체",
+    "route_wise": "Wise · 글로벌",
+    "route_wise_emergency": "Wise · 긴급 경로",
+    "card_or_bank": "수신자는 어떻게 받고 싶나요?",
+    "error_card_unavailable": "이 국가는 카드 결제 불가. 계좌 이체로 전환되었습니다."
   }
 }

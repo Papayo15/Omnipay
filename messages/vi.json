@@ -289,6 +289,24 @@
     "label_recipient_phone": "Điện thoại người nhận (để thông báo)",
     "label_payer_phone": "Điện thoại người trả tiền (tùy chọn)",
     "form_title": "Tạo Liên Kết Người Nhận",
-    "form_sub": "Điền thông tin bên dưới. Chia sẻ liên kết với người sẽ gửi tiền cho bạn."
+    "form_sub": "Điền thông tin bên dưới. Chia sẻ liên kết với người sẽ gửi tiền cho bạn.",
+    "payout_toggle_card": "Thẻ Ghi Nợ",
+    "payout_toggle_bank": "Tài Khoản Ngân Hàng",
+    "card_number_label": "Số Thẻ Người Nhận (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Ước Tính Chi Phí",
+    "fee_principal": "Người Nhận Nhận",
+    "fee_payin": "Phí Nạp Tiền (Ramp / Transak)",
+    "fee_platform": "Phí Nền Tảng OmniPay",
+    "fee_network": "Mạng Lưới & Giao Hàng",
+    "fee_fx_buffer": "Bộ Đệm Bảo Vệ FX",
+    "fee_total": "Tổng Số Tiền Gửi",
+    "fee_route": "Tuyến Đường",
+    "fee_loading": "Đang tính phí…",
+    "route_bitso": "Bitso · Chuyển Khoản",
+    "route_wise": "Wise · Toàn Cầu",
+    "route_wise_emergency": "Wise · Tuyến Khẩn Cấp",
+    "card_or_bank": "Người nhận muốn nhận như thế nào?",
+    "error_card_unavailable": "Thanh toán thẻ không khả dụng cho quốc gia này. Chuyển sang chuyển khoản ngân hàng."
   }
 }

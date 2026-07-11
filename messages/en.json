@@ -289,6 +289,24 @@
     "label_recipient_phone": "Recipient phone (for notification)",
     "label_payer_phone": "Payer phone (optional)",
     "form_title": "Generate Recipient Link",
-    "form_sub": "Fill in the details below. Share the link with whoever will send you money."
+    "form_sub": "Fill in the details below. Share the link with whoever will send you money.",
+    "payout_toggle_card": "Debit Card",
+    "payout_toggle_bank": "Bank Account",
+    "card_number_label": "Recipient Card Number (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Estimated Cost Breakdown",
+    "fee_principal": "Recipient Gets",
+    "fee_payin": "Pay-in Fee (Ramp / Transak)",
+    "fee_platform": "OmniPay Platform Fee",
+    "fee_network": "Network & Delivery",
+    "fee_fx_buffer": "FX Protection Buffer",
+    "fee_total": "Total You Send",
+    "fee_route": "Route",
+    "fee_loading": "Calculating fees…",
+    "route_bitso": "Bitso · SPEI",
+    "route_wise": "Wise · Global",
+    "route_wise_emergency": "Wise · Emergency Route",
+    "card_or_bank": "How does the recipient want to receive?",
+    "error_card_unavailable": "Card payout unavailable for this country. Switching to bank transfer."
   }
 }

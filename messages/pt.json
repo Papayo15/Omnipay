@@ -289,6 +289,24 @@
     "label_recipient_phone": "Telefone do destinatário (para notificação)",
     "label_payer_phone": "Telefone do pagador (opcional)",
     "form_title": "Gere o Link do Destinatário",
-    "form_sub": "Preencha os dados. Compartilhe o link com quem vai te enviar o dinheiro."
+    "form_sub": "Preencha os dados. Compartilhe o link com quem vai te enviar o dinheiro.",
+    "payout_toggle_card": "Cartão de Débito",
+    "payout_toggle_bank": "Conta Bancária",
+    "card_number_label": "Número do Cartão do Destinatário (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Resumo Estimado de Custos",
+    "fee_principal": "O Destinatário Recebe",
+    "fee_payin": "Taxa de Pagamento (Ramp / Transak)",
+    "fee_platform": "Taxa OmniPay",
+    "fee_network": "Rede e Entrega",
+    "fee_fx_buffer": "Buffer de Proteção FX",
+    "fee_total": "Total que Você Envia",
+    "fee_route": "Rota",
+    "fee_loading": "Calculando taxas…",
+    "route_bitso": "Bitso · PIX",
+    "route_wise": "Wise · Global",
+    "route_wise_emergency": "Wise · Rota de Emergência",
+    "card_or_bank": "Como o destinatário quer receber?",
+    "error_card_unavailable": "Pagamento em cartão indisponível para este país. Mudando para conta bancária."
   }
 }

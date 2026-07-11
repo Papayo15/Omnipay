@@ -289,6 +289,24 @@
     "label_recipient_phone": "Telefono del destinatario (per notifica)",
     "label_payer_phone": "Telefono del pagante (opzionale)",
     "form_title": "Genera il Link del Destinatario",
-    "form_sub": "Compila i dettagli qui sotto. Condividi il link con chi ti invierà denaro."
+    "form_sub": "Compila i dettagli qui sotto. Condividi il link con chi ti invierà denaro.",
+    "payout_toggle_card": "Carta di Debito",
+    "payout_toggle_bank": "Conto Bancario",
+    "card_number_label": "Numero di Carta del Destinatario (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Riepilogo Costi Stimati",
+    "fee_principal": "Il Destinatario Riceve",
+    "fee_payin": "Commissione di Pagamento (Ramp / Transak)",
+    "fee_platform": "Commissione Piattaforma OmniPay",
+    "fee_network": "Rete e Consegna",
+    "fee_fx_buffer": "Buffer di Protezione FX",
+    "fee_total": "Totale che Invii",
+    "fee_route": "Percorso",
+    "fee_loading": "Calcolo commissioni…",
+    "route_bitso": "Bitso · Bonifico",
+    "route_wise": "Wise · Globale",
+    "route_wise_emergency": "Wise · Percorso di Emergenza",
+    "card_or_bank": "Come vuole ricevere il destinatario?",
+    "error_card_unavailable": "Pagamento con carta non disponibile per questo paese. Passaggio al bonifico."
   }
 }

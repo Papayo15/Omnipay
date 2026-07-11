@@ -289,6 +289,24 @@
     "label_recipient_phone": "ተቀባይ ስልክ (ለማሳወቂያ)",
     "label_payer_phone": "ከፋይ ስልክ (አማራጭ)",
     "form_title": "ተቀባይ ሊንክ ፍጠር",
-    "form_sub": "ዝርዝሮቹን ሙሉ። ገንዘብ ሊልክልህ ከሚፈልገው ሰው ጋር ሊንኩን አጋራ።"
+    "form_sub": "ዝርዝሮቹን ሙሉ። ገንዘብ ሊልክልህ ከሚፈልገው ሰው ጋር ሊንኩን አጋራ።",
+    "payout_toggle_card": "የዴቢት ካርድ",
+    "payout_toggle_bank": "የባንክ ሂሳብ",
+    "card_number_label": "የተቀባዩ ካርድ ቁጥር (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "የተቀመጠ ወጪ ዝርዝር",
+    "fee_principal": "ተቀባዩ ይቀበላል",
+    "fee_payin": "የክፍያ ክፍያ (Ramp / Transak)",
+    "fee_platform": "OmniPay የፕላትፎርም ክፍያ",
+    "fee_network": "አውታረ መረብ እና ማድረስ",
+    "fee_fx_buffer": "FX ጥበቃ ቋት",
+    "fee_total": "ጠቅላላ የምትልከው",
+    "fee_route": "መስመር",
+    "fee_loading": "ክፍያዎችን በማስላት ላይ…",
+    "route_bitso": "Bitso · ዝውውር",
+    "route_wise": "Wise · ዓለም አቀፍ",
+    "route_wise_emergency": "Wise · የአደጋ ጊዜ መስመር",
+    "card_or_bank": "ተቀባዩ እንዴት መቀበል ይፈልጋሉ?",
+    "error_card_unavailable": "ለዚህ ሀገር ካርድ ክፍያ አይቻልም። ወደ ባንክ ዝውውር ተቀይሯል።"
   }
 }

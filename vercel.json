@@ -3,5 +3,8 @@
   "buildCommand": "next build",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "devCommand": "next dev"
+  "devCommand": "next dev",
+  "crons": [
+    { "path": "/api/v1/p2p/audit", "schedule": "0 0 * * *" }
+  ]
 }

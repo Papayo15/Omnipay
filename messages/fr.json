@@ -289,6 +289,24 @@
     "label_recipient_phone": "Téléphone du destinataire (pour notification)",
     "label_payer_phone": "Téléphone du payeur (optionnel)",
     "form_title": "Générez le Lien du Destinataire",
-    "form_sub": "Remplissez les détails ci-dessous. Partagez le lien avec celui qui vous enverra de l'argent."
+    "form_sub": "Remplissez les détails ci-dessous. Partagez le lien avec celui qui vous enverra de l'argent.",
+    "payout_toggle_card": "Carte de Débit",
+    "payout_toggle_bank": "Compte Bancaire",
+    "card_number_label": "Numéro de Carte du Bénéficiaire (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Décomposition Estimée des Frais",
+    "fee_principal": "Le Bénéficiaire Reçoit",
+    "fee_payin": "Frais de Paiement (Ramp / Transak)",
+    "fee_platform": "Frais OmniPay",
+    "fee_network": "Réseau et Livraison",
+    "fee_fx_buffer": "Buffer de Protection FX",
+    "fee_total": "Total que Vous Envoyez",
+    "fee_route": "Itinéraire",
+    "fee_loading": "Calcul des frais…",
+    "route_bitso": "Bitso · Virement",
+    "route_wise": "Wise · Mondial",
+    "route_wise_emergency": "Wise · Itinéraire d'Urgence",
+    "card_or_bank": "Comment le bénéficiaire veut-il recevoir ?",
+    "error_card_unavailable": "Paiement par carte indisponible pour ce pays. Passage au virement bancaire."
   }
 }

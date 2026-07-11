@@ -289,6 +289,24 @@
     "label_recipient_phone": "Telefon des Empfängers (für Benachrichtigung)",
     "label_payer_phone": "Telefon des Zahlers (optional)",
     "form_title": "Empfänger-Link generieren",
-    "form_sub": "Füllen Sie die Details aus. Teilen Sie den Link mit der Person, die Ihnen Geld senden wird."
+    "form_sub": "Füllen Sie die Details aus. Teilen Sie den Link mit der Person, die Ihnen Geld senden wird.",
+    "payout_toggle_card": "Debitkarte",
+    "payout_toggle_bank": "Bankkonto",
+    "card_number_label": "Kartennummer des Empfängers (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Geschätzte Kostenübersicht",
+    "fee_principal": "Empfänger erhält",
+    "fee_payin": "Einzahlungsgebühr (Ramp / Transak)",
+    "fee_platform": "OmniPay-Gebühr",
+    "fee_network": "Netzwerk & Lieferung",
+    "fee_fx_buffer": "FX-Schutzpuffer",
+    "fee_total": "Gesamt, das Sie senden",
+    "fee_route": "Route",
+    "fee_loading": "Gebühren werden berechnet…",
+    "route_bitso": "Bitso · SEPA",
+    "route_wise": "Wise · Global",
+    "route_wise_emergency": "Wise · Notfallroute",
+    "card_or_bank": "Wie möchte der Empfänger erhalten?",
+    "error_card_unavailable": "Kartenzahlung für dieses Land nicht verfügbar. Wechsel zur Banküberweisung."
   }
 }

@@ -289,6 +289,24 @@
     "label_recipient_phone": "Alıcı telefonu (bildirim için)",
     "label_payer_phone": "Ödeyenin telefonu (isteğe bağlı)",
     "form_title": "Alıcı Bağlantısı Oluştur",
-    "form_sub": "Aşağıdaki ayrıntıları doldurun. Bağlantıyı size para gönderecek kişiyle paylaşın."
+    "form_sub": "Aşağıdaki ayrıntıları doldurun. Bağlantıyı size para gönderecek kişiyle paylaşın.",
+    "payout_toggle_card": "Banka Kartı",
+    "payout_toggle_bank": "Banka Hesabı",
+    "card_number_label": "Alıcının Kart Numarası (Visa / Mastercard)",
+    "card_number_placeholder": "4111 1111 1111 1111",
+    "fee_breakdown_title": "Tahmini Maliyet Dökümü",
+    "fee_principal": "Alıcının Alacağı",
+    "fee_payin": "Ödeme Ücreti (Ramp / Transak)",
+    "fee_platform": "OmniPay Platform Ücreti",
+    "fee_network": "Ağ ve Teslimat",
+    "fee_fx_buffer": "FX Koruma Tamponu",
+    "fee_total": "Gönderilecek Toplam",
+    "fee_route": "Rota",
+    "fee_loading": "Ücretler hesaplanıyor…",
+    "route_bitso": "Bitso · Havale",
+    "route_wise": "Wise · Küresel",
+    "route_wise_emergency": "Wise · Acil Rota",
+    "card_or_bank": "Alıcı nasıl almak istiyor?",
+    "error_card_unavailable": "Bu ülke için kart ödemesi mevcut değil. Banka transferine geçildi."
   }
 }
