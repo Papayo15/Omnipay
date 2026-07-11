@@ -147,6 +147,42 @@ export default function P2PPage() {
         </div>
       </div>
 
+      {/* ── P2P FEATURES — visible solo en el formulario ───────────────────────── */}
+      {step === "form" && (
+        <div className="w-full max-w-2xl mb-8 space-y-6">
+
+          {/* Feature cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 px-0">
+            <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
+              <div className="text-2xl mb-3">🌍</div>
+              <h3 className="text-white font-semibold text-sm mb-2">{t("feat1_title")}</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">{t("feat1_body")}</p>
+            </div>
+            <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
+              <div className="text-2xl mb-3">💱</div>
+              <h3 className="text-white font-semibold text-sm mb-2">{t("feat2_title")}</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">{t("feat2_body")}</p>
+            </div>
+            <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
+              <div className="text-2xl mb-3">⚡</div>
+              <h3 className="text-white font-semibold text-sm mb-2">{t("feat3_title")}</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">{t("feat3_body")}</p>
+            </div>
+          </div>
+
+          {/* Pricing card */}
+          <div className="bg-slate-800/60 border border-emerald-500/30 rounded-2xl p-6">
+            <h2 className="text-white font-bold text-base mb-1">{t("pricing_title")}</h2>
+            <p className="text-slate-400 text-xs mb-4">{t("pricing_sub")}</p>
+            <div className="bg-emerald-900/20 border border-emerald-700/30 rounded-xl px-4 py-3 mb-3">
+              <p className="text-emerald-300 text-sm font-mono font-semibold">{t("pricing_formula")}</p>
+            </div>
+            <p className="text-slate-500 text-xs">{t("pricing_example")}</p>
+          </div>
+
+        </div>
+      )}
+
       <div className="w-full max-w-md">
 
         {/* ── STEP: FORM ──────────────────────────────────────────────────── */}
