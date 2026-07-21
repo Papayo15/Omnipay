@@ -90,13 +90,15 @@ export async function POST(req: NextRequest): Promise<Response> {
       country:    country_iso3,
     });
 
-    // 1b. Sandbox: simulate KYC approval instantly via Bridge API (no Persona needed)
-    //     Production: patch address if new customer
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
+
+    // Always patch address — required for liquidation address creation.
+    // Idempotent: safe to call even if address already set.
+    try { await patchCustomerAddress(customer.id, country_upper); } catch { /* best-effort */ }
+
+    // Sandbox: simulate KYC approval instantly (no Persona needed)
     if (isSandbox && needsKyc) {
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
-    } else if (isNew) {
-      try { await patchCustomerAddress(customer.id, country_upper); } catch { /* non-critical */ }
     }
 
     // 2. KYC gate (production only — sandbox uses simulate_kyc_approval above)
