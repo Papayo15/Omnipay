@@ -7,8 +7,15 @@ export function getTargetCurrency(targetCountry: string): string {
   const map: Record<string, string> = {
     MX: "MXN", BR: "BRL", CO: "COP", AR: "ARS",
     US: "USD", CA: "CAD", GB: "GBP",
+    // Eurozone SEPA
     DE: "EUR", FR: "EUR", ES: "EUR", IT: "EUR", NL: "EUR", PT: "EUR",
-    BE: "EUR", AT: "EUR", IE: "EUR", EU: "EUR",
+    BE: "EUR", AT: "EUR", IE: "EUR", FI: "EUR", GR: "EUR", CY: "EUR",
+    EE: "EUR", LV: "EUR", LT: "EUR", LU: "EUR", MT: "EUR", SK: "EUR",
+    SI: "EUR", HR: "EUR",
+    // Non-Eurozone SEPA (Bridge delivers EUR via SEPA IBAN)
+    SE: "EUR", DK: "EUR", NO: "EUR", PL: "EUR", CZ: "EUR", HU: "EUR",
+    RO: "EUR", BG: "EUR", CH: "EUR", IS: "EUR", LI: "EUR",
+    EU: "EUR",
     IN: "INR", PH: "PHP", NG: "NGN", KE: "KES", GH: "GHS",
     AU: "AUD", JP: "JPY", KR: "KRW", VN: "VND", ID: "IDR",
     MA: "MAD", EG: "EGP", ZA: "ZAR", SN: "XOF", CI: "XOF",

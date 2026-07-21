@@ -25,15 +25,14 @@ interface CheckoutBody {
   email:            string;
   country:          string;
   receive_method:   ReceiveMethod;
-  card_number?:     string;
+  card_number?:     string;  // reserved — Paysend pending
   clabe?:           string;
   iban?:            string;
   pix_key?:         string;
   routing_number?:  string;
   account_number?:  string;
   sort_code?:       string;
-  transit_number?:  string;
-  ifsc?:            string;
+  bank_code?:       string;  // Colombia Bre-B
   amount_target:    number;
   recipient_phone?: string;
 }
@@ -46,7 +45,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   const {
     nombre, email, country, receive_method,
     card_number, clabe, iban, pix_key, routing_number, account_number,
-    sort_code, transit_number, ifsc,
+    sort_code, bank_code,
     amount_target, recipient_phone,
   } = body;
 
@@ -56,8 +55,11 @@ export async function POST(req: NextRequest): Promise<Response> {
       { status: 400 },
     );
   }
-  if (receive_method === "card" && !card_number) {
-    return NextResponse.json({ error: "card_number is required for card receive" }, { status: 400 });
+  if (receive_method === "card") {
+    return NextResponse.json(
+      { error: "Card push is not yet available. Use receive_method: \"bank\" with a supported bank account." },
+      { status: 400 },
+    );
   }
   if (receive_method === "bank" && !NATIVE_RAILS[country.toUpperCase()]) {
     return NextResponse.json(
@@ -125,7 +127,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       cardNumber:    card_number,
       clabe, iban, pixKey: pix_key,
       routingNumber: routing_number, accountNumber: account_number,
-      sortCode: sort_code, transitNumber: transit_number, ifsc,
+      sortCode: sort_code, bankCode: bank_code,
     };
     const liqAddr = await createLiquidationAddress(liqParams);
 

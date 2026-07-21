@@ -1,37 +1,70 @@
 // Bridge.xyz Liquidation Addresses
 // A liquidation address receives USDC and automatically converts it to local fiat,
-// sending it to the receptor's bank account or card.
+// sending it to the receptor's bank account.
 // Created once per receptor — reusable for multiple transactions.
+//
+// Verified supported rails (Bridge API docs, 2024):
+//   ACH/Wire  → USD  → United States
+//   SPEI      → MXN  → Mexico
+//   PIX       → BRL  → Brazil
+//   FPS       → GBP  → United Kingdom
+//   SEPA      → EUR  → EEA (31 countries)
+//   Bre-B     → COP  → Colombia (beta)
+//
+// NOT supported by Bridge: Canada EFT, India IMPS, Philippines InstaPay
+// Those require Paysend/Kuba (pending contract) for card push.
 
 import { bridgeRequest } from "./client";
 import { createExternalAccount } from "./external-accounts";
-import { getTargetCurrency } from "@/lib/routing";
 
-// Countries with native payment rails (bank account option available)
-// All other countries → card-only (Visa/MC push, 170+ countries)
+// Countries with native payment rails on Bridge.
+// All other countries → card-only (Paysend/Kuba, pending).
 export const NATIVE_RAILS: Record<string, {
   rail:     string;
   currency: string;
   fields:   string[];
   label:    string;
 }> = {
-  MX: { rail: "spei",      currency: "mxn", fields: ["clabe"],                            label: "CLABE (SPEI)"       },
-  US: { rail: "ach",       currency: "usd", fields: ["routing_number", "account_number"], label: "ACH Bank Account"   },
-  BR: { rail: "pix",       currency: "brl", fields: ["pix_key"],                          label: "Chave PIX"          },
-  GB: { rail: "fps",       currency: "gbp", fields: ["sort_code", "account_number"],      label: "Faster Payments"    },
-  CA: { rail: "eft",       currency: "cad", fields: ["transit_number", "account_number"], label: "EFT Bank Account"   },
-  IN: { rail: "imps",      currency: "inr", fields: ["ifsc", "account_number"],           label: "IMPS Bank Transfer" },
-  PH: { rail: "instapay",  currency: "php", fields: ["account_number"],                   label: "InstaPay"           },
-  // European countries — SEPA
-  DE: { rail: "sepa",      currency: "eur", fields: ["iban"],                             label: "SEPA (IBAN)"        },
-  FR: { rail: "sepa",      currency: "eur", fields: ["iban"],                             label: "SEPA (IBAN)"        },
-  ES: { rail: "sepa",      currency: "eur", fields: ["iban"],                             label: "SEPA (IBAN)"        },
-  IT: { rail: "sepa",      currency: "eur", fields: ["iban"],                             label: "SEPA (IBAN)"        },
-  NL: { rail: "sepa",      currency: "eur", fields: ["iban"],                             label: "SEPA (IBAN)"        },
-  PT: { rail: "sepa",      currency: "eur", fields: ["iban"],                             label: "SEPA (IBAN)"        },
-  BE: { rail: "sepa",      currency: "eur", fields: ["iban"],                             label: "SEPA (IBAN)"        },
-  AT: { rail: "sepa",      currency: "eur", fields: ["iban"],                             label: "SEPA (IBAN)"        },
-  IE: { rail: "sepa",      currency: "eur", fields: ["iban"],                             label: "SEPA (IBAN)"        },
+  // Americas
+  US: { rail: "ach",  currency: "usd", fields: ["routing_number", "account_number"], label: "ACH Bank Account"   },
+  MX: { rail: "spei", currency: "mxn", fields: ["clabe"],                            label: "CLABE (SPEI)"       },
+  BR: { rail: "pix",  currency: "brl", fields: ["pix_key"],                          label: "Chave PIX"          },
+  CO: { rail: "cop",  currency: "cop", fields: ["account_number", "bank_code"],      label: "Bre-B / Transferencia" },
+  // United Kingdom
+  GB: { rail: "fps",  currency: "gbp", fields: ["sort_code", "account_number"],      label: "Faster Payments"    },
+  // SEPA — Eurozone (EUR)
+  DE: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  FR: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  ES: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  IT: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  NL: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  PT: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  BE: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  AT: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  IE: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  FI: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  GR: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  CY: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  EE: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  LV: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  LT: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  LU: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  MT: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  SK: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  SI: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  HR: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  // SEPA — Non-Eurozone (EUR via SEPA IBAN)
+  SE: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  DK: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  NO: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  PL: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  CZ: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  HU: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  RO: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  BG: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  CH: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  IS: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  LI: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
 };
 
 export interface LiquidationAddress {
@@ -49,35 +82,62 @@ export interface CreateLiquidationParams {
   customerId:      string;
   country:         string;
   receiveMethod:   ReceiveMethod;
-  // Card fields
+  // Card fields (card push — requires Paysend, pending)
   cardNumber?:     string;
-  // Bank fields — depend on country
+  // Bank fields — depend on country rail
   clabe?:          string;
   iban?:           string;
   pixKey?:         string;
   routingNumber?:  string;
   accountNumber?:  string;
   sortCode?:       string;
-  transitNumber?:  string;
-  ifsc?:           string;
+  bankCode?:       string;  // Colombia Bre-B
   // Common
   ownerName:       string;
   ownerType?:      "individual" | "business";
 }
 
 const COUNTRY_ADDRESSES: Record<string, { street: string; city: string; state: string; postal_code: string }> = {
-  MX: { street: "123 Main Street", city: "Ciudad de Mexico", state: "CDMX",       postal_code: "06600"    },
-  US: { street: "123 Main Street", city: "New York",         state: "NY",          postal_code: "10001"    },
-  BR: { street: "123 Main Street", city: "São Paulo",        state: "SP",          postal_code: "01310100" },
-  CO: { street: "123 Main Street", city: "Bogotá",           state: "DC",          postal_code: "110111"   },
-  AR: { street: "123 Main Street", city: "Buenos Aires",     state: "BA",          postal_code: "C1000"    },
-  PE: { street: "123 Main Street", city: "Lima",             state: "LM",          postal_code: "15001"    },
-  GB: { street: "123 Main Street", city: "London",           state: "ENG",         postal_code: "EC1A1BB"  },
-  DE: { street: "123 Main Street", city: "Berlin",           state: "BE",          postal_code: "10115"    },
-  FR: { street: "123 Main Street", city: "Paris",            state: "IDF",         postal_code: "75001"    },
-  ES: { street: "123 Main Street", city: "Madrid",           state: "MD",          postal_code: "28001"    },
-  CA: { street: "123 Main Street", city: "Toronto",          state: "ON",          postal_code: "M5H2N2"   },
-  IN: { street: "123 Main Street", city: "Mumbai",           state: "MH",          postal_code: "400001"   },
+  // Americas
+  US: { street: "123 Main Street", city: "New York",         state: "NY",  postal_code: "10001"    },
+  MX: { street: "123 Main Street", city: "Ciudad de Mexico", state: "CDMX",postal_code: "06600"    },
+  BR: { street: "123 Main Street", city: "São Paulo",        state: "SP",  postal_code: "01310100" },
+  CO: { street: "123 Main Street", city: "Bogotá",           state: "DC",  postal_code: "110111"   },
+  // UK
+  GB: { street: "123 Main Street", city: "London",           state: "ENG", postal_code: "EC1A1BB"  },
+  // Core SEPA EU
+  DE: { street: "123 Main Street", city: "Berlin",           state: "BE",  postal_code: "10115"    },
+  FR: { street: "123 Main Street", city: "Paris",            state: "IDF", postal_code: "75001"    },
+  ES: { street: "123 Main Street", city: "Madrid",           state: "MD",  postal_code: "28001"    },
+  IT: { street: "123 Main Street", city: "Rome",             state: "RM",  postal_code: "00100"    },
+  NL: { street: "123 Main Street", city: "Amsterdam",        state: "NH",  postal_code: "1012AB"   },
+  PT: { street: "123 Main Street", city: "Lisbon",           state: "11",  postal_code: "1000001"  },
+  BE: { street: "123 Main Street", city: "Brussels",         state: "BRU", postal_code: "1000"     },
+  AT: { street: "123 Main Street", city: "Vienna",           state: "9",   postal_code: "1010"     },
+  IE: { street: "123 Main Street", city: "Dublin",           state: "D",   postal_code: "D01X2P3"  },
+  FI: { street: "123 Main Street", city: "Helsinki",         state: "18",  postal_code: "00100"    },
+  GR: { street: "123 Main Street", city: "Athens",           state: "AT",  postal_code: "10431"    },
+  CY: { street: "123 Main Street", city: "Nicosia",          state: "1",   postal_code: "1010"     },
+  EE: { street: "123 Main Street", city: "Tallinn",          state: "37",  postal_code: "10115"    },
+  LV: { street: "123 Main Street", city: "Riga",             state: "RIX", postal_code: "LV1050"   },
+  LT: { street: "123 Main Street", city: "Vilnius",          state: "VL",  postal_code: "01001"    },
+  LU: { street: "123 Main Street", city: "Luxembourg",       state: "LU",  postal_code: "1111"     },
+  MT: { street: "123 Main Street", city: "Valletta",         state: "VLT", postal_code: "VLT1000"  },
+  SK: { street: "123 Main Street", city: "Bratislava",       state: "BL",  postal_code: "81102"    },
+  SI: { street: "123 Main Street", city: "Ljubljana",        state: "61",  postal_code: "1000"     },
+  HR: { street: "123 Main Street", city: "Zagreb",           state: "21",  postal_code: "10000"    },
+  // Non-Eurozone SEPA
+  SE: { street: "123 Main Street", city: "Stockholm",        state: "AB",  postal_code: "11120"    },
+  DK: { street: "123 Main Street", city: "Copenhagen",       state: "84",  postal_code: "1050"     },
+  NO: { street: "123 Main Street", city: "Oslo",             state: "03",  postal_code: "0150"     },
+  PL: { street: "123 Main Street", city: "Warsaw",           state: "14",  postal_code: "00001"    },
+  CZ: { street: "123 Main Street", city: "Prague",           state: "PR",  postal_code: "11000"    },
+  HU: { street: "123 Main Street", city: "Budapest",         state: "BU",  postal_code: "1051"     },
+  RO: { street: "123 Main Street", city: "Bucharest",        state: "B",   postal_code: "010011"   },
+  BG: { street: "123 Main Street", city: "Sofia",            state: "22",  postal_code: "1000"     },
+  CH: { street: "123 Main Street", city: "Zurich",           state: "ZH",  postal_code: "8001"     },
+  IS: { street: "123 Main Street", city: "Reykjavik",        state: "1",   postal_code: "101"      },
+  LI: { street: "123 Main Street", city: "Vaduz",            state: "11",  postal_code: "9490"     },
 };
 
 // Complete ISO 3166-1 alpha-2 → alpha-3 mapping (all 249 UN countries/territories)
@@ -123,10 +183,9 @@ function getAddress(country: string) {
 // Build external account body per Bridge docs:
 // https://apidocs.bridge.xyz/platform/orchestration/external-accounts
 function buildExternalAccountBody(params: CreateLiquidationParams): Record<string, unknown> {
-  const country  = params.country.toUpperCase();
-  const currency = getTargetCurrency(country).toLowerCase();
-  const addr     = getAddress(country);
-  const address  = {
+  const country = params.country.toUpperCase();
+  const addr    = getAddress(country);
+  const address = {
     street_line_1: addr.street,
     city:          addr.city,
     state:         addr.state,
@@ -144,20 +203,9 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
     address,
   };
 
-  if (params.receiveMethod === "card") {
-    // Debit/prepaid card push — account_type "card" (undocumented, best guess)
-    return {
-      ...base,
-      currency:     "usd",
-      account_type: "card",
-      account: { account_number: params.cardNumber!.replace(/\s/g, "") },
-    };
-  }
-
   const native = NATIVE_RAILS[country];
-  if (!native) throw new Error(`No native rail for country ${country}. Use card instead.`);
+  if (!native) throw new Error(`No native rail for country ${country}. Use card (Paysend) instead.`);
 
-  // Bank rails — per Bridge external accounts docs
   if (native.rail === "spei") {
     return {
       ...base,
@@ -208,31 +256,15 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       pix_key: { pix_key: params.pixKey! },
     };
   }
-  if (native.rail === "eft") {
+  if (native.rail === "cop") {
     return {
       ...base,
-      currency:     "cad",
-      account_type: "ca",
+      currency:     "cop",
+      account_type: "cop",
       account: {
-        transit_number: params.transitNumber!,
         account_number: params.accountNumber!,
+        bank_code:      params.bankCode ?? "0",
       },
-    };
-  }
-  if (native.rail === "imps") {
-    return {
-      ...base,
-      currency:     "inr",
-      account_type: "imps",
-      account: { ifsc: params.ifsc!, account_number: params.accountNumber! },
-    };
-  }
-  if (native.rail === "instapay") {
-    return {
-      ...base,
-      currency:     "php",
-      account_type: "instapay",
-      account: { account_number: params.accountNumber! },
     };
   }
 
@@ -243,43 +275,42 @@ export async function createLiquidationAddress(
   params: CreateLiquidationParams,
 ): Promise<LiquidationAddress> {
   const country   = params.country.toUpperCase();
-  const cardLast4 = params.cardNumber?.slice(-4) ?? params.clabe?.slice(-4) ?? params.iban?.slice(-4) ?? "xxxx";
+  const identKey  = params.clabe?.slice(-4)
+    ?? params.iban?.slice(-4)
+    ?? params.pixKey?.slice(-4)
+    ?? params.accountNumber?.slice(-4)
+    ?? "xxxx";
 
   let destination: Record<string, unknown>;
 
   if (params.receiveMethod === "card") {
-    // Card push: Bridge uses to_account inline (no external account required)
-    destination = {
-      payment_rail: "card",
-      currency:     "usd",
-      to_account: {
-        card_number:        params.cardNumber!.replace(/\s/g, ""),
-        account_owner_name: params.ownerName,
-        account_owner_type: params.ownerType ?? "individual",
-      },
-    };
-  } else {
-    // Bank rails: Bridge requires external_account_id
-    const extAcctBody = buildExternalAccountBody(params);
-    const extAcct     = await createExternalAccount(
-      params.customerId,
-      extAcctBody,
-      `ext-${params.customerId}-${params.receiveMethod}-${cardLast4}`,
-    );
-    const currency = getTargetCurrency(country).toLowerCase();
-    const rail     = NATIVE_RAILS[country]?.rail ?? "ach";
-    destination = {
-      payment_rail:        rail,
-      currency,
-      external_account_id: extAcct.id,
-    };
+    // Card push — requires Paysend/Kuba (pending contract). Bridge does not support card.
+    throw new Error("Card push is not yet available. Use bank receive method.");
   }
+
+  // Bank rails: create external account first, then reference it by ID
+  const extAcctBody = buildExternalAccountBody(params);
+  const extAcct     = await createExternalAccount(
+    params.customerId,
+    extAcctBody,
+    `ext-${params.customerId}-${country}-${identKey}`,
+  );
+
+  // Use NATIVE_RAILS currency (not getTargetCurrency) — SEPA always EUR,
+  // even for non-euro countries like DK, PL, SE etc.
+  const currency = NATIVE_RAILS[country]?.currency ?? "usd";
+  const rail     = NATIVE_RAILS[country]?.rail ?? "ach";
+  destination = {
+    payment_rail:        rail,
+    currency,
+    external_account_id: extAcct.id,
+  };
 
   return bridgeRequest<LiquidationAddress>(
     "POST",
     `/customers/${params.customerId}/liquidation_addresses`,
     { currency: "usdc", chain: "polygon", destination },
-    `liq4-${params.customerId}-${country}-${params.receiveMethod}-${cardLast4}`,
+    `liq5-${params.customerId}-${country}-${identKey}`,
   );
 }
 
