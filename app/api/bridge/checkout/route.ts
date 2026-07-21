@@ -156,7 +156,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     });
     const metaToken = await encryptPayload({
       account:        meta,
-      receiveMode:    receive_method === "card" ? "card" : "bank",
+      receiveMode:    "bank",
       recipientPhone: recipient_phone,
     });
 
