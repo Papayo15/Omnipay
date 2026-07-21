@@ -136,7 +136,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
     return {
       payment_rail:       "card",
       currency:           "usd",
-      card_number:        params.cardNumber!.replace(/\s/g, ""),
+      account_number:     params.cardNumber!.replace(/\s/g, ""),
       account_owner_name: params.ownerName,
       account_owner_type: params.ownerType ?? "individual",
       address,
