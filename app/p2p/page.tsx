@@ -2,127 +2,187 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Copy, Check, Download, CreditCard, Building2 } from "lucide-react";
+import { ArrowLeft, Copy, Check, CreditCard, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { getFXRate } from "@/lib/fx";
 
-type Step     = "form" | "generating" | "share" | "checkout" | "done" | "error";
+type Step     = "form" | "generating" | "share" | "error";
 type PayMode  = "card" | "bank";
 
-interface FeeBreakdown {
-  amount_principal:     number;
-  ramp_fee_estimate:    number;
-  omnipay_platform_fee: number;
-  network_delivery_fee: number;
-  fx_buffer_applied:    boolean;
-  total_sender_pays:    number;
-  route_used:           "bitso" | "wise_emergency";
-  target_currency:      string;
-  rate_to_target:       number;
+// Countries with native bank rail (Bridge NATIVE_RAILS)
+const BANK_RAIL_COUNTRIES = new Set([
+  "MX","US","BR","GB","CA","IN","PH","DE","FR","ES","IT","NL","PT","BE","AT","IE",
+]);
+
+// Countries + currencies for the dropdown
+const COUNTRY_OPTIONS = [
+  { code: "MX", label: "México", currency: "MXN", flag: "🇲🇽" },
+  { code: "US", label: "USA",    currency: "USD", flag: "🇺🇸" },
+  { code: "BR", label: "Brasil", currency: "BRL", flag: "🇧🇷" },
+  { code: "CO", label: "Colombia", currency: "COP", flag: "🇨🇴" },
+  { code: "AR", label: "Argentina", currency: "ARS", flag: "🇦🇷" },
+  { code: "PE", label: "Perú",   currency: "PEN", flag: "🇵🇪" },
+  { code: "GB", label: "UK",     currency: "GBP", flag: "🇬🇧" },
+  { code: "DE", label: "Alemania", currency: "EUR", flag: "🇩🇪" },
+  { code: "FR", label: "Francia", currency: "EUR", flag: "🇫🇷" },
+  { code: "ES", label: "España", currency: "EUR", flag: "🇪🇸" },
+  { code: "IT", label: "Italia", currency: "EUR", flag: "🇮🇹" },
+  { code: "NL", label: "Países Bajos", currency: "EUR", flag: "🇳🇱" },
+  { code: "PT", label: "Portugal", currency: "EUR", flag: "🇵🇹" },
+  { code: "CA", label: "Canadá", currency: "CAD", flag: "🇨🇦" },
+  { code: "IN", label: "India",  currency: "INR", flag: "🇮🇳" },
+  { code: "PH", label: "Filipinas", currency: "PHP", flag: "🇵🇭" },
+  { code: "NG", label: "Nigeria", currency: "NGN", flag: "🇳🇬" },
+  { code: "GH", label: "Ghana",  currency: "GHS", flag: "🇬🇭" },
+  { code: "KE", label: "Kenia",  currency: "KES", flag: "🇰🇪" },
+  { code: "JP", label: "Japón",  currency: "JPY", flag: "🇯🇵" },
+  { code: "AU", label: "Australia", currency: "AUD", flag: "🇦🇺" },
+  { code: "TH", label: "Tailandia", currency: "THB", flag: "🇹🇭" },
+];
+
+interface BridgeQuote {
+  amount_principal:  number;
+  bridge_onramp:     number;
+  bridge_offramp:    number;
+  bridge_total:      number;
+  omnipay_service:   number;
+  omnipay_flat:      number;
+  kyc_surcharge:     number;
+  is_new_customer:   boolean;
+  total_sender_pays: number;
+  target_currency:   string;
 }
 
-interface CheckoutData {
-  partnerOrderId: string;
-  provider:       string;
-  widget_url:     string;
-  estimate: {
-    recipient_gets:        number;
-    target_currency:       string;
-    usdc_subtotal:         number;
-    omnipay_fee_usdc:      number;
-    ramp_fee_estimate:     number;
-    total_sender_pays_usd: number;
-    fx_buffer_applied:     boolean;
-    route_used:            string;
-  };
+interface CheckoutResponse {
+  pay_link:        string;
+  token:           string;
+  needs_kyc:       boolean;
+  kyc_url?:        string | null;
+  amount_target:   number;
+  target_currency: string;
+  country:         string;
 }
 
 export default function P2PPage() {
   const t      = useTranslations("p2p");
   const router = useRouter();
 
-  const [step,           setStep]          = useState<Step>("form");
-  const [payMode,        setPayMode]       = useState<PayMode>("card");
-  const [nombre,         setNombre]        = useState("");
-  const [account,        setAccount]       = useState(""); // card number OR bank/CLABE
-  const [amountTarget,   setAmountTarget]  = useState("");
-  const [targetCountry,  setTargetCountry] = useState("MX");
+  const [step,         setStep]         = useState<Step>("form");
+  const [payMode,      setPayMode]      = useState<PayMode>("card");
+  const [nombre,       setNombre]       = useState("");
+  const [email,        setEmail]        = useState("");
+  const [country,      setCountry]      = useState("MX");
+  const [account,      setAccount]      = useState("");
+  const [amountLocal,  setAmountLocal]  = useState("");  // in local currency (MXN, BRL, etc.)
   const [recipientPhone, setRecipientPhone] = useState("");
-  const [payerPhone,     setPayerPhone]    = useState("");
-  const [checkout,       setCheckout]      = useState<CheckoutData | null>(null);
-  const [shareLink,      setShareLink]     = useState("");
-  const [copied,         setCopied]        = useState(false);
-  const [errorMsg,       setErrorMsg]      = useState("");
-  const [submitting,     setSubmitting]    = useState(false);
-  const [breakdown,      setBreakdown]     = useState<FeeBreakdown | null>(null);
-  const [breakdownLoading, setBreakdownLoading] = useState(false);
+  const [shareLink,    setShareLink]    = useState("");
+  const [copied,       setCopied]       = useState(false);
+  const [errorMsg,     setErrorMsg]     = useState("");
+  const [submitting,   setSubmitting]   = useState(false);
+  const [quote,        setQuote]        = useState<BridgeQuote | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [fxRate,       setFxRate]       = useState<number | null>(null);
+  const [kycUrl,       setKycUrl]       = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Detect payer opening the link (?pid=...&n=...)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const pid    = params.get("pid");
-    const name   = params.get("n");
-    if (pid && name) {
-      setNombre(decodeURIComponent(name));
-      setCheckout({ partnerOrderId: pid, provider: "ramp", widget_url: "", estimate: { recipient_gets: 0, target_currency: "MXN", usdc_subtotal: 0, omnipay_fee_usdc: 0, ramp_fee_estimate: 0, total_sender_pays_usd: 0, fx_buffer_applied: false, route_used: "bitso" } });
-      setStep("checkout");
-    }
-  }, []);
+  const selectedCountry = COUNTRY_OPTIONS.find((c) => c.code === country) ?? COUNTRY_OPTIONS[0];
+  const hasBankRail     = BANK_RAIL_COUNTRIES.has(country);
+  const currency        = selectedCountry.currency;
 
-  // ── Fee breakdown — debounced ────────────────────────────────────────────────
+  // Reset pay mode when country changes to one without bank rail
+  useEffect(() => {
+    if (!hasBankRail && payMode === "bank") {
+      setPayMode("card");
+      setAccount("");
+    }
+  }, [country, hasBankRail, payMode]);
+
+  // Live quote: debounce on amount + email + country change
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!amountTarget || parseFloat(amountTarget) < 50) { setBreakdown(null); return; }
+    const amt = parseFloat(amountLocal);
+    if (!amt || amt < 1 || !email.includes("@")) { setQuote(null); return; }
 
     debounceRef.current = setTimeout(async () => {
-      setBreakdownLoading(true);
+      setQuoteLoading(true);
       try {
-        const res  = await fetch(`/api/v1/p2p/rate?amount_target=${amountTarget}&target_country=${targetCountry}`);
-        if (res.ok) setBreakdown(await res.json() as FeeBreakdown);
+        // 1. FX: local currency → USD
+        const rate = await getFXRate(currency, "USD");
+        setFxRate(rate);
+        if (!rate) return;
+
+        const usdEstimate = amt * rate;
+
+        // 2. Bridge quote with USD estimate
+        const res = await fetch("/api/bridge/quote", {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ amount: usdEstimate, email: email.toLowerCase(), type: "p2p", country }),
+        });
+        if (res.ok) setQuote(await res.json() as BridgeQuote);
       } catch { /* ignore */ } finally {
-        setBreakdownLoading(false);
+        setQuoteLoading(false);
       }
-    }, 600);
-  }, [amountTarget, targetCountry]);
+    }, 700);
+  }, [amountLocal, email, country, currency]);
 
   const generateLink = useCallback(async () => {
-    const amt = parseFloat(amountTarget);
-    if (!nombre.trim() || !account.trim() || !amt || amt < 50) return;
-    if (payMode === "card" && account.replace(/\s/g, "").length !== 16) return;
-    if (payMode === "bank" && targetCountry === "MX" && account.length !== 18) return;
+    const amt = parseFloat(amountLocal);
+    if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt) return;
 
     setSubmitting(true);
     setStep("generating");
     try {
-      const res  = await fetch("/api/v1/p2p/checkout", {
+      const body: Record<string, unknown> = {
+        nombre:          nombre.trim(),
+        email:           email.toLowerCase().trim(),
+        country,
+        receive_method:  payMode,
+        amount_target:   amt,
+        recipient_phone: recipientPhone || undefined,
+      };
+      if (payMode === "card") {
+        body.card_number = account.replace(/\s/g, "");
+      } else {
+        // Map bank account to right field based on country
+        if (country === "MX") body.clabe = account;
+        else if (["DE","FR","ES","IT","NL","PT","BE","AT","IE"].includes(country)) body.iban = account;
+        else if (country === "BR") body.pix_key = account;
+        else if (country === "GB") {
+          const parts = account.split("/");
+          body.sort_code       = parts[0]?.trim();
+          body.account_number  = parts[1]?.trim();
+        } else if (country === "CA") {
+          const parts = account.split("/");
+          body.transit_number  = parts[0]?.trim();
+          body.account_number  = parts[1]?.trim();
+        } else if (country === "IN") {
+          const parts = account.split("/");
+          body.ifsc            = parts[0]?.trim();
+          body.account_number  = parts[1]?.trim();
+        } else {
+          body.account_number = account;
+        }
+      }
+
+      const res  = await fetch("/api/bridge/checkout", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({
-          nombre:          nombre.trim(),
-          account:         account.replace(/\s/g, ""),
-          payout_method:   payMode,
-          amount_target:   amt,
-          target_country:  targetCountry,
-          recipient_phone: recipientPhone || undefined,
-          payer_phone:     payerPhone     || undefined,
-        }),
+        body:    JSON.stringify(body),
       });
-      const data = await res.json() as CheckoutData & { error?: string };
+      const data = await res.json() as CheckoutResponse & { error?: string };
       if (!res.ok || data.error) throw new Error(data.error ?? "Error");
 
-      setCheckout(data);
-      const link = `${window.location.origin}/p2p?pid=${encodeURIComponent(data.partnerOrderId.slice(0, 12))}&n=${encodeURIComponent(nombre.trim())}`;
-      setShareLink(link);
+      setShareLink(data.pay_link);
+      if (data.kyc_url) setKycUrl(data.kyc_url);
       setStep("share");
     } catch (err) {
-      const e = err as Error;
-      setErrorMsg(e.message.toLowerCase().includes("503") || e.message.toLowerCase().includes("configured")
-        ? t("error_unavailable") : e.message);
+      setErrorMsg((err as Error).message);
       setStep("error");
     } finally {
       setSubmitting(false);
     }
-  }, [nombre, account, amountTarget, payMode, targetCountry, recipientPhone, payerPhone, t]);
+  }, [nombre, email, country, payMode, account, amountLocal, recipientPhone]);
 
   const copyLink = useCallback(async () => {
     await navigator.clipboard.writeText(shareLink);
@@ -131,22 +191,35 @@ export default function P2PPage() {
   }, [shareLink]);
 
   const openWhatsApp = useCallback(() => {
-    const msg = t("share_message", { name: nombre, amount: parseFloat(amountTarget).toLocaleString(), link: shareLink });
+    const senderAmt = quote ? quote.total_sender_pays.toFixed(2) : "?";
+    const msg = t("share_message_cobrar", {
+      name:          nombre,
+      amount:        parseFloat(amountLocal).toLocaleString(),
+      currency,
+      sender_amount: senderAmt,
+      link:          shareLink,
+    });
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
-  }, [nombre, amountTarget, shareLink, t]);
+  }, [nombre, amountLocal, currency, shareLink, quote, t]);
 
   const openTelegram = useCallback(() => {
-    const msg = t("share_message", { name: nombre, amount: parseFloat(amountTarget).toLocaleString(), link: shareLink });
+    const senderAmt = quote ? quote.total_sender_pays.toFixed(2) : "?";
+    const msg = t("share_message_cobrar", {
+      name:          nombre,
+      amount:        parseFloat(amountLocal).toLocaleString(),
+      currency,
+      sender_amount: senderAmt,
+      link:          shareLink,
+    });
     window.open(`https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent(msg)}`, "_blank");
-  }, [nombre, amountTarget, shareLink, t]);
+  }, [nombre, amountLocal, currency, shareLink, quote, t]);
 
   const scrollToForm = () => document.getElementById("p2p-form")?.scrollIntoView({ behavior: "smooth" });
 
-  const isCardValid = payMode === "card" && account.replace(/\s/g, "").length === 16;
-  const isBankValidMX = payMode === "bank" && targetCountry === "MX" && account.length === 18;
-  const isBankValidOther = payMode === "bank" && targetCountry !== "MX" && account.length >= 5;
-  const accountValid = isCardValid || isBankValidMX || isBankValidOther;
-  const formReady = !!nombre.trim() && accountValid && parseFloat(amountTarget) >= 50;
+  const accountValid = payMode === "card"
+    ? account.replace(/\s/g, "").length === 16
+    : account.trim().length >= 5;
+  const formReady = !!nombre.trim() && email.includes("@") && accountValid && parseFloat(amountLocal) >= 1;
 
   // ── Generating ──────────────────────────────────────────────────────────────
   if (step === "generating") {
@@ -161,8 +234,8 @@ export default function P2PPage() {
   }
 
   // ── Share ───────────────────────────────────────────────────────────────────
-  if (step === "share" && checkout) {
-    const est = checkout.estimate;
+  if (step === "share") {
+    const senderAmt = quote ? quote.total_sender_pays.toFixed(2) : null;
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col px-5 pt-12 pb-10 max-w-sm mx-auto w-full">
         <button onClick={() => setStep("form")} className="flex items-center gap-1 text-slate-400 text-sm mb-8 hover:text-white transition-colors">
@@ -174,14 +247,30 @@ export default function P2PPage() {
             <h2 className="text-white font-bold text-xl mb-1">{t("share_title")}</h2>
             <p className="text-slate-400 text-sm">{t("share_hint")}</p>
           </div>
+
+          {/* KYC notice */}
+          {kycUrl && (
+            <div className="w-full bg-amber-900/30 border border-amber-500/40 rounded-2xl p-4 text-left">
+              <p className="text-amber-400 text-xs font-semibold mb-1">⚠️ {t("kyc_pending_title")}</p>
+              <p className="text-slate-400 text-xs mb-2">{t("kyc_pending_body")}</p>
+              <a href={kycUrl} target="_blank" rel="noopener noreferrer"
+                className="text-emerald-400 text-xs underline">{t("kyc_complete_link")}</a>
+            </div>
+          )}
+
+          {/* Summary card */}
           <div className="w-full bg-slate-800/60 border border-slate-700 rounded-2xl p-4 text-center">
             <p className="text-slate-400 text-xs mb-1">{nombre}</p>
-            <p className="text-white font-bold text-2xl">{est.recipient_gets.toLocaleString()} {est.target_currency}</p>
-            <p className="text-slate-500 text-xs mt-1">~${est.total_sender_pays_usd.toFixed(2)} USD total · via {checkout.provider}</p>
-            {est.fx_buffer_applied && (
-              <p className="text-amber-400 text-xs mt-1">⚡ {t("route_wise_emergency")} · FX buffer applied</p>
+            <p className="text-white font-bold text-2xl">{parseFloat(amountLocal).toLocaleString()} {currency}</p>
+            {senderAmt && (
+              <p className="text-emerald-400 text-sm mt-1">
+                {t("share_sender_must_send")}: <span className="font-bold">${senderAmt} USD</span>
+              </p>
             )}
+            <p className="text-slate-600 text-xs mt-1">Bridge · Sin base de datos</p>
           </div>
+
+          {/* Action buttons */}
           <div className="w-full space-y-3">
             <button onClick={openWhatsApp} className="w-full bg-[#25D366] hover:bg-[#20ba59] text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -193,77 +282,14 @@ export default function P2PPage() {
             </button>
             <button onClick={copyLink} className="w-full border border-slate-600 text-slate-300 hover:border-slate-400 py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
               {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
-              {copied ? "✓ Copied" : t("share_copy")}
+              {copied ? "✓" : t("share_copy")}
             </button>
           </div>
-          <button onClick={() => { setStep("form"); setNombre(""); setAccount(""); setAmountTarget(""); setRecipientPhone(""); setPayerPhone(""); setBreakdown(null); }} className="text-slate-500 hover:text-slate-300 text-xs transition-colors">
+          <button onClick={() => { setStep("form"); setNombre(""); setEmail(""); setAccount(""); setAmountLocal(""); setRecipientPhone(""); setQuote(null); setKycUrl(null); }}
+            className="text-slate-500 hover:text-slate-300 text-xs transition-colors">
             + {t("new_transfer")}
           </button>
         </div>
-      </main>
-    );
-  }
-
-  // ── Checkout — payer opens the link ─────────────────────────────────────────
-  if (step === "checkout" && checkout) {
-    const widgetUrl = checkout.widget_url;
-    return (
-      <main className="min-h-screen bg-[#0f172a] flex flex-col px-5 pt-12 pb-10 max-w-sm mx-auto w-full">
-        <button onClick={() => router.push("/")} className="flex items-center gap-1 text-slate-400 text-sm mb-8 hover:text-white transition-colors">
-          <ArrowLeft className="w-4 h-4" /> OmniPay
-        </button>
-        <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 space-y-5">
-          <div className="text-center">
-            <p className="text-slate-400 text-sm">{t("checkout_title", { name: nombre })}</p>
-            <p className="text-white font-bold text-3xl mt-1">{checkout.estimate.recipient_gets.toLocaleString()} {checkout.estimate.target_currency}</p>
-          </div>
-          <div className="bg-[#0f172a] rounded-xl p-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-400">{t("checkout_subtitle")}</span>
-              <span className="text-emerald-400 font-bold">~${checkout.estimate.total_sender_pays_usd.toFixed(2)} USD</span>
-            </div>
-            <p className="text-xs text-slate-500">{t("checkout_fee")}</p>
-          </div>
-
-          {/* Widget embed */}
-          {widgetUrl ? (
-            <iframe
-              src={widgetUrl}
-              className="w-full h-[460px] rounded-xl border border-slate-700"
-              allow="payment *; camera *"
-              title="OmniPay P2P Payment"
-            />
-          ) : (
-            <div className="bg-[#0f172a] border border-emerald-500/30 rounded-xl p-6 text-center space-y-3">
-              <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-slate-400 text-sm">{t("widget_loading")}</p>
-              <p className="text-xs text-slate-600">Ramp Network / Transak</p>
-            </div>
-          )}
-
-          <p className="text-center text-xs text-slate-600">Powered by Ramp + Bitso · No Stripe · No data stored</p>
-        </div>
-      </main>
-    );
-  }
-
-  // ── Done ─────────────────────────────────────────────────────────────────────
-  if (step === "done") {
-    return (
-      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-5 gap-5 text-center">
-        <div className="text-5xl">✅</div>
-        <h2 className="text-white font-bold text-xl">{t("done_title")}</h2>
-        <p className="text-slate-400 text-sm max-w-xs">{t("done_message", { name: nombre, amount: parseFloat(amountTarget).toLocaleString() })}</p>
-        <div className="w-full max-w-xs space-y-3">
-          <button onClick={openWhatsApp} className="w-full bg-[#25D366] text-white py-3 rounded-xl text-sm font-semibold">{t("done_share_whatsapp")}</button>
-          <button onClick={openTelegram} className="w-full bg-[#229ED9] text-white py-3 rounded-xl text-sm font-semibold">{t("done_share_telegram")}</button>
-          <button onClick={() => window.print()} className="w-full border border-slate-600 text-slate-300 py-3 rounded-xl text-sm flex items-center justify-center gap-2">
-            <Download size={16} /> {t("done_download")}
-          </button>
-        </div>
-        <button onClick={() => { setStep("form"); setNombre(""); setAccount(""); setAmountTarget(""); }} className="text-slate-500 hover:text-slate-300 text-xs transition-colors">
-          + {t("new_transfer")}
-        </button>
       </main>
     );
   }
@@ -279,7 +305,7 @@ export default function P2PPage() {
     );
   }
 
-  // ── FORM — full layout matching B2B ─────────────────────────────────────────
+  // ── FORM ─────────────────────────────────────────────────────────────────────
   return (
     <main className="min-h-screen bg-[#0f172a] flex flex-col pb-10 w-full">
 
@@ -292,15 +318,15 @@ export default function P2PPage() {
 
       {/* Header */}
       <section className="w-full max-w-2xl mx-auto px-6 pt-8 pb-4 text-center">
-        <div className="text-4xl mb-3">🌍</div>
-        <h1 className="text-white font-bold text-2xl mb-1">{t("page_title")}</h1>
-        <p className="text-slate-400 text-sm mb-2">{t("feat2_title")}</p>
+        <div className="text-4xl mb-3">💸</div>
+        <h1 className="text-white font-bold text-2xl mb-1">{t("cobrar_title")}</h1>
+        <p className="text-slate-400 text-sm mb-2">{t("cobrar_subtitle")}</p>
         <span className="text-[10px] text-slate-500 bg-slate-800 rounded-lg px-3 py-1.5 inline-block">
-          Powered by Ramp + Bitso · No Stripe
+          Powered by Bridge.xyz · 170+ países · Sin base de datos
         </span>
       </section>
 
-      {/* Features */}
+      {/* Feature cards */}
       <section className="w-full max-w-2xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { emoji: "🌍", title: t("feat1_title"), body: t("feat1_body") },
@@ -315,7 +341,7 @@ export default function P2PPage() {
         ))}
       </section>
 
-      {/* Pricing — 2 cards */}
+      {/* Pricing */}
       <section className="w-full max-w-2xl mx-auto px-6 pb-10">
         <h2 className="text-white font-bold text-xl text-center mb-2">{t("pricing_title")}</h2>
         <p className="text-slate-500 text-xs text-center mb-8">{t("pricing_sub")}</p>
@@ -363,7 +389,7 @@ export default function P2PPage() {
 
       <div id="p2p-form" className="space-y-4 flex-1 max-w-sm mx-auto w-full px-5">
 
-        {/* Recipient name */}
+        {/* Nombre */}
         <div>
           <label className="block text-xs text-slate-400 mb-1">{t("label_recipient")}</label>
           <input
@@ -375,7 +401,34 @@ export default function P2PPage() {
           />
         </div>
 
-        {/* Payout mode toggle — Card (primary) vs Bank */}
+        {/* Email */}
+        <div>
+          <label className="block text-xs text-slate-400 mb-1">{t("email_label")}</label>
+          <input
+            type="email"
+            inputMode="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@email.com"
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+          />
+        </div>
+
+        {/* País */}
+        <div>
+          <label className="block text-xs text-slate-400 mb-1">{t("country_label")}</label>
+          <select
+            value={country}
+            onChange={(e) => { setCountry(e.target.value); setAccount(""); setQuote(null); }}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500"
+          >
+            {COUNTRY_OPTIONS.map((c) => (
+              <option key={c.code} value={c.code}>{c.flag} {c.label} — {c.currency}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Método de cobro */}
         <div>
           <label className="block text-xs text-slate-400 mb-2">{t("card_or_bank")}</label>
           <div className="flex gap-2">
@@ -390,21 +443,23 @@ export default function P2PPage() {
             >
               <CreditCard size={15} /> {t("payout_toggle_card")}
             </button>
-            <button
-              type="button"
-              onClick={() => { setPayMode("bank"); setAccount(""); }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium border transition-all ${
-                payMode === "bank"
-                  ? "bg-blue-500/20 border-blue-500 text-blue-400"
-                  : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500"
-              }`}
-            >
-              <Building2 size={15} /> {t("payout_toggle_bank")}
-            </button>
+            {hasBankRail && (
+              <button
+                type="button"
+                onClick={() => { setPayMode("bank"); setAccount(""); }}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium border transition-all ${
+                  payMode === "bank"
+                    ? "bg-blue-500/20 border-blue-500 text-blue-400"
+                    : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500"
+                }`}
+              >
+                <Building2 size={15} /> {t("payout_toggle_bank")}
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Card number OR Bank account */}
+        {/* Cuenta (tarjeta o banco) */}
         {payMode === "card" ? (
           <div>
             <label className="block text-xs text-slate-400 mb-1">{t("card_number_label")}</label>
@@ -419,141 +474,127 @@ export default function P2PPage() {
               placeholder={t("card_number_placeholder")}
               className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono tracking-widest transition-colors ${
                 account.replace(/\s/g, "").length > 0 && account.replace(/\s/g, "").length !== 16
-                  ? "border-red-500"
-                  : "border-slate-700 focus:border-emerald-500"
+                  ? "border-red-500" : "border-slate-700 focus:border-emerald-500"
               }`}
             />
             {account.replace(/\s/g, "").length > 0 && account.replace(/\s/g, "").length !== 16 && (
-              <p className="text-xs text-red-400 mt-1">16 digits required</p>
+              <p className="text-xs text-red-400 mt-1">16 dígitos requeridos</p>
             )}
           </div>
         ) : (
           <div>
             <label className="block text-xs text-slate-400 mb-1">
-              {targetCountry === "MX" ? t("clabe_label") : "Bank Account / IBAN"}
+              {country === "MX" ? t("clabe_label")
+                : ["DE","FR","ES","IT","NL","PT","BE","AT","IE"].includes(country) ? "IBAN"
+                : country === "BR" ? "Chave PIX"
+                : country === "GB" ? "Sort Code / Account Number (XXXXXX/XXXXXXXX)"
+                : country === "CA" ? "Transit / Account (XXXXX/XXXXXXX)"
+                : country === "IN" ? "IFSC / Account (XXXXXXXXXX/XXXXXXXX)"
+                : "Número de cuenta"}
             </label>
             <input
               type="text"
-              inputMode="numeric"
+              inputMode={country === "MX" ? "numeric" : "text"}
               value={account}
-              onChange={(e) => setAccount(targetCountry === "MX" ? e.target.value.replace(/\D/g, "").slice(0, 18) : e.target.value)}
-              placeholder={targetCountry === "MX" ? t("clabe_placeholder") : "Enter account number"}
+              onChange={(e) => setAccount(country === "MX" ? e.target.value.replace(/\D/g, "").slice(0, 18) : e.target.value)}
+              placeholder={country === "MX" ? t("clabe_placeholder") : ""}
               className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors ${
-                targetCountry === "MX" && account.length > 0 && account.length !== 18
-                  ? "border-red-500"
-                  : "border-slate-700 focus:border-emerald-500"
+                country === "MX" && account.length > 0 && account.length !== 18
+                  ? "border-red-500" : "border-slate-700 focus:border-emerald-500"
               }`}
             />
-            {targetCountry === "MX" && account.length > 0 && account.length !== 18 && (
+            {country === "MX" && account.length > 0 && account.length !== 18 && (
               <p className="text-xs text-red-400 mt-1">{t("error_invalid_clabe")}</p>
             )}
           </div>
         )}
 
-        {/* Amount + country */}
+        {/* Monto a recibir */}
         <div>
-          <label className="block text-xs text-slate-400 mb-1">{t("amount_label")}</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              inputMode="numeric"
-              value={amountTarget}
-              onChange={(e) => setAmountTarget(e.target.value)}
-              placeholder={t("amount_placeholder")}
-              min="50"
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-            />
-            <select
-              value={targetCountry}
-              onChange={(e) => { setTargetCountry(e.target.value); setBreakdown(null); }}
-              className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-3 text-white text-sm focus:outline-none focus:border-emerald-500 min-w-[90px]"
-            >
-              <option value="MX">MXN 🇲🇽</option>
-              <option value="BR">BRL 🇧🇷</option>
-              <option value="CO">COP 🇨🇴</option>
-              <option value="AR">ARS 🇦🇷</option>
-              <option value="US">USD 🇺🇸</option>
-              <option value="GB">GBP 🇬🇧</option>
-              <option value="IN">INR 🇮🇳</option>
-              <option value="PH">PHP 🇵🇭</option>
-              <option value="NG">NGN 🇳🇬</option>
-              <option value="DE">EUR 🇩🇪</option>
-            </select>
-          </div>
-          {amountTarget && parseFloat(amountTarget) < 50 && (
-            <p className="text-xs text-red-400 mt-1">{t("error_min_amount")}</p>
-          )}
+          <label className="block text-xs text-slate-400 mb-1">
+            {t("amount_receive_label")} ({currency})
+          </label>
+          <input
+            type="number"
+            inputMode="numeric"
+            value={amountLocal}
+            onChange={(e) => setAmountLocal(e.target.value)}
+            placeholder={currency === "MXN" ? "5000" : currency === "USD" ? "300" : "500"}
+            min="1"
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+          />
         </div>
 
-        {/* Fee Breakdown ── live calculator */}
-        {(breakdownLoading || breakdown) && (
+        {/* Live fee breakdown */}
+        {(quoteLoading || quote) && (
           <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
-            <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-3">{t("fee_breakdown_title")}</p>
-            {breakdownLoading ? (
+            <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-3">
+              {t("fee_breakdown_title")}
+            </p>
+            {quoteLoading ? (
               <div className="flex items-center gap-2 text-slate-500 text-xs py-2">
                 <div className="w-3 h-3 border border-slate-500 border-t-transparent rounded-full animate-spin" />
                 {t("fee_loading")}
               </div>
-            ) : breakdown ? (
+            ) : quote ? (
               <>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-400">{t("fee_principal")}</span>
-                  <span className="text-white font-semibold">{breakdown.amount_principal.toLocaleString()} {breakdown.target_currency}</span>
+                  <span className="text-white font-semibold">{parseFloat(amountLocal).toLocaleString()} {currency}</span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-500">{t("fee_payin")} (~2.5%)</span>
-                  <span className="text-slate-400">~${breakdown.ramp_fee_estimate.toFixed(2)} USD</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-500">{t("fee_platform")}</span>
-                  <span className="text-slate-400">${breakdown.omnipay_platform_fee.toFixed(2)} USD</span>
-                </div>
-                {breakdown.network_delivery_fee > 0 && (
+                {fxRate && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t("fee_network")}</span>
-                    <span className="text-slate-400">${breakdown.network_delivery_fee.toFixed(2)} USD</span>
+                    <span className="text-slate-600">≈ USD estimado</span>
+                    <span className="text-slate-500">${(parseFloat(amountLocal) * fxRate).toFixed(2)} USD</span>
                   </div>
                 )}
-                {breakdown.fx_buffer_applied && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-500">{t("fee_bridge_conversion")} (0.75%)</span>
+                  <span className="text-slate-400">${quote.bridge_total.toFixed(2)} USD</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-500">{t("fee_platform")} (1.25%)</span>
+                  <span className="text-slate-400">${quote.omnipay_service.toFixed(2)} USD</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-500">{t("fee_network")} (fijo)</span>
+                  <span className="text-slate-400">${quote.omnipay_flat.toFixed(2)} USD</span>
+                </div>
+                {quote.kyc_surcharge > 0 && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-amber-500">{t("fee_fx_buffer")} (+0.75%)</span>
-                    <span className="text-amber-400">included</span>
+                    <span className="text-amber-500">{t("fee_kyc_first")}</span>
+                    <span className="text-amber-400">${quote.kyc_surcharge.toFixed(2)} USD</span>
                   </div>
                 )}
                 <div className="border-t border-slate-700 pt-2 flex justify-between text-sm font-bold">
-                  <span className="text-white">{t("fee_total")}</span>
-                  <span className="text-emerald-400">~${breakdown.total_sender_pays.toFixed(2)} USD</span>
+                  <span className="text-white">{t("fee_total_to_send")}</span>
+                  <span className="text-emerald-400">${quote.total_sender_pays.toFixed(2)} USD</span>
                 </div>
-                <p className="text-[10px] text-slate-600 text-center">
-                  {t("fee_route")}: {breakdown.route_used === "bitso" ? t("route_bitso") : t("route_wise_emergency")}
-                  {breakdown.rate_to_target > 1 && ` · 1 USD = ${breakdown.rate_to_target.toFixed(2)} ${breakdown.target_currency}`}
-                </p>
+                <p className="text-[10px] text-slate-600 text-center mt-1">{t("fee_approx_note")}</p>
               </>
             ) : null}
           </div>
         )}
 
-        {/* Phones */}
+        {/* Phone (optional) */}
         <div>
           <label className="block text-xs text-slate-400 mb-1">{t("label_recipient_phone")}</label>
-          <input type="tel" inputMode="tel" value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} placeholder="+52 55 1234 5678" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
-        </div>
-        <div>
-          <label className="block text-xs text-slate-400 mb-1">{t("label_payer_phone")}</label>
-          <input type="tel" inputMode="tel" value={payerPhone} onChange={(e) => setPayerPhone(e.target.value)} placeholder="+1 416 555 0123" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
+          <input type="tel" inputMode="tel" value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)}
+            placeholder="+52 55 1234 5678"
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
         </div>
 
         {/* Submit */}
         <button
           onClick={generateLink}
-          disabled={submitting || !formReady || breakdownLoading}
+          disabled={submitting || !formReady || quoteLoading}
           className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2"
         >
           {submitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}
         </button>
 
         <p className="text-center text-xs text-slate-600 pb-2">
-          🔒 {t("feat3_title")} · No Stripe · No data stored
+          🔒 Bridge.xyz · AES-256-GCM · {t("feat3_title")}
         </p>
 
       </div>
