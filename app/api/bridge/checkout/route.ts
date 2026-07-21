@@ -4,42 +4,37 @@
 // Flow:
 //   1. Receptor provides name, email, country, receive method (card or bank), account details, amount
 //   2. Server creates/finds customer in Bridge (KYC)
-//   3. Server creates a liquidation address (where USDC will flow into their bank/card)
-//   4. Server encrypts { customer_id, liq_addr_id, amount, nombre, country, receive_method }
-//   5. Returns shareable link: ${APP_URL}/pagar?t={token}&type=p2p
+//   3. If KYC incomplete → return KYC link (202). Receptor must complete, then call again.
+//   4. Server creates a liquidation address (where USDC will flow into their bank/card)
+//   5. Server encrypts metadata into a token
+//   6. Returns shareable link: ${APP_URL}/pagar?t={token}&type=p2p
 //
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
-import { NextRequest, NextResponse }     from "next/server";
+import { NextRequest, NextResponse }       from "next/server";
 import { getOrCreateCustomer, getKycLink } from "@/providers/bridge/customers";
 import { createLiquidationAddress, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
-import { encryptPayload }                from "@/lib/accountcrypto";
-import { getTargetCurrency }             from "@/lib/routing";
+import { encryptPayload }                  from "@/lib/accountcrypto";
+import { getTargetCurrency }               from "@/lib/routing";
 
 export const runtime = "edge";
 
 interface CheckoutBody {
-  // Who is the receptor
-  nombre:          string;
-  email:           string;
-  country:         string;
-  // How they want to receive
-  receive_method:  ReceiveMethod;   // "card" | "bank"
-  // Card fields
-  card_number?:    string;
-  // Bank fields — depend on country
-  clabe?:          string;
-  iban?:           string;
-  pix_key?:        string;
-  routing_number?: string;
-  account_number?: string;
-  sort_code?:      string;
-  transit_number?: string;
-  ifsc?:           string;
-  // Amount the receptor wants to receive (in their local currency)
-  amount_target:   number;
-  // Optional: phone for SMS notification when payment arrives
+  nombre:           string;
+  email:            string;
+  country:          string;
+  receive_method:   ReceiveMethod;
+  card_number?:     string;
+  clabe?:           string;
+  iban?:            string;
+  pix_key?:         string;
+  routing_number?:  string;
+  account_number?:  string;
+  sort_code?:       string;
+  transit_number?:  string;
+  ifsc?:            string;
+  amount_target:    number;
   recipient_phone?: string;
 }
 
@@ -71,8 +66,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     );
   }
 
-  const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
-  const secret  = process.env.LINK_SECRET ?? "";
+  const appUrl        = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
   const country_upper = country.toUpperCase();
 
   try {
@@ -84,7 +78,22 @@ export async function POST(req: NextRequest): Promise<Response> {
       last_name:  nombre.split(" ").slice(1).join(" ") || "-",
     });
 
-    // 2. Create liquidation address (Bridge converts USDC → local fiat → bank/card)
+    // 2. KYC gate — Bridge requires approved customer before creating liquidation address
+    if (needsKyc) {
+      let kycUrl: string | null = null;
+      try {
+        const kycLink = await getKycLink(customer.id);
+        kycUrl = kycLink.url;
+      } catch { /* non-critical */ }
+      return NextResponse.json({
+        needs_kyc:   true,
+        kyc_url:     kycUrl,
+        customer_id: customer.id,
+        message:     "Complete KYC verification first, then generate your payment link again.",
+      }, { status: 202 });
+    }
+
+    // 3. Create liquidation address (Bridge converts USDC → local fiat → bank/card)
     const liqParams: CreateLiquidationParams = {
       customerId:    customer.id,
       country:       country_upper,
@@ -98,20 +107,11 @@ export async function POST(req: NextRequest): Promise<Response> {
     };
     const liqAddr = await createLiquidationAddress(liqParams);
 
-    // 3. Encrypt token — no expiry (amount recalculated live at pay time)
+    // 4. Encrypt metadata into token
     const targetCurrency = getTargetCurrency(country_upper);
-    const token = await encryptPayload({
-      account:        liqAddr.id,               // liquidation_address_id used at pay time
-      receiveMode:    receive_method === "card" ? "card" : "bank",
-      recipientPhone: recipient_phone,
-      // Extra context packed into account field as JSON prefix (decoded in /pay)
-    });
-
-    // Pack extra metadata as a separate AES-encrypted field by reusing the same mechanism
-    // with a discriminated prefix. We embed JSON into the "account" field with a prefix.
     const meta = JSON.stringify({
       liq_addr_id:      liqAddr.id,
-      liq_addr_address: liqAddr.address,  // Polygon USDC address — VA destination
+      liq_addr_address: liqAddr.address,
       customer_id:      customer.id,
       nombre,
       country:          country_upper,
@@ -128,36 +128,25 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const payLink = `${appUrl}/pagar?t=${metaToken}&type=p2p`;
 
-    // 4. If KYC needed, get Bridge hosted KYC link for the receptor to complete
-    let kycUrl: string | null = null;
-    if (needsKyc) {
-      try {
-        const kycLink = await getKycLink(customer.id);
-        kycUrl = kycLink.url;
-      } catch { /* non-critical — receptor can complete KYC later */ }
-    }
-
     return NextResponse.json({
-      pay_link:         payLink,
-      token:            metaToken,
-      customer_id:      customer.id,
-      liq_addr_id:      liqAddr.id,
-      usdc_address:     liqAddr.address,
-      needs_kyc:        needsKyc,
-      kyc_url:          kycUrl,
+      pay_link:        payLink,
+      token:           metaToken,
+      customer_id:     customer.id,
+      liq_addr_id:     liqAddr.id,
+      usdc_address:    liqAddr.address,
+      needs_kyc:       false,
       amount_target,
-      target_currency:  targetCurrency,
-      country:          country_upper,
+      target_currency: targetCurrency,
+      country:         country_upper,
       receive_method,
-      // Instructions to share with the sender
-      share_message:    `OmniPay — Envíame dinero a través de este link: ${payLink}`,
+      share_message:   `OmniPay — Envíame dinero a través de este link: ${payLink}`,
     });
   } catch (e) {
     const err = e as Error & { type?: string; status?: number; details?: unknown };
     console.error("[bridge/checkout]", err.message, err.type, err.status, JSON.stringify(err.details));
     return NextResponse.json({
-      error:        err.message,
-      bridge_type:  err.type ?? null,
+      error:          err.message,
+      bridge_type:    err.type ?? null,
       bridge_details: err.details ?? null,
     }, { status: err.status ?? 500 });
   }
