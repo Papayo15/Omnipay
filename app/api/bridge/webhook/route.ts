@@ -20,9 +20,37 @@ import { buildReceiptURL }                      from "@/lib/link";
 
 export const runtime = "edge";
 
-// In-process deduplication cache — survives across requests in the same Edge instance.
-// In production with Vercel KV: replace with a KV TTL-set (24h) for cross-instance safety.
-const processedEventIds = new Set<string>();
+// In-process fallback for dedup when KV is not configured (dev/local)
+const processedEventIdsFallback = new Set<string>();
+
+async function markEventProcessed(eventId: string): Promise<boolean> {
+  // Use Vercel KV (Redis) when configured — cross-instance, 24h TTL
+  const kvUrl = process.env.KV_REST_API_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN;
+
+  if (kvUrl && kvToken) {
+    try {
+      // SET NX EX — returns "OK" if key was new, null if already existed
+      const res = await fetch(`${kvUrl}/set/wh:${eventId}/1/NX/EX/86400`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${kvToken}` },
+      });
+      const json = await res.json() as { result: string | null };
+      return json.result === "OK"; // true = new, false = duplicate
+    } catch {
+      // KV unreachable — fall through to in-memory
+    }
+  }
+
+  // In-memory fallback (single instance only — acceptable in dev)
+  if (processedEventIdsFallback.has(eventId)) return false;
+  processedEventIdsFallback.add(eventId);
+  if (processedEventIdsFallback.size > 5000) {
+    const first = processedEventIdsFallback.values().next().value;
+    if (first) processedEventIdsFallback.delete(first);
+  }
+  return true;
+}
 
 export async function POST(req: NextRequest): Promise<Response> {
   const rawBody  = await req.text();
@@ -51,15 +79,10 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   // Deduplicate — Bridge may retry events on 5xx or timeout
   if (event.id) {
-    if (processedEventIds.has(event.id)) {
+    const isNew = await markEventProcessed(event.id);
+    if (!isNew) {
       console.log(`[bridge/webhook] duplicate event ${event.id} — skipping`);
       return NextResponse.json({ received: true });
-    }
-    processedEventIds.add(event.id);
-    // Evict old entries to prevent unbounded growth
-    if (processedEventIds.size > 5000) {
-      const first = processedEventIds.values().next().value;
-      if (first) processedEventIds.delete(first);
     }
   }
 

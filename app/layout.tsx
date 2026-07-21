@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
@@ -44,6 +45,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="min-h-screen flex flex-col bg-[#0f172a] text-[#f8fafc] antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
+          <header className="sticky top-0 z-40 flex items-center justify-end px-4 py-2 bg-[#0f172a]/80 backdrop-blur-sm border-b border-[#1e293b]">
+            <LanguageSwitcher currentLocale={locale} />
+          </header>
           {children}
         </NextIntlClientProvider>
       </body>

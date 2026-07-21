@@ -1,11 +1,18 @@
-// Temporary diagnostic endpoint — remove before production
+// Diagnostic endpoint — protected by ADMIN_SECRET header
 import { NextRequest, NextResponse } from "next/server";
 import { bridgeRequest } from "@/providers/bridge/client";
 import { findCustomerByEmail } from "@/providers/bridge/customers";
 
 export const runtime = "edge";
 
+function checkAdmin(req: NextRequest): boolean {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) return false;
+  return req.headers.get("x-admin-secret") === secret;
+}
+
 export async function GET(req: NextRequest): Promise<Response> {
+  if (!checkAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const email = req.nextUrl.searchParams.get("email");
   if (!email) return NextResponse.json({ error: "email param required" }, { status: 400 });
 
@@ -27,6 +34,7 @@ export async function GET(req: NextRequest): Promise<Response> {
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
+  if (!checkAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const body   = await req.json() as { email?: string; customer_id?: string; action?: string; payload?: Record<string, unknown> };
     const email  = body.email;

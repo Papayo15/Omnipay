@@ -103,7 +103,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       sourceCurrency:      source_currency,
       destinationAddress:  meta.liq_addr_address,  // USDC Polygon address of liquidation addr
       destinationNetwork:  network,
-      developerFeePercent: "1.25",  // OmniPay's 1.25% collected automatically by Bridge
+      developerFeePercent: "0.50",  // OmniPay's 0.50% collected automatically by Bridge
       reference:           orderId,
     });
 
