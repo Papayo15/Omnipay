@@ -288,26 +288,27 @@ export async function createLiquidationAddress(
     throw new Error("Card push is not yet available. Use bank receive method.");
   }
 
-  // Bank rails: create external account first, then reference it by ID
+  // Bank rails: create external account first, then reference it by ID.
+  // Bridge returns duplicate_external_account (with the existing id in details)
+  // when the same account info has been registered before — we reuse that id.
   const extAcctBody = buildExternalAccountBody(params);
-  const extAcctRaw  = await createExternalAccount(
-    params.customerId,
-    extAcctBody,
-    `ext-${params.customerId}-${country}-${identKey}`,
-  ) as unknown as Record<string, unknown>;
-
-  // Bridge may wrap the response; unwrap if needed
-  const extAcct = (extAcctRaw?.id != null)
-    ? extAcctRaw
-    : (extAcctRaw?.external_account as Record<string, unknown> | undefined)
-      ?? (extAcctRaw?.data as Record<string, unknown> | undefined)
-      ?? extAcctRaw;
-
-  if (!extAcct?.id) {
-    const err = new Error(`External account created but id is missing. Bridge response: ${JSON.stringify(extAcctRaw)}`);
-    (err as Error & { type: string; details: unknown }).type    = "external_account_missing_id";
-    (err as Error & { type: string; details: unknown }).details = extAcctRaw;
-    throw err;
+  let extAcctId: string;
+  try {
+    const extAcct = await createExternalAccount(
+      params.customerId,
+      extAcctBody,
+      `ext-${params.customerId}-${country}-${identKey}`,
+    );
+    if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
+    extAcctId = extAcct.id;
+  } catch (e) {
+    const bridgeErr = e as Error & { type?: string; details?: Record<string, unknown> };
+    // Bridge includes the existing account's id in the duplicate error — reuse it
+    if (bridgeErr.type === "duplicate_external_account" && bridgeErr.details?.id) {
+      extAcctId = bridgeErr.details.id as string;
+    } else {
+      throw e;
+    }
   }
 
   // Use NATIVE_RAILS currency (not getTargetCurrency) — SEPA always EUR,
@@ -317,7 +318,7 @@ export async function createLiquidationAddress(
   destination = {
     payment_rail:        rail,
     currency,
-    external_account_id: extAcct.id as string,
+    external_account_id: extAcctId,
   };
 
   return bridgeRequest<LiquidationAddress>(
