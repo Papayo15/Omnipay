@@ -90,6 +90,7 @@ export interface CreateLiquidationParams {
   pixKey?:         string;
   routingNumber?:  string;
   accountNumber?:  string;
+  bankName?:       string;  // ACH: required by Bridge if it can't determine name from routing number
   sortCode?:       string;
   bankCode?:       string;  // Colombia Bre-B
   // Common
@@ -222,6 +223,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       ...base,
       currency:     "usd",
       account_type: "us",
+      bank_name:    params.bankName ?? "Chase Bank",
       account: {
         routing_number:      params.routingNumber!,
         account_number:      params.accountNumber!,

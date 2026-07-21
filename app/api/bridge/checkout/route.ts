@@ -32,6 +32,7 @@ interface CheckoutBody {
   routing_number?:  string;
   account_number?:  string;
   sort_code?:       string;
+  bank_name?:       string;  // ACH: bank name if Bridge can't resolve from routing number
   bank_code?:       string;  // Colombia Bre-B
   amount_target:    number;
   recipient_phone?: string;
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   const {
     nombre, email, country, receive_method,
     card_number, clabe, iban, pix_key, routing_number, account_number,
-    sort_code, bank_code,
+    sort_code, bank_name, bank_code,
     amount_target, recipient_phone,
   } = body;
 
@@ -117,7 +118,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       cardNumber:    card_number,
       clabe, iban, pixKey: pix_key,
       routingNumber: routing_number, accountNumber: account_number,
-      sortCode: sort_code, bankCode: bank_code,
+      bankName: bank_name, sortCode: sort_code, bankCode: bank_code,
     };
 
     // Create external account before simulate so account_processing is satisfied.
