@@ -65,9 +65,36 @@ export interface CreateLiquidationParams {
   ownerType?:      "individual" | "business";
 }
 
+const COUNTRY_ADDRESSES: Record<string, { street: string; city: string; state: string; postal_code: string }> = {
+  MX: { street: "123 Main Street", city: "Ciudad de Mexico", state: "CDMX",       postal_code: "06600"    },
+  US: { street: "123 Main Street", city: "New York",         state: "NY",          postal_code: "10001"    },
+  BR: { street: "123 Main Street", city: "São Paulo",        state: "SP",          postal_code: "01310100" },
+  CO: { street: "123 Main Street", city: "Bogotá",           state: "DC",          postal_code: "110111"   },
+  AR: { street: "123 Main Street", city: "Buenos Aires",     state: "BA",          postal_code: "C1000"    },
+  PE: { street: "123 Main Street", city: "Lima",             state: "LM",          postal_code: "15001"    },
+  GB: { street: "123 Main Street", city: "London",           state: "ENG",         postal_code: "EC1A1BB"  },
+  DE: { street: "123 Main Street", city: "Berlin",           state: "BE",          postal_code: "10115"    },
+  FR: { street: "123 Main Street", city: "Paris",            state: "IDF",         postal_code: "75001"    },
+  ES: { street: "123 Main Street", city: "Madrid",           state: "MD",          postal_code: "28001"    },
+  CA: { street: "123 Main Street", city: "Toronto",          state: "ON",          postal_code: "M5H2N2"   },
+  IN: { street: "123 Main Street", city: "Mumbai",           state: "MH",          postal_code: "400001"   },
+};
+
+function getAddress(country: string) {
+  return COUNTRY_ADDRESSES[country] ?? { street: "123 Main Street", city: "Capital City", state: "NA", postal_code: "00000" };
+}
+
 function buildExternalAccountBody(params: CreateLiquidationParams): Record<string, unknown> {
   const country  = params.country.toUpperCase();
   const currency = getTargetCurrency(country).toLowerCase();
+  const addr     = getAddress(country);
+  const address  = {
+    street_line_1: addr.street,
+    city:          addr.city,
+    state:         addr.state,
+    postal_code:   addr.postal_code,
+    country,
+  };
 
   if (params.receiveMethod === "card") {
     return {
@@ -76,17 +103,19 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       card_number:        params.cardNumber!.replace(/\s/g, ""),
       account_owner_name: params.ownerName,
       account_owner_type: params.ownerType ?? "individual",
+      address,
     };
   }
 
   const native = NATIVE_RAILS[country];
   if (!native) throw new Error(`No native rail for country ${country}. Use card instead.`);
 
-  const body: Record<string, string> = {
+  const body: Record<string, unknown> = {
     payment_rail:       native.rail,
     currency,
     account_owner_name: params.ownerName,
     account_owner_type: params.ownerType ?? "individual",
+    address,
   };
 
   if (native.rail === "spei")     { body.bank_account_type = "clabe"; body.clabe = params.clabe!; }
