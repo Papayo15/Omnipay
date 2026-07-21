@@ -138,14 +138,26 @@ export async function getOrCreateCustomer(params: {
   return { customer, isNew: true, needsKyc: true };
 }
 
-// Create KYC link — per docs: use full_name + email (customer created inside Bridge's KYC flow)
-// Returns kyc_link (Persona) + tos_link + customer_id
+// Maps Bridge payment rail → endorsement type required
+export const RAIL_ENDORSEMENT: Record<string, string> = {
+  ach:             "base",
+  spei:            "spei",
+  sepa:            "sepa",
+  pix:             "pix",
+  fps:             "faster_payments",
+  cop:             "cop",
+};
+
+// Create KYC link with endorsement — this creates a pending endorsement that
+// simulate_kyc_approval (sandbox) or real KYC (production) will then approve.
+// Must be called BEFORE simulate_kyc_approval for sandbox endorsements to work.
 export async function createKycLink(params: {
-  full_name: string;
-  email:     string;
-  type:      "individual" | "business";
+  full_name:    string;
+  email:        string;
+  type:         "individual" | "business";
+  endorsement?: string;  // e.g. "base", "spei", "sepa", "pix", "faster_payments", "cop"
 }): Promise<BridgeKycLink> {
-  const idempKey = `kyc-link-${params.email.toLowerCase()}-${Math.floor(Date.now() / 3_600_000)}`;
+  const idempKey = `kyc-link-${params.email.toLowerCase()}-${params.endorsement ?? "base"}-${Math.floor(Date.now() / 3_600_000)}`;
   return bridgeRequest<BridgeKycLink>("POST", "/kyc_links", params, idempKey);
 }
 

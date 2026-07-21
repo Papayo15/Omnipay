@@ -12,7 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, createKycLink, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, simulateKycApproval } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, createKycLink, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, simulateKycApproval, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
 import { createLiquidationAddress, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -96,8 +96,21 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Idempotent: safe to call even if address already set.
     try { await patchCustomerAddress(customer.id, country_upper); } catch { /* best-effort */ }
 
-    // Sandbox: simulate KYC approval instantly (no Persona needed)
-    if (isSandbox && needsKyc) {
+    // Sandbox: request endorsement first (creates pending endorsement),
+    // then simulate_kyc_approval approves all pending endorsements.
+    // simulate_kyc_approval alone does NOT grant endorsements — they must be pending first.
+    if (isSandbox) {
+      const rail        = NATIVE_RAILS[country_upper]?.rail ?? "ach";
+      const endorsement = RAIL_ENDORSEMENT[rail] ?? "base";
+      // Also always request base endorsement (required for all USD transfers)
+      try {
+        await createKycLink({ full_name: nombre, email: email.toLowerCase(), type: "individual", endorsement: "base" });
+      } catch { /* may already exist */ }
+      if (endorsement !== "base") {
+        try {
+          await createKycLink({ full_name: nombre, email: email.toLowerCase(), type: "individual", endorsement });
+        } catch { /* may already exist */ }
+      }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
     }
 
