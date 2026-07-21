@@ -111,6 +111,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     // with a discriminated prefix. We embed JSON into the "account" field with a prefix.
     const meta = JSON.stringify({
       liq_addr_id:      liqAddr.id,
+      liq_addr_address: liqAddr.address,  // Polygon USDC address — VA destination
       customer_id:      customer.id,
       nombre,
       country:          country_upper,

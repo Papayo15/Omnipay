@@ -1,31 +1,40 @@
 // POST /api/bridge/pay
 //
-// EMISOR (sender) initiates the payment after opening the receptor's link.
+// EMISOR (sender) initiates payment after opening the receptor's link.
 // Flow:
-//   1. Emisor provides name, email, source currency (USD/CAD), and the encrypted token
-//   2. Server decrypts token → gets liquidation address + receptor info
-//   3. Server gets/creates KYC for emisor in Bridge
-//   4. Server creates a Virtual Account for the emisor to wire/ACH into
-//   5. Returns: virtual account bank details (routing + account number) + fee quote
-//   6. Emisor pays into the VA. Bridge auto-routes to receptor's liquidation address.
+//   1. Decrypt token → get liquidation address (USDC/Polygon) + receptor info
+//   2. KYC the sender in Bridge
+//   3. Create Virtual Account for sender (USD/EUR/etc → USDC → liquidation address)
+//   4. Return: bank deposit instructions + fee quote + order ID for tracking
+//
+// Bridge handles: fiat deposit → convert to USDC → send to liquidation address →
+//                 liquidation address auto-pays receptor via SPEI/card/ACH etc.
 
-import { NextRequest, NextResponse } from "next/server";
-import { getOrCreateCustomer, getKycLink } from "@/providers/bridge/customers";
-import { createVirtualAccount }        from "@/providers/bridge/virtual-accounts";
-import { decryptPayload }              from "@/lib/accountcrypto";
-import { buildDynamicQuote }           from "@/lib/bridge-fees";
-import { createOrder }                 from "@/lib/order-state";
+import { NextRequest, NextResponse }              from "next/server";
+import { getOrCreateCustomer, getKycLink }        from "@/providers/bridge/customers";
+import { createVirtualAccount }                   from "@/providers/bridge/virtual-accounts";
+import { decryptPayload }                         from "@/lib/accountcrypto";
+import { buildDynamicQuote }                      from "@/lib/bridge-fees";
+import { createOrder }                            from "@/lib/order-state";
 
 export const runtime = "edge";
 
 interface PayBody {
-  token:           string;   // encrypted token from checkout link
+  token:           string;   // encrypted token from /api/bridge/checkout
   sender_name:     string;
   sender_email:    string;
-  source_currency: "usd" | "cad" | "eur" | "gbp";
-  // Optional phone for SMS notification
+  source_currency: "usd" | "eur" | "gbp" | "mxn" | "brl";
   sender_phone?:   string;
 }
+
+// Which Polygon/Ethereum network to use per source currency
+const NETWORK_BY_CURRENCY: Record<string, "polygon" | "ethereum" | "solana"> = {
+  usd: "polygon",
+  eur: "polygon",
+  gbp: "polygon",
+  mxn: "polygon",
+  brl: "polygon",
+};
 
 export async function POST(req: NextRequest): Promise<Response> {
   let body: PayBody;
@@ -42,23 +51,31 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   try {
-    // 1. Decrypt token to get receptor's liquidation address and order details
+    // 1. Decrypt token — contains receptor's liquidation address + order metadata
     const decrypted = await decryptPayload(token);
     let meta: {
-      liq_addr_id:      string;
-      customer_id:      string;
-      nombre:           string;
-      country:          string;
-      target_currency:  string;
-      amount_target:    number;
-      receive_method:   string;
-      recipient_phone?: string;
+      liq_addr_id:       string;
+      liq_addr_address:  string;  // USDC Polygon address
+      customer_id:       string;
+      nombre:            string;
+      country:           string;
+      target_currency:   string;
+      amount_target:     number;
+      receive_method:    string;
+      recipient_phone?:  string;
     };
 
     try { meta = JSON.parse(decrypted.account); }
     catch { return NextResponse.json({ error: "Invalid or tampered payment token" }, { status: 400 }); }
 
-    // 2. Build fee quote with dynamic KYC check for the SENDER
+    if (!meta.liq_addr_address) {
+      return NextResponse.json(
+        { error: "Token does not contain liquidation address. Ask receptor to generate a new link." },
+        { status: 400 },
+      );
+    }
+
+    // 2. Build fee quote with dynamic KYC check for the SENDER (Bridge = our DB)
     const quote = await buildDynamicQuote({
       amount: meta.amount_target,
       email:  sender_email.toLowerCase(),
@@ -73,23 +90,23 @@ export async function POST(req: NextRequest): Promise<Response> {
       last_name:  sender_name.split(" ").slice(1).join(" ") || "-",
     });
 
-    const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
-    const orderId   = `OP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+    const orderId = `OP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-    // 4. Create Virtual Account for sender to deposit into
-    // Bridge auto-converts USD/CAD → USDC → routes to liq_addr_id
-    const omnipayFeeStr = (quote.omnipay_service + quote.omnipay_flat).toFixed(2);
+    // 4. Create Virtual Account for sender
+    // Bridge flow: sender deposits fiat → VA converts to USDC → sends to liquidation address
+    // → liquidation address auto-pays receptor's bank/card
+    const network = NETWORK_BY_CURRENCY[source_currency] ?? "polygon";
     const va = await createVirtualAccount({
       customerId:          senderCustomer.id,
       sourceCurrency:      source_currency,
-      destinationRail:     meta.receive_method === "card" ? "card" : "spei",
-      destinationCurrency: meta.target_currency.toLowerCase(),
-      developerFeeUsd:     omnipayFeeStr,
+      destinationAddress:  meta.liq_addr_address,  // USDC Polygon address of liquidation addr
+      destinationNetwork:  network,
+      developerFeePercent: "1.25",  // OmniPay's 1.25% collected automatically by Bridge
       reference:           orderId,
-      webhookUrl:          `${appUrl}/api/bridge/webhook`,
     });
 
-    // 5. Create local order for tracking
+    // 5. Create local in-memory order for tracking
     createOrder(orderId, {
       destinationCountry: meta.country,
       targetCurrency:     meta.target_currency,
@@ -99,7 +116,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       payOutProvider:     "bridge-liq",
     });
 
-    // 6. If KYC needed, get Bridge hosted KYC link for sender
+    // 6. KYC link for sender if needed (non-blocking)
     let kycUrl: string | null = null;
     if (needsKyc) {
       try {
@@ -108,18 +125,42 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch { /* non-critical */ }
     }
 
+    const di = va.source_deposit_instructions;
+    const railLabel = source_currency === "eur" ? "SEPA"
+      : source_currency === "mxn" ? "SPEI"
+      : source_currency === "brl" ? "PIX"
+      : source_currency === "gbp" ? "Faster Payments"
+      : "ACH / Wire";
+
     return NextResponse.json({
       order_id:       orderId,
       status:         "PENDING_PAYIN",
-      // Virtual account details the sender uses to wire/ACH money
-      virtual_account: {
-        bank_name:       va.bank_name ?? "Cross River Bank (via Bridge)",
-        routing_number:  va.routing_number,
-        account_number:  va.account_number,
-        currency:        source_currency.toUpperCase(),
-        instructions:    va.instructions ?? `Wire/ACH ${quote.total_sender_pays.toFixed(2)} ${source_currency.toUpperCase()} to this account. Funds arrive to recipient in minutes via ${meta.country === "MX" ? "SPEI" : meta.receive_method}.`,
+      // Deposit instructions the sender uses to fund the VA
+      deposit_instructions: {
+        rail:                railLabel,
+        currency:            source_currency.toUpperCase(),
+        // USD ACH/Wire
+        bank_name:           di.bank_name,
+        bank_address:        di.bank_address,
+        routing_number:      di.bank_routing_number,
+        account_number:      di.bank_account_number,
+        beneficiary_name:    di.bank_beneficiary_name,
+        beneficiary_address: di.bank_beneficiary_address,
+        // EUR SEPA
+        iban:                di.iban,
+        bic:                 di.bic,
+        account_holder:      di.account_holder_name,
+        // MXN SPEI
+        clabe:               di.clabe,
+        // BRL PIX
+        br_code:             di.br_code,
+        // GBP
+        sort_code:           di.sort_code,
+        payment_rails:       di.payment_rails,
+        // What to deposit
+        amount_to_deposit:   quote.total_sender_pays.toFixed(2),
+        instructions:        `Deposita exactamente ${quote.total_sender_pays.toFixed(2)} ${source_currency.toUpperCase()} a esta cuenta. Bridge convertirá y enviará automáticamente a ${meta.nombre} en ${meta.country}.`,
       },
-      // Full fee breakdown for the sender to see
       fee_breakdown: {
         amount_principal:  quote.amount_principal,
         bridge_onramp:     quote.bridge_onramp,
@@ -136,13 +177,17 @@ export async function POST(req: NextRequest): Promise<Response> {
         country: meta.country,
         method:  meta.receive_method,
       },
-      needs_kyc: needsKyc,
-      kyc_url:   kycUrl,
-      track_url: `${appUrl}/api/bridge/track?order_id=${orderId}`,
+      needs_kyc:  needsKyc,
+      kyc_url:    kycUrl,
+      track_url:  `${appUrl}/api/bridge/track?order_id=${orderId}`,
+      sender_phone: sender_phone ?? null,
     });
   } catch (e) {
-    const msg = (e as Error).message;
-    console.error("[bridge/pay]", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    const err = e as Error & { type?: string; status?: number };
+    console.error("[bridge/pay]", err.message, err.type, err.status);
+    return NextResponse.json({
+      error:       err.message,
+      bridge_type: err.type ?? null,
+    }, { status: err.status ?? 500 });
   }
 }
