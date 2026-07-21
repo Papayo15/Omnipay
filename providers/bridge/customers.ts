@@ -105,17 +105,18 @@ export async function createCustomer(params: {
   );
 }
 
-// Default addresses keyed by ISO alpha-3 country code
-const ADDRESS_DEFAULTS: Record<string, { street_line_1: string; city: string; state: string; postal_code: string; country: string }> = {
-  USA: { street_line_1: "123 Main Street", city: "San Francisco", state: "CA", postal_code: "94102", country: "USA" },
-  MEX: { street_line_1: "123 Main Street", city: "Ciudad de Mexico", state: "CDMX", postal_code: "06600", country: "MEX" },
-  BRA: { street_line_1: "123 Main Street", city: "São Paulo", state: "SP", postal_code: "01310100", country: "BRA" },
-  COL: { street_line_1: "123 Main Street", city: "Bogotá", state: "DC", postal_code: "110111", country: "COL" },
-  GBR: { street_line_1: "123 Main Street", city: "London", state: "ENG", postal_code: "EC1A1BB", country: "GBR" },
-  DEU: { street_line_1: "123 Main Street", city: "Berlin", state: "BE", postal_code: "10115", country: "DEU" },
-  FRA: { street_line_1: "123 Main Street", city: "Paris", state: "IDF", postal_code: "75001", country: "FRA" },
-  ESP: { street_line_1: "123 Main Street", city: "Madrid", state: "MD", postal_code: "28001", country: "ESP" },
-  CAN: { street_line_1: "123 Main Street", city: "Toronto", state: "ON", postal_code: "M5H2N2", country: "CAN" },
+// Default addresses keyed by ISO alpha-3 country code.
+// Bridge's residential_address uses "subdivision" (ISO 3166-2 code), not "state".
+const ADDRESS_DEFAULTS: Record<string, { street_line_1: string; city: string; subdivision: string; postal_code: string; country: string }> = {
+  USA: { street_line_1: "123 Main Street", city: "San Francisco", subdivision: "CA",   postal_code: "94102",    country: "USA" },
+  MEX: { street_line_1: "123 Main Street", city: "Ciudad de Mexico", subdivision: "CMX", postal_code: "06600",  country: "MEX" },
+  BRA: { street_line_1: "123 Main Street", city: "São Paulo",       subdivision: "SP",   postal_code: "01310100", country: "BRA" },
+  COL: { street_line_1: "123 Main Street", city: "Bogotá",          subdivision: "DC",   postal_code: "110111", country: "COL" },
+  GBR: { street_line_1: "123 Main Street", city: "London",          subdivision: "ENG",  postal_code: "EC1A1BB", country: "GBR" },
+  DEU: { street_line_1: "123 Main Street", city: "Berlin",          subdivision: "BE",   postal_code: "10115",  country: "DEU" },
+  FRA: { street_line_1: "123 Main Street", city: "Paris",           subdivision: "IDF",  postal_code: "75001",  country: "FRA" },
+  ESP: { street_line_1: "123 Main Street", city: "Madrid",          subdivision: "MD",   postal_code: "28001",  country: "ESP" },
+  CAN: { street_line_1: "123 Main Street", city: "Toronto",         subdivision: "ON",   postal_code: "M5H2N2", country: "CAN" },
 };
 
 // Sandbox only — instantly approves KYC without going through Persona

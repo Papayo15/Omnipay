@@ -180,17 +180,18 @@ function getAddress(country: string) {
   return COUNTRY_ADDRESSES[country] ?? { street: "123 Main Street", city: "Capital City", state: "NA", postal_code: "00000" };
 }
 
-// Build external account body per Bridge docs:
-// https://apidocs.bridge.xyz/platform/orchestration/external-accounts
+// Build external account body per Bridge docs — exact field names from API reference:
+// https://apidocs.bridge.xyz/platform/orchestration/external-accounts/external-accounts-api.md
 function buildExternalAccountBody(params: CreateLiquidationParams): Record<string, unknown> {
-  const country = params.country.toUpperCase();
-  const addr    = getAddress(country);
-  const address = {
+  const country   = params.country.toUpperCase();
+  const addr      = getAddress(country);
+  const iso3      = ISO3[country] ?? country;
+  const address   = {
     street_line_1: addr.street,
     city:          addr.city,
     state:         addr.state,
     postal_code:   addr.postal_code,
-    country:       ISO3[country] ?? country,
+    country:       iso3,
   };
   const nameParts = params.ownerName.trim().split(" ");
   const firstName = nameParts[0];
@@ -206,6 +207,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
   const native = NATIVE_RAILS[country];
   if (!native) throw new Error(`No native rail for country ${country}. Use card (Paysend) instead.`);
 
+  // SPEI / Mexico — CLABE
   if (native.rail === "spei") {
     return {
       ...base,
@@ -214,6 +216,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       clabe:        { account_number: params.clabe! },
     };
   }
+  // ACH / USA
   if (native.rail === "ach") {
     return {
       ...base,
@@ -226,6 +229,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       },
     };
   }
+  // SEPA / EU — IBAN (31 countries)
   if (native.rail === "sepa") {
     return {
       ...base,
@@ -233,10 +237,11 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       account_type: "iban",
       iban: {
         account_number: params.iban!,
-        country:        ISO3[country] ?? country,
+        country:        iso3,
       },
     };
   }
+  // Faster Payments / UK
   if (native.rail === "fps") {
     return {
       ...base,
@@ -248,22 +253,26 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       },
     };
   }
+  // PIX / Brazil — pix_key format
   if (native.rail === "pix") {
     return {
       ...base,
       currency:     "brl",
       account_type: "pix",
-      pix_key: { pix_key: params.pixKey! },
+      pix_key: {
+        pix_key:         params.pixKey!,
+        document_number: "00000000000",  // CPF placeholder for sandbox
+      },
     };
   }
+  // Bre-B / Colombia — account_type MUST be "bre_b", key field is bre_b_key
   if (native.rail === "cop") {
     return {
       ...base,
       currency:     "cop",
-      account_type: "cop",
+      account_type: "bre_b",
       account: {
-        account_number: params.accountNumber!,
-        bank_code:      params.bankCode ?? "0",
+        bre_b_key: params.accountNumber!,
       },
     };
   }
@@ -280,8 +289,6 @@ export async function createLiquidationAddress(
     ?? params.pixKey?.slice(-4)
     ?? params.accountNumber?.slice(-4)
     ?? "xxxx";
-
-  let destination: Record<string, unknown>;
 
   if (params.receiveMethod === "card") {
     // Card push — requires Paysend/Kuba (pending contract). Bridge does not support card.
@@ -311,21 +318,23 @@ export async function createLiquidationAddress(
     }
   }
 
-  // Use NATIVE_RAILS currency (not getTargetCurrency) — SEPA always EUR,
-  // even for non-euro countries like DK, PL, SE etc.
-  const currency = NATIVE_RAILS[country]?.currency ?? "usd";
-  const rail     = NATIVE_RAILS[country]?.rail ?? "ach";
-  destination = {
-    payment_rail:        rail,
-    currency,
-    external_account_id: extAcctId,
-  };
+  // Bridge liquidation address API — all destination fields are TOP-LEVEL with destination_ prefix.
+  // NOT nested under a "destination" key. Docs: external_account_id, destination_payment_rail,
+  // destination_currency are all at root level alongside currency and chain.
+  const destCurrency = NATIVE_RAILS[country]?.currency ?? "usd";
+  const destRail     = NATIVE_RAILS[country]?.rail ?? "ach";
 
   return bridgeRequest<LiquidationAddress>(
     "POST",
     `/customers/${params.customerId}/liquidation_addresses`,
-    { currency: "usdc", chain: "polygon", destination },
-    `liq6-${params.customerId}-${country}-${identKey}`,
+    {
+      currency:                 "usdc",
+      chain:                    "polygon",
+      external_account_id:      extAcctId,
+      destination_payment_rail: destRail,
+      destination_currency:     destCurrency,
+    },
+    `liq7-${params.customerId}-${country}-${identKey}`,
   );
 }
 
