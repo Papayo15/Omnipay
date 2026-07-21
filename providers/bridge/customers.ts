@@ -55,14 +55,21 @@ export async function createCustomer(params: {
   first_name?:    string;
   last_name?:     string;
   business_name?: string;
-  country?:       string;  // alpha-3 (e.g. "MEX"), used for address defaults
+  country?:       string;       // alpha-3 (e.g. "MEX"), used for address defaults
+  endorsements?:  string[];     // e.g. ["base", "sepa"] — puts them in pending state
 }): Promise<BridgeCustomer> {
   const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
-  const { country: _c, ...rest } = params;
+  const { country: _c, endorsements: _e, ...rest } = params;
   const body: Record<string, unknown> = { ...rest };
 
   // Bridge requires `residential_address` (alpha-3 country) for individual customers
   body.residential_address = ADDRESS_DEFAULTS[params.country ?? "USA"] ?? ADDRESS_DEFAULTS["USA"];
+
+  // Request specific endorsements — puts them in "pending" state so
+  // simulate_kyc_approval (sandbox) or real KYC can approve them.
+  if (params.endorsements?.length) {
+    body.endorsements = params.endorsements;
+  }
 
   if (isSandbox) {
     body.birth_date          = "1990-01-01";
@@ -130,7 +137,8 @@ export async function getOrCreateCustomer(params: {
   first_name?:    string;
   last_name?:     string;
   business_name?: string;
-  country?:       string;  // alpha-3, passed to createCustomer for address defaults
+  country?:       string;       // alpha-3, passed to createCustomer for address defaults
+  endorsements?:  string[];     // included in customer creation to put endorsements pending
 }): Promise<{ customer: BridgeCustomer; isNew: boolean; needsKyc: boolean }> {
   const existing = await findCustomerByEmail(params.email);
 

@@ -12,8 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { bridgeRequest }                   from "@/providers/bridge/client";
-import { getOrCreateCustomer, createKycLink, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, simulateKycApproval, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getKycLink, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, simulateKycApproval, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
 import { createLiquidationAddress, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -82,13 +81,20 @@ export async function POST(req: NextRequest): Promise<Response> {
     };
     const country_iso3 = ISO3[country_upper] ?? "USA";
 
+    // Calculate endorsements for this country — included in customer creation so
+    // Bridge puts them in "pending" state immediately, ready for simulate_kyc_approval.
+    const railForCountry   = NATIVE_RAILS[country_upper]?.rail ?? "ach";
+    const railEndorse      = RAIL_ENDORSEMENT[railForCountry] ?? "base";
+    const endorsements     = railEndorse === "base" ? ["base"] : ["base", railEndorse];
+
     // 1. Get or create Bridge customer (KYC)
     const { customer, needsKyc, isNew } = await getOrCreateCustomer({
-      type:       "individual",
-      email:      email.toLowerCase(),
-      first_name: nombre.split(" ")[0],
-      last_name:  nombre.split(" ").slice(1).join(" ") || "-",
-      country:    country_iso3,
+      type:         "individual",
+      email:        email.toLowerCase(),
+      first_name:   nombre.split(" ")[0],
+      last_name:    nombre.split(" ").slice(1).join(" ") || "-",
+      country:      country_iso3,
+      endorsements,
     });
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
@@ -97,16 +103,9 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Idempotent: safe to call even if address already set.
     try { await patchCustomerAddress(customer.id, country_upper); } catch { /* best-effort */ }
 
-    // Sandbox: create KYC link with endorsements array (Bridge requires array, not string).
-    // This puts the endorsements in "pending" state so simulate_kyc_approval can approve them.
+    // Sandbox: simulate KYC approval so endorsements get approved.
+    // Endorsements are put in "pending" state at customer creation time (see below).
     if (isSandbox) {
-      const rail         = NATIVE_RAILS[country_upper]?.rail ?? "ach";
-      const railEndorse  = RAIL_ENDORSEMENT[rail] ?? "base";
-      // Always include base; add rail-specific endorsement alongside it
-      const endorsements = railEndorse === "base" ? ["base"] : ["base", railEndorse];
-      try {
-        await createKycLink({ full_name: nombre, email: email.toLowerCase(), type: "individual", endorsements });
-      } catch { /* duplicate_record is fine — endorsements already pending */ }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
     }
 
