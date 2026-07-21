@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ 긴급 국제 결제에 이상적",
     "pricing_instant_li4": "✓ 숨겨진 수수료 없음",
     "form_title": "결제 링크 생성",
-    "form_sub": "아래 세부 정보를 입력하여 안전한 암호화된 결제 링크를 만드세요."
+    "form_sub": "아래 세부 정보를 입력하여 안전한 암호화된 결제 링크를 만드세요.",
+    "about_title": "OmniPay란?",
+    "about_body": "OmniPay는 결제 인프라입니다 — 은행이 아닙니다. 라이선스를 보유한 금융 파트너를 통해 송금인과 수취인을 연결합니다. 귀하의 자금을 보관하거나 보유하지 않습니다.",
+    "disclaimer": "OmniPay는 결제 기술 중개업체입니다. 모든 거래는 라이선스를 보유한 파트너(Bridge Financial Inc., Stripe, Wise)가 처리합니다. OmniPay는 자금을 보관하지 않습니다.",
+    "footer_disclaimer": "OmniPay 자금 보관 없음 · 파트너: Bridge, Stripe, Wise · AES-256 암호화"
   },
   "p2p": {
     "page_title": "Collect",

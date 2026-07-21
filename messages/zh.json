@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ 适合紧急跨境付款",
     "pricing_instant_li4": "✓ 无隐藏费用",
     "form_title": "生成您的付款链接",
-    "form_sub": "填写以下详细信息以创建安全的加密付款链接。"
+    "form_sub": "填写以下详细信息以创建安全的加密付款链接。",
+    "about_title": "OmniPay 是什么？",
+    "about_body": "OmniPay 是支付基础设施——不是银行。我们通过持牌金融合作伙伴连接汇款方和收款方。我们从不持有或存储您的资金。",
+    "disclaimer": "OmniPay 是支付技术中介。所有交易均由持牌合作伙伴处理（Bridge Financial Inc.、Stripe、Wise）。OmniPay 从不托管资金。",
+    "footer_disclaimer": "OmniPay 不托管资金 · 合作伙伴：Bridge、Stripe、Wise · AES-256 加密"
   },
   "p2p": {
     "page_title": "收款",

@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ Idéal pour les paiements transfrontaliers urgents",
     "pricing_instant_li4": "✓ Aucun frais cachés",
     "form_title": "Générez Votre Lien de Paiement",
-    "form_sub": "Remplissez les détails ci-dessous pour créer un lien de paiement sécurisé."
+    "form_sub": "Remplissez les détails ci-dessous pour créer un lien de paiement sécurisé.",
+    "about_title": "Qu'est-ce qu'OmniPay ?",
+    "about_body": "OmniPay est une infrastructure de paiement — pas une banque. Nous connectons les expéditeurs et les destinataires via des partenaires financiers agréés. Nous ne détenons jamais vos fonds.",
+    "disclaimer": "OmniPay est un intermédiaire technologique de paiement. Toutes les transactions sont traitées par des partenaires agréés (Bridge Financial Inc., Stripe, Wise). OmniPay ne détient jamais la garde des fonds.",
+    "footer_disclaimer": "OmniPay ne détient pas de fonds · Partenaires : Bridge, Stripe, Wise · Chiffrement AES-256"
   },
   "p2p": {
     "page_title": "Encaisser",

@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ Ideal para pagamentos internacionais urgentes",
     "pricing_instant_li4": "✓ Sem taxas ocultas",
     "form_title": "Gere Seu Link de Cobrança",
-    "form_sub": "Preencha os dados para criar um link de cobrança seguro e criptografado."
+    "form_sub": "Preencha os dados para criar um link de cobrança seguro e criptografado.",
+    "about_title": "O que é o OmniPay?",
+    "about_body": "OmniPay é infraestrutura de pagamentos — não um banco. Conectamos remetentes e destinatários por meio de parceiros financeiros licenciados. Nunca guardamos nem custodiamos seus fundos.",
+    "disclaimer": "OmniPay é um intermediário tecnológico de pagamentos. Todas as transações são processadas por parceiros licenciados (Bridge Financial Inc., Stripe, Wise). OmniPay nunca custodia fundos.",
+    "footer_disclaimer": "OmniPay não custodia fundos · Parceiros: Bridge, Stripe, Wise · Criptografia AES-256"
   },
   "p2p": {
     "page_title": "Cobrar",

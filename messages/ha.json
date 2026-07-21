@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ Mafi dacewa don biyan kuɗi na gaggawa na ƙasashen waje",
     "pricing_instant_li4": "✓ Babu kuɗin a ɓoye",
     "form_title": "Ƙirƙiri Haɗin Biyan Kuɗi",
-    "form_sub": "Cika bayanai don ƙirƙirar haɗin biyan kuɗi mai aminci."
+    "form_sub": "Cika bayanai don ƙirƙirar haɗin biyan kuɗi mai aminci.",
+    "about_title": "Menene OmniPay?",
+    "about_body": "OmniPay kayan aikin biyan kudi ne — ba banki ba. Muna haɗa masu aiko da masu karɓa ta hanyar abokan kasuwanci masu lasisi. Ba ma ajiye kuɗin ku.",
+    "disclaimer": "OmniPay matsakanci ne na fasahar biyan kudi. Dukkan ciniki ana sarrafa su ta hanyar abokan kasuwanci masu lasisi (Bridge Financial Inc., Stripe, Wise). OmniPay ba ta riƙe kudi.",
+    "footer_disclaimer": "OmniPay ba ta ajiye kudi · Abokan: Bridge, Stripe, Wise · An boye AES-256"
   },
   "p2p": {
     "page_title": "Collect",

@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ Ideal für dringende grenzüberschreitende Zahlungen",
     "pricing_instant_li4": "✓ Keine versteckten Gebühren",
     "form_title": "Ihren Zahlungslink generieren",
-    "form_sub": "Füllen Sie die Details aus, um einen sicheren Zahlungslink zu erstellen."
+    "form_sub": "Füllen Sie die Details aus, um einen sicheren Zahlungslink zu erstellen.",
+    "about_title": "Was ist OmniPay?",
+    "about_body": "OmniPay ist Zahlungsinfrastruktur — keine Bank. Wir verbinden Sender und Empfänger über lizenzierte Finanzpartner. Wir verwahren oder speichern niemals Ihre Gelder.",
+    "disclaimer": "OmniPay ist ein technologischer Zahlungsvermittler. Alle Transaktionen werden von lizenzierten Partnern verarbeitet (Bridge Financial Inc., Stripe, Wise). OmniPay verwahrt niemals Gelder.",
+    "footer_disclaimer": "OmniPay verwahrt keine Gelder · Partner: Bridge, Stripe, Wise · AES-256-verschlüsselt"
   },
   "p2p": {
     "page_title": "Einziehen",

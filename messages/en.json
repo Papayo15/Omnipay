@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ Ideal for urgent cross-border payments",
     "pricing_instant_li4": "✓ No hidden fees",
     "form_title": "Generate Your Invoice Link",
-    "form_sub": "Fill in the details below to create a secure, encrypted payment link."
+    "form_sub": "Fill in the details below to create a secure, encrypted payment link.",
+    "about_title": "What is OmniPay?",
+    "about_body": "OmniPay is payment infrastructure — not a bank. We connect senders and recipients through licensed financial partners. We never hold, store, or have custody of your funds.",
+    "disclaimer": "OmniPay is a payment technology intermediary. All transactions are processed by licensed partners (Bridge Financial Inc., Stripe, Wise). OmniPay never holds custody of funds.",
+    "footer_disclaimer": "OmniPay does not hold funds · Partners: Bridge, Stripe, Wise · AES-256 encrypted"
   },
   "p2p": {
     "page_title": "Collect",

@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ Ideal untuk pembayaran lintas batas yang mendesak",
     "pricing_instant_li4": "✓ Tanpa biaya tersembunyi",
     "form_title": "Buat Tautan Pembayaran Anda",
-    "form_sub": "Isi detail di bawah untuk membuat tautan pembayaran yang aman dan terenkripsi."
+    "form_sub": "Isi detail di bawah untuk membuat tautan pembayaran yang aman dan terenkripsi.",
+    "about_title": "Apa itu OmniPay?",
+    "about_body": "OmniPay adalah infrastruktur pembayaran — bukan bank. Kami menghubungkan pengirim dan penerima melalui mitra keuangan berlisensi. Kami tidak pernah menyimpan atau memegang dana Anda.",
+    "disclaimer": "OmniPay adalah perantara teknologi pembayaran. Semua transaksi diproses oleh mitra berlisensi (Bridge Financial Inc., Stripe, Wise). OmniPay tidak pernah memegang dana.",
+    "footer_disclaimer": "OmniPay tidak menyimpan dana · Mitra: Bridge, Stripe, Wise · Terenkripsi AES-256"
   },
   "p2p": {
     "page_title": "Collect",

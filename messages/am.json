@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ ለአፋጣኝ ዓለምአቀፍ ክፍያዎች ተስማሚ",
     "pricing_instant_li4": "✓ ምንም ሰወር ክፍያ የለም",
     "form_title": "የክፍያ ሊንክ ፍጠር",
-    "form_sub": "ደህንነቱ የተጠበቀ የክፍያ ሊንክ ለመፍጠር ዝርዝሮቹን ይሙሉ።"
+    "form_sub": "ደህንነቱ የተጠበቀ የክፍያ ሊንክ ለመፍጠር ዝርዝሮቹን ይሙሉ።",
+    "about_title": "OmniPay ምንድን ነው?",
+    "about_body": "OmniPay የክፍያ መሠረተ ልማት ነው — ባንክ አይደለም። በፈቃድ ያላቸው የፋይናንስ አጋሮች በኩል ላኪዎችን እና ተቀባዮችን እናዘጋጃለን። ገንዘብዎን ፈጽሞ አናጠናቅቅም።",
+    "disclaimer": "OmniPay የክፍያ ቴክኖሎጂ መካከለኛ ነው። ሁሉም ግብይቶች በፈቃድ ባላቸው አጋሮች (Bridge Financial Inc.፣ Stripe፣ Wise) ይሠራሉ። OmniPay ፈጽሞ ገንዘብ አያጠናቅቅም።",
+    "footer_disclaimer": "OmniPay ገንዘብ አያጠናቅቅም · አጋሮች: Bridge, Stripe, Wise · AES-256 ምስጢራዊ"
   },
   "p2p": {
     "page_title": "Collect",

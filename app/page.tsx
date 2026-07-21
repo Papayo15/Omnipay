@@ -1005,6 +1005,20 @@ export default function Home() {
             </p>
           </button>
         </div>
+
+        {/* ── What is OmniPay ── */}
+        <div className="w-full max-w-xl mt-10 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6">
+          <h3 className="text-white font-semibold text-sm mb-2">{tl("about_title")}</h3>
+          <p className="text-slate-400 text-xs leading-relaxed mb-4">{tl("about_body")}</p>
+          <p className="text-slate-600 text-[10px] leading-relaxed border-t border-slate-700/60 pt-3">
+            {tl("disclaimer")}
+          </p>
+        </div>
+
+        {/* ── Footer ── */}
+        <p className="text-slate-700 text-[10px] text-center mt-6 max-w-xl">
+          {tl("footer_disclaimer")}
+        </p>
       </main>
     );
   }

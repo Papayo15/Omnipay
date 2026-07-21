@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ Bora kwa malipo ya haraka ya kimataifa",
     "pricing_instant_li4": "✓ Hakuna ada zilizofichwa",
     "form_title": "Tengeneza Kiungo Chako cha Malipo",
-    "form_sub": "Jaza maelezo hapa chini kuunda kiungo cha malipo salama."
+    "form_sub": "Jaza maelezo hapa chini kuunda kiungo cha malipo salama.",
+    "about_title": "OmniPay ni nini?",
+    "about_body": "OmniPay ni miundombinu ya malipo — si benki. Tunaounganisha watumaji na wapokeaji kupitia washirika wa fedha wenye leseni. Hatushikii wala kuhifadhi fedha zako.",
+    "disclaimer": "OmniPay ni msuluhishi wa teknolojia ya malipo. Miamala yote inashughulikiwa na washirika wenye leseni (Bridge Financial Inc., Stripe, Wise). OmniPay haitunzi fedha kamwe.",
+    "footer_disclaimer": "OmniPay haishikii fedha · Washirika: Bridge, Stripe, Wise · Imesimbwa AES-256"
   },
   "p2p": {
     "page_title": "Collect",

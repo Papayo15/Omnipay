@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ Ideaal voor urgente grensoverschrijdende betalingen",
     "pricing_instant_li4": "✓ Geen verborgen kosten",
     "form_title": "Genereer Uw Betaallink",
-    "form_sub": "Vul de gegevens in om een veilige, versleutelde betaallink te maken."
+    "form_sub": "Vul de gegevens in om een veilige, versleutelde betaallink te maken.",
+    "about_title": "Wat is OmniPay?",
+    "about_body": "OmniPay is betalingsinfrastructuur — geen bank. Wij verbinden verzenders en ontvangers via erkende financiële partners. Wij bewaren of beheren nooit uw gelden.",
+    "disclaimer": "OmniPay is een technologische betalingstussenpersoon. Alle transacties worden verwerkt door erkende partners (Bridge Financial Inc., Stripe, Wise). OmniPay bewaart nooit gelden.",
+    "footer_disclaimer": "OmniPay bewaart geen gelden · Partners: Bridge, Stripe, Wise · AES-256-versleuteld"
   },
   "p2p": {
     "page_title": "Innen",

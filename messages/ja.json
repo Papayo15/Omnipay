@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ 緊急の国際送金に最適",
     "pricing_instant_li4": "✓ 隠れた手数料なし",
     "form_title": "支払いリンクを生成",
-    "form_sub": "詳細を入力して安全な暗号化された支払いリンクを作成します。"
+    "form_sub": "詳細を入力して安全な暗号化された支払いリンクを作成します。",
+    "about_title": "OmniPayとは？",
+    "about_body": "OmniPayは決済インフラです — 銀行ではありません。ライセンスを持つ金融パートナーを通じて、送金者と受取人をつなぎます。お客様の資金を保管・保有することはありません。",
+    "disclaimer": "OmniPayは決済技術仲介業者です。すべての取引はライセンスを持つパートナー（Bridge Financial Inc.、Stripe、Wise）によって処理されます。OmniPayは資金を保管しません。",
+    "footer_disclaimer": "OmniPayは資金保管なし · パートナー：Bridge、Stripe、Wise · AES-256暗号化"
   },
   "p2p": {
     "page_title": "Collect",

@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ Lý tưởng cho thanh toán xuyên biên giới khẩn cấp",
     "pricing_instant_li4": "✓ Không có phí ẩn",
     "form_title": "Tạo Liên Kết Thanh Toán",
-    "form_sub": "Điền thông tin bên dưới để tạo liên kết thanh toán an toàn và được mã hóa."
+    "form_sub": "Điền thông tin bên dưới để tạo liên kết thanh toán an toàn và được mã hóa.",
+    "about_title": "OmniPay là gì?",
+    "about_body": "OmniPay là cơ sở hạ tầng thanh toán — không phải ngân hàng. Chúng tôi kết nối người gửi và người nhận thông qua các đối tác tài chính được cấp phép. Chúng tôi không bao giờ giữ hoặc lưu trữ tiền của bạn.",
+    "disclaimer": "OmniPay là trung gian công nghệ thanh toán. Tất cả giao dịch được xử lý bởi các đối tác được cấp phép (Bridge Financial Inc., Stripe, Wise). OmniPay không bao giờ giữ tiền.",
+    "footer_disclaimer": "OmniPay không giữ tiền · Đối tác: Bridge, Stripe, Wise · Mã hóa AES-256"
   },
   "p2p": {
     "page_title": "Collect",

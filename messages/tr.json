@@ -224,7 +224,11 @@
     "pricing_instant_li3": "✓ Acil sınır ötesi ödemeler için ideal",
     "pricing_instant_li4": "✓ Gizli ücret yok",
     "form_title": "Ödeme Bağlantınızı Oluşturun",
-    "form_sub": "Güvenli, şifreli bir ödeme bağlantısı oluşturmak için aşağıdaki ayrıntıları doldurun."
+    "form_sub": "Güvenli, şifreli bir ödeme bağlantısı oluşturmak için aşağıdaki ayrıntıları doldurun.",
+    "about_title": "OmniPay Nedir?",
+    "about_body": "OmniPay bir ödeme altyapısıdır — banka değildir. Lisanslı finansal ortaklar aracılığıyla gönderenleri ve alıcıları birbirine bağlarız. Paranızı hiçbir zaman saklamaz veya tutmayız.",
+    "disclaimer": "OmniPay bir ödeme teknolojisi aracısıdır. Tüm işlemler lisanslı ortaklar tarafından işlenir (Bridge Financial Inc., Stripe, Wise). OmniPay hiçbir zaman fon saklamaz.",
+    "footer_disclaimer": "OmniPay fon saklamaz · Ortaklar: Bridge, Stripe, Wise · AES-256 şifreli"
   },
   "p2p": {
     "page_title": "Collect",
