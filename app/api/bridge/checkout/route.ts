@@ -79,7 +79,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     });
 
     // 2. KYC gate — Bridge requires approved customer before creating liquidation address
-    if (needsKyc) {
+    const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
+    if (needsKyc && !skipKyc) {
       // Try tos_link embedded in customer first, then call kyc_links endpoint as fallback
       let kycUrl: string | null = getKycUrlFromCustomer(customer);
       if (!kycUrl) {
