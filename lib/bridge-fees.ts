@@ -6,12 +6,19 @@
 //   b2b     → Stripe capture + Bridge payout for businesses
 //
 // OmniPay charges: 0.50% + flat on all channels (min $1.99)
-// Provider costs are passed through transparently.
+// ALL provider costs shown in total_sender_pays — the sender sees one final number.
 // KYC ($2 P2P / $10 KYB B2B) charged only on first transaction — Opción A dynamic check.
 //
 // Competitive position on $300 USD (Bridge channel):
 //   WU ~$17 · Remitly ~$7.50 · Wise ~$6.40
 //   OmniPay 1ª vez: $6.74 · OmniPay recurrente: $4.74 ← cheapest in market
+//
+// B2B example $1,000 USD payout:
+//   Stripe card acceptance: $29.30 (2.9%+$0.30)
+//   Bridge payout:          $7.50  (0.75%)
+//   OmniPay service:        $6.99  (0.50%+$1.99)
+//   KYB (1ª vez):           $10.00
+//   Total sender pays:      $1,053.79 (1ª vez) / $1,043.79 (recurrente)
 
 import { findCustomerByEmail } from "@/providers/bridge/customers";
 import { NATIVE_RAILS }        from "@/providers/bridge/liquidation";
@@ -22,6 +29,10 @@ import { NATIVE_RAILS }        from "@/providers/bridge/liquidation";
 export const BRIDGE_ONRAMP_PCT  = 0.005;   // 0.50% fiat → USDC
 export const BRIDGE_OFFRAMP_PCT = 0.0025;  // 0.25% USDC → local fiat
 export const BRIDGE_TOTAL_PCT   = BRIDGE_ONRAMP_PCT + BRIDGE_OFFRAMP_PCT; // 0.75%
+
+// Stripe card acceptance (B2B only — included in total shown to sender)
+export const STRIPE_PCT  = 0.029;  // 2.9%
+export const STRIPE_FLAT = 0.30;   // $0.30 fixed
 
 // OmniPay margin
 export const OMNIPAY_SERVICE_PCT = 0.005;  // 0.50% OmniPay net revenue
@@ -44,7 +55,8 @@ export type QuoteProvider = "bridge" | "paysend" | "b2b";
 export interface FeeQuote {
   amount_principal:    number;
   provider:            QuoteProvider;
-  // Provider costs
+  // Provider costs (all included in total_sender_pays — sender sees one number)
+  stripe_fee?:         number;  // B2B only: 2.9%+$0.30 Stripe card acceptance
   bridge_onramp?:      number;
   bridge_offramp?:     number;
   paysend_cost?:       number;
@@ -56,7 +68,7 @@ export interface FeeQuote {
   // KYC
   kyc_surcharge:       number;
   is_new_customer:     boolean;
-  // Total
+  // Total — everything the sender pays, no hidden fees
   total_sender_pays:   number;
 }
 
@@ -111,19 +123,27 @@ function _buildQuote(
   type:     "p2p" | "b2b",
   isNew:    boolean,
 ): FeeQuote {
-  const flat   = type === "b2b" ? OMNIPAY_FLAT_B2B : OMNIPAY_FLAT_P2P;
-  const kyc    = isNew ? (type === "b2b" ? KYB_FEE_B2B : KYC_FEE_P2P) : 0;
+  const flat = type === "b2b" ? OMNIPAY_FLAT_B2B : OMNIPAY_FLAT_P2P;
+  const kyc  = isNew ? (type === "b2b" ? KYB_FEE_B2B : KYC_FEE_P2P) : 0;
 
   let providerCostTotal: number;
+  let stripeFee: number | undefined;
   let bridgeOnramp: number | undefined;
   let bridgeOfframp: number | undefined;
   let paysendCost: number | undefined;
 
-  if (provider === "bridge" || provider === "b2b") {
+  if (provider === "b2b") {
+    // Stripe card acceptance — included in total so sender sees the real cost
+    stripeFee     = parseFloat((amount * STRIPE_PCT + STRIPE_FLAT).toFixed(2));
+    bridgeOnramp  = parseFloat((amount * BRIDGE_ONRAMP_PCT).toFixed(2));
+    bridgeOfframp = parseFloat((amount * BRIDGE_OFFRAMP_PCT).toFixed(2));
+    providerCostTotal = stripeFee + bridgeOnramp + bridgeOfframp;
+  } else if (provider === "bridge") {
     bridgeOnramp  = parseFloat((amount * BRIDGE_ONRAMP_PCT).toFixed(2));
     bridgeOfframp = parseFloat((amount * BRIDGE_OFFRAMP_PCT).toFixed(2));
     providerCostTotal = bridgeOnramp + bridgeOfframp;
   } else {
+    // paysend — card push 170+ countries
     paysendCost       = parseFloat((amount * PAYSEND_PCT + PAYSEND_FLAT).toFixed(2));
     providerCostTotal = paysendCost;
   }
@@ -137,6 +157,7 @@ function _buildQuote(
   return {
     amount_principal:    amount,
     provider,
+    stripe_fee:          stripeFee,
     bridge_onramp:       bridgeOnramp,
     bridge_offramp:      bridgeOfframp,
     paysend_cost:        paysendCost,
