@@ -65,10 +65,13 @@ export async function createCustomer(params: {
   body.residential_address = ADDRESS_DEFAULTS[params.country ?? "USA"] ?? ADDRESS_DEFAULTS["USA"];
 
   if (isSandbox) {
-    body.birth_date                = "1990-01-01";
-    body.tax_identification_number = "111-11-1111";
-    body.phone                     = "+15555555555";
-    body.signed_agreement_id       = crypto.randomUUID();
+    body.birth_date          = "1990-01-01";
+    body.phone               = "+15555555555";
+    body.signed_agreement_id = crypto.randomUUID();
+    // identifying_information covers both tax_identification_number and government_id_document requirements
+    body.identifying_information = [
+      { type: "ssn", issuing_country: "USA", number: "123456789" },
+    ];
   }
   return bridgeRequest<BridgeCustomer>(
     "POST",
