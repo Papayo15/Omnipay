@@ -134,8 +134,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
 
   if (params.receiveMethod === "card") {
     return {
-      payment_rail:       "card",
-      currency:           "usd",
+      type:               "card",
       account_number:     params.cardNumber!.replace(/\s/g, ""),
       account_owner_name: params.ownerName,
       account_owner_type: params.ownerType ?? "individual",
@@ -147,8 +146,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
   if (!native) throw new Error(`No native rail for country ${country}. Use card instead.`);
 
   const body: Record<string, unknown> = {
-    payment_rail:       native.rail,
-    currency,
+    type:               "bank",
     account_owner_name: params.ownerName,
     account_owner_type: params.ownerType ?? "individual",
     address,
