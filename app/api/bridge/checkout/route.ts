@@ -13,7 +13,7 @@
 
 import { NextRequest, NextResponse }       from "next/server";
 import { getOrCreateCustomer, getKycLink, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, simulateKycApproval, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
-import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
+import { createLiquidationAddress, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
 import { getTargetCurrency }               from "@/lib/routing";
@@ -121,12 +121,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       bankName: bank_name, sortCode: sort_code, bankCode: bank_code,
     };
 
-    // Create external account before simulate so account_processing is satisfied.
-    if (receive_method === "bank") {
-      try { await ensureExternalAccount(liqParams); } catch { /* best-effort; liqAddr step will retry */ }
-    }
-
-    // Sandbox endorsement flow (runs AFTER external account so all requirements are met):
+    // Sandbox endorsement flow:
     // 1. Create KYC link with endorsements array — puts endorsements in "pending" state.
     //    One KYC link per email max — duplicate_record just means it's already pending.
     // 2. simulate_kyc_approval approves all pending endorsements.
