@@ -87,6 +87,7 @@ export interface CreateLiquidationParams {
   // Bank fields — depend on country rail
   clabe?:          string;
   iban?:           string;
+  bic?:            string;  // SEPA: Bank Identifier Code
   pixKey?:         string;
   routingNumber?:  string;
   accountNumber?:  string;
@@ -239,6 +240,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       account_type: "iban",
       iban: {
         account_number: params.iban!,
+        bic:            params.bic,   // optional but recommended for production
         country:        iso3,
       },
     };
@@ -354,19 +356,36 @@ export async function createLiquidationAddress(
   // destination_currency are all at root level alongside currency and chain.
   const destCurrency = NATIVE_RAILS[country]?.currency ?? "usd";
   const destRail     = NATIVE_RAILS[country]?.rail ?? "ach";
+  const liqKey       = `liq7-${params.customerId}-${country}-${identKey}`;
+  const liqBody      = {
+    currency:                 "usdc",
+    chain:                    "polygon",
+    external_account_id:      extAcctId,
+    destination_payment_rail: destRail,
+    destination_currency:     destCurrency,
+  };
 
-  return bridgeRequest<LiquidationAddress>(
-    "POST",
-    `/customers/${params.customerId}/liquidation_addresses`,
-    {
-      currency:                 "usdc",
-      chain:                    "polygon",
-      external_account_id:      extAcctId,
-      destination_payment_rail: destRail,
-      destination_currency:     destCurrency,
-    },
-    `liq7-${params.customerId}-${country}-${identKey}`,
-  );
+  // Bridge may need a moment to activate payout_fiat after the external account
+  // is created (especially for base-only customers like ACH/USD). Retry once
+  // after 3s if missing_required_endorsements — same idempotency key per docs.
+  try {
+    return await bridgeRequest<LiquidationAddress>(
+      "POST",
+      `/customers/${params.customerId}/liquidation_addresses`,
+      liqBody,
+      liqKey,
+    );
+  } catch (e) {
+    const err = e as Error & { type?: string };
+    if (err.type !== "missing_required_endorsements") throw e;
+    await new Promise(r => setTimeout(r, 3000));
+    return bridgeRequest<LiquidationAddress>(
+      "POST",
+      `/customers/${params.customerId}/liquidation_addresses`,
+      liqBody,
+      liqKey,
+    );
+  }
 }
 
 export async function getLiquidationAddress(

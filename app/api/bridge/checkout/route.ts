@@ -28,6 +28,7 @@ interface CheckoutBody {
   card_number?:     string;  // reserved — Paysend pending
   clabe?:           string;
   iban?:            string;
+  bic?:             string;  // SEPA BIC/SWIFT code
   pix_key?:         string;
   routing_number?:  string;
   account_number?:  string;
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const {
     nombre, email, country, receive_method,
-    card_number, clabe, iban, pix_key, routing_number, account_number,
+    card_number, clabe, iban, bic, pix_key, routing_number, account_number,
     sort_code, bank_name, bank_code,
     amount_target, recipient_phone,
   } = body;
@@ -116,7 +117,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       ownerName:     nombre,
       ownerType:     "individual",
       cardNumber:    card_number,
-      clabe, iban, pixKey: pix_key,
+      clabe, iban, bic, pixKey: pix_key,
       routingNumber: routing_number, accountNumber: account_number,
       bankName: bank_name, sortCode: sort_code, bankCode: bank_code,
     };
