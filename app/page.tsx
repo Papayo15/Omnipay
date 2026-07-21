@@ -912,13 +912,65 @@ export default function Home() {
 
   // ── LANDING — solo los dos botones ────────────────────────────────────────
   if (step === "create") {
+    const LANG_OPTIONS = [
+      { code: "es", label: "Español",    flag: "🇲🇽" },
+      { code: "en", label: "English",    flag: "🇺🇸" },
+      { code: "fr", label: "Français",   flag: "🇫🇷" },
+      { code: "pt", label: "Português",  flag: "🇧🇷" },
+      { code: "de", label: "Deutsch",    flag: "🇩🇪" },
+      { code: "it", label: "Italiano",   flag: "🇮🇹" },
+      { code: "nl", label: "Nederlands", flag: "🇳🇱" },
+      { code: "zh", label: "中文",        flag: "🇨🇳" },
+      { code: "ja", label: "日本語",      flag: "🇯🇵" },
+      { code: "ko", label: "한국어",      flag: "🇰🇷" },
+      { code: "ar", label: "العربية",    flag: "🇸🇦" },
+      { code: "hi", label: "हिन्दी",    flag: "🇮🇳" },
+      { code: "ru", label: "Русский",    flag: "🇷🇺" },
+      { code: "tr", label: "Türkçe",     flag: "🇹🇷" },
+      { code: "vi", label: "Tiếng Việt", flag: "🇻🇳" },
+      { code: "id", label: "Bahasa",     flag: "🇮🇩" },
+      { code: "sw", label: "Kiswahili",  flag: "🇰🇪" },
+      { code: "ha", label: "Hausa",      flag: "🇳🇬" },
+      { code: "am", label: "አማርኛ",      flag: "🇪🇹" },
+    ];
+    const currentLang = LANG_OPTIONS.find((l) => l.code === uiLocale) ?? LANG_OPTIONS[0];
+
+    function switchLanguage(code: string) {
+      setUiLocale(code);
+      document.cookie = `OMNIPAY_LOCALE=${code}; path=/; max-age=31536000; SameSite=Lax`;
+      router.refresh();
+    }
+
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 py-16">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <Zap className="w-7 h-7 text-[#00C9C8]" />
-          <span className="text-2xl font-bold text-white tracking-tight">OmniPay Global</span>
+        {/* Logo + language selector on the same row */}
+        <div className="w-full max-w-xl flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <Zap className="w-7 h-7 text-[#00C9C8]" />
+            <span className="text-2xl font-bold text-white tracking-tight">OmniPay Global</span>
+          </div>
+          {/* Language Selector */}
+          <div className="relative group">
+            <button className="flex items-center gap-1.5 text-slate-400 hover:text-white text-xs bg-slate-800/60 hover:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 transition-all">
+              <span>{currentLang.flag}</span>
+              <span>{currentLang.label}</span>
+              <span className="text-[10px] opacity-60">▾</span>
+            </button>
+            <div className="absolute right-0 top-full mt-1 w-44 bg-slate-900 border border-slate-700 rounded-xl shadow-xl overflow-hidden z-50 hidden group-hover:block">
+              {LANG_OPTIONS.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => switchLanguage(l.code)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-slate-800 transition-colors ${l.code === uiLocale ? "text-[#00C9C8] bg-slate-800/60" : "text-slate-300"}`}
+                >
+                  <span>{l.flag}</span>
+                  <span>{l.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-        <p className="text-slate-500 text-xs mb-12 text-center">{tl("tagline")}</p>
+        <p className="text-slate-500 text-xs mb-12 text-center w-full max-w-xl">{tl("tagline")}</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl">
           {/* B2B */}

@@ -5,6 +5,6 @@
   "installCommand": "npm install",
   "devCommand": "next dev",
   "crons": [
-    { "path": "/api/v1/p2p/audit", "schedule": "0 0 * * *" }
+    { "path": "/api/bridge/monitor", "schedule": "0 0 * * *" }
   ]
 }

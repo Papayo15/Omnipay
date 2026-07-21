@@ -6,9 +6,13 @@ type Locale = (typeof SUPPORTED)[number];
 
 export default getRequestConfig(async () => {
   const h = await headers();
-  const lang = (h.get("accept-language") ?? "en")
+  // Cookie OMNIPAY_LOCALE overrides Accept-Language (set by language selector)
+  const cookieHeader = h.get("cookie") ?? "";
+  const cookieLang   = cookieHeader.match(/OMNIPAY_LOCALE=([a-z]{2})/)?.[1] ?? "";
+  const browserLang  = (h.get("accept-language") ?? "en")
     .split(",")[0].split(";")[0].split("-")[0].toLowerCase();
-  const locale: Locale = SUPPORTED.includes(lang as Locale) ? (lang as Locale) : "en";
+  const raw = SUPPORTED.includes(cookieLang as Locale) ? cookieLang : browserLang;
+  const locale: Locale = SUPPORTED.includes(raw as Locale) ? (raw as Locale) : "en";
 
   switch (locale) {
     case "am": return { locale, messages: (await import("../messages/am.json")).default };

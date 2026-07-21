@@ -13,14 +13,13 @@ const nextConfig: NextConfig = {
           key: "Content-Security-Policy",
           value: [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://buy.ramp.network https://global.transak.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: blob: https:",
-            // Allow Ramp + Transak widget iframes
-            "frame-src https://js.stripe.com https://hooks.stripe.com https://buy.ramp.network https://global.transak.com",
+            "frame-src https://js.stripe.com https://hooks.stripe.com",
             "worker-src 'self'",
-            "connect-src 'self' https://ipinfo.io https://open.er-api.com https://api.stripe.com https://api.wise.com https://api.thunes.com https://bitso.com https://api.ramp.network https://api.transak.com",
+            "connect-src 'self' https://ipinfo.io https://open.er-api.com https://api.stripe.com https://api.wise.com https://api.bridge.xyz https://api.sandbox.bridge.xyz",
             "media-src 'self' blob:",
           ].join("; "),
         },
