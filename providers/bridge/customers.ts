@@ -86,13 +86,21 @@ export async function createCustomer(params: {
       { type: "passport", issuing_country: iso3.toLowerCase(), number: "A12345678", image_front: FAKE_IMG, image_back: FAKE_IMG },
     ];
 
-    // SEPA endorsement requires proof_of_address (Bridge docs — EEA customer requirements).
-    // Include for ALL sandbox customers so simulate_kyc_approval can approve sepa endorsement.
+    // proof_of_address — required for SEPA endorsement
     body.documents = [
       { purposes: ["proof_of_address"], file: FAKE_IMG },
     ];
 
-    // EEA/international customers require nationalities field
+    // Compliance fields required for sof_individual_primary_purpose requirement
+    // (missing these keeps base+sepa in "incomplete" and simulate_kyc_approval has nothing to approve)
+    body.account_purpose               = "payments_to_friends_or_family_abroad";
+    body.source_of_funds               = "salary";
+    body.employment_status             = "employed";
+    body.expected_monthly_payments_usd = "0_4999";
+    body.acting_as_intermediary        = false;
+    body.place_of_birth                = "San Francisco";  // fixes place_of_birth_missing issue
+
+    // EEA/international customers require nationalities
     if (iso3 !== "USA") {
       body.nationalities = [iso3];
     }
