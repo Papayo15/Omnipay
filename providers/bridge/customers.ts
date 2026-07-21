@@ -47,7 +47,9 @@ export async function findCustomerByEmail(email: string): Promise<BridgeCustomer
       "GET",
       `/customers?email=${encodeURIComponent(email.toLowerCase())}`,
     );
-    return res.data?.[0] ?? null;
+    if (!res.data?.length) return null;
+    // Prefer active customer if multiple exist with same email
+    return res.data.find((c) => c.status === "active") ?? res.data[0];
   } catch {
     return null;
   }
