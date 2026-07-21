@@ -12,33 +12,34 @@
 //   5. Generates signed receipt URL for the comprobante page
 
 import { NextRequest, NextResponse }            from "next/server";
+import { createClient }                         from "redis";
 import { verifyBridgeWebhook, parseWebhookEvent } from "@/providers/bridge/webhooks";
 import { mapTransferStatus }                    from "@/providers/bridge/transfers";
 import { updateOrder, getOrder }                from "@/lib/order-state";
 import { sendAdminWhatsApp, sendPaymentNotification } from "@/lib/notify";
 import { buildReceiptURL }                      from "@/lib/link";
 
-export const runtime = "edge";
+// Node.js runtime required — redis package uses Node TCP sockets (incompatible with Edge)
+export const runtime = "nodejs";
 
-// In-process fallback for dedup when KV is not configured (dev/local)
+// In-process fallback for dedup when REDIS_URL is not set (dev/local)
 const processedEventIdsFallback = new Set<string>();
 
 async function markEventProcessed(eventId: string): Promise<boolean> {
-  // Use Vercel KV (Redis) when configured — cross-instance, 24h TTL
-  const kvUrl = process.env.KV_REST_API_URL;
-  const kvToken = process.env.KV_REST_API_TOKEN;
+  const redisUrl = process.env.REDIS_URL;
 
-  if (kvUrl && kvToken) {
+  if (redisUrl) {
+    const client = createClient({ url: redisUrl });
     try {
-      // SET NX EX — returns "OK" if key was new, null if already existed
-      const res = await fetch(`${kvUrl}/set/wh:${eventId}/1/NX/EX/86400`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${kvToken}` },
-      });
-      const json = await res.json() as { result: string | null };
-      return json.result === "OK"; // true = new, false = duplicate
-    } catch {
-      // KV unreachable — fall through to in-memory
+      await client.connect();
+      // SET NX EX — returns "OK" if key was new, null if key already existed
+      const result = await client.set(`wh:${eventId}`, "1", { NX: true, EX: 86400 });
+      return result === "OK"; // true = new event, false = duplicate
+    } catch (e) {
+      console.error("[bridge/webhook] Redis error:", (e as Error).message);
+      // Redis unreachable — fall through to in-memory fallback
+    } finally {
+      await client.quit().catch(() => undefined);
     }
   }
 
