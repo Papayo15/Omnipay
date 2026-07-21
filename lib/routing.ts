@@ -22,7 +22,7 @@ export function getTargetCurrency(targetCountry: string): string {
     TZ: "TZS", UG: "UGX", ZM: "ZMW", ET: "ETB", RW: "RWF",
     PK: "PKR", BD: "BDT", LK: "LKR", NP: "NPR",
     TR: "TRY", SA: "SAR", AE: "AED", QA: "QAR", KW: "KWD",
-    TH: "THB", MY: "MYR", SG: "SGD", PL: "PLN", UA: "UAH",
+    TH: "THB", MY: "MYR", SG: "SGD", UA: "UAH",
     CL: "CLP", PE: "PEN", EC: "USD", DO: "DOP", GT: "GTQ",
     HN: "HNL", SV: "USD", CR: "CRC", PA: "USD", BO: "BOB",
     PY: "PYG", UY: "UYU",
