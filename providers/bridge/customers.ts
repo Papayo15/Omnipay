@@ -68,9 +68,13 @@ export async function createCustomer(params: {
     body.birth_date          = "1990-01-01";
     body.phone               = "+15555555555";
     body.signed_agreement_id = crypto.randomUUID();
-    // identifying_information covers both tax_identification_number and government_id_document requirements
+    // 1x1 white PNG — Bridge sandbox accepts any image for government_id_document
+    const FAKE_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII=";
     body.identifying_information = [
+      // SSN satisfies tax_identification_number requirement
       { type: "ssn", issuing_country: "USA", number: "123456789" },
+      // Passport image satisfies government_id_document requirement
+      { type: "passport", issuing_country: "USA", number: "A12345678", image_front: FAKE_IMG, image_back: FAKE_IMG },
     ];
   }
   return bridgeRequest<BridgeCustomer>(
