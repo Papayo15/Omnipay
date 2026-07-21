@@ -4,6 +4,7 @@
 // Created once per receptor — reusable for multiple transactions.
 
 import { bridgeRequest } from "./client";
+import { createExternalAccount } from "./external-accounts";
 import { getTargetCurrency } from "@/lib/routing";
 
 // Countries with native payment rails (bank account option available)
@@ -64,63 +65,71 @@ export interface CreateLiquidationParams {
   ownerType?:      "individual" | "business";
 }
 
-function buildDestination(params: CreateLiquidationParams): Record<string, unknown> {
+function buildExternalAccountBody(params: CreateLiquidationParams): Record<string, unknown> {
   const country  = params.country.toUpperCase();
   const currency = getTargetCurrency(country).toLowerCase();
 
   if (params.receiveMethod === "card") {
     return {
-      payment_rail: "card",
-      currency:     "usd", // Bridge converts to USD equivalent for card push
-      to_account: {
-        card_number:        params.cardNumber!.replace(/\s/g, ""),
-        account_owner_name: params.ownerName,
-        account_owner_type: params.ownerType ?? "individual",
-      },
+      payment_rail:       "card",
+      currency:           "usd",
+      card_number:        params.cardNumber!.replace(/\s/g, ""),
+      account_owner_name: params.ownerName,
+      account_owner_type: params.ownerType ?? "individual",
     };
   }
 
   const native = NATIVE_RAILS[country];
-  if (!native) {
-    // Fallback to card if no native rail available
-    throw new Error(`No native rail for country ${country}. Use card instead.`);
-  }
+  if (!native) throw new Error(`No native rail for country ${country}. Use card instead.`);
 
-  const toAccount: Record<string, string> = {
+  const body: Record<string, string> = {
+    payment_rail:       native.rail,
+    currency,
     account_owner_name: params.ownerName,
     account_owner_type: params.ownerType ?? "individual",
   };
 
-  // Map fields by rail type
-  if (native.rail === "spei")     { toAccount.bank_account_type = "clabe"; toAccount.clabe = params.clabe!; }
-  if (native.rail === "sepa")     { toAccount.iban = params.iban!; }
-  if (native.rail === "pix")      { toAccount.pix_key = params.pixKey!; }
-  if (native.rail === "ach")      { toAccount.routing_number = params.routingNumber!; toAccount.account_number = params.accountNumber!; }
-  if (native.rail === "fps")      { toAccount.sort_code = params.sortCode!; toAccount.account_number = params.accountNumber!; }
-  if (native.rail === "eft")      { toAccount.transit_number = params.transitNumber!; toAccount.account_number = params.accountNumber!; }
-  if (native.rail === "imps")     { toAccount.ifsc = params.ifsc!; toAccount.account_number = params.accountNumber!; }
-  if (native.rail === "instapay") { toAccount.account_number = params.accountNumber!; }
+  if (native.rail === "spei")     { body.bank_account_type = "clabe"; body.clabe = params.clabe!; }
+  if (native.rail === "sepa")     { body.iban = params.iban!; }
+  if (native.rail === "pix")      { body.pix_key = params.pixKey!; }
+  if (native.rail === "ach")      { body.routing_number = params.routingNumber!; body.account_number = params.accountNumber!; }
+  if (native.rail === "fps")      { body.sort_code = params.sortCode!; body.account_number = params.accountNumber!; }
+  if (native.rail === "eft")      { body.transit_number = params.transitNumber!; body.account_number = params.accountNumber!; }
+  if (native.rail === "imps")     { body.ifsc = params.ifsc!; body.account_number = params.accountNumber!; }
+  if (native.rail === "instapay") { body.account_number = params.accountNumber!; }
 
-  return {
-    payment_rail: native.rail,
-    currency,
-    to_account:   toAccount,
-  };
+  return body;
 }
 
 export async function createLiquidationAddress(
   params: CreateLiquidationParams,
 ): Promise<LiquidationAddress> {
-  const destination = buildDestination(params);
+  // Bridge requires a pre-created external account; its ID goes in destination
+  const extAcctBody = buildExternalAccountBody(params);
+  const cardLast4   = params.cardNumber?.slice(-4) ?? params.clabe?.slice(-4) ?? params.iban?.slice(-4) ?? "xxxx";
+  const extAcct     = await createExternalAccount(
+    params.customerId,
+    extAcctBody,
+    `ext-${params.customerId}-${params.receiveMethod}-${cardLast4}`,
+  );
+
+  const country  = params.country.toUpperCase();
+  const currency = params.receiveMethod === "card" ? "usd" : getTargetCurrency(country).toLowerCase();
+  const rail     = params.receiveMethod === "card" ? "card" : (NATIVE_RAILS[country]?.rail ?? "card");
+
   return bridgeRequest<LiquidationAddress>(
     "POST",
     `/customers/${params.customerId}/liquidation_addresses`,
     {
       currency:    "usdc",
       chain:       "polygon",
-      destination,
+      destination: {
+        payment_rail:        rail,
+        currency,
+        external_account_id: extAcct.id,
+      },
     },
-    `liq2-${params.customerId}-${params.country}-${params.receiveMethod}`,
+    `liq3-${params.customerId}-${params.country}-${params.receiveMethod}-${cardLast4}`,
   );
 }
 
