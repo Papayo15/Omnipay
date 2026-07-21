@@ -20,12 +20,23 @@ import { buildReceiptURL }                      from "@/lib/link";
 
 export const runtime = "edge";
 
+// In-process deduplication cache — survives across requests in the same Edge instance.
+// In production with Vercel KV: replace with a KV TTL-set (24h) for cross-instance safety.
+const processedEventIds = new Set<string>();
+
 export async function POST(req: NextRequest): Promise<Response> {
   const rawBody  = await req.text();
   const sigHeader = req.headers.get("x-bridge-signature");
 
   // Verify signature
-  const valid = await verifyBridgeWebhook(rawBody, sigHeader);
+  let valid: boolean;
+  try {
+    valid = await verifyBridgeWebhook(rawBody, sigHeader);
+  } catch (e) {
+    const err = e as Error;
+    console.error("[bridge/webhook] Signature config error:", err.message);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
   if (!valid) {
     console.warn("[bridge/webhook] Invalid signature");
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
@@ -37,6 +48,35 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const { type, data } = event;
   console.log(`[bridge/webhook] event=${type} id=${event.id}`);
+
+  // Deduplicate — Bridge may retry events on 5xx or timeout
+  if (event.id) {
+    if (processedEventIds.has(event.id)) {
+      console.log(`[bridge/webhook] duplicate event ${event.id} — skipping`);
+      return NextResponse.json({ received: true });
+    }
+    processedEventIds.add(event.id);
+    // Evict old entries to prevent unbounded growth
+    if (processedEventIds.size > 5000) {
+      const first = processedEventIds.values().next().value;
+      if (first) processedEventIds.delete(first);
+    }
+  }
+
+  // ── Liquidation address drain completed ───────────────────────────────────
+
+  if (type === "liquidation_address.drain_completed") {
+    const liqAddrId = String(data.liquidation_address_id ?? data.id ?? "");
+    const orderId   = String(data.developer_reference ?? "");
+    const resolvedOrder = orderId.startsWith("OP-") ? orderId : null;
+
+    if (resolvedOrder) {
+      updateOrder(resolvedOrder, { status: "COMPLETED", completedAt: Date.now() });
+      await handleCompletion(resolvedOrder, data);
+    } else if (liqAddrId) {
+      console.log(`[bridge/webhook] drain_completed for liq_addr ${liqAddrId} — no OP- reference`);
+    }
+  }
 
   // ── Transfer events ────────────────────────────────────────────────────────
 

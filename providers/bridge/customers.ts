@@ -151,7 +151,8 @@ const ADDRESS_DEFAULTS: Record<string, { street_line_1: string; city: string; su
 
 // Sandbox only — instantly approves KYC without going through Persona
 export async function simulateKycApproval(customerId: string): Promise<void> {
-  await bridgeRequest("POST", `/customers/${customerId}/simulate_kyc_approval`);
+  await bridgeRequest("POST", `/customers/${customerId}/simulate_kyc_approval`,
+    undefined, `sim-${customerId}`);
 }
 
 // Find existing customer by email — returns null if not found or any error

@@ -25,8 +25,8 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   const quote = email
-    ? await buildDynamicQuote({ amount, email, type })
-    : calcStaticQuote(amount, type);
+    ? await buildDynamicQuote({ amount, country, email, type })
+    : calcStaticQuote(amount, country, type);
 
   return NextResponse.json({
     ...quote,

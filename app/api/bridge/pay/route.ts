@@ -77,9 +77,10 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // 2. Build fee quote with dynamic KYC check for the SENDER (Bridge = our DB)
     const quote = await buildDynamicQuote({
-      amount: meta.amount_target,
-      email:  sender_email.toLowerCase(),
-      type:   "p2p",
+      amount:  meta.amount_target,
+      country: meta.country,
+      email:   sender_email.toLowerCase(),
+      type:    "p2p",
     });
 
     // 3. Get or create Bridge customer for the SENDER (KYC)
@@ -163,8 +164,11 @@ export async function POST(req: NextRequest): Promise<Response> {
       },
       fee_breakdown: {
         amount_principal:  quote.amount_principal,
+        provider:          quote.provider,
         bridge_onramp:     quote.bridge_onramp,
         bridge_offramp:    quote.bridge_offramp,
+        paysend_cost:      quote.paysend_cost,
+        provider_cost:     quote.provider_cost_total,
         omnipay_service:   quote.omnipay_service,
         omnipay_flat:      quote.omnipay_flat,
         kyc_surcharge:     quote.kyc_surcharge,

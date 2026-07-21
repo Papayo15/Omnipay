@@ -29,9 +29,12 @@ export async function verifyBridgeWebhook(
   const publicKeyPem = process.env.BRIDGE_WEBHOOK_PUBLIC_KEY;
   const hmacSecret   = process.env.BRIDGE_WEBHOOK_SECRET;
 
-  // No credentials configured → skip (dev mode)
+  // No credentials configured → block in production, warn in dev
   if (!publicKeyPem && !hmacSecret) {
-    console.warn("[bridge/webhook] No verification credentials set — skipping");
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("BRIDGE_WEBHOOK_PUBLIC_KEY or BRIDGE_WEBHOOK_SECRET must be configured in production");
+    }
+    console.warn("[bridge/webhook] No verification credentials set — skipping (dev only)");
     return true;
   }
   if (!signatureHeader) return false;
