@@ -28,22 +28,44 @@ export interface BridgeKycLink {
   expires_at?: string;
 }
 
-// Update customer address via PUT (Bridge docs: PUT not PATCH).
-// country param is alpha-2 (e.g. "MX"); converted to alpha-3 for Bridge.
+const ALPHA2_TO_ALPHA3: Record<string, string> = {
+  MX:"MEX", US:"USA", BR:"BRA", CO:"COL", GB:"GBR", CA:"CAN",
+  DE:"DEU", FR:"FRA", ES:"ESP", IT:"ITA", NL:"NLD", PT:"PRT",
+  BE:"BEL", AT:"AUT", IE:"IRL", FI:"FIN", GR:"GRC", CY:"CYP",
+  EE:"EST", LV:"LVA", LT:"LTU", LU:"LUX", MT:"MLT", SK:"SVK",
+  SI:"SVN", HR:"HRV", SE:"SWE", DK:"DNK", NO:"NOR", PL:"POL",
+  CZ:"CZE", HU:"HUN", RO:"ROU", BG:"BGR", CH:"CHE", IS:"ISL",
+  LI:"LIE", AR:"ARG", PE:"PER", IN:"IND",
+};
+
+// Update customer with address + compliance fields via PUT.
+// In sandbox: also includes all required KYC compliance fields so that
+// simulate_kyc_approval can approve endorsements for ALL rails (base, sepa, spei, pix, fps, cop).
+// country param is alpha-2 (e.g. "MX" or "DE").
 export async function patchCustomerAddress(customerId: string, country: string): Promise<void> {
-  const ISO3: Record<string, string> = {
-    MX:"MEX", US:"USA", BR:"BRA", CO:"COL", GB:"GBR", CA:"CAN",
-    DE:"DEU", FR:"FRA", ES:"ESP", IT:"ITA", NL:"NLD", PT:"PRT",
-    BE:"BEL", AT:"AUT", IE:"IRL", FI:"FIN", GR:"GRC", CY:"CYP",
-    EE:"EST", LV:"LVA", LT:"LTU", LU:"LUX", MT:"MLT", SK:"SVK",
-    SI:"SVN", HR:"HRV", SE:"SWE", DK:"DNK", NO:"NOR", PL:"POL",
-    CZ:"CZE", HU:"HUN", RO:"ROU", BG:"BGR", CH:"CHE", IS:"ISL",
-    LI:"LIE", AR:"ARG", PE:"PER", IN:"IND",
-  };
-  const iso3 = ISO3[country] ?? "USA";
-  const addr = ADDRESS_DEFAULTS[iso3] ?? ADDRESS_DEFAULTS["USA"];
-  // Bridge uses PUT (not PATCH) and field is `residential_address` for individuals
-  await bridgeRequest("PUT", `/customers/${customerId}`, { residential_address: addr });
+  const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
+  const iso3      = ALPHA2_TO_ALPHA3[country] ?? "USA";
+  const addr      = ADDRESS_DEFAULTS[iso3] ?? ADDRESS_DEFAULTS["USA"];
+
+  const update: Record<string, unknown> = { residential_address: addr };
+
+  if (isSandbox) {
+    // Compliance fields required for sof_individual_primary_purpose (needed by ALL endorsements).
+    // Without these, pending[] stays empty and simulate_kyc_approval approves nothing.
+    const FAKE_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII=";
+    update.account_purpose               = "payments_to_friends_or_family_abroad";
+    update.source_of_funds               = "salary";
+    update.employment_status             = "employed";
+    update.expected_monthly_payments_usd = "0_4999";
+    update.acting_as_intermediary        = false;
+    update.place_of_birth                = "San Francisco";
+    update.documents                     = [{ purposes: ["proof_of_address"], file: FAKE_IMG }];
+    if (iso3 !== "USA") {
+      update.nationalities = [iso3];
+    }
+  }
+
+  await bridgeRequest("PUT", `/customers/${customerId}`, update);
 }
 
 // Create a new customer (KYC individual or KYB business)

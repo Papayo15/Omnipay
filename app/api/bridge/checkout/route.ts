@@ -99,14 +99,15 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
-    // Always patch address — required for liquidation address creation.
-    // Idempotent: safe to call even if address already set.
+    // Always update customer — sets residential_address (required by Bridge for liquidation).
+    // In sandbox: ALSO sets compliance fields (account_purpose, source_of_funds, place_of_birth, etc.)
+    // so that base+sepa+spei+pix+fps+cop endorsements reach "pending" state.
+    // Applies to both NEW and EXISTING customers — idempotent, safe to call repeatedly.
     try { await patchCustomerAddress(customer.id, country_upper); } catch { /* best-effort */ }
 
-    // Sandbox endorsement flow:
-    // 1. Create KYC link with endorsements array — this puts the endorsement in "pending" state.
-    //    Bridge requires an active KYC link for the endorsement BEFORE simulate_kyc_approval works.
-    //    (One KYC link per email max — duplicate_record is fine, means it's already pending.)
+    // Sandbox endorsement flow (runs AFTER patch so compliance fields are set):
+    // 1. Create KYC link with endorsements array — puts endorsements in "pending" state.
+    //    One KYC link per email max — duplicate_record just means it's already pending.
     // 2. simulate_kyc_approval approves all pending endorsements.
     if (isSandbox) {
       try {
@@ -114,9 +115,9 @@ export async function POST(req: NextRequest): Promise<Response> {
           full_name:    nombre,
           email:        email.toLowerCase(),
           type:         "individual",
-          endorsements, // e.g. ["base", "sepa"] — array format required by Bridge
+          endorsements, // ["base", "sepa"] or ["base", "spei"] etc.
         });
-      } catch { /* duplicate_record = kyc_link already exists, endorsement already pending */ }
+      } catch { /* duplicate_record = already pending, fine */ }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
     }
 
