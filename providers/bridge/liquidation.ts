@@ -114,8 +114,9 @@ export async function createLiquidationAddress(
   const destination = buildDestination(params);
   return bridgeRequest<LiquidationAddress>(
     "POST",
-    `/customers/${params.customerId}/liquidation_addresses`,
+    "/liquidation_addresses",
     {
+      customer_id: params.customerId,
       currency:    "usdc",
       network:     "polygon",
       destination,
@@ -125,11 +126,10 @@ export async function createLiquidationAddress(
 }
 
 export async function getLiquidationAddress(
-  customerId: string,
   liquidationAddressId: string,
 ): Promise<LiquidationAddress> {
   return bridgeRequest<LiquidationAddress>(
     "GET",
-    `/customers/${customerId}/liquidation_addresses/${liquidationAddressId}`,
+    `/liquidation_addresses/${liquidationAddressId}`,
   );
 }
