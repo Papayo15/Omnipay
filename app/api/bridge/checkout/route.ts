@@ -72,12 +72,22 @@ export async function POST(req: NextRequest): Promise<Response> {
   const country_upper = country.toUpperCase();
 
   try {
+    // ISO alpha-2 → alpha-3 for Bridge customer address defaults
+    const ISO3: Record<string, string> = {
+      MX:"MEX", US:"USA", BR:"BRA", CO:"COL", GB:"GBR", CA:"CAN",
+      DE:"DEU", FR:"FRA", ES:"ESP", IT:"ITA", NL:"NLD", PT:"PRT",
+      BE:"BEL", AT:"AUT", IE:"IRL", FI:"FIN", GR:"GRC", SE:"SWE",
+      DK:"DNK", NO:"NOR", PL:"POL", CZ:"CZE", HU:"HUN", RO:"ROU",
+    };
+    const country_iso3 = ISO3[country_upper] ?? "USA";
+
     // 1. Get or create Bridge customer (KYC)
     const { customer, needsKyc, isNew } = await getOrCreateCustomer({
       type:       "individual",
       email:      email.toLowerCase(),
       first_name: nombre.split(" ")[0],
       last_name:  nombre.split(" ").slice(1).join(" ") || "-",
+      country:    country_iso3,
     });
 
     // 1b. Sandbox: simulate KYC approval instantly via Bridge API (no Persona needed)

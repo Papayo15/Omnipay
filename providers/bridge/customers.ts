@@ -28,58 +28,46 @@ export interface BridgeKycLink {
   expires_at?: string;
 }
 
-// Patch customer with residential address (required by Bridge before liquidation addresses)
+// Patch customer address — uses same `address` field as customer creation.
+// country param is alpha-2 (e.g. "MX"); converted to alpha-3 for Bridge.
 export async function patchCustomerAddress(customerId: string, country: string): Promise<void> {
-  const COUNTRY_DEFAULTS: Record<string, { city: string; subdivision: string; postal_code: string }> = {
-    MX: { city: "Ciudad de Mexico", subdivision: "CDMX",       postal_code: "06600" },
-    US: { city: "New York",         subdivision: "NY",          postal_code: "10001" },
-    BR: { city: "São Paulo",        subdivision: "SP",          postal_code: "01310-100" },
-    CO: { city: "Bogotá",           subdivision: "DC",          postal_code: "110111" },
-    AR: { city: "Buenos Aires",     subdivision: "BA",          postal_code: "C1000" },
-    PE: { city: "Lima",             subdivision: "LM",          postal_code: "15001" },
-    GB: { city: "London",           subdivision: "ENG",         postal_code: "EC1A 1BB" },
-    DE: { city: "Berlin",           subdivision: "BE",          postal_code: "10115" },
-    FR: { city: "Paris",            subdivision: "IDF",         postal_code: "75001" },
-    ES: { city: "Madrid",           subdivision: "MD",          postal_code: "28001" },
-    CA: { city: "Toronto",          subdivision: "ON",          postal_code: "M5H 2N2" },
-    IN: { city: "Mumbai",           subdivision: "MH",          postal_code: "400001" },
+  const ISO3: Record<string, string> = {
+    MX:"MEX", US:"USA", BR:"BRA", CO:"COL", GB:"GBR", CA:"CAN",
+    DE:"DEU", FR:"FRA", ES:"ESP", IT:"ITA", NL:"NLD", PT:"PRT",
+    BE:"BEL", AT:"AUT", IE:"IRL", FI:"FIN", GR:"GRC", CY:"CYP",
+    EE:"EST", LV:"LVA", LT:"LTU", LU:"LUX", MT:"MLT", SK:"SVK",
+    SI:"SVN", HR:"HRV", SE:"SWE", DK:"DNK", NO:"NOR", PL:"POL",
+    CZ:"CZE", HU:"HUN", RO:"ROU", BG:"BGR", CH:"CHE", IS:"ISL",
+    LI:"LIE", AR:"ARG", PE:"PER", IN:"IND",
   };
-  const d = COUNTRY_DEFAULTS[country] ?? { city: "Capital City", subdivision: "NA", postal_code: "00000" };
-  await bridgeRequest("PATCH", `/customers/${customerId}`, {
-    residential_address: {
-      street_line_1: "123 Main Street",
-      city:          d.city,
-      country,
-      postal_code:   d.postal_code,
-      subdivision:   d.subdivision,
-    },
-  });
+  const iso3 = ISO3[country] ?? "USA";
+  const addr = ADDRESS_DEFAULTS[iso3] ?? ADDRESS_DEFAULTS["USA"];
+  await bridgeRequest("PATCH", `/customers/${customerId}`, { address: addr });
 }
 
 // Create a new customer (KYC individual or KYB business)
-// Includes sandbox-safe defaults for required fields Bridge validates
+// Bridge requires `address` at creation time in both sandbox and production.
+// Sandbox additionally requires birth_date, tax_id, phone, signed_agreement_id.
 export async function createCustomer(params: {
   type:           "individual" | "business";
   email:          string;
   first_name?:    string;
   last_name?:     string;
   business_name?: string;
+  country?:       string;  // alpha-3 (e.g. "MEX"), used for address defaults
 }): Promise<BridgeCustomer> {
   const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
-  const body: Record<string, unknown> = { ...params };
+  const { country: _c, ...rest } = params;
+  const body: Record<string, unknown> = { ...rest };
+
+  // Address is always required — Bridge rejects customers without one
+  body.address = ADDRESS_DEFAULTS[params.country ?? "USA"] ?? ADDRESS_DEFAULTS["USA"];
+
   if (isSandbox) {
-    // Sandbox requires these fields for simulate_kyc_approval to work
-    body.address = {
-      street_line_1: "123 Main Street",
-      city:          "San Francisco",
-      state:         "CA",
-      postal_code:   "10001",
-      country:       "USA",
-    };
-    body.birth_date                 = "1990-01-01";
-    body.tax_identification_number  = "111-11-1111";
-    body.phone                      = "+15555555555";
-    body.signed_agreement_id        = crypto.randomUUID();
+    body.birth_date                = "1990-01-01";
+    body.tax_identification_number = "111-11-1111";
+    body.phone                     = "+15555555555";
+    body.signed_agreement_id       = crypto.randomUUID();
   }
   return bridgeRequest<BridgeCustomer>(
     "POST",
@@ -88,6 +76,19 @@ export async function createCustomer(params: {
     `customer-${params.email.toLowerCase()}`,
   );
 }
+
+// Default addresses keyed by ISO alpha-3 country code
+const ADDRESS_DEFAULTS: Record<string, { street_line_1: string; city: string; state: string; postal_code: string; country: string }> = {
+  USA: { street_line_1: "123 Main Street", city: "San Francisco", state: "CA", postal_code: "94102", country: "USA" },
+  MEX: { street_line_1: "123 Main Street", city: "Ciudad de Mexico", state: "CDMX", postal_code: "06600", country: "MEX" },
+  BRA: { street_line_1: "123 Main Street", city: "São Paulo", state: "SP", postal_code: "01310100", country: "BRA" },
+  COL: { street_line_1: "123 Main Street", city: "Bogotá", state: "DC", postal_code: "110111", country: "COL" },
+  GBR: { street_line_1: "123 Main Street", city: "London", state: "ENG", postal_code: "EC1A1BB", country: "GBR" },
+  DEU: { street_line_1: "123 Main Street", city: "Berlin", state: "BE", postal_code: "10115", country: "DEU" },
+  FRA: { street_line_1: "123 Main Street", city: "Paris", state: "IDF", postal_code: "75001", country: "FRA" },
+  ESP: { street_line_1: "123 Main Street", city: "Madrid", state: "MD", postal_code: "28001", country: "ESP" },
+  CAN: { street_line_1: "123 Main Street", city: "Toronto", state: "ON", postal_code: "M5H2N2", country: "CAN" },
+};
 
 // Sandbox only — instantly approves KYC without going through Persona
 export async function simulateKycApproval(customerId: string): Promise<void> {
@@ -121,6 +122,7 @@ export async function getOrCreateCustomer(params: {
   first_name?:    string;
   last_name?:     string;
   business_name?: string;
+  country?:       string;  // alpha-3, passed to createCustomer for address defaults
 }): Promise<{ customer: BridgeCustomer; isNew: boolean; needsKyc: boolean }> {
   const existing = await findCustomerByEmail(params.email);
 
