@@ -155,16 +155,17 @@ export const RAIL_ENDORSEMENT: Record<string, string> = {
   cop:             "cop",
 };
 
-// Create KYC link with endorsement — this creates a pending endorsement that
-// simulate_kyc_approval (sandbox) or real KYC (production) will then approve.
+// Create KYC link with endorsements — Bridge API uses `endorsements` (array).
 // Must be called BEFORE simulate_kyc_approval for sandbox endorsements to work.
+// Always include "base"; add rail-specific endorsement alongside it.
 export async function createKycLink(params: {
-  full_name:    string;
-  email:        string;
-  type:         "individual" | "business";
-  endorsement?: string;  // e.g. "base", "spei", "sepa", "pix", "faster_payments", "cop"
+  full_name:     string;
+  email:         string;
+  type:          "individual" | "business";
+  endorsements?: string[];  // e.g. ["base", "sepa"] — Bridge requires array
 }): Promise<BridgeKycLink> {
-  const idempKey = `kyc-link-${params.email.toLowerCase()}-${params.endorsement ?? "base"}-${Math.floor(Date.now() / 3_600_000)}`;
+  const endStr   = (params.endorsements ?? ["base"]).join("-");
+  const idempKey = `kyc-link-${params.email.toLowerCase()}-${endStr}-${Math.floor(Date.now() / 3_600_000)}`;
   return bridgeRequest<BridgeKycLink>("POST", "/kyc_links", params, idempKey);
 }
 

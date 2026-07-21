@@ -97,21 +97,16 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Idempotent: safe to call even if address already set.
     try { await patchCustomerAddress(customer.id, country_upper); } catch { /* best-effort */ }
 
-    // Sandbox: request endorsement first (creates pending endorsement),
-    // then simulate_kyc_approval approves all pending endorsements.
-    // simulate_kyc_approval alone does NOT grant endorsements — they must be pending first.
+    // Sandbox: create KYC link with endorsements array (Bridge requires array, not string).
+    // This puts the endorsements in "pending" state so simulate_kyc_approval can approve them.
     if (isSandbox) {
-      const rail        = NATIVE_RAILS[country_upper]?.rail ?? "ach";
-      const endorsement = RAIL_ENDORSEMENT[rail] ?? "base";
-      // One kyc_link per email max — request the specific rail endorsement.
-      // Bridge auto-includes base with any rail endorsement.
+      const rail         = NATIVE_RAILS[country_upper]?.rail ?? "ach";
+      const railEndorse  = RAIL_ENDORSEMENT[rail] ?? "base";
+      // Always include base; add rail-specific endorsement alongside it
+      const endorsements = railEndorse === "base" ? ["base"] : ["base", railEndorse];
       try {
-        await createKycLink({ full_name: nombre, email: email.toLowerCase(), type: "individual", endorsement });
-      } catch { /* duplicate_record is fine — endorsement already pending */ }
-      // Also try customer-level kyc_link for existing customers (different endpoint)
-      try {
-        await bridgeRequest("POST", `/customers/${customer.id}/kyc_links`, { endorsement }, `ckyc-${customer.id}-${endorsement}`);
-      } catch { /* may return 401 in sandbox — non-critical */ }
+        await createKycLink({ full_name: nombre, email: email.toLowerCase(), type: "individual", endorsements });
+      } catch { /* duplicate_record is fine — endorsements already pending */ }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
     }
 
