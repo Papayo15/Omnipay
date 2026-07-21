@@ -138,9 +138,6 @@ export async function POST(req: NextRequest): Promise<Response> {
         });
       } catch { /* duplicate_record = already pending, fine */ }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
-      // Bridge processes simulate_kyc_approval asynchronously — wait before
-      // creating external accounts or the endorsement may not be active yet.
-      await new Promise(r => setTimeout(r, 2000));
     }
 
     // 2. KYC gate (production only — sandbox uses simulate_kyc_approval above)
