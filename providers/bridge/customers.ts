@@ -58,7 +58,7 @@ export async function patchCustomerAddress(customerId: string, country: string):
     update.employment_status             = "employed";
     update.expected_monthly_payments_usd = "0_4999";
     update.acting_as_intermediary        = false;
-    update.place_of_birth                = "San Francisco";
+    update.place_of_birth                = { city: "San Francisco", country: "USA" };
     update.documents                     = [{ purposes: ["proof_of_address"], file: FAKE_IMG }];
     if (iso3 !== "USA") {
       update.nationalities = [iso3];
@@ -120,7 +120,7 @@ export async function createCustomer(params: {
     body.employment_status             = "employed";
     body.expected_monthly_payments_usd = "0_4999";
     body.acting_as_intermediary        = false;
-    body.place_of_birth                = "San Francisco";  // fixes place_of_birth_missing issue
+    body.place_of_birth                = { city: "San Francisco", country: "USA" };
 
     // EEA/international customers require nationalities
     if (iso3 !== "USA") {
