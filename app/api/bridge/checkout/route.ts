@@ -153,12 +153,12 @@ export async function POST(req: NextRequest): Promise<Response> {
       share_message:    `OmniPay — Envíame dinero a través de este link: ${payLink}`,
     });
   } catch (e) {
-    const err = e as Error & { type?: string; status?: number };
-    console.error("[bridge/checkout]", err.message, err.type, err.status);
+    const err = e as Error & { type?: string; status?: number; details?: unknown };
+    console.error("[bridge/checkout]", err.message, err.type, err.status, JSON.stringify(err.details));
     return NextResponse.json({
-      error:       err.message,
-      bridge_type: err.type ?? null,
-      step:        "see Vercel logs for details",
+      error:        err.message,
+      bridge_type:  err.type ?? null,
+      bridge_details: err.details ?? null,
     }, { status: err.status ?? 500 });
   }
 }

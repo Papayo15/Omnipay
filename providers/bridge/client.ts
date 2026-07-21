@@ -40,9 +40,15 @@ export async function bridgeRequest<T>(
   if (!res.ok) {
     const msg  = (data?.error as Record<string,string>)?.message
                ?? (data?.message as string)
+               ?? JSON.stringify(data)
                ?? `Bridge ${res.status}`;
-    const type = (data?.error as Record<string,string>)?.type ?? "unknown";
-    throw new BridgeError(msg, type, res.status);
+    const type = (data?.error as Record<string,string>)?.type
+               ?? (data?.code as string)
+               ?? "unknown";
+    const err  = new BridgeError(msg, type, res.status);
+    // Attach full response for debugging
+    (err as BridgeError & { details: unknown }).details = data;
+    throw err;
   }
 
   return data as T;
