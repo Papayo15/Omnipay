@@ -18,9 +18,14 @@ export interface BridgeCustomer {
 }
 
 export interface BridgeKycLink {
-  id:         string;
-  url:        string;
-  expires_at: string;
+  id:          string;
+  url?:        string;        // legacy field
+  kyc_link?:   string;        // Persona verification URL
+  tos_link?:   string;        // TOS acceptance URL
+  kyc_status?: string;
+  tos_status?: string;
+  customer_id?: string;
+  expires_at?: string;
 }
 
 // Create a new customer (KYC individual or KYB business)
@@ -80,10 +85,20 @@ export async function getOrCreateCustomer(params: {
   return { customer, isNew: true, needsKyc: true };
 }
 
-// Get a hosted KYC/KYB link to redirect the user to Bridge's verification UI
+// Create KYC link — per docs: use full_name + email (customer created inside Bridge's KYC flow)
+// Returns kyc_link (Persona) + tos_link + customer_id
+export async function createKycLink(params: {
+  full_name: string;
+  email:     string;
+  type:      "individual" | "business";
+}): Promise<BridgeKycLink> {
+  const idempKey = `kyc-link-${params.email.toLowerCase()}-${Math.floor(Date.now() / 3_600_000)}`;
+  return bridgeRequest<BridgeKycLink>("POST", "/kyc_links", params, idempKey);
+}
+
+// Get existing KYC link for an already-created customer
 export async function getKycLink(customerId: string): Promise<BridgeKycLink> {
-  // Use timestamp in idempotency key so retries don't hit a cached failure
-  const idempKey = `kyc-link-${customerId}-${Math.floor(Date.now() / 3_600_000)}`; // 1h bucket
+  const idempKey = `kyc-link-${customerId}-${Math.floor(Date.now() / 3_600_000)}`;
   return bridgeRequest<BridgeKycLink>(
     "POST",
     `/customers/${customerId}/kyc_links`,

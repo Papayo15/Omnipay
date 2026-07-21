@@ -121,7 +121,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (needsKyc) {
       try {
         const kycLink = await getKycLink(senderCustomer.id);
-        kycUrl = kycLink.url;
+        kycUrl = kycLink.url ?? kycLink.kyc_link ?? null;
       } catch { /* non-critical */ }
     }
 
