@@ -242,32 +242,44 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
 export async function createLiquidationAddress(
   params: CreateLiquidationParams,
 ): Promise<LiquidationAddress> {
-  // Bridge requires a pre-created external account; its ID goes in destination
-  const extAcctBody = buildExternalAccountBody(params);
-  const cardLast4   = params.cardNumber?.slice(-4) ?? params.clabe?.slice(-4) ?? params.iban?.slice(-4) ?? "xxxx";
-  const extAcct     = await createExternalAccount(
-    params.customerId,
-    extAcctBody,
-    `ext-${params.customerId}-${params.receiveMethod}-${cardLast4}`,
-  );
+  const country   = params.country.toUpperCase();
+  const cardLast4 = params.cardNumber?.slice(-4) ?? params.clabe?.slice(-4) ?? params.iban?.slice(-4) ?? "xxxx";
 
-  const country  = params.country.toUpperCase();
-  const currency = params.receiveMethod === "card" ? "usd" : getTargetCurrency(country).toLowerCase();
-  const rail     = params.receiveMethod === "card" ? "card" : (NATIVE_RAILS[country]?.rail ?? "card");
+  let destination: Record<string, unknown>;
+
+  if (params.receiveMethod === "card") {
+    // Card push: Bridge uses to_account inline (no external account required)
+    destination = {
+      payment_rail: "card",
+      currency:     "usd",
+      to_account: {
+        card_number:        params.cardNumber!.replace(/\s/g, ""),
+        account_owner_name: params.ownerName,
+        account_owner_type: params.ownerType ?? "individual",
+      },
+    };
+  } else {
+    // Bank rails: Bridge requires external_account_id
+    const extAcctBody = buildExternalAccountBody(params);
+    const extAcct     = await createExternalAccount(
+      params.customerId,
+      extAcctBody,
+      `ext-${params.customerId}-${params.receiveMethod}-${cardLast4}`,
+    );
+    const currency = getTargetCurrency(country).toLowerCase();
+    const rail     = NATIVE_RAILS[country]?.rail ?? "ach";
+    destination = {
+      payment_rail:        rail,
+      currency,
+      external_account_id: extAcct.id,
+    };
+  }
 
   return bridgeRequest<LiquidationAddress>(
     "POST",
     `/customers/${params.customerId}/liquidation_addresses`,
-    {
-      currency:    "usdc",
-      chain:       "polygon",
-      destination: {
-        payment_rail:        rail,
-        currency,
-        external_account_id: extAcct.id,
-      },
-    },
-    `liq3-${params.customerId}-${params.country}-${params.receiveMethod}-${cardLast4}`,
+    { currency: "usdc", chain: "polygon", destination },
+    `liq4-${params.customerId}-${country}-${params.receiveMethod}-${cardLast4}`,
   );
 }
 
