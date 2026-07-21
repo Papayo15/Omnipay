@@ -285,9 +285,9 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
 }
 
 // Creates (or retrieves existing) external account for the customer.
-// Must be called BEFORE simulate_kyc_approval for rails that require
-// account_processing (e.g. SPEI, PIX, FPS, COP) — Bridge puts them in
-// "missing" state until an external account exists.
+// Called after simulate_kyc_approval to activate payout_fiat before
+// createLiquidationAddress runs. Uses "pre-ext-" key prefix so it doesn't
+// collide with the "ext-" key used inside createLiquidationAddress.
 export async function ensureExternalAccount(params: CreateLiquidationParams): Promise<string> {
   const country   = params.country.toUpperCase();
   const identKey  = params.clabe?.slice(-4)
@@ -300,7 +300,7 @@ export async function ensureExternalAccount(params: CreateLiquidationParams): Pr
     const extAcct = await createExternalAccount(
       params.customerId,
       extAcctBody,
-      `ext-${params.customerId}-${country}-${identKey}`,
+      `pre-ext-${params.customerId}-${country}-${identKey}`,
     );
     if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
     return extAcct.id;

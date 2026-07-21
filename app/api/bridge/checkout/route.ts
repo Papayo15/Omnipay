@@ -13,7 +13,7 @@
 
 import { NextRequest, NextResponse }       from "next/server";
 import { getOrCreateCustomer, getKycLink, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, simulateKycApproval, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
-import { createLiquidationAddress, NATIVE_RAILS } from "@/providers/bridge/liquidation";
+import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
 import { getTargetCurrency }               from "@/lib/routing";
@@ -138,6 +138,14 @@ export async function POST(req: NextRequest): Promise<Response> {
         });
       } catch { /* duplicate_record = already pending, fine */ }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
+    }
+
+    // After simulate, create the external account so payout_fiat becomes active.
+    // This is required before createLiquidationAddress — Bridge blocks liq addr creation
+    // when payout_fiat:pending. Uses a separate idempotency key prefix ("pre-ext-")
+    // so createLiquidationAddress can still find/reuse it via duplicate_external_account.
+    if (receive_method === "bank") {
+      try { await ensureExternalAccount(liqParams); } catch { /* best-effort */ }
     }
 
     // 2. KYC gate (production only — sandbox uses simulate_kyc_approval above)
