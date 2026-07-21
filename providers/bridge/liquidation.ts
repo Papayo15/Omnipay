@@ -120,6 +120,8 @@ function getAddress(country: string) {
   return COUNTRY_ADDRESSES[country] ?? { street: "123 Main Street", city: "Capital City", state: "NA", postal_code: "00000" };
 }
 
+// Build external account body per Bridge docs:
+// https://apidocs.bridge.xyz/platform/orchestration/external-accounts
 function buildExternalAccountBody(params: CreateLiquidationParams): Record<string, unknown> {
   const country  = params.country.toUpperCase();
   const currency = getTargetCurrency(country).toLowerCase();
@@ -131,37 +133,110 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
     postal_code:   addr.postal_code,
     country:       ISO3[country] ?? country,
   };
+  const nameParts = params.ownerName.trim().split(" ");
+  const firstName = nameParts[0];
+  const lastName  = nameParts.slice(1).join(" ") || "-";
+  const base = {
+    account_owner_name: params.ownerName,
+    account_owner_type: params.ownerType ?? "individual",
+    first_name:         firstName,
+    last_name:          lastName,
+    address,
+  };
 
   if (params.receiveMethod === "card") {
+    // Debit/prepaid card push — account_type "card" (undocumented, best guess)
     return {
-      type:               "card",
-      account_number:     params.cardNumber!.replace(/\s/g, ""),
-      account_owner_name: params.ownerName,
-      account_owner_type: params.ownerType ?? "individual",
-      address,
+      ...base,
+      currency:     "usd",
+      account_type: "card",
+      account: { account_number: params.cardNumber!.replace(/\s/g, "") },
     };
   }
 
   const native = NATIVE_RAILS[country];
   if (!native) throw new Error(`No native rail for country ${country}. Use card instead.`);
 
-  const body: Record<string, unknown> = {
-    type:               "bank",
-    account_owner_name: params.ownerName,
-    account_owner_type: params.ownerType ?? "individual",
-    address,
-  };
+  // Bank rails — per Bridge external accounts docs
+  if (native.rail === "spei") {
+    return {
+      ...base,
+      currency:     "mxn",
+      account_type: "clabe",
+      clabe:        { account_number: params.clabe! },
+    };
+  }
+  if (native.rail === "ach") {
+    return {
+      ...base,
+      currency:     "usd",
+      account_type: "us",
+      account: {
+        routing_number:      params.routingNumber!,
+        account_number:      params.accountNumber!,
+        checking_or_savings: "checking",
+      },
+    };
+  }
+  if (native.rail === "sepa") {
+    return {
+      ...base,
+      currency:     "eur",
+      account_type: "iban",
+      iban: {
+        account_number: params.iban!,
+        country:        ISO3[country] ?? country,
+      },
+    };
+  }
+  if (native.rail === "fps") {
+    return {
+      ...base,
+      currency:     "gbp",
+      account_type: "gb",
+      account: {
+        sort_code:      params.sortCode!,
+        account_number: params.accountNumber!,
+      },
+    };
+  }
+  if (native.rail === "pix") {
+    return {
+      ...base,
+      currency:     "brl",
+      account_type: "pix",
+      pix_key: { pix_key: params.pixKey! },
+    };
+  }
+  if (native.rail === "eft") {
+    return {
+      ...base,
+      currency:     "cad",
+      account_type: "ca",
+      account: {
+        transit_number: params.transitNumber!,
+        account_number: params.accountNumber!,
+      },
+    };
+  }
+  if (native.rail === "imps") {
+    return {
+      ...base,
+      currency:     "inr",
+      account_type: "imps",
+      account: { ifsc: params.ifsc!, account_number: params.accountNumber! },
+    };
+  }
+  if (native.rail === "instapay") {
+    return {
+      ...base,
+      currency:     "php",
+      account_type: "instapay",
+      account: { account_number: params.accountNumber! },
+    };
+  }
 
-  if (native.rail === "spei")     { body.bank_account_type = "clabe"; body.clabe = params.clabe!; }
-  if (native.rail === "sepa")     { body.iban = params.iban!; }
-  if (native.rail === "pix")      { body.pix_key = params.pixKey!; }
-  if (native.rail === "ach")      { body.routing_number = params.routingNumber!; body.account_number = params.accountNumber!; }
-  if (native.rail === "fps")      { body.sort_code = params.sortCode!; body.account_number = params.accountNumber!; }
-  if (native.rail === "eft")      { body.transit_number = params.transitNumber!; body.account_number = params.accountNumber!; }
-  if (native.rail === "imps")     { body.ifsc = params.ifsc!; body.account_number = params.accountNumber!; }
-  if (native.rail === "instapay") { body.account_number = params.accountNumber!; }
-
-  return body;
+  throw new Error(`Unsupported rail: ${native.rail}`);
 }
 
 export async function createLiquidationAddress(

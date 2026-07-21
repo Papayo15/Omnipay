@@ -57,6 +57,7 @@ export async function patchCustomerAddress(customerId: string, country: string):
 }
 
 // Create a new customer (KYC individual or KYB business)
+// Includes sandbox-safe defaults for required fields Bridge validates
 export async function createCustomer(params: {
   type:           "individual" | "business";
   email:          string;
@@ -64,12 +65,33 @@ export async function createCustomer(params: {
   last_name?:     string;
   business_name?: string;
 }): Promise<BridgeCustomer> {
+  const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
+  const body: Record<string, unknown> = { ...params };
+  if (isSandbox) {
+    // Sandbox requires these fields for simulate_kyc_approval to work
+    body.address = {
+      street_line_1: "123 Main Street",
+      city:          "San Francisco",
+      state:         "CA",
+      postal_code:   "10001",
+      country:       "USA",
+    };
+    body.birth_date                 = "1990-01-01";
+    body.tax_identification_number  = "111-11-1111";
+    body.phone                      = "+15555555555";
+    body.signed_agreement_id        = crypto.randomUUID();
+  }
   return bridgeRequest<BridgeCustomer>(
     "POST",
     "/customers",
-    params,
+    body,
     `customer-${params.email.toLowerCase()}`,
   );
+}
+
+// Sandbox only — instantly approves KYC without going through Persona
+export async function simulateKycApproval(customerId: string): Promise<void> {
+  await bridgeRequest("POST", `/customers/${customerId}/simulate_kyc_approval`);
 }
 
 // Find existing customer by email — returns null if not found or any error

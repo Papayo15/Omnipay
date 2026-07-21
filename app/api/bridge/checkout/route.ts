@@ -12,7 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, createKycLink, getKycLink, getKycUrlFromCustomer, patchCustomerAddress } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, createKycLink, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, simulateKycApproval } from "@/providers/bridge/customers";
 import { createLiquidationAddress, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -78,15 +78,18 @@ export async function POST(req: NextRequest): Promise<Response> {
       last_name:  nombre.split(" ").slice(1).join(" ") || "-",
     });
 
-    // 1b. Ensure customer has address data (required by Bridge for liquidation addresses)
-    if (isNew) {
+    // 1b. Sandbox: simulate KYC approval instantly via Bridge API (no Persona needed)
+    //     Production: patch address if new customer
+    const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
+    if (isSandbox && needsKyc) {
+      try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
+    } else if (isNew) {
       try { await patchCustomerAddress(customer.id, country_upper); } catch { /* non-critical */ }
     }
 
-    // 2. KYC gate — Bridge requires approved customer before creating liquidation address
+    // 2. KYC gate (production only — sandbox uses simulate_kyc_approval above)
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
-    if (needsKyc && !skipKyc) {
-      // Per Bridge docs: POST /kyc_links with full_name+email is the canonical flow
+    if (needsKyc && !skipKyc && !isSandbox) {
       let kycUrl: string | null = getKycUrlFromCustomer(customer);
       if (!kycUrl) {
         try {
@@ -98,7 +101,6 @@ export async function POST(req: NextRequest): Promise<Response> {
           kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
         } catch (e1) {
           const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
-          // Bridge returns the existing KYC link in error details for duplicate_record
           if (err1.type === "duplicate_record") {
             const existing = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
             kycUrl = existing?.kyc_link ?? existing?.url ?? null;
