@@ -331,21 +331,34 @@ export async function createLiquidationAddress(
   // Bank rails: create external account first, then reference it by ID.
   // Bridge returns duplicate_external_account (with the existing id in details)
   // when the same account info has been registered before — we reuse that id.
+  // simulate_kyc_approval is async on Bridge's side — if endorsement isn't active
+  // yet, retry once after 4s (same idempotency key per Bridge docs).
+  const extAcctKey  = `ext-${params.customerId}-${country}-${identKey}`;
   const extAcctBody = buildExternalAccountBody(params);
   let extAcctId: string;
+
+  async function tryCreateExtAcct(): Promise<string> {
+    try {
+      const extAcct = await createExternalAccount(params.customerId, extAcctBody, extAcctKey);
+      if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
+      return extAcct.id;
+    } catch (e) {
+      const bridgeErr = e as Error & { type?: string; details?: Record<string, unknown> };
+      if (bridgeErr.type === "duplicate_external_account" && bridgeErr.details?.id) {
+        return bridgeErr.details.id as string;
+      }
+      throw e;
+    }
+  }
+
   try {
-    const extAcct = await createExternalAccount(
-      params.customerId,
-      extAcctBody,
-      `ext-${params.customerId}-${country}-${identKey}`,
-    );
-    if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
-    extAcctId = extAcct.id;
+    extAcctId = await tryCreateExtAcct();
   } catch (e) {
-    const bridgeErr = e as Error & { type?: string; details?: Record<string, unknown> };
-    // Bridge includes the existing account's id in the duplicate error — reuse it
-    if (bridgeErr.type === "duplicate_external_account" && bridgeErr.details?.id) {
-      extAcctId = bridgeErr.details.id as string;
+    const bridgeErr = e as Error & { type?: string };
+    if (bridgeErr.type === "missing_required_endorsements") {
+      // Endorsement approval may not have propagated yet — wait and retry
+      await new Promise(r => setTimeout(r, 4000));
+      extAcctId = await tryCreateExtAcct();
     } else {
       throw e;
     }
