@@ -120,7 +120,7 @@ export async function createLiquidationAddress(
       chain:       "polygon",
       destination,
     },
-    `liq-${params.customerId}-${params.country}-${params.receiveMethod}`,
+    `liq2-${params.customerId}-${params.country}-${params.receiveMethod}`,
   );
 }
 
