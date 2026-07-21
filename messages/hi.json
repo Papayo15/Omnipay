@@ -315,12 +315,14 @@
     "amount_receive_label": "आप कितना प्राप्त करना चाहते हैं?",
     "fee_bridge_conversion": "Bridge (fiat → USDC → fiat रूपांतरण)",
     "fee_kyc_first": "KYC पहचान सत्यापन (पहली बार)",
-    "fee_total_to_send": "प्रेषक को आपको भेजना होगा",
+    "fee_total_to_send": "प्रेषक भुगतान करता है (USD संदर्भ)",
     "fee_approx_note": "अनुमानित · सटीक दर भुगतान के समय Bridge द्वारा निर्धारित",
     "share_message_cobrar": "{name} को {amount} {currency} प्राप्त करना है। प्रेषक को {sender_amount} USD भेजना होगा। यहां भुगतान करें: {link}",
     "share_sender_must_send": "प्रेषक को आपको भेजना होगा",
     "kyc_pending_title": "सत्यापन लंबित",
     "kyc_pending_body": "और संग्रह सक्रिय करने के लिए KYC सत्यापन पूरा करें।",
-    "kyc_complete_link": "KYC सत्यापन पूरा करें →"
+    "kyc_complete_link": "KYC सत्यापन पूरा करें →",
+    "sender_ref_usd": "~${amount} USD संदर्भ",
+    "fee_sender_sees_own_currency": "प्रेषक लिंक खोलने पर अपनी मुद्रा में सटीक राशि देखेगा"
   }
 }

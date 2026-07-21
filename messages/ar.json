@@ -315,12 +315,14 @@
     "amount_receive_label": "كم تريد أن تستلم؟",
     "fee_bridge_conversion": "Bridge (تحويل fiat → USDC → fiat)",
     "fee_kyc_first": "التحقق من الهوية KYC (المرة الأولى)",
-    "fee_total_to_send": "المُرسِل يجب أن يرسل لك",
+    "fee_total_to_send": "المُرسِل يدفع (مرجع USD)",
     "fee_approx_note": "تقديري · السعر الدقيق يحدده Bridge وقت الدفع",
     "share_message_cobrar": "{name} يريد استلام {amount} {currency}. المُرسِل يحتاج إرسال {sender_amount} USD. ادفع هنا: {link}",
     "share_sender_must_send": "المُرسِل يجب أن يرسل لك",
     "kyc_pending_title": "التحقق معلق",
     "kyc_pending_body": "أكمل التحقق من هويتك (KYC) لتفعيل التحصيل.",
-    "kyc_complete_link": "إكمال التحقق KYC →"
+    "kyc_complete_link": "إكمال التحقق KYC →",
+    "sender_ref_usd": "~${amount} USD مرجعي",
+    "fee_sender_sees_own_currency": "سيرى المُرسِل المبلغ الدقيق بعملته عند فتح الرابط"
   }
 }

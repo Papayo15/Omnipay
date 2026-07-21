@@ -315,12 +315,14 @@
     "amount_receive_label": "How much do you want to receive?",
     "fee_bridge_conversion": "Bridge (fiat → USDC → fiat conversion)",
     "fee_kyc_first": "KYC identity verification (first time)",
-    "fee_total_to_send": "The sender must send you",
+    "fee_total_to_send": "Sender pays (USD ref.)",
     "fee_approx_note": "Estimated · exact rate set by Bridge at payment time",
     "share_message_cobrar": "{name} wants to receive {amount} {currency}. The sender needs to send {sender_amount} USD. Pay here: {link}",
     "share_sender_must_send": "The sender needs to send you",
     "kyc_pending_title": "Verification pending",
     "kyc_pending_body": "Complete your identity verification (KYC) to activate collections. Only done once.",
-    "kyc_complete_link": "Complete KYC verification →"
+    "kyc_complete_link": "Complete KYC verification →",
+    "sender_ref_usd": "~${amount} USD reference",
+    "fee_sender_sees_own_currency": "The sender will see the exact amount in their currency when they open the link"
   }
 }

@@ -315,12 +315,14 @@
     "amount_receive_label": "Quanto você quer receber?",
     "fee_bridge_conversion": "Bridge (conversão fiat → USDC → fiat)",
     "fee_kyc_first": "Verificação KYC (primeira vez)",
-    "fee_total_to_send": "O remetente deve te enviar",
+    "fee_total_to_send": "Remetente paga (ref. USD)",
     "fee_approx_note": "Estimado · taxa exata definida pelo Bridge no momento do pagamento",
     "share_message_cobrar": "{name} quer receber {amount} {currency}. O remetente precisa enviar {sender_amount} USD. Pague aqui: {link}",
     "share_sender_must_send": "O remetente precisa te enviar",
     "kyc_pending_title": "Verificação pendente",
     "kyc_pending_body": "Complete sua verificação de identidade (KYC) para ativar os recebimentos.",
-    "kyc_complete_link": "Completar verificação KYC →"
+    "kyc_complete_link": "Completar verificação KYC →",
+    "sender_ref_usd": "~${amount} USD referência",
+    "fee_sender_sees_own_currency": "O remetente verá o valor exato na sua moeda ao abrir o link"
   }
 }

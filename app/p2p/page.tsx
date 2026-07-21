@@ -263,8 +263,8 @@ export default function P2PPage() {
             <p className="text-slate-400 text-xs mb-1">{nombre}</p>
             <p className="text-white font-bold text-2xl">{parseFloat(amountLocal).toLocaleString()} {currency}</p>
             {senderAmt && (
-              <p className="text-emerald-400 text-sm mt-1">
-                {t("share_sender_must_send")}: <span className="font-bold">${senderAmt} USD</span>
+              <p className="text-slate-500 text-xs mt-2">
+                {t("sender_ref_usd", { amount: senderAmt })}
               </p>
             )}
             <p className="text-slate-600 text-xs mt-1">Bridge · Sin base de datos</p>
@@ -570,6 +570,7 @@ export default function P2PPage() {
                   <span className="text-white">{t("fee_total_to_send")}</span>
                   <span className="text-emerald-400">${quote.total_sender_pays.toFixed(2)} USD</span>
                 </div>
+                <p className="text-[10px] text-slate-500 text-center mt-1">{t("fee_sender_sees_own_currency")}</p>
                 <p className="text-[10px] text-slate-600 text-center mt-1">{t("fee_approx_note")}</p>
               </>
             ) : null}

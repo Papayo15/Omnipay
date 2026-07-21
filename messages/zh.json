@@ -315,12 +315,14 @@
     "amount_receive_label": "您想收多少錢？",
     "fee_bridge_conversion": "Bridge（法币→USDC→法币转换）",
     "fee_kyc_first": "KYC身份验证（首次）",
-    "fee_total_to_send": "发款人需要向您发送",
+    "fee_total_to_send": "发款人支付（USD参考）",
     "fee_approx_note": "估算 · 精确汇率由Bridge在付款时确定",
     "share_message_cobrar": "{name}想收到{amount} {currency}。发款人需要发送{sender_amount} USD。在此付款：{link}",
     "share_sender_must_send": "发款人需要向您发送",
     "kyc_pending_title": "验证待处理",
     "kyc_pending_body": "完成身份验证(KYC)以激活收款功能。",
-    "kyc_complete_link": "完成KYC验证 →"
+    "kyc_complete_link": "完成KYC验证 →",
+    "sender_ref_usd": "~${amount} USD 参考",
+    "fee_sender_sees_own_currency": "发款人打开链接时将看到其货币的精确金额"
   }
 }

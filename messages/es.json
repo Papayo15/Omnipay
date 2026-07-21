@@ -295,10 +295,12 @@
     "fee_platform": "OmniPay servicio (1.25%)",
     "fee_network": "Fee fijo",
     "fee_kyc_first": "KYC verificación de identidad (primera vez)",
-    "fee_total_to_send": "El emisor debe enviarte",
+    "fee_total_to_send": "El emisor paga (ref. USD)",
     "fee_approx_note": "Estimado · tasa exacta la fija Bridge al momento del pago",
     "fee_loading": "Calculando…",
     "card_or_bank": "¿Cómo quieres recibir el dinero?",
-    "error_card_unavailable": "Tarjeta no disponible para este país. Usa cuenta bancaria."
+    "error_card_unavailable": "Tarjeta no disponible para este país. Usa cuenta bancaria.",
+    "sender_ref_usd": "~${amount} USD de referencia",
+    "fee_sender_sees_own_currency": "El emisor verá el monto exacto en su moneda al abrir el link"
   }
 }
