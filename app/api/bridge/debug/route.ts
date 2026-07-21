@@ -64,6 +64,17 @@ export async function POST(req: NextRequest): Promise<Response> {
       return NextResponse.json({ action: "list_external_accounts", customer_id: customer.id, result });
     }
 
+    if (action === "create_liquidation_address") {
+      const payload = body.payload ?? {};
+      const result = await bridgeRequest<unknown>(
+        "POST",
+        `/customers/${customer.id}/liquidation_addresses`,
+        payload,
+        `debug-liq-${customer.id}-${Date.now()}`,
+      );
+      return NextResponse.json({ action: "create_liquidation_address", customer_id: customer.id, result });
+    }
+
     return NextResponse.json({ error: `unknown action: ${action}` }, { status: 400 });
   } catch (e) {
     const err = e as Error & { type?: string; details?: unknown };
