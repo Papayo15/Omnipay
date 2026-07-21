@@ -325,7 +325,7 @@ export async function createLiquidationAddress(
     "POST",
     `/customers/${params.customerId}/liquidation_addresses`,
     { currency: "usdc", chain: "polygon", destination },
-    `liq5-${params.customerId}-${country}-${identKey}`,
+    `liq6-${params.customerId}-${country}-${identKey}`,
   );
 }
 
