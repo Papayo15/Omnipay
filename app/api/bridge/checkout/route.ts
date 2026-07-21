@@ -88,8 +88,6 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (needsKyc && !skipKyc) {
       // Per Bridge docs: POST /kyc_links with full_name+email is the canonical flow
       let kycUrl: string | null = getKycUrlFromCustomer(customer);
-      const kycDebug: string[] = [`tos_link_from_customer: ${kycUrl ?? "null"}`];
-
       if (!kycUrl) {
         try {
           const kycLink = await createKycLink({
@@ -97,18 +95,13 @@ export async function POST(req: NextRequest): Promise<Response> {
             email:     email.toLowerCase(),
             type:      "individual",
           });
-          kycDebug.push(`createKycLink ok: ${JSON.stringify(kycLink)}`);
           kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
         } catch (e1) {
-          const err1 = e1 as Error & { type?: string; details?: unknown };
-          kycDebug.push(`createKycLink error: ${err1.message} | type: ${err1.type} | details: ${JSON.stringify(err1.details)}`);
-          try {
-            const kycLink = await getKycLink(customer.id);
-            kycDebug.push(`getKycLink ok: ${JSON.stringify(kycLink)}`);
-            kycUrl = kycLink.url ?? kycLink.kyc_link ?? null;
-          } catch (e2) {
-            const err2 = e2 as Error & { type?: string; details?: unknown };
-            kycDebug.push(`getKycLink error: ${err2.message} | type: ${err2.type} | details: ${JSON.stringify(err2.details)}`);
+          const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
+          // Bridge returns the existing KYC link in error details for duplicate_record
+          if (err1.type === "duplicate_record") {
+            const existing = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
+            kycUrl = existing?.kyc_link ?? existing?.url ?? null;
           }
         }
       }
@@ -116,9 +109,6 @@ export async function POST(req: NextRequest): Promise<Response> {
         needs_kyc:   true,
         kyc_url:     kycUrl,
         customer_id: customer.id,
-        customer_status: customer.status,
-        customer_kyc_status: customer.kyc_status,
-        kyc_debug:   kycDebug,
         message:     "Complete KYC verification first, then generate your payment link again.",
       }, { status: 202 });
     }
