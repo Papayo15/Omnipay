@@ -103,9 +103,20 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Idempotent: safe to call even if address already set.
     try { await patchCustomerAddress(customer.id, country_upper); } catch { /* best-effort */ }
 
-    // Sandbox: simulate KYC approval so endorsements get approved.
-    // Endorsements are put in "pending" state at customer creation time (see below).
+    // Sandbox endorsement flow:
+    // 1. Create KYC link with endorsements array — this puts the endorsement in "pending" state.
+    //    Bridge requires an active KYC link for the endorsement BEFORE simulate_kyc_approval works.
+    //    (One KYC link per email max — duplicate_record is fine, means it's already pending.)
+    // 2. simulate_kyc_approval approves all pending endorsements.
     if (isSandbox) {
+      try {
+        await createKycLink({
+          full_name:    nombre,
+          email:        email.toLowerCase(),
+          type:         "individual",
+          endorsements, // e.g. ["base", "sepa"] — array format required by Bridge
+        });
+      } catch { /* duplicate_record = kyc_link already exists, endorsement already pending */ }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
     }
 
