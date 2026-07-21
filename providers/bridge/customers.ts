@@ -28,6 +28,34 @@ export interface BridgeKycLink {
   expires_at?: string;
 }
 
+// Patch customer with residential address (required by Bridge before liquidation addresses)
+export async function patchCustomerAddress(customerId: string, country: string): Promise<void> {
+  const COUNTRY_DEFAULTS: Record<string, { city: string; subdivision: string; postal_code: string }> = {
+    MX: { city: "Ciudad de Mexico", subdivision: "CDMX",       postal_code: "06600" },
+    US: { city: "New York",         subdivision: "NY",          postal_code: "10001" },
+    BR: { city: "São Paulo",        subdivision: "SP",          postal_code: "01310-100" },
+    CO: { city: "Bogotá",           subdivision: "DC",          postal_code: "110111" },
+    AR: { city: "Buenos Aires",     subdivision: "BA",          postal_code: "C1000" },
+    PE: { city: "Lima",             subdivision: "LM",          postal_code: "15001" },
+    GB: { city: "London",           subdivision: "ENG",         postal_code: "EC1A 1BB" },
+    DE: { city: "Berlin",           subdivision: "BE",          postal_code: "10115" },
+    FR: { city: "Paris",            subdivision: "IDF",         postal_code: "75001" },
+    ES: { city: "Madrid",           subdivision: "MD",          postal_code: "28001" },
+    CA: { city: "Toronto",          subdivision: "ON",          postal_code: "M5H 2N2" },
+    IN: { city: "Mumbai",           subdivision: "MH",          postal_code: "400001" },
+  };
+  const d = COUNTRY_DEFAULTS[country] ?? { city: "Capital City", subdivision: "NA", postal_code: "00000" };
+  await bridgeRequest("PATCH", `/customers/${customerId}`, {
+    residential_address: {
+      street_line_1: "123 Main Street",
+      city:          d.city,
+      country,
+      postal_code:   d.postal_code,
+      subdivision:   d.subdivision,
+    },
+  });
+}
+
 // Create a new customer (KYC individual or KYB business)
 export async function createCustomer(params: {
   type:           "individual" | "business";

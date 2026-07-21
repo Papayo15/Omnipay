@@ -12,7 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, createKycLink, getKycLink, getKycUrlFromCustomer } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, createKycLink, getKycLink, getKycUrlFromCustomer, patchCustomerAddress } from "@/providers/bridge/customers";
 import { createLiquidationAddress, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -71,12 +71,17 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   try {
     // 1. Get or create Bridge customer (KYC)
-    const { customer, needsKyc } = await getOrCreateCustomer({
+    const { customer, needsKyc, isNew } = await getOrCreateCustomer({
       type:       "individual",
       email:      email.toLowerCase(),
       first_name: nombre.split(" ")[0],
       last_name:  nombre.split(" ").slice(1).join(" ") || "-",
     });
+
+    // 1b. Ensure customer has address data (required by Bridge for liquidation addresses)
+    if (isNew) {
+      try { await patchCustomerAddress(customer.id, country_upper); } catch { /* non-critical */ }
+    }
 
     // 2. KYC gate — Bridge requires approved customer before creating liquidation address
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
