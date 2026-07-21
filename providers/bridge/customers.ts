@@ -28,7 +28,7 @@ export interface BridgeKycLink {
   expires_at?: string;
 }
 
-// Patch customer address — uses same `address` field as customer creation.
+// Update customer address via PUT (Bridge docs: PUT not PATCH).
 // country param is alpha-2 (e.g. "MX"); converted to alpha-3 for Bridge.
 export async function patchCustomerAddress(customerId: string, country: string): Promise<void> {
   const ISO3: Record<string, string> = {
@@ -42,11 +42,12 @@ export async function patchCustomerAddress(customerId: string, country: string):
   };
   const iso3 = ISO3[country] ?? "USA";
   const addr = ADDRESS_DEFAULTS[iso3] ?? ADDRESS_DEFAULTS["USA"];
-  await bridgeRequest("PATCH", `/customers/${customerId}`, { address: addr });
+  // Bridge uses PUT (not PATCH) and field is `residential_address` for individuals
+  await bridgeRequest("PUT", `/customers/${customerId}`, { residential_address: addr });
 }
 
 // Create a new customer (KYC individual or KYB business)
-// Bridge requires `address` at creation time in both sandbox and production.
+// Bridge requires `residential_address` (individual) at creation time.
 // Sandbox additionally requires birth_date, tax_id, phone, signed_agreement_id.
 export async function createCustomer(params: {
   type:           "individual" | "business";
@@ -60,8 +61,8 @@ export async function createCustomer(params: {
   const { country: _c, ...rest } = params;
   const body: Record<string, unknown> = { ...rest };
 
-  // Address is always required — Bridge rejects customers without one
-  body.address = ADDRESS_DEFAULTS[params.country ?? "USA"] ?? ADDRESS_DEFAULTS["USA"];
+  // Bridge requires `residential_address` (alpha-3 country) for individual customers
+  body.residential_address = ADDRESS_DEFAULTS[params.country ?? "USA"] ?? ADDRESS_DEFAULTS["USA"];
 
   if (isSandbox) {
     body.birth_date                = "1990-01-01";
