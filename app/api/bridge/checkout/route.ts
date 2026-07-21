@@ -12,6 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
+import { bridgeRequest }                   from "@/providers/bridge/client";
 import { getOrCreateCustomer, createKycLink, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, simulateKycApproval, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
 import { createLiquidationAddress, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
@@ -102,15 +103,15 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (isSandbox) {
       const rail        = NATIVE_RAILS[country_upper]?.rail ?? "ach";
       const endorsement = RAIL_ENDORSEMENT[rail] ?? "base";
-      // Also always request base endorsement (required for all USD transfers)
+      // One kyc_link per email max — request the specific rail endorsement.
+      // Bridge auto-includes base with any rail endorsement.
       try {
-        await createKycLink({ full_name: nombre, email: email.toLowerCase(), type: "individual", endorsement: "base" });
-      } catch { /* may already exist */ }
-      if (endorsement !== "base") {
-        try {
-          await createKycLink({ full_name: nombre, email: email.toLowerCase(), type: "individual", endorsement });
-        } catch { /* may already exist */ }
-      }
+        await createKycLink({ full_name: nombre, email: email.toLowerCase(), type: "individual", endorsement });
+      } catch { /* duplicate_record is fine — endorsement already pending */ }
+      // Also try customer-level kyc_link for existing customers (different endpoint)
+      try {
+        await bridgeRequest("POST", `/customers/${customer.id}/kyc_links`, { endorsement }, `ckyc-${customer.id}-${endorsement}`);
+      } catch { /* may return 401 in sandbox — non-critical */ }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
     }
 
