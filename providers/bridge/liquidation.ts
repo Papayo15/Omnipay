@@ -117,7 +117,7 @@ export async function createLiquidationAddress(
     `/customers/${params.customerId}/liquidation_addresses`,
     {
       currency:    "usdc",
-      network:     "polygon",
+      chain:       "polygon",
       destination,
     },
     `liq-${params.customerId}-${params.country}-${params.receiveMethod}`,
