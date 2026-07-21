@@ -280,6 +280,35 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
   throw new Error(`Unsupported rail: ${native.rail}`);
 }
 
+// Creates (or retrieves existing) external account for the customer.
+// Must be called BEFORE simulate_kyc_approval for rails that require
+// account_processing (e.g. SPEI, PIX, FPS, COP) — Bridge puts them in
+// "missing" state until an external account exists.
+export async function ensureExternalAccount(params: CreateLiquidationParams): Promise<string> {
+  const country   = params.country.toUpperCase();
+  const identKey  = params.clabe?.slice(-4)
+    ?? params.iban?.slice(-4)
+    ?? params.pixKey?.slice(-4)
+    ?? params.accountNumber?.slice(-4)
+    ?? "xxxx";
+  const extAcctBody = buildExternalAccountBody(params);
+  try {
+    const extAcct = await createExternalAccount(
+      params.customerId,
+      extAcctBody,
+      `ext-${params.customerId}-${country}-${identKey}`,
+    );
+    if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
+    return extAcct.id;
+  } catch (e) {
+    const bridgeErr = e as Error & { type?: string; details?: Record<string, unknown> };
+    if (bridgeErr.type === "duplicate_external_account" && bridgeErr.details?.id) {
+      return bridgeErr.details.id as string;
+    }
+    throw e;
+  }
+}
+
 export async function createLiquidationAddress(
   params: CreateLiquidationParams,
 ): Promise<LiquidationAddress> {

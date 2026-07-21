@@ -13,7 +13,7 @@
 
 import { NextRequest, NextResponse }       from "next/server";
 import { getOrCreateCustomer, getKycLink, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, simulateKycApproval, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
-import { createLiquidationAddress, NATIVE_RAILS } from "@/providers/bridge/liquidation";
+import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
 import { getTargetCurrency }               from "@/lib/routing";
@@ -105,7 +105,27 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Applies to both NEW and EXISTING customers — idempotent, safe to call repeatedly.
     try { await patchCustomerAddress(customer.id, country_upper); } catch { /* best-effort */ }
 
-    // Sandbox endorsement flow (runs AFTER patch so compliance fields are set):
+    // Build liquidation params early — needed to create external account BEFORE simulate_kyc_approval.
+    // Some rails (SPEI, PIX, FPS, COP) require account_processing which is only satisfied
+    // once the customer has a registered external account. SEPA does NOT require this.
+    const liqParams: CreateLiquidationParams = {
+      customerId:    customer.id,
+      country:       country_upper,
+      receiveMethod: receive_method,
+      ownerName:     nombre,
+      ownerType:     "individual",
+      cardNumber:    card_number,
+      clabe, iban, pixKey: pix_key,
+      routingNumber: routing_number, accountNumber: account_number,
+      sortCode: sort_code, bankCode: bank_code,
+    };
+
+    // Create external account before simulate so account_processing is satisfied.
+    if (receive_method === "bank") {
+      try { await ensureExternalAccount(liqParams); } catch { /* best-effort; liqAddr step will retry */ }
+    }
+
+    // Sandbox endorsement flow (runs AFTER external account so all requirements are met):
     // 1. Create KYC link with endorsements array — puts endorsements in "pending" state.
     //    One KYC link per email max — duplicate_record just means it's already pending.
     // 2. simulate_kyc_approval approves all pending endorsements.
@@ -150,17 +170,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
 
     // 3. Create liquidation address (Bridge converts USDC → local fiat → bank/card)
-    const liqParams: CreateLiquidationParams = {
-      customerId:    customer.id,
-      country:       country_upper,
-      receiveMethod: receive_method,
-      ownerName:     nombre,
-      ownerType:     "individual",
-      cardNumber:    card_number,
-      clabe, iban, pixKey: pix_key,
-      routingNumber: routing_number, accountNumber: account_number,
-      sortCode: sort_code, bankCode: bank_code,
-    };
+    // External account was already created above — createLiquidationAddress reuses it via
+    // duplicate_external_account handling.
     const liqAddr = await createLiquidationAddress(liqParams);
 
     // 4. Encrypt metadata into token
