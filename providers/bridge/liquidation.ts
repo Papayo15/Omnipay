@@ -80,6 +80,13 @@ const COUNTRY_ADDRESSES: Record<string, { street: string; city: string; state: s
   IN: { street: "123 Main Street", city: "Mumbai",           state: "MH",          postal_code: "400001"   },
 };
 
+const ISO3: Record<string, string> = {
+  MX: "MEX", US: "USA", BR: "BRA", CO: "COL", AR: "ARG", PE: "PER",
+  GB: "GBR", DE: "DEU", FR: "FRA", ES: "ESP", CA: "CAN", IN: "IND",
+  NL: "NLD", IT: "ITA", PT: "PRT", BE: "BEL", AT: "AUT", IE: "IRL",
+  PH: "PHL", AU: "AUS", JP: "JPN", KR: "KOR", CN: "CHN", SG: "SGP",
+};
+
 function getAddress(country: string) {
   return COUNTRY_ADDRESSES[country] ?? { street: "123 Main Street", city: "Capital City", state: "NA", postal_code: "00000" };
 }
@@ -93,7 +100,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
     city:          addr.city,
     state:         addr.state,
     postal_code:   addr.postal_code,
-    country,
+    country:       ISO3[country] ?? country,
   };
 
   if (params.receiveMethod === "card") {
