@@ -39,11 +39,12 @@ export async function GET(req: NextRequest): Promise<Response> {
     );
   }
 
-  // Check 2: BRIDGE_WEBHOOK_SECRET configured
+  // Check 2: webhook verification configured (RSA public key OR HMAC secret)
+  const hasWebhookVerification = !!(process.env.BRIDGE_WEBHOOK_PUBLIC_KEY || process.env.BRIDGE_WEBHOOK_SECRET);
   checks.push({
     name:   "webhook_secret",
-    status: process.env.BRIDGE_WEBHOOK_SECRET ? "ok" : "error",
-    detail: process.env.BRIDGE_WEBHOOK_SECRET ? undefined : "BRIDGE_WEBHOOK_SECRET not set",
+    status: hasWebhookVerification ? "ok" : "error",
+    detail: hasWebhookVerification ? undefined : "Neither BRIDGE_WEBHOOK_PUBLIC_KEY nor BRIDGE_WEBHOOK_SECRET is set",
   });
 
   const allOk = checks.every((c) => c.status === "ok");
