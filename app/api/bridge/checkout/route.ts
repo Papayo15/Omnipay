@@ -12,7 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getKycLink } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getKycLink, getKycUrlFromCustomer } from "@/providers/bridge/customers";
 import { createLiquidationAddress, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -80,11 +80,14 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // 2. KYC gate — Bridge requires approved customer before creating liquidation address
     if (needsKyc) {
-      let kycUrl: string | null = null;
-      try {
-        const kycLink = await getKycLink(customer.id);
-        kycUrl = kycLink.url;
-      } catch { /* non-critical */ }
+      // Try tos_link embedded in customer first, then call kyc_links endpoint as fallback
+      let kycUrl: string | null = getKycUrlFromCustomer(customer);
+      if (!kycUrl) {
+        try {
+          const kycLink = await getKycLink(customer.id);
+          kycUrl = kycLink.url;
+        } catch { /* non-critical */ }
+      }
       return NextResponse.json({
         needs_kyc:   true,
         kyc_url:     kycUrl,

@@ -7,12 +7,14 @@ export interface BridgeCustomer {
   id:          string;
   type:        "individual" | "business";
   email:       string;
+  status?:     "active" | "inactive" | "incomplete" | "rejected" | "under_review";
   kyc_status?: "approved" | "pending" | "incomplete" | "rejected" | "under_review";
   kyb_status?: "approved" | "pending" | "incomplete" | "rejected" | "under_review";
   first_name?: string;
   last_name?:  string;
   business_name?: string;
   created_at:  string;
+  tos_link?:   string;  // Bridge-hosted KYC/TOS URL already embedded in customer object
 }
 
 export interface BridgeKycLink {
@@ -68,7 +70,7 @@ export async function getOrCreateCustomer(params: {
   if (existing) {
     const kycApproved = params.type === "business"
       ? existing.kyb_status === "approved"
-      : existing.kyc_status === "approved";
+      : existing.status === "active" || existing.kyc_status === "approved";
     return { customer: existing, isNew: false, needsKyc: !kycApproved };
   }
 
@@ -78,12 +80,19 @@ export async function getOrCreateCustomer(params: {
 
 // Get a hosted KYC/KYB link to redirect the user to Bridge's verification UI
 export async function getKycLink(customerId: string): Promise<BridgeKycLink> {
+  // Use timestamp in idempotency key so retries don't hit a cached failure
+  const idempKey = `kyc-link-${customerId}-${Math.floor(Date.now() / 3_600_000)}`; // 1h bucket
   return bridgeRequest<BridgeKycLink>(
     "POST",
     `/customers/${customerId}/kyc_links`,
-    { full_kyc: true },
-    `kyc-link-${customerId}`,
+    {},
+    idempKey,
   );
+}
+
+// Extract the KYC URL from the customer object itself (Bridge embeds tos_link)
+export function getKycUrlFromCustomer(customer: BridgeCustomer): string | null {
+  return customer.tos_link ?? null;
 }
 
 export { BridgeError };
