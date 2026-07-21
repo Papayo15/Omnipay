@@ -290,11 +290,25 @@ export async function createLiquidationAddress(
 
   // Bank rails: create external account first, then reference it by ID
   const extAcctBody = buildExternalAccountBody(params);
-  const extAcct     = await createExternalAccount(
+  const extAcctRaw  = await createExternalAccount(
     params.customerId,
     extAcctBody,
     `ext-${params.customerId}-${country}-${identKey}`,
-  );
+  ) as unknown as Record<string, unknown>;
+
+  // Bridge may wrap the response; unwrap if needed
+  const extAcct = (extAcctRaw?.id != null)
+    ? extAcctRaw
+    : (extAcctRaw?.external_account as Record<string, unknown> | undefined)
+      ?? (extAcctRaw?.data as Record<string, unknown> | undefined)
+      ?? extAcctRaw;
+
+  if (!extAcct?.id) {
+    const err = new Error(`External account created but id is missing. Bridge response: ${JSON.stringify(extAcctRaw)}`);
+    (err as Error & { type: string; details: unknown }).type    = "external_account_missing_id";
+    (err as Error & { type: string; details: unknown }).details = extAcctRaw;
+    throw err;
+  }
 
   // Use NATIVE_RAILS currency (not getTargetCurrency) — SEPA always EUR,
   // even for non-euro countries like DK, PL, SE etc.
@@ -303,7 +317,7 @@ export async function createLiquidationAddress(
   destination = {
     payment_rail:        rail,
     currency,
-    external_account_id: extAcct.id,
+    external_account_id: extAcct.id as string,
   };
 
   return bridgeRequest<LiquidationAddress>(

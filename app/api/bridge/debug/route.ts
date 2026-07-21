@@ -28,7 +28,7 @@ export async function GET(req: NextRequest): Promise<Response> {
 
 export async function POST(req: NextRequest): Promise<Response> {
   try {
-    const body   = await req.json() as { email?: string; customer_id?: string; action?: string };
+    const body   = await req.json() as { email?: string; customer_id?: string; action?: string; payload?: Record<string, unknown> };
     const email  = body.email;
     const action = body.action;
 
@@ -45,6 +45,23 @@ export async function POST(req: NextRequest): Promise<Response> {
       // Re-fetch customer to see updated state
       const updated = await bridgeRequest<Record<string, unknown>>("GET", `/customers/${customer.id}`);
       return NextResponse.json({ action: "simulate_kyc_approval", result, updated_customer: updated });
+    }
+
+    if (action === "create_external_account") {
+      // Raw external account creation — returns full Bridge response for debugging
+      const payload = body.payload ?? {};
+      const result = await bridgeRequest<unknown>(
+        "POST",
+        `/customers/${customer.id}/external_accounts`,
+        payload,
+        `debug-ext-${customer.id}-${Date.now()}`,
+      );
+      return NextResponse.json({ action: "create_external_account", customer_id: customer.id, result });
+    }
+
+    if (action === "list_external_accounts") {
+      const result = await bridgeRequest<unknown>("GET", `/customers/${customer.id}/external_accounts`);
+      return NextResponse.json({ action: "list_external_accounts", customer_id: customer.id, result });
     }
 
     return NextResponse.json({ error: `unknown action: ${action}` }, { status: 400 });
