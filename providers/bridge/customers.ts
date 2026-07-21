@@ -75,14 +75,27 @@ export async function createCustomer(params: {
     body.birth_date          = "1990-01-01";
     body.phone               = "+15555555555";
     body.signed_agreement_id = crypto.randomUUID();
-    // 1x1 white PNG — Bridge sandbox accepts any image for government_id_document
+    const iso3 = params.country ?? "USA";
+
+    // 1x1 white PNG — Bridge sandbox accepts any image for document fields
     const FAKE_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII=";
+
+    // Passport satisfies government_id_document; use issuing_country matching the customer's country
     body.identifying_information = [
-      // SSN satisfies tax_identification_number requirement
-      { type: "ssn", issuing_country: "USA", number: "123456789" },
-      // Passport image satisfies government_id_document requirement
-      { type: "passport", issuing_country: "USA", number: "A12345678", image_front: FAKE_IMG, image_back: FAKE_IMG },
+      { type: "ssn",      issuing_country: "USA", number: "123456789" },
+      { type: "passport", issuing_country: iso3.toLowerCase(), number: "A12345678", image_front: FAKE_IMG, image_back: FAKE_IMG },
     ];
+
+    // SEPA endorsement requires proof_of_address (Bridge docs — EEA customer requirements).
+    // Include for ALL sandbox customers so simulate_kyc_approval can approve sepa endorsement.
+    body.documents = [
+      { purposes: ["proof_of_address"], file: FAKE_IMG },
+    ];
+
+    // EEA/international customers require nationalities field
+    if (iso3 !== "USA") {
+      body.nationalities = [iso3];
+    }
   }
   return bridgeRequest<BridgeCustomer>(
     "POST",
