@@ -27,12 +27,12 @@ import { getRedis }                                              from "@/lib/red
 
 // Solo metadatos no-PII — el token va cifrado, nadie puede leerlo sin LINK_SECRET
 interface PendingB2BToken {
-  piId:      string;   // ID de Stripe — identificador técnico, no dato personal
-  token:     string;   // AES-256-GCM cifrado — opaque blob
-  sig:       string;   // HMAC del token para validación
-  type:      string;   // "cobro" | "remesa"
-  cadAmount: number;   // monto en CAD — sin nombre ni cuenta
-  createdAt: number;
+  piId:         string;   // ID de Stripe — identificador técnico, no dato personal
+  token:        string;   // AES-256-GCM cifrado — opaque blob
+  sig:          string;   // HMAC del token para validación
+  type:         string;   // "cobro" | "remesa"
+  principalCAD: number;   // monto PRINCIPAL a enviar al receptor (sin fees OmniPay/Wise/Stripe)
+  createdAt:    number;
 }
 
 // ── Stripe signature ──────────────────────────────────────────────────────────
@@ -192,7 +192,8 @@ async function processPendingOrders(
         wiseProfileId, wiseApiKey,
         recipientName, recipientAccount,
         targetCountry, targetCurrency,
-        entry.cadAmount, senderPhone, recipientPhone,
+        entry.principalCAD,  // solo el principal — fees ya quedaron en Wise para OmniPay
+        senderPhone, recipientPhone,
       );
 
       // Borrar de Redis ANTES de notificar — PII ya no necesaria en Redis
@@ -200,14 +201,14 @@ async function processPendingOrders(
 
       // Notificaciones y comprobante
       const receiptUrl = await buildReceiptURL(
-        { id: txId, a: entry.cadAmount, c: targetCurrency, n: recipientName, ts: Date.now(), tt: entry.type },
+        { id: txId, a: entry.principalCAD, c: targetCurrency, n: recipientName, ts: Date.now(), tt: entry.type },
         appUrl, linkSecret,
       ).catch(() => `${appUrl}/resultado?ref=${txId}`);
 
       await Promise.allSettled([
-        recipientPhone ? sendPaymentNotification(recipientPhone, receiptUrl, entry.cadAmount, targetCurrency, recipientName) : Promise.resolve(),
-        senderPhone    ? sendPaymentNotification(senderPhone,    receiptUrl, entry.cadAmount, targetCurrency, recipientName) : Promise.resolve(),
-        sendAdminWhatsApp(`✅ OmniPay B2B completado\nPI: ${entry.piId}\nWise TX: ${txId}\nMonto: ${entry.cadAmount} CAD → ${targetCurrency}`),
+        recipientPhone ? sendPaymentNotification(recipientPhone, receiptUrl, entry.principalCAD, targetCurrency, recipientName) : Promise.resolve(),
+        senderPhone    ? sendPaymentNotification(senderPhone,    receiptUrl, entry.principalCAD, targetCurrency, recipientName) : Promise.resolve(),
+        sendAdminWhatsApp(`✅ OmniPay B2B completado\nPI: ${entry.piId}\nWise TX: ${txId}\nPrincipal: ${entry.principalCAD} CAD → ${targetCurrency}`),
       ]);
 
       // PII (recipientName, recipientAccount, phones) se descarta aquí — fin del scope
@@ -282,35 +283,53 @@ export async function POST(req: NextRequest) {
     const linkSecret = process.env.LINK_SECRET ?? "dev-secret";
     const piId       = String(pi?.id ?? "");
     const type       = meta.type ?? "cobro";
-    // Monto desde Stripe directamente — no hay que descifrar para esto
-    const cadAmount  = Number((pi?.amount as number | undefined) ?? 0) / 100;
 
     try {
-      // Descifrar una vez en memoria para enviar SMS de confirmación al emisor
-      // PII existe solo en este bloque try y se descarta al salir — nunca va a Redis
+      // Descifrar una vez en memoria para:
+      //   1. Obtener principalCAD (monto a enviar al receptor, SIN fees)
+      //   2. Obtener senderPhone para SMS de confirmación
+      // PII existe solo en este bloque y se descarta al salir — nunca va a Redis
       let senderPhone   = "";
       let recipientName = "";
+      let principalCAD  = 0;
+
       try {
         if (type === "remesa") {
           const p = await parseRemesaV2Link(token, sigHmac, linkSecret);
-          if (p) { const d = await decryptPayload(p.encryptedPayload); senderPhone = d.senderPhone ?? ""; recipientName = p.recipientName; }
+          if (p) {
+            const d       = await decryptPayload(p.encryptedPayload);
+            senderPhone   = d.senderPhone ?? "";
+            recipientName = p.recipientName;
+            // meta.cad_amount = lo que el emisor debe depositar en CAD al receptor
+            principalCAD  = parseFloat(meta.cad_amount ?? "0");
+          }
         } else {
           const p = await parseCobrarV2Link(token, sigHmac, linkSecret);
-          if (p) { const d = await decryptPayload(p.encryptedPayload); senderPhone = d.senderPhone ?? ""; recipientName = p.recipientName; }
+          if (p) {
+            const d       = await decryptPayload(p.encryptedPayload);
+            senderPhone   = d.senderPhone ?? "";
+            recipientName = p.recipientName;
+            principalCAD  = p.amount; // monto del link = lo que recibe el receptor
+          }
         }
-      } catch { /* non-critical — SMS se omite si falla el descifrado */ }
+      } catch { /* non-critical */ }
 
-      // Confirmar al emisor — senderPhone y recipientName se usan aquí y se descartan
+      if (!principalCAD) {
+        console.error(`[stripe/webhook] No se pudo determinar principalCAD para PI ${piId}`);
+        return NextResponse.json({ received: true });
+      }
+
+      // Confirmar al emisor — PII usado aquí y descartado
       await Promise.allSettled([
         senderPhone
-          ? sendB2BPendingNotification(senderPhone, recipientName, cadAmount, "CAD", piId.slice(-8))
+          ? sendB2BPendingNotification(senderPhone, recipientName, principalCAD, "CAD", piId.slice(-8))
           : Promise.resolve(),
-        sendAdminWhatsApp(`💳 OmniPay B2B confirmado\nPI: ${piId}\nMonto: ${cadAmount} CAD\nEntrega: 3-4 días hábiles`),
+        sendAdminWhatsApp(`💳 OmniPay B2B confirmado\nPI: ${piId}\nPrincipal: ${principalCAD} CAD\nEntrega: 3-4 días hábiles`),
       ]);
-      // ── senderPhone y recipientName descartados aquí ──────────────────────
+      // ── senderPhone, recipientName descartados aquí ───────────────────────
 
-      // Guardar en Redis: SOLO el token cifrado + metadatos no-PII
-      await storePendingToken({ piId, token, sig: sigHmac, type, cadAmount, createdAt: Date.now() });
+      // Guardar en Redis: SOLO token cifrado + principal (número, no PII)
+      await storePendingToken({ piId, token, sig: sigHmac, type, principalCAD, createdAt: Date.now() });
 
       console.log(`[stripe/webhook] PI ${piId} en cola — esperando payout.paid`);
       return NextResponse.json({ received: true, status: "PENDING_PAYOUT" });
