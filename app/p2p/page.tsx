@@ -99,6 +99,7 @@ export default function P2PPage() {
   const router       = useRouter();
   const searchParams = useSearchParams();
 
+  const [origin,       setOrigin]       = useState<"us"|"ca">("us");
   const [step,         setStep]         = useState<Step>("form");
   const [payMode,      setPayMode]      = useState<PayMode>("card");
   const [nombre,       setNombre]       = useState("");
@@ -107,7 +108,7 @@ export default function P2PPage() {
   const [account,      setAccount]      = useState("");
   const [bankInfo,     setBankInfo]     = useState<BankInfo | null>(null);
   const [clabeValid,   setClabeValid]   = useState<boolean | null>(null);
-  const [amountLocal,  setAmountLocal]  = useState("");  // in local currency (MXN, BRL, etc.)
+  const [amountLocal,  setAmountLocal]  = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [shareLink,    setShareLink]    = useState("");
   const [copied,       setCopied]       = useState(false);
@@ -118,6 +119,14 @@ export default function P2PPage() {
   const [fxRate,       setFxRate]       = useState<number | null>(null);
   const [kycUrl,       setKycUrl]       = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Canada relay form state
+  const [caName,     setCaName]     = useState("");
+  const [caCountry,  setCaCountry]  = useState("MX");
+  const [caAccount,  setCaAccount]  = useState("");
+  const [caAmount,   setCaAmount]   = useState("");
+  const [caPhone,    setCaPhone]    = useState("");
+  const [caStep,     setCaStep]     = useState<"form"|"instructions">("form");
 
   const selectedCountry = COUNTRY_OPTIONS.find((c) => c.code === country) ?? COUNTRY_OPTIONS[0];
   const hasBankRail     = BANK_RAIL_COUNTRIES.has(country);
@@ -388,76 +397,193 @@ export default function P2PPage() {
       </div>
 
       {/* Header */}
-      <section className="w-full max-w-2xl mx-auto px-6 pt-8 pb-4 text-center">
-        <div className="text-4xl mb-3">💸</div>
-        <h1 className="text-white font-bold text-2xl mb-1">{t("cobrar_title")}</h1>
-        <p className="text-slate-400 text-sm mb-2">{t("cobrar_subtitle")}</p>
-        <span className="text-[10px] text-slate-500 bg-slate-800 rounded-lg px-3 py-1.5 inline-block">
-          Powered by Bridge.xyz · 170+ países · Sin base de datos
-        </span>
-      </section>
+      <div className="w-full max-w-sm mx-auto px-5 pt-6 pb-2">
+        <h2 className="text-white font-bold text-lg mb-1">💸 Envío P2P</h2>
+        <p className="text-slate-500 text-xs mb-5">Receptor llena sus datos — el emisor recibe el link de pago</p>
 
-      {/* Feature cards */}
-      <section className="w-full max-w-2xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { emoji: "🌍", title: t("feat1_title"), body: t("feat1_body") },
-          { emoji: "💱", title: t("feat2_title"), body: t("feat2_body") },
-          { emoji: "⚡", title: t("feat3_title"), body: t("feat3_body") },
-        ].map((f) => (
-          <div key={f.title} className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-            <div className="text-2xl mb-3">{f.emoji}</div>
-            <h3 className="text-white font-semibold text-sm mb-2">{f.title}</h3>
-            <p className="text-slate-400 text-xs leading-relaxed">{f.body}</p>
-          </div>
-        ))}
-      </section>
-
-      {/* Pricing */}
-      <section className="w-full max-w-2xl mx-auto px-6 pb-10">
-        <h2 className="text-white font-bold text-xl text-center mb-2">{t("pricing_title")}</h2>
-        <p className="text-slate-500 text-xs text-center mb-8">{t("pricing_sub")}</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="bg-slate-800/60 border border-emerald-500/40 rounded-2xl p-6 flex flex-col gap-4">
-            <div>
-              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">{t("pricing_card1_label")}</span>
-              <p className="text-emerald-400 text-4xl font-extrabold mt-1">~2%</p>
-              <p className="text-slate-400 text-xs mt-1">{t("pricing_card1_fee")}</p>
-            </div>
-            <ul className="text-slate-400 text-xs space-y-1">
-              {[t("pricing_card1_li1"), t("pricing_card1_li2"), t("pricing_card1_li3"), t("pricing_card1_li4")].map((li) => (
-                <li key={li}>{li}</li>
-              ))}
-            </ul>
-            <button onClick={scrollToForm} className="mt-auto w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all text-white font-semibold py-3 rounded-xl text-sm">
-              {t("pricing_card1_cta")}
-            </button>
-          </div>
-          <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 flex flex-col gap-4 relative">
-            <span className="absolute top-4 right-4 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">60% OFF</span>
-            <div>
-              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">{t("pricing_card2_label")}</span>
-              <p className="text-slate-200 text-4xl font-extrabold mt-1">vs.</p>
-              <p className="text-slate-400 text-xs mt-1">{t("pricing_card2_fee")}</p>
-            </div>
-            <ul className="text-xs space-y-1">
-              <li className="text-emerald-400 font-semibold">{t("pricing_card2_li1")}</li>
-              {[t("pricing_card2_li2"), t("pricing_card2_li3"), t("pricing_card2_li4")].map((li) => (
-                <li key={li} className="text-red-400">{li}</li>
-              ))}
-            </ul>
-            <button onClick={scrollToForm} className="mt-auto w-full border border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 active:scale-95 transition-all font-semibold py-3 rounded-xl text-sm">
-              {t("pricing_card1_cta")}
-            </button>
-          </div>
+        {/* Origin tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => { setOrigin("us"); setStep("form"); }}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              origin === "us"
+                ? "bg-emerald-500 text-white"
+                : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
+            }`}
+          >
+            🌍 41 Países
+          </button>
+          <button
+            onClick={() => { setOrigin("ca"); setCaStep("form"); }}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              origin === "ca"
+                ? "bg-red-600 text-white"
+                : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
+            }`}
+          >
+            🇨🇦 Desde Canadá
+          </button>
         </div>
-      </section>
-
-      {/* Form header */}
-      <div className="w-full max-w-sm mx-auto px-5 pb-4">
-        <h2 className="text-white font-bold text-lg mb-1">{t("form_title")}</h2>
-        <p className="text-slate-500 text-xs mb-6">{t("form_sub")}</p>
       </div>
 
+      {/* ── CANADA TAB ── */}
+      {origin === "ca" && (
+        <div className="space-y-4 flex-1 max-w-sm mx-auto w-full px-5">
+          {caStep === "form" ? (
+            <>
+              <p className="text-slate-500 text-xs bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 leading-relaxed">
+                📋 El receptor llena sus datos bancarios. El emisor envía CAD a nuestra cuenta Wise y nosotros lo reenviamos al destino vía Bridge o Wise.
+              </p>
+
+              {/* Nombre receptor */}
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Nombre del receptor</label>
+                <input
+                  type="text"
+                  value={caName}
+                  onChange={(e) => setCaName(e.target.value)}
+                  placeholder="María García"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm"
+                />
+              </div>
+
+              {/* País destino */}
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">País destino</label>
+                <select
+                  value={caCountry}
+                  onChange={(e) => { setCaCountry(e.target.value); setCaAccount(""); }}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500"
+                >
+                  {COUNTRY_OPTIONS.map((c) => (
+                    <option key={c.code} value={c.code}>{c.flag} {c.label} — {c.currency}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Cuenta destino */}
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">
+                  {caCountry === "MX" ? "CLABE (18 dígitos)"
+                    : caCountry === "BR" ? "Chave PIX"
+                    : caCountry === "GB" ? "Sort Code / Account"
+                    : caCountry === "CO" ? "Cuenta Bre-B"
+                    : caCountry === "US" ? "Routing / Account"
+                    : "IBAN"}
+                </label>
+                <input
+                  type="text"
+                  inputMode={caCountry === "MX" ? "numeric" : "text"}
+                  value={caAccount}
+                  onChange={(e) => setCaAccount(e.target.value)}
+                  placeholder={
+                    caCountry === "MX" ? "646180528000000001"
+                    : caCountry === "BR" ? "CPF, email o celular"
+                    : caCountry === "GB" ? "20-00-00 / 55779911"
+                    : "IBAN o número de cuenta"
+                  }
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm font-mono"
+                />
+              </div>
+
+              {/* Monto en CAD */}
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Monto a enviar (CAD)</label>
+                <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3">
+                  <span className="text-slate-400 text-sm">CA$</span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min="1"
+                    value={caAmount}
+                    onChange={(e) => setCaAmount(e.target.value)}
+                    placeholder="500"
+                    className="flex-1 bg-transparent text-white text-lg font-semibold outline-none"
+                  />
+                  <span className="text-slate-500 text-sm">CAD</span>
+                </div>
+              </div>
+
+              {/* Teléfono receptor (opcional) */}
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Teléfono receptor (opcional — para notificación)</label>
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  value={caPhone}
+                  onChange={(e) => setCaPhone(e.target.value)}
+                  placeholder="+52 55 1234 5678"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm"
+                />
+              </div>
+
+              <button
+                disabled={!caName.trim() || !caAccount.trim() || parseFloat(caAmount) < 1}
+                onClick={() => {
+                  // Notify admin via WhatsApp
+                  const adminNumber = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
+                  const msg = `🇨🇦 NUEVO ENVÍO P2P (CAD)\n\nReceptor: ${caName}\nPaís destino: ${caCountry}\nCuenta: ${caAccount}\nMonto: CA$${caAmount} CAD${caPhone ? `\nTel receptor: ${caPhone}` : ""}\n\nProcesar vía Wise → Bridge`;
+                  if (adminNumber) window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(msg)}`, "_blank");
+                  setCaStep("instructions");
+                }}
+                className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-3 transition-colors"
+              >
+                Generar instrucciones de pago →
+              </button>
+            </>
+          ) : (
+            /* Instructions screen */
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="text-4xl mb-2">✅</div>
+                <h3 className="text-white font-bold text-lg">Solicitud creada</h3>
+                <p className="text-slate-400 text-xs mt-1">El emisor debe enviar el dinero a esta cuenta</p>
+              </div>
+
+              <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 space-y-3">
+                <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest">Instrucciones para el emisor</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Enviar a</span>
+                    <span className="text-white font-semibold">OmniPay (Wise CAD)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Monto</span>
+                    <span className="text-white font-semibold">CA${parseFloat(caAmount || "0").toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Referencia</span>
+                    <span className="text-emerald-400 font-mono font-semibold">OP-{Date.now().toString(36).toUpperCase()}</span>
+                  </div>
+                </div>
+                <div className="border-t border-slate-700 pt-3">
+                  <p className="text-slate-500 text-xs">📌 El número de cuenta Wise CAD se te enviará por WhatsApp al administrador.</p>
+                </div>
+              </div>
+
+              <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-xl px-4 py-3">
+                <p className="text-emerald-400 text-xs">
+                  ✅ Receptor: <span className="font-semibold">{caName}</span> en {COUNTRY_OPTIONS.find(c=>c.code===caCountry)?.label}<br/>
+                  Cuenta: <span className="font-mono">{caAccount}</span>
+                </p>
+                <p className="text-slate-500 text-xs mt-2">
+                  Una vez que recibamos el CAD lo procesamos vía Bridge/Wise al destino en 1-2 días hábiles.
+                </p>
+              </div>
+
+              <button
+                onClick={() => { setCaStep("form"); setCaName(""); setCaAccount(""); setCaAmount(""); setCaPhone(""); setCaCountry("MX"); }}
+                className="w-full border border-slate-600 text-slate-400 hover:text-white rounded-xl py-3 text-sm transition-colors"
+              >
+                + Nueva solicitud
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── USA TAB ── */}
+      {origin === "us" && (
       <div id="p2p-form" className="space-y-4 flex-1 max-w-sm mx-auto w-full px-5">
 
         {/* Nombre */}
@@ -698,6 +824,7 @@ export default function P2PPage() {
         </p>
 
       </div>
+      )}
     </main>
   );
 }
