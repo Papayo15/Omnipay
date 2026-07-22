@@ -16,7 +16,7 @@ import Stripe                                                  from "stripe";
 import { parseCobrarV2Link, parseRemesaV2Link, buildReceiptURL } from "@/lib/link";
 import { decryptPayload }                                      from "@/lib/accountcrypto";
 import { getWiseAccountType, buildWiseAccountDetails }         from "@/lib/wise-accounts";
-import { sendPaymentNotification, sendAdminWhatsApp }          from "@/lib/notify";
+import { sendB2BPendingNotification, sendPaymentNotification, sendAdminWhatsApp } from "@/lib/notify";
 import { getRedis }                                            from "@/lib/redis";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -299,19 +299,15 @@ export async function POST(req: NextRequest) {
 
       // Confirmar al cliente y al admin
       await Promise.allSettled([
-        senderPhone ? sendPaymentNotification(
-          senderPhone,
-          "",
-          cadAmount,
-          "CAD",
-          recipientName,
-        ) : Promise.resolve(),
+        senderPhone
+          ? sendB2BPendingNotification(senderPhone, recipientName, cadAmount, "CAD", piId.slice(-8))
+          : Promise.resolve(),
         sendAdminWhatsApp(
           `💳 OmniPay B2B — pago confirmado\n` +
           `PI: ${piId}\n` +
           `Receptor: ${recipientName} (${targetCountry})\n` +
           `Monto: ${cadAmount} CAD → ${targetCurrency}\n` +
-          `Estado: PENDING PAYOUT (3-4 días hábiles)`,
+          `Entrega: 3-4 días hábiles (Wise)`,
         ),
       ]);
 

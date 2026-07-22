@@ -5,6 +5,37 @@ function fmt(amount: number, currency: string): string {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency }).format(amount);
 }
 
+async function sendSMS(phone: string, body: string): Promise<void> {
+  const sid  = process.env.TWILIO_ACCOUNT_SID;
+  const tok  = process.env.TWILIO_AUTH_TOKEN;
+  const from = process.env.TWILIO_PHONE_NUMBER;
+  if (!sid || !tok || !from || !phone) return;
+  const p = phone.startsWith("+") ? phone : `+${phone.replace(/\D/g, "")}`;
+  await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+    method: "POST",
+    headers: {
+      Authorization: "Basic " + btoa(`${sid}:${tok}`),
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({ From: from, To: p, Body: body }).toString(),
+  }).catch(() => {});
+}
+
+// B2B — confirmación de pago pendiente (Stripe cobrado, Wise ejecutará en 3-4 días)
+export async function sendB2BPendingNotification(
+  senderPhone:   string,
+  recipientName: string,
+  amount:        number,
+  currency:      string,
+  piRef:         string,   // últimos 8 chars del PI para referencia
+): Promise<void> {
+  const body =
+    `✅ OmniPay: Tu pago de ${fmt(amount, currency)} a ${recipientName} fue confirmado. ` +
+    `El receptor lo recibirá en 3-4 días hábiles. ` +
+    `Referencia: ${piRef}`;
+  await sendSMS(senderPhone, body);
+}
+
 export async function sendPaymentNotification(
   phone: string,       // E.164: "+525512345678"
   receiptUrl: string,  // /resultado?r=... (comprobante sin PII)

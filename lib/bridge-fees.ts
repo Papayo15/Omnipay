@@ -3,7 +3,7 @@
 // Three channels, each with its own cost structure:
 //   bridge  → MX/US/BR/GB/CO/SEPA — native bank rails via Bridge.xyz
 //   paysend → 170+ countries — card push via Paysend/Zuba
-//   b2b     → Stripe capture + Bridge payout for businesses
+//   b2b     → Stripe capture + Wise payout (primary) / Bridge (secondary when rails active)
 //
 // OmniPay charges: 0.50% + flat on all channels (min $1.99)
 // ALL provider costs shown in total_sender_pays — the sender sees one final number.
@@ -13,12 +13,13 @@
 //   WU ~$17 · Remitly ~$7.50 · Wise ~$6.40
 //   OmniPay 1ª vez: $6.74 · OmniPay recurrente: $4.74 ← cheapest in market
 //
-// B2B example $1,000 USD payout:
+// B2B example $1,000 CAD → MXN via Stripe + Wise:
 //   Stripe card acceptance: $29.30 (2.9%+$0.30)
-//   Bridge payout:          $7.50  (0.75%)
+//   Wise transfer + FX:     $8.00  (0.80% conservative — varies by corridor)
 //   OmniPay service:        $6.99  (0.50%+$1.99)
 //   KYB (1ª vez):           $10.00
-//   Total sender pays:      $1,053.79 (1ª vez) / $1,043.79 (recurrente)
+//   Total sender pays:      $1,054.29 (1ª vez) / $1,044.29 (recurrente)
+//   Delivery:               3-4 días hábiles (Stripe payout → Wise transfer)
 
 import { findCustomerByEmail } from "@/providers/bridge/customers";
 import { NATIVE_RAILS }        from "@/providers/bridge/liquidation";
@@ -44,6 +45,11 @@ export const OMNIPAY_MIN_FEE     = 1.99;  // minimum total OmniPay fee
 export const KYC_FEE_P2P = 2.00;
 export const KYB_FEE_B2B = 10.00;
 
+// Wise B2B costs (transfer fee + FX spread, conservative estimate covering most corridors)
+// CAD→MXN ~0.79% · CAD→USD ~0.31% · CAD→EUR ~0.41% · worst case ~1.2%
+// We quote 0.80% — slightly over most corridors, under worst case
+export const WISE_B2B_PCT = 0.008;  // 0.80% Wise transfer + FX
+
 // Paysend estimated costs (update when enterprise contract arrives)
 export const PAYSEND_PCT  = 0.015;  // ~1.50% enterprise estimate
 export const PAYSEND_FLAT = 0.50;   // $0.50 flat
@@ -57,9 +63,10 @@ export interface FeeQuote {
   provider:            QuoteProvider;
   // Provider costs (all included in total_sender_pays — sender sees one number)
   stripe_fee?:         number;  // B2B only: 2.9%+$0.30 Stripe card acceptance
-  bridge_onramp?:      number;
-  bridge_offramp?:     number;
-  paysend_cost?:       number;
+  wise_fee?:           number;  // B2B only: Wise transfer + FX conversion (~0.80%)
+  bridge_onramp?:      number;  // P2P Bridge only
+  bridge_offramp?:     number;  // P2P Bridge only
+  paysend_cost?:       number;  // Paysend/Zuba card push
   provider_cost_total: number;
   // OmniPay
   omnipay_service:     number;
@@ -127,17 +134,17 @@ function _buildQuote(
   const kyc  = isNew ? (type === "b2b" ? KYB_FEE_B2B : KYC_FEE_P2P) : 0;
 
   let providerCostTotal: number;
-  let stripeFee: number | undefined;
+  let stripeFee:    number | undefined;
+  let wiseFee:      number | undefined;
   let bridgeOnramp: number | undefined;
   let bridgeOfframp: number | undefined;
-  let paysendCost: number | undefined;
+  let paysendCost:  number | undefined;
 
   if (provider === "b2b") {
-    // Stripe card acceptance — included in total so sender sees the real cost
-    stripeFee     = parseFloat((amount * STRIPE_PCT + STRIPE_FLAT).toFixed(2));
-    bridgeOnramp  = parseFloat((amount * BRIDGE_ONRAMP_PCT).toFixed(2));
-    bridgeOfframp = parseFloat((amount * BRIDGE_OFFRAMP_PCT).toFixed(2));
-    providerCostTotal = stripeFee + bridgeOnramp + bridgeOfframp;
+    // Stripe card acceptance + Wise transfer/FX — both included so sender sees the real cost
+    stripeFee         = parseFloat((amount * STRIPE_PCT + STRIPE_FLAT).toFixed(2));
+    wiseFee           = parseFloat((amount * WISE_B2B_PCT).toFixed(2));
+    providerCostTotal = stripeFee + wiseFee;
   } else if (provider === "bridge") {
     bridgeOnramp  = parseFloat((amount * BRIDGE_ONRAMP_PCT).toFixed(2));
     bridgeOfframp = parseFloat((amount * BRIDGE_OFFRAMP_PCT).toFixed(2));
@@ -158,6 +165,7 @@ function _buildQuote(
     amount_principal:    amount,
     provider,
     stripe_fee:          stripeFee,
+    wise_fee:            wiseFee,
     bridge_onramp:       bridgeOnramp,
     bridge_offramp:      bridgeOfframp,
     paysend_cost:        paysendCost,
