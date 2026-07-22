@@ -1,40 +1,41 @@
 // POST /api/webhooks/stripe
 //
+// REGLA DE ORO: cero datos personales almacenados.
+// Redis guarda SOLO el token ya cifrado (AES-256) + metadatos no-PII.
+// PII (nombre, cuenta, teléfono) existe únicamente en memoria durante la ejecución
+// y se descarta inmediatamente — nunca toca Redis ni ningún otro almacén.
+//
 // B2B flow (two-step):
 //   Step 1 — payment_intent.succeeded:
-//     Parse token → extract recipient details → store in Redis as PENDING
-//     Send confirmation to sender: "tu pago llegará en 3-4 días hábiles"
+//     Descifrar en memoria → SMS de confirmación al emisor → descartar PII
+//     Guardar en Redis: { piId, token_cifrado, sig, type, cadAmount, createdAt }
 //
-//   Step 2 — payout.paid (Stripe deposited funds into Wise):
-//     Scan all PENDING orders in Redis older than 2 days
-//     Execute Wise transfer for each → send completion SMS → delete from Redis
-//     Permanent errors (invalid account) → refund + delete from Redis
-//     Transient errors → leave in Redis, retry on next payout.paid
+//   Step 2 — payout.paid (Stripe depositó en Wise):
+//     Leer token cifrado de Redis → descifrar en memoria → ejecutar Wise → borrar de Redis
+//     Errores permanentes → reembolso automático + borrar de Redis
+//     Errores transitorios → dejar en Redis, reintentar en próximo payout.paid
 
-import { NextRequest, NextResponse }                          from "next/server";
-import Stripe                                                  from "stripe";
+import { NextRequest, NextResponse }                            from "next/server";
+import Stripe                                                    from "stripe";
 import { parseCobrarV2Link, parseRemesaV2Link, buildReceiptURL } from "@/lib/link";
-import { decryptPayload }                                      from "@/lib/accountcrypto";
-import { getWiseAccountType, buildWiseAccountDetails }         from "@/lib/wise-accounts";
+import { decryptPayload }                                        from "@/lib/accountcrypto";
+import { getWiseAccountType, buildWiseAccountDetails }           from "@/lib/wise-accounts";
 import { sendB2BPendingNotification, sendPaymentNotification, sendAdminWhatsApp } from "@/lib/notify";
-import { getRedis }                                            from "@/lib/redis";
+import { getRedis }                                              from "@/lib/redis";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Tipos ─────────────────────────────────────────────────────────────────────
 
-interface PendingB2BOrder {
-  piId:             string;
-  recipientAccount: string;
-  recipientPhone:   string;
-  senderPhone:      string;
-  recipientName:    string;
-  targetCurrency:   string;
-  targetCountry:    string;
-  cadAmount:        number;
-  type:             string;
-  createdAt:        number;
+// Solo metadatos no-PII — el token va cifrado, nadie puede leerlo sin LINK_SECRET
+interface PendingB2BToken {
+  piId:      string;   // ID de Stripe — identificador técnico, no dato personal
+  token:     string;   // AES-256-GCM cifrado — opaque blob
+  sig:       string;   // HMAC del token para validación
+  type:      string;   // "cobro" | "remesa"
+  cadAmount: number;   // monto en CAD — sin nombre ni cuenta
+  createdAt: number;
 }
 
-// ── Stripe signature verification ─────────────────────────────────────────────
+// ── Stripe signature ──────────────────────────────────────────────────────────
 
 async function verifyStripeSignature(rawBody: string, sigHeader: string, secret: string): Promise<boolean> {
   try {
@@ -121,12 +122,12 @@ async function executeWise(
   return String(transfer.id);
 }
 
-// ── Redis helpers ─────────────────────────────────────────────────────────────
+// ── Redis — solo token cifrado, sin PII ──────────────────────────────────────
 
-async function storePendingOrder(order: PendingB2BOrder): Promise<void> {
+async function storePendingToken(entry: PendingB2BToken): Promise<void> {
   try {
     const redis = await getRedis();
-    await redis.set(`b2b:pending:${order.piId}`, JSON.stringify(order), { EX: 604800 }); // 7 days
+    await redis.set(`b2b:pending:${entry.piId}`, JSON.stringify(entry), { EX: 604800 }); // 7 días
   } catch (e) {
     console.error("[stripe/webhook] Redis store failed:", (e as Error).message);
   }
@@ -135,8 +136,8 @@ async function storePendingOrder(order: PendingB2BOrder): Promise<void> {
 async function processPendingOrders(
   wiseApiKey:    string,
   wiseProfileId: string,
-  appUrl:        string,
   linkSecret:    string,
+  appUrl:        string,
 ): Promise<void> {
   let redis;
   try { redis = await getRedis(); }
@@ -149,51 +150,82 @@ async function processPendingOrders(
     const raw = await redis.get(k);
     if (!raw) continue;
 
-    let order: PendingB2BOrder;
-    try { order = JSON.parse(raw) as PendingB2BOrder; }
+    let entry: PendingB2BToken;
+    try { entry = JSON.parse(raw) as PendingB2BToken; }
     catch { await redis.del(k); continue; }
 
-    // Skip orders newer than 2 days — may not be covered by this payout yet
-    if (order.createdAt > twoDaysAgo) continue;
+    if (entry.createdAt > twoDaysAgo) continue; // demasiado reciente, esperar
 
+    // ── Descifrar token en memoria — PII nunca sale de este scope ────────────
     try {
+      let recipientName:    string;
+      let recipientAccount: string;
+      let recipientPhone:   string;
+      let senderPhone:      string;
+      let targetCurrency:   string;
+      let targetCountry:    string;
+
+      if (entry.type === "remesa") {
+        const payload = await parseRemesaV2Link(entry.token, entry.sig, linkSecret);
+        if (!payload) { await redis.del(k); continue; }
+        const dec     = await decryptPayload(payload.encryptedPayload);
+        recipientName    = payload.recipientName;
+        recipientAccount = dec.account;
+        recipientPhone   = dec.recipientPhone ?? "";
+        senderPhone      = dec.senderPhone    ?? "";
+        targetCurrency   = payload.receiveCurrency;
+        targetCountry    = payload.targetCountry;
+      } else {
+        const payload = await parseCobrarV2Link(entry.token, entry.sig, linkSecret);
+        if (!payload) { await redis.del(k); continue; }
+        const dec     = await decryptPayload(payload.encryptedPayload);
+        recipientName    = payload.recipientName;
+        recipientAccount = dec.account;
+        recipientPhone   = dec.recipientPhone ?? "";
+        senderPhone      = dec.senderPhone    ?? "";
+        targetCurrency   = payload.currency;
+        targetCountry    = (JSON.parse(raw) as { targetCountry?: string }).targetCountry ?? "MX";
+      }
+
+      // ── Ejecutar Wise ─────────────────────────────────────────────────────
       const txId = await executeWise(
         wiseProfileId, wiseApiKey,
-        order.recipientName,    order.recipientAccount,
-        order.targetCountry,    order.targetCurrency,
-        order.cadAmount,        order.senderPhone, order.recipientPhone,
+        recipientName, recipientAccount,
+        targetCountry, targetCurrency,
+        entry.cadAmount, senderPhone, recipientPhone,
       );
 
+      // Borrar de Redis ANTES de notificar — PII ya no necesaria en Redis
       await redis.del(k);
 
+      // Notificaciones y comprobante
       const receiptUrl = await buildReceiptURL(
-        { id: txId, a: order.cadAmount, c: order.targetCurrency, n: order.recipientName, ts: Date.now(), tt: order.type },
+        { id: txId, a: entry.cadAmount, c: targetCurrency, n: recipientName, ts: Date.now(), tt: entry.type },
         appUrl, linkSecret,
       ).catch(() => `${appUrl}/resultado?ref=${txId}`);
 
       await Promise.allSettled([
-        order.recipientPhone ? sendPaymentNotification(order.recipientPhone, receiptUrl, order.cadAmount, order.targetCurrency, order.recipientName) : Promise.resolve(),
-        order.senderPhone    ? sendPaymentNotification(order.senderPhone,    receiptUrl, order.cadAmount, order.targetCurrency, order.recipientName) : Promise.resolve(),
-        sendAdminWhatsApp(`✅ OmniPay B2B completado\nPI: ${order.piId}\nWise TX: ${txId}\nReceptor: ${order.recipientName}\nMonto: ${order.cadAmount} CAD → ${order.targetCurrency}`),
+        recipientPhone ? sendPaymentNotification(recipientPhone, receiptUrl, entry.cadAmount, targetCurrency, recipientName) : Promise.resolve(),
+        senderPhone    ? sendPaymentNotification(senderPhone,    receiptUrl, entry.cadAmount, targetCurrency, recipientName) : Promise.resolve(),
+        sendAdminWhatsApp(`✅ OmniPay B2B completado\nPI: ${entry.piId}\nWise TX: ${txId}\nMonto: ${entry.cadAmount} CAD → ${targetCurrency}`),
       ]);
 
-      console.log(`[stripe/webhook] B2B OK — Wise TX ${txId} for PI ${order.piId}`);
+      // PII (recipientName, recipientAccount, phones) se descarta aquí — fin del scope
+      console.log(`[stripe/webhook] B2B OK — Wise TX ${txId} PI ${entry.piId}`);
 
     } catch (err) {
       const e = err as Error & { code?: string };
-      console.error(`[stripe/webhook] Wise failed for PI ${order.piId}:`, e.message, e.code);
+      console.error(`[stripe/webhook] Wise failed PI ${entry.piId}:`, e.message, e.code);
 
       const PERMANENT = ["INVALID_ACCOUNT", "CURRENCY_UNSUPPORTED"];
       if (PERMANENT.includes(e.code ?? "")) {
         await redis.del(k);
         try {
-          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
-          await stripe.refunds.create({ payment_intent: order.piId });
-          await sendAdminWhatsApp(`🚨 OmniPay B2B — reembolsado\nPI: ${order.piId}\nMotivo: ${e.code}\nReceptor: ${order.recipientName}`);
+          await new Stripe(process.env.STRIPE_SECRET_KEY ?? "").refunds.create({ payment_intent: entry.piId });
+          await sendAdminWhatsApp(`🚨 OmniPay B2B reembolsado\nPI: ${entry.piId}\nMotivo: ${e.code}`);
         } catch (re) { console.error("[stripe/webhook] Refund failed:", re); }
       } else {
-        // Transient error — leave in Redis, will retry on next payout.paid
-        await sendAdminWhatsApp(`⚠️ OmniPay B2B — reintentará en próximo payout\nPI: ${order.piId}\nError: ${e.message}`);
+        await sendAdminWhatsApp(`⚠️ OmniPay B2B — reintentará\nPI: ${entry.piId}\nError: ${e.message}`);
       }
     }
   }
@@ -207,43 +239,42 @@ export async function POST(req: NextRequest) {
   const secret  = process.env.STRIPE_WEBHOOK_SECRET ?? "";
 
   if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 });
-
-  const valid = await verifyStripeSignature(rawBody, sig, secret);
-  if (!valid) return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  if (!await verifyStripeSignature(rawBody, sig, secret))
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
 
   let event: Record<string, unknown>;
-  try { event = JSON.parse(rawBody); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+  try { event = JSON.parse(rawBody); }
+  catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  // ── Legacy: checkout.session.completed (solo notificación) ───────────────
+  // ── Legacy: checkout.session.completed ───────────────────────────────────
   if (event.type === "checkout.session.completed") {
-    const session       = (event.data as Record<string, unknown>)?.object as Record<string, unknown> | undefined;
-    const meta          = session?.metadata as Record<string, unknown> | undefined;
-    const amount        = Number(session?.amount_total ?? 0) / 100;
-    const currency      = String(session?.currency ?? "mxn").toUpperCase();
-    const clientPhone   = String(meta?.client_phone   ?? "");
-    const merchantPhone = String(meta?.merchant_phone ?? "");
-    const merchantName  = String(meta?.merchant_name  ?? "Comercio");
-    const sessionId     = String(session?.id ?? "");
-    const appUrl        = process.env.NEXT_PUBLIC_APP_URL ?? "";
-    const linkSecret    = process.env.LINK_SECRET ?? "";
+    const session     = (event.data as Record<string, unknown>)?.object as Record<string, unknown> | undefined;
+    const meta        = session?.metadata as Record<string, unknown> | undefined;
+    const amount      = Number(session?.amount_total ?? 0) / 100;
+    const currency    = String(session?.currency ?? "mxn").toUpperCase();
+    const clientPhone = String(meta?.client_phone   ?? "");
+    const merchPhone  = String(meta?.merchant_phone ?? "");
+    const merchName   = String(meta?.merchant_name  ?? "Comercio");
+    const sessionId   = String(session?.id ?? "");
+    const appUrl      = process.env.NEXT_PUBLIC_APP_URL ?? "";
+    const linkSecret  = process.env.LINK_SECRET ?? "";
 
     const receiptUrl = await buildReceiptURL(
-      { id: sessionId, a: amount, c: currency, n: merchantName, ts: Date.now(), tt: "cobro" },
+      { id: sessionId, a: amount, c: currency, n: merchName, ts: Date.now(), tt: "cobro" },
       appUrl, linkSecret,
     );
     await Promise.allSettled([
-      clientPhone   ? sendPaymentNotification(clientPhone,   receiptUrl, amount, currency, merchantName) : Promise.resolve(),
-      merchantPhone && merchantPhone !== clientPhone
-        ? sendPaymentNotification(merchantPhone, receiptUrl, amount, currency, merchantName) : Promise.resolve(),
+      clientPhone ? sendPaymentNotification(clientPhone, receiptUrl, amount, currency, merchName) : Promise.resolve(),
+      merchPhone && merchPhone !== clientPhone
+        ? sendPaymentNotification(merchPhone, receiptUrl, amount, currency, merchName) : Promise.resolve(),
     ]);
     return NextResponse.json({ received: true });
   }
 
-  // ── Step 1: Pago confirmado → guardar en Redis, confirmar al cliente ──────
+  // ── Step 1: Pago confirmado → guardar token cifrado, confirmar al emisor ──
   if (event.type === "payment_intent.succeeded") {
-    const pi   = (event.data as Record<string, unknown>)?.object as Record<string, unknown> | undefined;
-    const meta = pi?.metadata as Record<string, string> | undefined;
-
+    const pi         = (event.data as Record<string, unknown>)?.object as Record<string, unknown> | undefined;
+    const meta       = pi?.metadata as Record<string, string> | undefined;
     if (!meta?.t1) return NextResponse.json({ received: true });
 
     const token      = meta.t1 + (meta.t2 ?? "");
@@ -251,67 +282,37 @@ export async function POST(req: NextRequest) {
     const linkSecret = process.env.LINK_SECRET ?? "dev-secret";
     const piId       = String(pi?.id ?? "");
     const type       = meta.type ?? "cobro";
+    // Monto desde Stripe directamente — no hay que descifrar para esto
+    const cadAmount  = Number((pi?.amount as number | undefined) ?? 0) / 100;
 
     try {
-      let recipientAccount: string;
-      let recipientPhone:   string;
-      let senderPhone:      string;
-      let recipientName:    string;
-      let targetCurrency:   string;
-      let targetCountry:    string;
-      let cadAmount:        number;
+      // Descifrar una vez en memoria para enviar SMS de confirmación al emisor
+      // PII existe solo en este bloque try y se descarta al salir — nunca va a Redis
+      let senderPhone   = "";
+      let recipientName = "";
+      try {
+        if (type === "remesa") {
+          const p = await parseRemesaV2Link(token, sigHmac, linkSecret);
+          if (p) { const d = await decryptPayload(p.encryptedPayload); senderPhone = d.senderPhone ?? ""; recipientName = p.recipientName; }
+        } else {
+          const p = await parseCobrarV2Link(token, sigHmac, linkSecret);
+          if (p) { const d = await decryptPayload(p.encryptedPayload); senderPhone = d.senderPhone ?? ""; recipientName = p.recipientName; }
+        }
+      } catch { /* non-critical — SMS se omite si falla el descifrado */ }
 
-      if (type === "remesa") {
-        const payload = await parseRemesaV2Link(token, sigHmac, linkSecret);
-        if (!payload) { console.warn(`[stripe/webhook] Token remesa inválido PI ${piId}`); return NextResponse.json({ received: true }); }
-        const decrypted  = await decryptPayload(payload.encryptedPayload);
-        recipientAccount = decrypted.account;
-        recipientPhone   = decrypted.recipientPhone ?? "";
-        senderPhone      = decrypted.senderPhone    ?? "";
-        recipientName    = payload.recipientName;
-        targetCurrency   = payload.receiveCurrency;
-        targetCountry    = payload.targetCountry;
-        cadAmount        = parseFloat(meta.cad_amount ?? "0");
-      } else {
-        const payload = await parseCobrarV2Link(token, sigHmac, linkSecret);
-        if (!payload) { console.warn(`[stripe/webhook] Token cobro inválido PI ${piId}`); return NextResponse.json({ received: true }); }
-        const decrypted  = await decryptPayload(payload.encryptedPayload);
-        recipientAccount = decrypted.account;
-        recipientPhone   = decrypted.recipientPhone ?? "";
-        senderPhone      = decrypted.senderPhone    ?? "";
-        recipientName    = payload.recipientName;
-        targetCurrency   = payload.currency;
-        targetCountry    = meta.target_country ?? "MX";
-        cadAmount        = payload.amount;
-      }
-
-      if (!recipientAccount) {
-        console.error(`[stripe/webhook] Sin cuenta para PI ${piId}`);
-        return NextResponse.json({ received: true });
-      }
-
-      // Guardar en Redis — se ejecutará cuando payout.paid llegue
-      await storePendingOrder({
-        piId, recipientAccount, recipientPhone, senderPhone,
-        recipientName, targetCurrency, targetCountry, cadAmount, type,
-        createdAt: Date.now(),
-      });
-
-      // Confirmar al cliente y al admin
+      // Confirmar al emisor — senderPhone y recipientName se usan aquí y se descartan
       await Promise.allSettled([
         senderPhone
           ? sendB2BPendingNotification(senderPhone, recipientName, cadAmount, "CAD", piId.slice(-8))
           : Promise.resolve(),
-        sendAdminWhatsApp(
-          `💳 OmniPay B2B — pago confirmado\n` +
-          `PI: ${piId}\n` +
-          `Receptor: ${recipientName} (${targetCountry})\n` +
-          `Monto: ${cadAmount} CAD → ${targetCurrency}\n` +
-          `Entrega: 3-4 días hábiles (Wise)`,
-        ),
+        sendAdminWhatsApp(`💳 OmniPay B2B confirmado\nPI: ${piId}\nMonto: ${cadAmount} CAD\nEntrega: 3-4 días hábiles`),
       ]);
+      // ── senderPhone y recipientName descartados aquí ──────────────────────
 
-      console.log(`[stripe/webhook] PI ${piId} guardado en Redis — esperando payout.paid`);
+      // Guardar en Redis: SOLO el token cifrado + metadatos no-PII
+      await storePendingToken({ piId, token, sig: sigHmac, type, cadAmount, createdAt: Date.now() });
+
+      console.log(`[stripe/webhook] PI ${piId} en cola — esperando payout.paid`);
       return NextResponse.json({ received: true, status: "PENDING_PAYOUT" });
 
     } catch (err) {
@@ -327,17 +328,14 @@ export async function POST(req: NextRequest) {
     const amount   = Number(payout?.amount ?? 0) / 100;
     const currency = String(payout?.currency ?? "").toUpperCase();
 
-    console.log(`[stripe/webhook] payout.paid ${amount} ${currency} — ejecutando órdenes pendientes`);
-
-    await sendAdminWhatsApp(
-      `🏦 OmniPay — Stripe depositó en Wise\n${amount} ${currency}\nEjecutando pagos B2B pendientes...`,
-    );
+    console.log(`[stripe/webhook] payout.paid ${amount} ${currency} — procesando cola B2B`);
+    await sendAdminWhatsApp(`🏦 Stripe depositó en Wise: ${amount} ${currency}\nEjecutando pagos pendientes...`);
 
     await processPendingOrders(
-      process.env.WISE_API_KEY     ?? "",
-      process.env.WISE_PROFILE_ID  ?? "",
+      process.env.WISE_API_KEY        ?? "",
+      process.env.WISE_PROFILE_ID     ?? "",
+      process.env.LINK_SECRET         ?? "",
       process.env.NEXT_PUBLIC_APP_URL ?? "",
-      process.env.LINK_SECRET      ?? "",
     );
 
     return NextResponse.json({ received: true });
