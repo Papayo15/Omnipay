@@ -421,7 +421,7 @@ export default function P2PPage() {
                 : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
             }`}
           >
-            🇨🇦 Desde Canadá
+            🇨🇦 Desde/Para Canadá
           </button>
         </div>
       </div>
@@ -432,7 +432,7 @@ export default function P2PPage() {
           {caStep === "form" ? (
             <>
               <p className="text-slate-500 text-xs bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 leading-relaxed">
-                📋 El receptor llena sus datos bancarios. El emisor envía CAD a nuestra cuenta Wise y nosotros lo reenviamos al destino vía Bridge o Wise.
+                📋 Cubre envíos <strong className="text-slate-300">desde</strong> Canadá a otro país, y envíos <strong className="text-slate-300">hacia</strong> una cuenta canadiense. Todo vía nuestra cuenta Wise — procesamos manualmente hasta que Bridge esté activo.
               </p>
 
               {/* Nombre receptor */}
