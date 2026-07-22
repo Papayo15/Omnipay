@@ -8,7 +8,8 @@ import { getFXRate } from "@/lib/fx";
 import { validateClabe, detectBank, type BankInfo } from "@/lib/clabe";
 import Calculator from "@/components/Calculator";
 
-type Step = "form" | "generating" | "share" | "error";
+type Step    = "form" | "generating" | "share" | "error";
+type SrcCur  = "USD" | "CAD";
 
 // All 41 countries with native Bridge bank rail (SPEI/ACH/PIX/FPS/Bre-B/SEPA)
 const BANK_RAIL_COUNTRIES = new Set([
@@ -24,7 +25,7 @@ const SEPA_COUNTRIES = new Set([
   "SE","DK","NO","PL","CZ","HU","RO","BG","CH","IS","LI","AD","MC","SM","XK","VA",
 ]);
 
-// Destination country list — Bridge-native first, then common unsupported for the "not yet" message
+// Destination country list — Bridge-native first, then common unsupported
 const COUNTRY_OPTIONS = [
   // Americas (Bridge native)
   { code: "MX", label: "México",          currency: "MXN", flag: "🇲🇽" },
@@ -108,11 +109,26 @@ interface CheckoutResponse {
   country:         string;
 }
 
+// Wise fee helpers (Canada relay)
+// Wise CAD→MXN ~1.08%+CA$1.93, CAD→USD ~0.37%+CA$0.50, CAD→EUR ~0.58%+CA$0.50
+// Usamos 1.10% + CA$3 mínimo como estimado conservador para todos los corredores
+function calcWiseFees(cadAmount: number) {
+  const wiseFeeTotal = parseFloat(Math.max(cadAmount * 0.011, 3.00).toFixed(2));
+  const wiseFxIn     = parseFloat((wiseFeeTotal * 0.55).toFixed(2)); // FX entrada CAD→intermedio (~0.60%)
+  const wiseFxOut    = parseFloat((wiseFeeTotal - wiseFxIn).toFixed(2)); // FX salida intermedio→local (~0.50%)
+  const omniSvc      = parseFloat(Math.max(cadAmount * 0.005, 1.99).toFixed(2));
+  const omniFlat     = 0.99;
+  const total        = parseFloat((cadAmount + wiseFeeTotal + omniSvc + omniFlat).toFixed(2));
+  return { wiseFeeTotal, wiseFxIn, wiseFxOut, omniSvc, omniFlat, total };
+}
+
 export default function P2PPage() {
   const t            = useTranslations("p2p");
   const router       = useRouter();
   const searchParams = useSearchParams();
 
+  // Source currency determines rail: USD → Bridge, CAD → Wise Canada relay
+  const [srcCurrency,    setSrcCurrency]    = useState<SrcCur>("USD");
   const [step,           setStep]           = useState<Step>("form");
   const [nombre,         setNombre]         = useState("");
   const [email,          setEmail]          = useState("");
@@ -130,34 +146,44 @@ export default function P2PPage() {
   const [quoteLoading,   setQuoteLoading]   = useState(false);
   const [fxRate,         setFxRate]         = useState<number | null>(null);
   const [kycUrl,         setKycUrl]         = useState<string | null>(null);
+  // Canada relay: tracks whether instruction screen is shown after submit
+  const [caSubmitted,    setCaSubmitted]    = useState(false);
+  const [caRef,          setCaRef]          = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedCountry = COUNTRY_OPTIONS.find((c) => c.code === country) ?? COUNTRY_OPTIONS[0];
   const currency        = selectedCountry.currency;
-  const rail            = BANK_RAIL_COUNTRIES.has(country) ? "bridge" : "unavailable";
 
-  // Pre-populate from URL query params (e.g. from WhatsApp bot)
+  // Rail auto-detection: CAD always → Wise Canada; USD → Bridge if country supported, else unavailable
+  const rail = srcCurrency === "CAD" ? "wise-canada"
+             : BANK_RAIL_COUNTRIES.has(country) ? "bridge"
+             : "unavailable";
+
+  // Pre-populate from URL query params
   useEffect(() => {
     const amt = searchParams.get("amount");
+    const cur = searchParams.get("currency");
     const cty = searchParams.get("country");
     if (amt && !isNaN(parseFloat(amt))) setAmountLocal(amt);
     if (cty && COUNTRY_OPTIONS.some(c => c.code === cty.toUpperCase())) {
       setCountry(cty.toUpperCase());
     }
+    if (cur === "CAD") setSrcCurrency("CAD");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Clear account + quote when country changes
+  // Clear account + quote when country or srcCurrency changes
   useEffect(() => {
     setAccount("");
     setQuote(null);
     setBankInfo(null);
     setClabeValid(null);
-  }, [country]);
+    setCaSubmitted(false);
+  }, [country, srcCurrency]);
 
-  // CLABE bank detection — fires when account changes and country is MX
+  // CLABE bank detection
   useEffect(() => {
-    if (country !== "MX") {
+    if (country !== "MX" || srcCurrency !== "USD") {
       setBankInfo(null);
       setClabeValid(null);
       return;
@@ -170,9 +196,9 @@ export default function P2PPage() {
       setBankInfo(null);
       setClabeValid(null);
     }
-  }, [account, country]);
+  }, [account, country, srcCurrency]);
 
-  // Live quote: debounce on amount + email + country change
+  // Live Bridge quote (only for USD/Bridge rail)
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const amt = parseFloat(amountLocal);
@@ -184,11 +210,10 @@ export default function P2PPage() {
         const rate = await getFXRate(currency, "USD");
         setFxRate(rate);
         if (!rate) return;
-        const usdEstimate = amt * rate;
         const res = await fetch("/api/bridge/quote", {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ amount: usdEstimate, email: email.toLowerCase(), type: "p2p", country }),
+          body:    JSON.stringify({ amount: parseFloat(amountLocal) * rate, email: email.toLowerCase(), type: "p2p", country }),
         });
         if (res.ok) setQuote(await res.json() as BridgeQuote);
       } catch { /* ignore */ } finally {
@@ -197,6 +222,7 @@ export default function P2PPage() {
     }, 700);
   }, [amountLocal, email, country, currency, rail]);
 
+  // Bridge link generation
   const generateLink = useCallback(async () => {
     const amt = parseFloat(amountLocal);
     if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt) return;
@@ -212,33 +238,27 @@ export default function P2PPage() {
         amount_target:   amt,
         recipient_phone: recipientPhone || undefined,
       };
-      // Map account to correct field based on country rail
-      if (country === "MX")                           body.clabe          = account;
-      else if (SEPA_COUNTRIES.has(country))           body.iban           = account;
-      else if (country === "BR")                      body.pix_key        = account;
+      if (country === "MX")                 body.clabe          = account;
+      else if (SEPA_COUNTRIES.has(country)) body.iban           = account;
+      else if (country === "BR")            body.pix_key        = account;
       else if (country === "GB") {
-        const parts = account.split("/");
-        body.sort_code      = parts[0]?.trim();
-        body.account_number = parts[1]?.trim();
+        const p = account.split("/");
+        body.sort_code = p[0]?.trim(); body.account_number = p[1]?.trim();
       } else if (country === "US") {
-        const parts = account.split("/");
-        body.routing_number = parts[0]?.trim();
-        body.account_number = parts[1]?.trim();
+        const p = account.split("/");
+        body.routing_number = p[0]?.trim(); body.account_number = p[1]?.trim();
       } else {
         body.account_number = account;
       }
-
       // Card support kept in code for future activation
       // body.card_number = ...
 
       const res  = await fetch("/api/bridge/checkout", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(body),
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
       const data = await res.json() as CheckoutResponse & { error?: string };
       if (!res.ok || data.error) throw new Error(data.error ?? "Error");
-
       setShareLink(data.pay_link);
       if (data.kyc_url) setKycUrl(data.kyc_url);
       setStep("share");
@@ -250,6 +270,20 @@ export default function P2PPage() {
     }
   }, [nombre, email, country, account, amountLocal, recipientPhone]);
 
+  // Canada relay submit — sends WhatsApp to admin and shows instructions
+  const submitCanada = useCallback(() => {
+    const amt   = parseFloat(amountLocal) || 0;
+    const { wiseFxIn, wiseFxOut, omniSvc, omniFlat, total } = calcWiseFees(amt);
+    const adminNumber = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
+    const ref   = `OP-${Date.now().toString(36).toUpperCase()}`;
+    setCaRef(ref);
+
+    const destLabel = COUNTRY_OPTIONS.find(c => c.code === country)?.label ?? country;
+    const msg = `🇨🇦 NUEVO P2P CANADÁ\n\nReceptor: ${nombre}\nDestino: ${destLabel} (${country})\nCuenta: ${account}\nPrincipal: CA$${amt.toFixed(2)}\nWise FX entrada: CA$${wiseFxIn.toFixed(2)}\nWise FX salida: CA$${wiseFxOut.toFixed(2)}\nOmniPay servicio: CA$${omniSvc.toFixed(2)}\nOmniPay flat: CA$${omniFlat.toFixed(2)}\nEmisor paga: CA$${total.toFixed(2)}${recipientPhone ? `\nTel receptor: ${recipientPhone}` : ""}\nRef: ${ref}\n\nProcesar vía Wise relay`;
+    if (adminNumber) window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(msg)}`, "_blank");
+    setCaSubmitted(true);
+  }, [nombre, country, account, amountLocal, recipientPhone]);
+
   const copyLink = useCallback(async () => {
     await navigator.clipboard.writeText(shareLink);
     setCopied(true);
@@ -258,30 +292,19 @@ export default function P2PPage() {
 
   const openWhatsApp = useCallback(() => {
     const senderAmt = quote ? quote.total_sender_pays.toFixed(2) : "?";
-    const msg = t("share_message_cobrar", {
-      name:          nombre,
-      amount:        parseFloat(amountLocal).toLocaleString(),
-      currency,
-      sender_amount: senderAmt,
-      link:          shareLink,
-    });
+    const msg = t("share_message_cobrar", { name: nombre, amount: parseFloat(amountLocal).toLocaleString(), currency, sender_amount: senderAmt, link: shareLink });
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   }, [nombre, amountLocal, currency, shareLink, quote, t]);
 
   const openTelegram = useCallback(() => {
     const senderAmt = quote ? quote.total_sender_pays.toFixed(2) : "?";
-    const msg = t("share_message_cobrar", {
-      name:          nombre,
-      amount:        parseFloat(amountLocal).toLocaleString(),
-      currency,
-      sender_amount: senderAmt,
-      link:          shareLink,
-    });
+    const msg = t("share_message_cobrar", { name: nombre, amount: parseFloat(amountLocal).toLocaleString(), currency, sender_amount: senderAmt, link: shareLink });
     window.open(`https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent(msg)}`, "_blank");
   }, [nombre, amountLocal, currency, shareLink, quote, t]);
 
   const accountValid = account.trim().length >= 5;
-  const formReady    = !!nombre.trim() && email.includes("@") && accountValid && parseFloat(amountLocal) >= 1 && rail === "bridge";
+  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && parseFloat(amountLocal) >= 1 && rail === "bridge";
+  const canadaReady  = !!nombre.trim() && accountValid && parseFloat(amountLocal) >= 1;
 
   // ── Generating ──────────────────────────────────────────────────────────────
   if (step === "generating") {
@@ -295,7 +318,7 @@ export default function P2PPage() {
     );
   }
 
-  // ── Share ───────────────────────────────────────────────────────────────────
+  // ── Share (Bridge) ───────────────────────────────────────────────────────────
   if (step === "share") {
     const senderAmt = quote ? quote.total_sender_pays.toFixed(2) : null;
     return (
@@ -309,30 +332,19 @@ export default function P2PPage() {
             <h2 className="text-white font-bold text-xl mb-1">{t("share_title")}</h2>
             <p className="text-slate-400 text-sm">{t("share_hint")}</p>
           </div>
-
-          {/* KYC notice */}
           {kycUrl && (
             <div className="w-full bg-amber-900/30 border border-amber-500/40 rounded-2xl p-4 text-left">
               <p className="text-amber-400 text-xs font-semibold mb-1">⚠️ {t("kyc_pending_title")}</p>
               <p className="text-slate-400 text-xs mb-2">{t("kyc_pending_body")}</p>
-              <a href={kycUrl} target="_blank" rel="noopener noreferrer"
-                className="text-emerald-400 text-xs underline">{t("kyc_complete_link")}</a>
+              <a href={kycUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-400 text-xs underline">{t("kyc_complete_link")}</a>
             </div>
           )}
-
-          {/* Summary card */}
           <div className="w-full bg-slate-800/60 border border-slate-700 rounded-2xl p-4 text-center">
             <p className="text-slate-400 text-xs mb-1">{nombre}</p>
             <p className="text-white font-bold text-2xl">{parseFloat(amountLocal).toLocaleString()} {currency}</p>
-            {senderAmt && (
-              <p className="text-slate-500 text-xs mt-2">
-                {t("sender_ref_usd", { amount: senderAmt })}
-              </p>
-            )}
+            {senderAmt && <p className="text-slate-500 text-xs mt-2">{t("sender_ref_usd", { amount: senderAmt })}</p>}
             <p className="text-slate-600 text-xs mt-1">Bridge · Sin base de datos</p>
           </div>
-
-          {/* Action buttons */}
           <div className="w-full space-y-3">
             <button onClick={openWhatsApp} className="w-full bg-[#25D366] hover:bg-[#20ba59] text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -356,7 +368,7 @@ export default function P2PPage() {
     );
   }
 
-  // ── Error ────────────────────────────────────────────────────────────────────
+  // ── Error ─────────────────────────────────────────────────────────────────────
   if (step === "error") {
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5">
@@ -384,9 +396,9 @@ export default function P2PPage() {
         <p className="text-slate-500 text-xs mb-4">{t("page_sub")}</p>
       </div>
 
-      {/* Calculator — Bridge channel only */}
+      {/* Calculator — Bridge + Wise for price comparison */}
       <div className="w-full max-w-sm mx-auto px-5 mb-6">
-        <Calculator visibleChannels={["bridge"]} />
+        <Calculator visibleChannels={["bridge", "wise"]} />
       </div>
 
       {/* Divider */}
@@ -401,46 +413,66 @@ export default function P2PPage() {
       {/* Form */}
       <div id="p2p-form" className="space-y-4 flex-1 max-w-sm mx-auto w-full px-5">
 
-        {/* Nombre */}
+        {/* ── Moneda de envío — determina el riel automáticamente ── */}
         <div>
-          <label className="block text-xs text-slate-400 mb-1">{t("label_recipient")}</label>
-          <input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            placeholder={t("name_placeholder")}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-          />
+          <label className="block text-xs text-slate-400 mb-2">{t("country_label")} · ¿en qué moneda envías?</label>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSrcCurrency("USD")}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                srcCurrency === "USD"
+                  ? "bg-emerald-500 text-white"
+                  : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
+              }`}
+            >
+              🇺🇸 USD · Bridge
+            </button>
+            <button
+              onClick={() => setSrcCurrency("CAD")}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                srcCurrency === "CAD"
+                  ? "bg-red-600 text-white"
+                  : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
+              }`}
+            >
+              🇨🇦 CAD · Wise
+            </button>
+          </div>
+          <p className="text-slate-600 text-[10px] mt-1.5 text-center">
+            {srcCurrency === "USD" ? "Riel: Bridge — entrega en minutos" : "Riel: Wise Canada relay — 1-2 días hábiles"}
+          </p>
         </div>
 
-        {/* Email */}
+        {/* Nombre receptor */}
         <div>
-          <label className="block text-xs text-slate-400 mb-1">{t("email_label")}</label>
-          <input
-            type="email"
-            inputMode="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="tu@email.com"
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-          />
+          <label className="block text-xs text-slate-400 mb-1">{t("label_recipient")}</label>
+          <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)}
+            placeholder={t("name_placeholder")}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
         </div>
+
+        {/* Email (solo Bridge) */}
+        {srcCurrency === "USD" && (
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">{t("email_label")}</label>
+            <input type="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@email.com"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
+          </div>
+        )}
 
         {/* País destino */}
         <div>
           <label className="block text-xs text-slate-400 mb-1">{t("country_label")}</label>
-          <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500"
-          >
+          <select value={country} onChange={(e) => setCountry(e.target.value)}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500">
             {COUNTRY_OPTIONS.map((c) => (
               <option key={c.code} value={c.code}>{c.flag} {c.label} — {c.currency}</option>
             ))}
           </select>
         </div>
 
-        {/* Rail no disponible */}
+        {/* USD: país no soportado por Bridge */}
         {rail === "unavailable" && (
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-4">
             <p className="text-slate-400 text-sm font-medium mb-1">🚧 {t("unsupported_note")}</p>
@@ -450,23 +482,21 @@ export default function P2PPage() {
           </div>
         )}
 
-        {/* Bridge form — only when country is supported */}
+        {/* ══ BRIDGE FORM (USD) ══════════════════════════════════════════════ */}
         {rail === "bridge" && (
           <>
             {/* Cuenta bancaria */}
             <div>
               <label className="block text-xs text-slate-400 mb-1">
                 {country === "MX" ? t("clabe_label")
-                  : SEPA_COUNTRIES.has(country) ? `IBAN · Recibirás EUR (SEPA)`
+                  : SEPA_COUNTRIES.has(country) ? "IBAN · Recibirás EUR (SEPA)"
                   : country === "BR" ? "Chave PIX"
                   : country === "GB" ? "Sort Code / Account (00-00-00 / 12345678)"
                   : country === "US" ? "Routing / Account (123456789 / 12345678)"
                   : country === "CO" ? "Número de cuenta Bre-B"
                   : "Número de cuenta"}
               </label>
-              <input
-                type="text"
-                inputMode={country === "MX" ? "numeric" : "text"}
+              <input type="text" inputMode={country === "MX" ? "numeric" : "text"}
                 value={account}
                 onChange={(e) => setAccount(country === "MX" ? e.target.value.replace(/\D/g, "").slice(0, 18) : e.target.value)}
                 placeholder={
@@ -475,24 +505,16 @@ export default function P2PPage() {
                   : country === "BR" ? "CPF, email, celular o llave aleatoria"
                   : country === "GB" ? "20-00-00 / 55779911"
                   : country === "US" ? "021000021 / 123456789"
-                  : country === "CO" ? "Número de cuenta"
-                  : ""
-                }
+                  : country === "CO" ? "Número de cuenta" : ""}
                 className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors ${
                   country === "MX" && account.length > 0
-                    ? clabeValid === false ? "border-red-500"
-                    : clabeValid === true  ? "border-emerald-500"
-                    : "border-slate-700"
-                  : "border-slate-700 focus:border-emerald-500"
+                    ? clabeValid === false ? "border-red-500" : clabeValid === true ? "border-emerald-500" : "border-slate-700"
+                    : "border-slate-700 focus:border-emerald-500"
                 }`}
               />
-              {/* CLABE bank detection */}
               {country === "MX" && bankInfo && (
                 <div className="flex items-center gap-2 mt-2">
-                  <span
-                    className="inline-block px-2 py-0.5 rounded text-xs font-semibold text-white"
-                    style={{ backgroundColor: bankInfo.color }}
-                  >
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold text-white" style={{ backgroundColor: bankInfo.color }}>
                     {bankInfo.shortName}
                   </span>
                   <span className="text-slate-400 text-xs">{bankInfo.name}</span>
@@ -504,34 +526,22 @@ export default function P2PPage() {
                 <p className="text-xs text-red-400 mt-1">{t("error_invalid_clabe")}</p>
               )}
               {SEPA_COUNTRIES.has(country) && (
-                <p className="text-xs text-slate-500 mt-1">
-                  ℹ️ El pago se acredita en Euros (EUR) independientemente de la moneda local
-                </p>
+                <p className="text-xs text-slate-500 mt-1">ℹ️ El pago se acredita en Euros (EUR) independientemente de la moneda local</p>
               )}
             </div>
 
             {/* Monto a recibir */}
             <div>
-              <label className="block text-xs text-slate-400 mb-1">
-                {t("amount_receive_label")} ({currency})
-              </label>
-              <input
-                type="number"
-                inputMode="numeric"
-                value={amountLocal}
-                onChange={(e) => setAmountLocal(e.target.value)}
-                placeholder={currency === "MXN" ? "5000" : currency === "USD" ? "300" : "500"}
-                min="1"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-              />
+              <label className="block text-xs text-slate-400 mb-1">{t("amount_receive_label")} ({currency})</label>
+              <input type="number" inputMode="numeric" value={amountLocal} onChange={(e) => setAmountLocal(e.target.value)}
+                placeholder={currency === "MXN" ? "5000" : currency === "USD" ? "300" : "500"} min="1"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
             </div>
 
-            {/* Live fee breakdown */}
+            {/* Live Bridge fee breakdown */}
             {(quoteLoading || quote) && (
               <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
-                <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-3">
-                  {t("fee_breakdown_title")}
-                </p>
+                <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-3">{t("fee_breakdown_title")}</p>
                 {quoteLoading ? (
                   <div className="flex items-center gap-2 text-slate-500 text-xs py-2">
                     <div className="w-3 h-3 border border-slate-500 border-t-transparent rounded-full animate-spin" />
@@ -550,7 +560,7 @@ export default function P2PPage() {
                       </div>
                     )}
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">{t("fee_bridge_conversion")} (0.75%+)</span>
+                      <span className="text-slate-500">{t("fee_bridge_conversion")} (0.75%+FX)</span>
                       <span className="text-slate-400">${quote.bridge_total.toFixed(2)} USD</span>
                     </div>
                     <div className="flex justify-between text-xs">
@@ -571,14 +581,13 @@ export default function P2PPage() {
                       <span className="text-white">{t("fee_total_to_send")}</span>
                       <span className="text-emerald-400">${quote.total_sender_pays.toFixed(2)} USD</span>
                     </div>
-                    <p className="text-[10px] text-slate-500 text-center mt-1">{t("fee_sender_sees_own_currency")}</p>
                     <p className="text-[10px] text-slate-600 text-center mt-1">{t("fee_approx_note")}</p>
                   </>
                 ) : null}
               </div>
             )}
 
-            {/* Teléfono receptor (opcional) */}
+            {/* Teléfono (opcional) */}
             <div>
               <label className="block text-xs text-slate-400 mb-1">{t("label_recipient_phone")}</label>
               <input type="tel" inputMode="tel" value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)}
@@ -586,16 +595,158 @@ export default function P2PPage() {
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
             </div>
 
-            {/* Submit */}
-            <button
-              onClick={generateLink}
-              disabled={submitting || !formReady || quoteLoading}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2"
-            >
+            <button onClick={generateLink} disabled={submitting || !bridgeReady || quoteLoading}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
               {submitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}
             </button>
           </>
         )}
+
+        {/* ══ WISE CANADA FORM (CAD) ════════════════════════════════════════ */}
+        {rail === "wise-canada" && !caSubmitted && (
+          <>
+            <p className="text-slate-500 text-xs bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 leading-relaxed">
+              {t("canada_info")}
+            </p>
+
+            {/* Cuenta destino */}
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">
+                {country === "MX" ? t("clabe_label")
+                  : country === "BR" ? "Chave PIX"
+                  : country === "GB" ? "Sort Code / Account (00-00-00 / 12345678)"
+                  : country === "CO" ? "Cuenta Bre-B"
+                  : country === "US" ? "Routing / Account"
+                  : SEPA_COUNTRIES.has(country) ? "IBAN (SEPA)"
+                  : "IBAN o número de cuenta"}
+              </label>
+              <input type="text" inputMode={country === "MX" ? "numeric" : "text"}
+                value={account} onChange={(e) => setAccount(e.target.value)}
+                placeholder={country === "MX" ? "646180528000000001" : country === "BR" ? "CPF, email o celular" : country === "GB" ? "20-00-00 / 55779911" : "IBAN o número de cuenta"}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm font-mono" />
+            </div>
+
+            {/* Monto en CAD */}
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">{t("canada_amount_label")}</label>
+              <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3">
+                <span className="text-slate-400 text-sm">CA$</span>
+                <input type="number" inputMode="decimal" min="1" value={amountLocal}
+                  onChange={(e) => setAmountLocal(e.target.value)} placeholder="500"
+                  className="flex-1 bg-transparent text-white text-lg font-semibold outline-none" />
+                <span className="text-slate-500 text-sm">CAD</span>
+              </div>
+            </div>
+
+            {/* Wise fee breakdown — 2 FX splits */}
+            {parseFloat(amountLocal) > 0 && (() => {
+              const { wiseFxIn, wiseFxOut, omniSvc, omniFlat, total } = calcWiseFees(parseFloat(amountLocal));
+              return (
+                <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-2">{t("fee_breakdown_title")}</p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">{t("fee_principal")}</span>
+                    <span className="text-white font-semibold">CA${parseFloat(amountLocal).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">Wise FX entrada (CAD→intermedio ~0.60%)</span>
+                    <span className="text-green-400">+CA${wiseFxIn.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">Wise FX salida (→moneda local ~0.50%)</span>
+                    <span className="text-green-400">+CA${wiseFxOut.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">OmniPay servicio (0.50%, mín CA$1.99)</span>
+                    <span className="text-emerald-400">+CA${omniSvc.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">OmniPay flat (fijo)</span>
+                    <span className="text-emerald-400">+CA${omniFlat.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t border-slate-700 pt-2 flex justify-between text-sm font-bold">
+                    <span className="text-white">{t("fee_total_to_send")}</span>
+                    <span className="text-red-400">CA${total.toFixed(2)}</span>
+                  </div>
+                  <p className="text-[10px] text-slate-600 text-center">
+                    Wise publica: CAD→MXN ~1.08% · CAD→USD ~0.37% · CAD→EUR ~0.58%
+                  </p>
+                </div>
+              );
+            })()}
+
+            {/* Teléfono receptor */}
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">{t("canada_phone_label")}</label>
+              <input type="tel" inputMode="tel" value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)}
+                placeholder="+52 55 1234 5678"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm" />
+            </div>
+
+            <button onClick={submitCanada} disabled={!canadaReady}
+              className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-3 transition-colors">
+              {t("canada_submit")}
+            </button>
+          </>
+        )}
+
+        {/* Canada: instrucciones post-envío */}
+        {rail === "wise-canada" && caSubmitted && (() => {
+          const amt = parseFloat(amountLocal) || 0;
+          const { wiseFxIn, wiseFxOut, omniSvc, omniFlat, total } = calcWiseFees(amt);
+          return (
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="text-4xl mb-2">✅</div>
+                <h3 className="text-white font-bold text-lg">{t("canada_created_title")}</h3>
+                <p className="text-slate-400 text-xs mt-1">{t("canada_created_sub")}</p>
+              </div>
+              <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 space-y-3">
+                <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest">{t("canada_instructions_label")}</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">{t("canada_send_to")}</span>
+                    <span className="text-white font-semibold">{t("canada_wise_name")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">{t("canada_amount_row")}</span>
+                    <span className="text-white font-semibold">CA${total.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">Wise FX entrada</span>
+                    <span className="text-slate-400">+CA${wiseFxIn.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">Wise FX salida</span>
+                    <span className="text-slate-400">+CA${wiseFxOut.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">OmniPay</span>
+                    <span className="text-slate-400">+CA${(omniSvc + omniFlat).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">{t("canada_reference")}</span>
+                    <span className="text-emerald-400 font-mono font-semibold">{caRef}</span>
+                  </div>
+                </div>
+                <div className="border-t border-slate-700 pt-3">
+                  <p className="text-slate-500 text-xs">{t("canada_wise_note")}</p>
+                </div>
+              </div>
+              <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-xl px-4 py-3">
+                <p className="text-emerald-400 text-xs">
+                  ✅ {t("canada_recipient_name")}: <span className="font-semibold">{nombre}</span><br/>
+                  {COUNTRY_OPTIONS.find(c => c.code === country)?.flag} {COUNTRY_OPTIONS.find(c => c.code === country)?.label} · <span className="font-mono">{account}</span>
+                </p>
+                <p className="text-slate-500 text-xs mt-2">{t("canada_processing_note")}</p>
+              </div>
+              <button onClick={() => { setCaSubmitted(false); setNombre(""); setAccount(""); setAmountLocal(""); setRecipientPhone(""); setCaRef(""); }}
+                className="w-full border border-slate-600 text-slate-400 hover:text-white rounded-xl py-3 text-sm transition-colors">
+                {t("canada_new_request")}
+              </button>
+            </div>
+          );
+        })()}
 
         <p className="text-center text-xs text-slate-700 pb-6">
           {t("zero_data_note")}
