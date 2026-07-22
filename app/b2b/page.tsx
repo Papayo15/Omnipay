@@ -541,10 +541,7 @@ export default function B2BPage() {
 
       {/* Calculator — B2B channel only */}
       <div className="w-full max-w-sm mx-auto px-5 mb-6">
-        <Calculator
-          visibleChannels={["b2b"]}
-          onProceed={() => formRef.current?.scrollIntoView({ behavior: "smooth" })}
-        />
+        <Calculator visibleChannels={["b2b"]} />
       </div>
 
       {/* 3-4 days notice */}

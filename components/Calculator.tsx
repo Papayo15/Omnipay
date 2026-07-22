@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { getFXRate } from "@/lib/fx";
 import { COUNTRIES } from "@/constants/countries";
 
@@ -21,6 +20,16 @@ const WISE_MIN_CAD       = 3.00;    // Mínimo CA$3 (cubre el fixed fee de Wise)
 // Stripe (B2B card acceptance)
 const STRIPE_PCT         = 0.029;   // 2.90%
 const STRIPE_FLAT        = 0.30;    // $0.30 fijo
+
+// Bridge FX fees by destination currency (confirmed via Bridge email, julio 2026)
+const BRIDGE_FX_RATES: Record<string, number> = {
+  MXN: 0.005,  // 0.50% USD↔MXN (Bridge confirmed)
+  EUR: 0.005,  // 0.50% USD↔EUR (Bridge confirmed)
+  BRL: 0.0055, // 0.55% USD↔BRL (Bridge confirmed)
+  GBP: 0.005,  // 0.50% estimate (similar corridor to EUR)
+  COP: 0.005,  // 0.50% estimate
+  USD: 0,      // Sin FX (misma moneda)
+};
 
 // OmniPay margin
 const OMNIPAY_PCT        = 0.005;   // 0.50%
@@ -64,18 +73,19 @@ function calcQuote(
   let total = amount;
 
   if (channel === "bridge") {
-    // Bridge: USD entra → USDC intermedio → moneda local sale
-    // Costo real: on-ramp 0.50% + off-ramp 0.25% = 0.75% total Bridge
     const onramp  = parseFloat((amount * BRIDGE_ONRAMP_PCT).toFixed(2));
     const offramp = parseFloat((amount * BRIDGE_OFFRAMP_PCT).toFixed(2));
-    const omni    = parseFloat((Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN) + OMNIPAY_FLAT_P2P).toFixed(2));
+    const fxPct   = BRIDGE_FX_RATES[destCurrency] ?? 0.005;
+    const fxFee   = parseFloat((amount * fxPct).toFixed(2));
+    const omniSvc = parseFloat(Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN).toFixed(2));
     const kyc     = isNew ? KYC_P2P : 0;
     lines.push({ label: "Bridge on-ramp (USD→USDC)",    provider: "Bridge.xyz", amount: onramp,  note: "0.50%" });
     lines.push({ label: "Bridge off-ramp (USDC→local)", provider: "Bridge.xyz", amount: offramp, note: "0.25%" });
-    lines.push({ label: "OmniPay servicio",              provider: "OmniPay",    amount: Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN), note: "0.50%" });
+    if (fxFee > 0) lines.push({ label: `Bridge FX (→${destCurrency})`, provider: "Bridge.xyz", amount: fxFee, note: `${(fxPct * 100).toFixed(2)}%` });
+    lines.push({ label: "OmniPay servicio",              provider: "OmniPay",    amount: omniSvc,         note: "0.50%" });
     lines.push({ label: "OmniPay flat",                  provider: "OmniPay",    amount: OMNIPAY_FLAT_P2P });
     if (kyc > 0) lines.push({ label: "KYC verificación (única vez)", provider: "Bridge.xyz", amount: kyc, note: "Solo primera transacción" });
-    total = parseFloat((amount + onramp + offramp + omni + kyc).toFixed(2));
+    total = parseFloat((amount + onramp + offramp + fxFee + omniSvc + OMNIPAY_FLAT_P2P + kyc).toFixed(2));
   } else if (channel === "wise") {
     // Wise CAD: incluye FX entrada (CAD→intermedio) + FX salida (→moneda destino)
     // Wise publica: ~1.08% CAD→MXN, ~0.37% CAD→USD, ~0.58% CAD→EUR + fixed fees
@@ -118,7 +128,7 @@ function calcQuote(
 }
 
 const CHANNEL_LABELS: Record<Channel, { title: string; sub: string; src: string }> = {
-  bridge: { title: "P2P desde EE.UU.",  sub: "via Bridge — minutos",    src: "USD" },
+  bridge: { title: "P2P Internacional", sub: "via Bridge — minutos",    src: "USD" },
   wise:   { title: "P2P desde Canadá",  sub: "via Wise — 1-2 días",     src: "CAD" },
   b2b:    { title: "Empresa / B2B",     sub: "Stripe + Wise — 3-4 días", src: "CAD" },
 };
@@ -137,12 +147,9 @@ function fmt(n: number, currency = "USD"): string {
 interface CalcProps {
   /** Restrict which channel tabs are shown. Default: all three. */
   visibleChannels?: Channel[];
-  /** Called when user clicks "Proceder". Overrides default routing. */
-  onProceed?: () => void;
 }
 
-export default function Calculator({ visibleChannels, onProceed }: CalcProps = {}) {
-  const router = useRouter();
+export default function Calculator({ visibleChannels }: CalcProps = {}) {
   const allowed: Channel[] = visibleChannels ?? ["bridge", "wise", "b2b"];
   const [channel, setChannel] = useState<Channel>(allowed[0]);
   const [amount, setAmount]   = useState("300");
@@ -182,38 +189,29 @@ export default function Calculator({ visibleChannels, onProceed }: CalcProps = {
     }
   }, [channel, amount, destCurrency, fxRate, isNew]);
 
-  function handleProceed() {
-    if (onProceed) { onProceed(); return; }
-    const n = parseFloat(amount);
-    if (!n) return;
-    if (channel === "b2b") {
-      router.push("/b2b");
-    } else {
-      router.push(`/p2p?amount=${n}&currency=${srcCurrency}&country=${country}`);
-    }
-  }
-
   return (
     <div className="w-full max-w-md mx-auto rounded-2xl bg-slate-900 border border-slate-700 overflow-hidden">
       {/* Header */}
       <div className="px-5 pt-5 pb-3 border-b border-slate-800">
         <p className="text-slate-400 text-xs uppercase tracking-wider mb-2">Simula tu envío</p>
-        <div className="flex gap-1">
-          {allowed.map(ch => (
-            <button
-              key={ch}
-              onClick={() => setChannel(ch)}
-              className={`flex-1 rounded-lg py-2 px-1 text-xs font-medium transition-colors ${
-                channel === ch
-                  ? "bg-emerald-500 text-white"
-                  : "bg-slate-800 text-slate-400 hover:text-white"
-              }`}
-            >
-              <div>{CHANNEL_LABELS[ch].title}</div>
-              <div className="text-[10px] opacity-70">{CHANNEL_LABELS[ch].sub}</div>
-            </button>
-          ))}
-        </div>
+        {allowed.length > 1 && (
+          <div className="flex gap-1">
+            {allowed.map(ch => (
+              <button
+                key={ch}
+                onClick={() => setChannel(ch)}
+                className={`flex-1 rounded-lg py-2 px-1 text-xs font-medium transition-colors ${
+                  channel === ch
+                    ? "bg-emerald-500 text-white"
+                    : "bg-slate-800 text-slate-400 hover:text-white"
+                }`}
+              >
+                <div>{CHANNEL_LABELS[ch].title}</div>
+                <div className="text-[10px] opacity-70">{CHANNEL_LABELS[ch].sub}</div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="p-5 space-y-4">
@@ -241,32 +239,15 @@ export default function Calculator({ visibleChannels, onProceed }: CalcProps = {
         {channel !== "b2b" && (
           <div>
             <label className="text-slate-400 text-xs block mb-1">País destino</label>
-            <div className="flex gap-1 flex-wrap max-h-28 overflow-y-auto">
-              {BRIDGE_COUNTRIES.slice(0, 12).map(c => (
-                <button
-                  key={c.code}
-                  onClick={() => setCountry(c.code)}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${
-                    country === c.code
-                      ? "bg-emerald-500/20 border border-emerald-500 text-emerald-300"
-                      : "bg-slate-800 border border-slate-700 text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <span>{c.flag}</span>
-                  <span>{c.code}</span>
-                </button>
+            <select
+              value={country}
+              onChange={e => setCountry(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500"
+            >
+              {BRIDGE_COUNTRIES.map(c => (
+                <option key={c.code} value={c.code}>{c.flag} {c.name}</option>
               ))}
-              <select
-                value={BRIDGE_COUNTRIES.slice(12).some(c => c.code === country) ? country : ""}
-                onChange={e => e.target.value && setCountry(e.target.value)}
-                className="bg-slate-800 border border-slate-700 text-slate-400 text-xs rounded-lg px-2 py-1"
-              >
-                <option value="">Más países…</option>
-                {BRIDGE_COUNTRIES.slice(12).map(c => (
-                  <option key={c.code} value={c.code}>{c.flag} {c.name}</option>
-                ))}
-              </select>
-            </div>
+            </select>
             {fxRate && (
               <p className="text-slate-500 text-xs mt-1">
                 1 {srcCurrency} = {fxRate.toFixed(4)} {destCurrency} (tipo de cambio live)
@@ -321,14 +302,6 @@ export default function Calculator({ visibleChannels, onProceed }: CalcProps = {
           </div>
         )}
 
-        {/* Proceed button */}
-        <button
-          onClick={handleProceed}
-          disabled={!quote}
-          className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-3 transition-colors"
-        >
-          {channel === "b2b" ? "Ver opciones B2B →" : `Proceder con este envío →`}
-        </button>
         <p className="text-center text-slate-600 text-xs">
           Sin registro previo · Quote sin compromiso
         </p>
