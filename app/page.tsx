@@ -943,14 +943,14 @@ export default function Home() {
     }
 
     return (
-      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 py-16">
-        {/* Logo + language selector on the same row */}
-        <div className="w-full max-w-xl flex items-center justify-between mb-1">
+      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center px-5 pt-10 pb-16">
+
+        {/* ── Logo + Language selector ── */}
+        <div className="w-full max-w-md flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
-            <Zap className="w-7 h-7 text-[#00C9C8]" />
-            <span className="text-2xl font-bold text-white tracking-tight">OmniPay Global</span>
+            <Zap className="w-6 h-6 text-[#00C9C8]" />
+            <span className="text-xl font-bold text-white tracking-tight">OmniPay</span>
           </div>
-          {/* Language Selector */}
           <div className="relative group">
             <button className="flex items-center gap-1.5 text-slate-400 hover:text-white text-xs bg-slate-800/60 hover:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 transition-all">
               <span>{currentLang.flag}</span>
@@ -971,103 +971,51 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <p className="text-slate-500 text-xs mb-12 text-center w-full max-w-xl">{tl("tagline")}</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl">
-          {/* B2B */}
+        {/* ── Tagline ── */}
+        <p className="text-slate-500 text-xs text-center w-full max-w-md mb-8">
+          {tl("tagline")}
+        </p>
+
+        {/* ── Simulator ── */}
+        <div className="w-full max-w-md mb-8">
+          <Calculator />
+        </div>
+
+        {/* ── Two action buttons ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
           <button
             onClick={() => setStep("b2b")}
-            className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-[#00C9C8]/60 rounded-2xl p-6 text-left transition-all duration-200 active:scale-[0.98]"
+            className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-[#00C9C8]/60 rounded-2xl p-5 text-left transition-all duration-200 active:scale-[0.98]"
           >
-            <div className="text-3xl mb-3">💼</div>
-            <h2 className="text-white font-bold text-base mb-1">{tl("b2b_title")}</h2>
-            <p className="text-slate-400 text-xs mb-4 leading-relaxed">{tl("b2b_sub")}</p>
-            <div className="text-[10px] text-slate-500 bg-slate-900/60 rounded-lg px-3 py-1.5 inline-block mb-4">
+            <div className="text-2xl mb-2">💼</div>
+            <h2 className="text-white font-bold text-sm mb-1">{tl("b2b_title")}</h2>
+            <p className="text-slate-400 text-xs leading-relaxed mb-3">{tl("b2b_sub")}</p>
+            <span className="text-[10px] text-slate-500 bg-slate-900/60 rounded-md px-2 py-1 inline-block">
               {tl("b2b_badge")}
-            </div>
-            <p className="text-[#00C9C8] text-sm font-semibold group-hover:translate-x-1 transition-transform">
+            </span>
+            <p className="text-[#00C9C8] text-xs font-semibold mt-3 group-hover:translate-x-1 transition-transform">
               {tl("b2b_cta")}
             </p>
           </button>
 
-          {/* P2P */}
           <button
             onClick={() => router.push("/p2p")}
-            className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/60 rounded-2xl p-6 text-left transition-all duration-200 active:scale-[0.98]"
+            className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/60 rounded-2xl p-5 text-left transition-all duration-200 active:scale-[0.98]"
           >
-            <div className="text-3xl mb-3">🌍</div>
-            <h2 className="text-white font-bold text-base mb-1">{tl("p2p_title")}</h2>
-            <p className="text-slate-400 text-xs mb-4 leading-relaxed">{tl("p2p_sub")}</p>
-            <div className="text-[10px] text-slate-500 bg-slate-900/60 rounded-lg px-3 py-1.5 inline-block mb-4">
+            <div className="text-2xl mb-2">🌍</div>
+            <h2 className="text-white font-bold text-sm mb-1">{tl("p2p_title")}</h2>
+            <p className="text-slate-400 text-xs leading-relaxed mb-3">{tl("p2p_sub")}</p>
+            <span className="text-[10px] text-slate-500 bg-slate-900/60 rounded-md px-2 py-1 inline-block">
               {tl("p2p_badge")}
-            </div>
-            <p className="text-emerald-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
+            </span>
+            <p className="text-emerald-400 text-xs font-semibold mt-3 group-hover:translate-x-1 transition-transform">
               {tl("p2p_cta")}
             </p>
           </button>
-
-          {/* WhatsApp Bot */}
-          <a
-            href={`https://wa.me/${(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g,"")}?text=${encodeURIComponent("Hola, quiero enviar dinero")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 hover:border-[#25D366]/60 rounded-2xl p-6 text-left transition-all duration-200 active:scale-[0.98]"
-          >
-            <div className="text-3xl mb-3">💬</div>
-            <h2 className="text-white font-bold text-base mb-1">WhatsApp Bot</h2>
-            <p className="text-slate-400 text-xs mb-4 leading-relaxed">
-              Escríbenos en WhatsApp y el bot genera tu link de pago automáticamente. Sin registro.
-            </p>
-            <div className="text-[10px] text-slate-500 bg-slate-900/60 rounded-lg px-3 py-1.5 inline-block mb-4">
-              Respuesta automática · 41 países · Gratis
-            </div>
-            <p className="text-[#25D366] text-sm font-semibold group-hover:translate-x-1 transition-transform">
-              Abrir WhatsApp →
-            </p>
-          </a>
-
-          {/* Calculator / Simulador */}
-          <button
-            onClick={() => {
-              const el = document.getElementById("calculator-section");
-              el?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/60 rounded-2xl p-6 text-left transition-all duration-200 active:scale-[0.98]"
-          >
-            <div className="text-3xl mb-3">🧮</div>
-            <h2 className="text-white font-bold text-base mb-1">Simulador de envío</h2>
-            <p className="text-slate-400 text-xs mb-4 leading-relaxed">
-              Calcula el costo exacto antes de enviar. Sin registro. Desglose completo de cada comisión.
-            </p>
-            <div className="text-[10px] text-slate-500 bg-slate-900/60 rounded-lg px-3 py-1.5 inline-block mb-4">
-              Tipo de cambio en vivo · Transparente
-            </div>
-            <p className="text-amber-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
-              Ver simulador ↓
-            </p>
-          </button>
         </div>
 
-        {/* ── Calculator section ── */}
-        <div id="calculator-section" className="w-full max-w-xl mt-10">
-          <h3 className="text-white font-bold text-lg text-center mb-2">Simula tu envío</h3>
-          <p className="text-slate-400 text-xs text-center mb-5">
-            Cada comisión mostrada línea por línea · Bridge.xyz, Wise, Stripe, OmniPay
-          </p>
-          <Calculator />
-        </div>
-
-        {/* ── What is OmniPay ── */}
-        <div className="w-full max-w-xl mt-10 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6">
-          <h3 className="text-white font-semibold text-sm mb-2">{tl("about_title")}</h3>
-          <p className="text-slate-400 text-xs leading-relaxed mb-4">{tl("about_body")}</p>
-          <p className="text-slate-600 text-[10px] leading-relaxed border-t border-slate-700/60 pt-3">
-            {tl("disclaimer")}
-          </p>
-        </div>
-
-        {/* ── Footer ── */}
-        <p className="text-slate-700 text-[10px] text-center mt-6 max-w-xl">
+        <p className="text-slate-700 text-[10px] text-center mt-8 max-w-md">
           {tl("footer_disclaimer")}
         </p>
       </main>
@@ -1091,87 +1039,9 @@ export default function Home() {
       </div>
 
       {/* ── B2B HEADER ───────────────────────────────────────────────────────── */}
-      <section className="w-full max-w-2xl mx-auto px-6 pt-8 pb-4 text-center">
-        <div className="text-4xl mb-3">💼</div>
-        <h1 className="text-white font-bold text-2xl mb-1">{tl("b2b_title")}</h1>
-        <p className="text-slate-400 text-sm mb-2">{tl("b2b_sub")}</p>
-        <span className="text-[10px] text-slate-500 bg-slate-800 rounded-lg px-3 py-1.5 inline-block">
-          {tl("b2b_badge")}
-        </span>
-      </section>
-
-      {/* ── FEATURES ─────────────────────────────────────────────────────────── */}
-      <section className="w-full max-w-2xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-          <div className="text-2xl mb-3">⚡</div>
-          <h3 className="text-white font-semibold text-sm mb-2">{tl("feat1_title")}</h3>
-          <p className="text-slate-400 text-xs leading-relaxed">{tl("feat1_body")}</p>
-        </div>
-        <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-          <div className="text-2xl mb-3">📋</div>
-          <h3 className="text-white font-semibold text-sm mb-2">{tl("feat2_title")}</h3>
-          <p className="text-slate-400 text-xs leading-relaxed">{tl("feat2_body")}</p>
-        </div>
-        <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-          <div className="text-2xl mb-3">🔒</div>
-          <h3 className="text-white font-semibold text-sm mb-2">{tl("feat3_title")}</h3>
-          <p className="text-slate-400 text-xs leading-relaxed">{tl("feat3_body")}</p>
-        </div>
-      </section>
-
-      {/* ── PRICING ──────────────────────────────────────────────────────────── */}
-      <section className="w-full max-w-2xl mx-auto px-6 pb-10">
-        <h2 className="text-white font-bold text-xl text-center mb-2">{tl("pricing_title")}</h2>
-        <p className="text-slate-500 text-xs text-center mb-8">{tl("pricing_sub")}</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Standard */}
-          <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 flex flex-col gap-4">
-            <div>
-              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">{tl("pricing_standard_label")}</span>
-              <p className="text-[#00C9C8] text-4xl font-extrabold mt-1">1%</p>
-              <p className="text-slate-400 text-xs mt-1">{tl("pricing_standard_fee")}</p>
-            </div>
-            <ul className="text-slate-400 text-xs space-y-1">
-              <li>{tl("pricing_standard_li1")}</li>
-              <li>{tl("pricing_standard_li2")}</li>
-              <li>{tl("pricing_standard_li3")}</li>
-              <li>{tl("pricing_standard_li4")}</li>
-            </ul>
-            <button
-              onClick={() => document.getElementById("invoice-form")?.scrollIntoView({ behavior: "smooth" })}
-              className="mt-auto w-full bg-[#00C9C8] hover:bg-[#00b5b5] active:scale-95 transition-all text-slate-900 font-semibold py-3 rounded-xl text-sm"
-            >
-              {tl("pricing_cta")}
-            </button>
-          </div>
-          {/* Instant */}
-          <div className="bg-slate-800/60 border border-indigo-500/40 rounded-2xl p-6 flex flex-col gap-4 relative">
-            <span className="absolute top-4 right-4 bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">FAST</span>
-            <div>
-              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">{tl("pricing_instant_label")}</span>
-              <p className="text-indigo-400 text-4xl font-extrabold mt-1">2%</p>
-              <p className="text-slate-400 text-xs mt-1">{tl("pricing_instant_fee")}</p>
-            </div>
-            <ul className="text-slate-400 text-xs space-y-1">
-              <li>{tl("pricing_instant_li1")}</li>
-              <li>{tl("pricing_instant_li2")}</li>
-              <li>{tl("pricing_instant_li3")}</li>
-              <li>{tl("pricing_instant_li4")}</li>
-            </ul>
-            <button
-              onClick={() => document.getElementById("invoice-form")?.scrollIntoView({ behavior: "smooth" })}
-              className="mt-auto w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-semibold py-3 rounded-xl text-sm"
-            >
-              {tl("pricing_cta")}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FORM ─────────────────────────────────────────────────────────────── */}
-      <div className="w-full max-w-sm mx-auto px-5 pb-4">
-        <h2 className="text-white font-bold text-lg mb-1">{tl("form_title")}</h2>
-        <p className="text-slate-500 text-xs mb-6">{tl("form_sub")}</p>
+      <div className="w-full max-w-sm mx-auto px-5 pt-6 pb-4">
+        <h2 className="text-white font-bold text-lg mb-1">💼 {tl("b2b_title")}</h2>
+        <p className="text-slate-500 text-xs">{tl("b2b_sub")}</p>
       </div>
 
       {/* Form fields */}
