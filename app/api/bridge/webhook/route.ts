@@ -12,7 +12,7 @@
 //   5. Generates signed receipt URL for the comprobante page
 
 import { NextRequest, NextResponse }            from "next/server";
-import { createClient }                         from "redis";
+import { getRedis }                             from "@/lib/redis";
 import { verifyBridgeWebhook, parseWebhookEvent } from "@/providers/bridge/webhooks";
 import { mapTransferStatus }                    from "@/providers/bridge/transfers";
 import { updateOrder, getOrder }                from "@/lib/order-state";
@@ -26,20 +26,14 @@ export const runtime = "nodejs";
 const processedEventIdsFallback = new Set<string>();
 
 async function markEventProcessed(eventId: string): Promise<boolean> {
-  const redisUrl = process.env.REDIS_URL;
-
-  if (redisUrl) {
-    const client = createClient({ url: redisUrl });
+  if (process.env.REDIS_URL) {
     try {
-      await client.connect();
-      // SET NX EX — returns "OK" if key was new, null if key already existed
-      const result = await client.set(`wh:${eventId}`, "1", { NX: true, EX: 86400 });
+      const redis = await getRedis();
+      const result = await redis.set(`wh:${eventId}`, "1", { NX: true, EX: 86400 });
       return result === "OK"; // true = new event, false = duplicate
     } catch (e) {
       console.error("[bridge/webhook] Redis error:", (e as Error).message);
       // Redis unreachable — fall through to in-memory fallback
-    } finally {
-      await client.quit().catch(() => undefined);
     }
   }
 

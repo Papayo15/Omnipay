@@ -1,19 +1,40 @@
-import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
-import { parseCobrarV2Link, parseRemesaV2Link } from "@/lib/link";
-import { decryptPayload } from "@/lib/accountcrypto";
-import { getWiseAccountType, buildWiseAccountDetails } from "@/lib/wise-accounts";
-import { sendPaymentNotification, sendAdminWhatsApp } from "@/lib/notify";
-import { buildReceiptURL } from "@/lib/link";
-
 // POST /api/webhooks/stripe
 //
-// REGLA 2 — Wise solo se dispara desde aquí, de servidor a servidor.
-//            El cliente NUNCA inicia una transferencia directamente.
+// B2B flow (two-step):
+//   Step 1 — payment_intent.succeeded:
+//     Parse token → extract recipient details → store in Redis as PENDING
+//     Send confirmation to sender: "tu pago llegará en 3-4 días hábiles"
 //
-// Rail único B2B: Wise → CLABE, IBAN, ACH, PIX, UPI (170+ países)
-// Los rails de tarjeta (Paysend/NIUM) y wallet (Thunes) fueron eliminados.
-// El P2P usa su propio webhook en /api/v1/p2p/webhook (Ramp → Bitso → SPEI).
+//   Step 2 — payout.paid (Stripe deposited funds into Wise):
+//     Scan all PENDING orders in Redis older than 2 days
+//     Execute Wise transfer for each → send completion SMS → delete from Redis
+//     Permanent errors (invalid account) → refund + delete from Redis
+//     Transient errors → leave in Redis, retry on next payout.paid
+
+import { NextRequest, NextResponse }                          from "next/server";
+import Stripe                                                  from "stripe";
+import { parseCobrarV2Link, parseRemesaV2Link, buildReceiptURL } from "@/lib/link";
+import { decryptPayload }                                      from "@/lib/accountcrypto";
+import { getWiseAccountType, buildWiseAccountDetails }         from "@/lib/wise-accounts";
+import { sendPaymentNotification, sendAdminWhatsApp }          from "@/lib/notify";
+import { getRedis }                                            from "@/lib/redis";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface PendingB2BOrder {
+  piId:             string;
+  recipientAccount: string;
+  recipientPhone:   string;
+  senderPhone:      string;
+  recipientName:    string;
+  targetCurrency:   string;
+  targetCountry:    string;
+  cadAmount:        number;
+  type:             string;
+  createdAt:        number;
+}
+
+// ── Stripe signature verification ─────────────────────────────────────────────
 
 async function verifyStripeSignature(rawBody: string, sigHeader: string, secret: string): Promise<boolean> {
   try {
@@ -31,18 +52,18 @@ async function verifyStripeSignature(rawBody: string, sigHeader: string, secret:
   } catch { return false; }
 }
 
-// ── Rail único B2B: Wise — cuentas bancarias (CLABE, IBAN, ACH, PIX, UPI) ────
+// ── Wise payout ───────────────────────────────────────────────────────────────
 
 async function executeWise(
-  profileId: string,
-  apiKey: string,
-  recipientName: string,
+  profileId:        string,
+  apiKey:           string,
+  recipientName:    string,
   recipientAccount: string,
-  targetCountry: string,
-  targetCurrency: string,
-  sourceAmount: number,
-  senderPhone: string,
-  recipientPhone: string,
+  targetCountry:    string,
+  targetCurrency:   string,
+  sourceAmount:     number,
+  senderPhone:      string,
+  recipientPhone:   string,
 ): Promise<string> {
   const headers = { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" };
 
@@ -96,55 +117,86 @@ async function executeWise(
     if (fundRes.status === 422) throw Object.assign(new Error(msg), { code: "INSUFFICIENT_FUNDS" });
     throw new Error(`Wise fund: ${msg}`);
   }
+
   return String(transfer.id);
 }
 
-// ── Payout mode dinámico — protege el límite mensual de la tarjeta Wise ──────
+// ── Redis helpers ─────────────────────────────────────────────────────────────
 
-async function obtenerVolumenMensualAcumulado(stripe: Stripe): Promise<number> {
+async function storePendingOrder(order: PendingB2BOrder): Promise<void> {
   try {
-    const ahora       = new Date();
-    const inicioDeMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
-    const inicioUnix  = Math.floor(inicioDeMes.getTime() / 1000);
-    let total         = 0;
-    let hasMore       = true;
-    let startingAfter: string | undefined;
-
-    while (hasMore) {
-      const params: Stripe.PaymentIntentListParams = {
-        created: { gte: inicioUnix },
-        limit:   100,
-        ...(startingAfter ? { starting_after: startingAfter } : {}),
-      };
-      const list = await stripe.paymentIntents.list(params);
-      for (const pi of list.data) {
-        if (pi.status === "succeeded" && pi.currency === "cad") {
-          total += pi.amount / 100;
-        }
-      }
-      hasMore = list.has_more;
-      if (list.data.length > 0) startingAfter = list.data[list.data.length - 1].id;
-    }
-    return total;
+    const redis = await getRedis();
+    await redis.set(`b2b:pending:${order.piId}`, JSON.stringify(order), { EX: 604800 }); // 7 days
   } catch (e) {
-    console.warn("[webhook] obtenerVolumenMensualAcumulado error:", e);
-    return 0;
+    console.error("[stripe/webhook] Redis store failed:", (e as Error).message);
   }
 }
 
-async function determinarModoPayout(stripe: Stripe, montoTransaccionCAD: number): Promise<"INSTANT" | "STANDARD"> {
-  const limiteMensualWise       = 55_000;
-  const volumenConsumidoEsteMes = await obtenerVolumenMensualAcumulado(stripe);
+async function processPendingOrders(
+  wiseApiKey:    string,
+  wiseProfileId: string,
+  appUrl:        string,
+  linkSecret:    string,
+): Promise<void> {
+  let redis;
+  try { redis = await getRedis(); }
+  catch (e) { console.error("[stripe/webhook] Redis unavailable:", (e as Error).message); return; }
 
-  if (volumenConsumidoEsteMes + montoTransaccionCAD >= limiteMensualWise) {
-    console.log(`[webhook] Límite Wise casi alcanzado (${(volumenConsumidoEsteMes + montoTransaccionCAD).toFixed(0)}/${limiteMensualWise} CAD). Replenishment → STANDARD.`);
-    return "STANDARD";
+  const twoDaysAgo = Date.now() - 2 * 24 * 60 * 60 * 1000;
+
+  for await (const key of redis.scanIterator({ MATCH: "b2b:pending:*", COUNT: 100 })) {
+    const k   = String(key);
+    const raw = await redis.get(k);
+    if (!raw) continue;
+
+    let order: PendingB2BOrder;
+    try { order = JSON.parse(raw) as PendingB2BOrder; }
+    catch { await redis.del(k); continue; }
+
+    // Skip orders newer than 2 days — may not be covered by this payout yet
+    if (order.createdAt > twoDaysAgo) continue;
+
+    try {
+      const txId = await executeWise(
+        wiseProfileId, wiseApiKey,
+        order.recipientName,    order.recipientAccount,
+        order.targetCountry,    order.targetCurrency,
+        order.cadAmount,        order.senderPhone, order.recipientPhone,
+      );
+
+      await redis.del(k);
+
+      const receiptUrl = await buildReceiptURL(
+        { id: txId, a: order.cadAmount, c: order.targetCurrency, n: order.recipientName, ts: Date.now(), tt: order.type },
+        appUrl, linkSecret,
+      ).catch(() => `${appUrl}/resultado?ref=${txId}`);
+
+      await Promise.allSettled([
+        order.recipientPhone ? sendPaymentNotification(order.recipientPhone, receiptUrl, order.cadAmount, order.targetCurrency, order.recipientName) : Promise.resolve(),
+        order.senderPhone    ? sendPaymentNotification(order.senderPhone,    receiptUrl, order.cadAmount, order.targetCurrency, order.recipientName) : Promise.resolve(),
+        sendAdminWhatsApp(`✅ OmniPay B2B completado\nPI: ${order.piId}\nWise TX: ${txId}\nReceptor: ${order.recipientName}\nMonto: ${order.cadAmount} CAD → ${order.targetCurrency}`),
+      ]);
+
+      console.log(`[stripe/webhook] B2B OK — Wise TX ${txId} for PI ${order.piId}`);
+
+    } catch (err) {
+      const e = err as Error & { code?: string };
+      console.error(`[stripe/webhook] Wise failed for PI ${order.piId}:`, e.message, e.code);
+
+      const PERMANENT = ["INVALID_ACCOUNT", "CURRENCY_UNSUPPORTED"];
+      if (PERMANENT.includes(e.code ?? "")) {
+        await redis.del(k);
+        try {
+          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
+          await stripe.refunds.create({ payment_intent: order.piId });
+          await sendAdminWhatsApp(`🚨 OmniPay B2B — reembolsado\nPI: ${order.piId}\nMotivo: ${e.code}\nReceptor: ${order.recipientName}`);
+        } catch (re) { console.error("[stripe/webhook] Refund failed:", re); }
+      } else {
+        // Transient error — leave in Redis, will retry on next payout.paid
+        await sendAdminWhatsApp(`⚠️ OmniPay B2B — reintentará en próximo payout\nPI: ${order.piId}\nError: ${e.message}`);
+      }
+    }
   }
-
-  const dia = new Date().getDay();
-  if (dia === 0 || dia === 6) return "INSTANT";
-
-  return (process.env.NEXT_PUBLIC_PAYOUT_MODE as "INSTANT" | "STANDARD" | undefined) ?? "INSTANT";
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
@@ -162,7 +214,7 @@ export async function POST(req: NextRequest) {
   let event: Record<string, unknown>;
   try { event = JSON.parse(rawBody); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  // ── Evento legacy: checkout.session.completed ─────────────────────────────
+  // ── Legacy: checkout.session.completed (solo notificación) ───────────────
   if (event.type === "checkout.session.completed") {
     const session       = (event.data as Record<string, unknown>)?.object as Record<string, unknown> | undefined;
     const meta          = session?.metadata as Record<string, unknown> | undefined;
@@ -187,21 +239,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   }
 
-  // ── Evento v2: payment_intent.succeeded ───────────────────────────────────
+  // ── Step 1: Pago confirmado → guardar en Redis, confirmar al cliente ──────
   if (event.type === "payment_intent.succeeded") {
     const pi   = (event.data as Record<string, unknown>)?.object as Record<string, unknown> | undefined;
     const meta = pi?.metadata as Record<string, string> | undefined;
 
-    if (!meta) return NextResponse.json({ received: true });
+    if (!meta?.t1) return NextResponse.json({ received: true });
 
-    const t1 = meta.t1 ?? "";
-    if (!t1) return NextResponse.json({ received: true });
-
-    const token      = t1 + (meta.t2 ?? "");
+    const token      = meta.t1 + (meta.t2 ?? "");
     const sigHmac    = meta.sig ?? "";
     const linkSecret = process.env.LINK_SECRET ?? "dev-secret";
-    const appUrl     = process.env.NEXT_PUBLIC_APP_URL ?? "";
-    const stripe     = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
     const piId       = String(pi?.id ?? "");
     const type       = meta.type ?? "cobro";
 
@@ -216,8 +263,7 @@ export async function POST(req: NextRequest) {
 
       if (type === "remesa") {
         const payload = await parseRemesaV2Link(token, sigHmac, linkSecret);
-        if (!payload) { console.warn(`[webhook] Token remesa inválido PI ${piId}`); return NextResponse.json({ received: true }); }
-
+        if (!payload) { console.warn(`[stripe/webhook] Token remesa inválido PI ${piId}`); return NextResponse.json({ received: true }); }
         const decrypted  = await decryptPayload(payload.encryptedPayload);
         recipientAccount = decrypted.account;
         recipientPhone   = decrypted.recipientPhone ?? "";
@@ -228,8 +274,7 @@ export async function POST(req: NextRequest) {
         cadAmount        = parseFloat(meta.cad_amount ?? "0");
       } else {
         const payload = await parseCobrarV2Link(token, sigHmac, linkSecret);
-        if (!payload) { console.warn(`[webhook] Token cobro inválido PI ${piId}`); return NextResponse.json({ received: true }); }
-
+        if (!payload) { console.warn(`[stripe/webhook] Token cobro inválido PI ${piId}`); return NextResponse.json({ received: true }); }
         const decrypted  = await decryptPayload(payload.encryptedPayload);
         recipientAccount = decrypted.account;
         recipientPhone   = decrypted.recipientPhone ?? "";
@@ -241,68 +286,65 @@ export async function POST(req: NextRequest) {
       }
 
       if (!recipientAccount) {
-        console.error(`[webhook] Sin cuenta para PI ${piId}`);
+        console.error(`[stripe/webhook] Sin cuenta para PI ${piId}`);
         return NextResponse.json({ received: true });
       }
 
-      // ── Alerta admin si el float está bajo ───────────────────────────────
-      if (meta.payout_delayed === "true") {
-        const cadAmt = parseFloat(meta.cad_amount ?? meta.amount ?? "0");
-        sendAdminWhatsApp(
-          `⚠️ OmniPay float bajo\nPago de $${cadAmt.toFixed(2)} CAD en modo diferido.\nReponer fondos en Wise urgente.`
-        ).catch(() => {});
-      }
+      // Guardar en Redis — se ejecutará cuando payout.paid llegue
+      await storePendingOrder({
+        piId, recipientAccount, recipientPhone, senderPhone,
+        recipientName, targetCurrency, targetCountry, cadAmount, type,
+        createdAt: Date.now(),
+      });
 
-      // ── Reposición del float — dispara ANTES de intentar Wise ────────────
-      const piObj = await stripe.paymentIntents.retrieve(piId);
-      determinarModoPayout(stripe, piObj.amount / 100).then((modo) => {
-        stripe.payouts.create({
-          amount:               piObj.amount,
-          currency:             piObj.currency,
-          method:               modo === "INSTANT" ? "instant" : "standard",
-          statement_descriptor: "OMNIPAY_REPLEN",
-        }).catch((e: Error) => console.warn(`[webhook] Replenishment (${modo}) failed:`, e.message));
-      }).catch((e: Error) => console.warn("[webhook] determinarModoPayout failed:", e.message));
-
-      // ── Wise — rail único B2B ─────────────────────────────────────────────
-      const txId = await executeWise(
-        process.env.WISE_PROFILE_ID ?? "",
-        process.env.WISE_API_KEY    ?? "",
-        recipientName,
-        recipientAccount,
-        targetCountry,
-        targetCurrency,
-        cadAmount,
-        senderPhone,
-        recipientPhone,
-      );
-
-      // ── Comprobante + notificación ────────────────────────────────────────
-      const receiptUrl = await buildReceiptURL(
-        { id: txId, a: cadAmount, c: targetCurrency, n: recipientName, ts: Date.now(), tt: type },
-        appUrl, linkSecret,
-      );
+      // Confirmar al cliente y al admin
       await Promise.allSettled([
-        recipientPhone ? sendPaymentNotification(recipientPhone, receiptUrl, cadAmount, targetCurrency, recipientName) : Promise.resolve(),
-        senderPhone    ? sendPaymentNotification(senderPhone,    receiptUrl, cadAmount, targetCurrency, recipientName) : Promise.resolve(),
+        senderPhone ? sendPaymentNotification(
+          senderPhone,
+          "",
+          cadAmount,
+          "CAD",
+          recipientName,
+        ) : Promise.resolve(),
+        sendAdminWhatsApp(
+          `💳 OmniPay B2B — pago confirmado\n` +
+          `PI: ${piId}\n` +
+          `Receptor: ${recipientName} (${targetCountry})\n` +
+          `Monto: ${cadAmount} CAD → ${targetCurrency}\n` +
+          `Estado: PENDING PAYOUT (3-4 días hábiles)`,
+        ),
       ]);
 
-      console.log(`[webhook] Wise TX ${txId} — PI ${piId}`);
-      return NextResponse.json({ received: true, txId, rail: "Wise" });
+      console.log(`[stripe/webhook] PI ${piId} guardado en Redis — esperando payout.paid`);
+      return NextResponse.json({ received: true, status: "PENDING_PAYOUT" });
 
     } catch (err) {
-      const e = err as Error & { code?: string };
-      console.error(`[webhook] Error PI ${piId}:`, e.message, e.code);
-
-      const PERMANENT_ERRORS = ["INVALID_ACCOUNT", "CURRENCY_UNSUPPORTED"];
-      if (PERMANENT_ERRORS.includes(e.code ?? "")) {
-        try { await (new Stripe(process.env.STRIPE_SECRET_KEY ?? "")).refunds.create({ payment_intent: piId }); }
-        catch (re) { console.error("[webhook] Refund failed:", re); }
-        return NextResponse.json({ received: true, refunded: true, reason: e.code });
-      }
-
+      const e = err as Error;
+      console.error(`[stripe/webhook] Error PI ${piId}:`, e.message);
       return NextResponse.json({ error: e.message }, { status: 503 });
     }
+  }
+
+  // ── Step 2: Stripe depositó en Wise → ejecutar todos los pendientes ───────
+  if (event.type === "payout.paid") {
+    const payout   = (event.data as Record<string, unknown>)?.object as Record<string, unknown> | undefined;
+    const amount   = Number(payout?.amount ?? 0) / 100;
+    const currency = String(payout?.currency ?? "").toUpperCase();
+
+    console.log(`[stripe/webhook] payout.paid ${amount} ${currency} — ejecutando órdenes pendientes`);
+
+    await sendAdminWhatsApp(
+      `🏦 OmniPay — Stripe depositó en Wise\n${amount} ${currency}\nEjecutando pagos B2B pendientes...`,
+    );
+
+    await processPendingOrders(
+      process.env.WISE_API_KEY     ?? "",
+      process.env.WISE_PROFILE_ID  ?? "",
+      process.env.NEXT_PUBLIC_APP_URL ?? "",
+      process.env.LINK_SECRET      ?? "",
+    );
+
+    return NextResponse.json({ received: true });
   }
 
   return NextResponse.json({ received: true });
