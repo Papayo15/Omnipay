@@ -15,6 +15,7 @@ import {
   Zap, Building2, CreditCard, Smartphone, Send, Store,
   ArrowLeft, CheckCircle2, AlertCircle, Clock, Copy, Check, Download,
 } from "lucide-react";
+import Calculator from "@/components/Calculator";
 import { buildWhatsAppLink, buildTelegramLink, buildOmniPayMessage } from "@/lib/messaging";
 import { getAccountValidation, SEPA_COUNTRIES, BLOCKED_COUNTRIES } from "@/lib/wise-accounts";
 
@@ -1004,6 +1005,56 @@ export default function Home() {
               {tl("p2p_cta")}
             </p>
           </button>
+
+          {/* WhatsApp Bot */}
+          <a
+            href={`https://wa.me/${(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g,"")}?text=${encodeURIComponent("Hola, quiero enviar dinero")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 hover:border-[#25D366]/60 rounded-2xl p-6 text-left transition-all duration-200 active:scale-[0.98]"
+          >
+            <div className="text-3xl mb-3">💬</div>
+            <h2 className="text-white font-bold text-base mb-1">WhatsApp Bot</h2>
+            <p className="text-slate-400 text-xs mb-4 leading-relaxed">
+              Escríbenos en WhatsApp y el bot genera tu link de pago automáticamente. Sin registro.
+            </p>
+            <div className="text-[10px] text-slate-500 bg-slate-900/60 rounded-lg px-3 py-1.5 inline-block mb-4">
+              Respuesta automática · 41 países · Gratis
+            </div>
+            <p className="text-[#25D366] text-sm font-semibold group-hover:translate-x-1 transition-transform">
+              Abrir WhatsApp →
+            </p>
+          </a>
+
+          {/* Calculator / Simulador */}
+          <button
+            onClick={() => {
+              const el = document.getElementById("calculator-section");
+              el?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/60 rounded-2xl p-6 text-left transition-all duration-200 active:scale-[0.98]"
+          >
+            <div className="text-3xl mb-3">🧮</div>
+            <h2 className="text-white font-bold text-base mb-1">Simulador de envío</h2>
+            <p className="text-slate-400 text-xs mb-4 leading-relaxed">
+              Calcula el costo exacto antes de enviar. Sin registro. Desglose completo de cada comisión.
+            </p>
+            <div className="text-[10px] text-slate-500 bg-slate-900/60 rounded-lg px-3 py-1.5 inline-block mb-4">
+              Tipo de cambio en vivo · Transparente
+            </div>
+            <p className="text-amber-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
+              Ver simulador ↓
+            </p>
+          </button>
+        </div>
+
+        {/* ── Calculator section ── */}
+        <div id="calculator-section" className="w-full max-w-xl mt-10">
+          <h3 className="text-white font-bold text-lg text-center mb-2">Simula tu envío</h3>
+          <p className="text-slate-400 text-xs text-center mb-5">
+            Cada comisión mostrada línea por línea · Bridge.xyz, Wise, Stripe, OmniPay
+          </p>
+          <Calculator />
         </div>
 
         {/* ── What is OmniPay ── */}

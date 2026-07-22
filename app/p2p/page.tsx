@@ -3,41 +3,72 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Copy, Check, CreditCard, Building2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getFXRate } from "@/lib/fx";
+import { validateClabe, detectBank, type BankInfo } from "@/lib/clabe";
 
 type Step     = "form" | "generating" | "share" | "error";
 type PayMode  = "card" | "bank";
 
-// Countries with native bank rail (Bridge NATIVE_RAILS)
+// All 41 countries with native Bridge bank rail (SPEI/ACH/PIX/FPS/Bre-B/SEPA)
 const BANK_RAIL_COUNTRIES = new Set([
-  "MX","US","BR","GB","CA","IN","PH","DE","FR","ES","IT","NL","PT","BE","AT","IE",
+  "MX","US","BR","GB","CO",
+  "DE","FR","ES","IT","NL","PT","BE","AT","IE","FI","GR","CY","EE","LV","LT","LU","MT","SK","SI","HR",
+  "SE","DK","NO","PL","CZ","HU","RO","BG","CH","IS","LI",
+  "AD","MC","SM","XK","VA",
 ]);
 
-// Countries + currencies for the dropdown
+// SEPA countries always receive EUR regardless of local currency
+const SEPA_COUNTRIES = new Set([
+  "DE","FR","ES","IT","NL","PT","BE","AT","IE","FI","GR","CY","EE","LV","LT","LU","MT","SK","SI","HR",
+  "SE","DK","NO","PL","CZ","HU","RO","BG","CH","IS","LI","AD","MC","SM","XK","VA",
+]);
+
+// Countries + currencies for the dropdown — 41 Bridge-native + extras
 const COUNTRY_OPTIONS = [
-  { code: "MX", label: "México", currency: "MXN", flag: "🇲🇽" },
-  { code: "US", label: "USA",    currency: "USD", flag: "🇺🇸" },
-  { code: "BR", label: "Brasil", currency: "BRL", flag: "🇧🇷" },
-  { code: "CO", label: "Colombia", currency: "COP", flag: "🇨🇴" },
-  { code: "AR", label: "Argentina", currency: "ARS", flag: "🇦🇷" },
-  { code: "PE", label: "Perú",   currency: "PEN", flag: "🇵🇪" },
-  { code: "GB", label: "UK",     currency: "GBP", flag: "🇬🇧" },
-  { code: "DE", label: "Alemania", currency: "EUR", flag: "🇩🇪" },
-  { code: "FR", label: "Francia", currency: "EUR", flag: "🇫🇷" },
-  { code: "ES", label: "España", currency: "EUR", flag: "🇪🇸" },
-  { code: "IT", label: "Italia", currency: "EUR", flag: "🇮🇹" },
-  { code: "NL", label: "Países Bajos", currency: "EUR", flag: "🇳🇱" },
-  { code: "PT", label: "Portugal", currency: "EUR", flag: "🇵🇹" },
-  { code: "CA", label: "Canadá", currency: "CAD", flag: "🇨🇦" },
-  { code: "IN", label: "India",  currency: "INR", flag: "🇮🇳" },
-  { code: "PH", label: "Filipinas", currency: "PHP", flag: "🇵🇭" },
-  { code: "NG", label: "Nigeria", currency: "NGN", flag: "🇳🇬" },
-  { code: "GH", label: "Ghana",  currency: "GHS", flag: "🇬🇭" },
-  { code: "KE", label: "Kenia",  currency: "KES", flag: "🇰🇪" },
-  { code: "JP", label: "Japón",  currency: "JPY", flag: "🇯🇵" },
-  { code: "AU", label: "Australia", currency: "AUD", flag: "🇦🇺" },
-  { code: "TH", label: "Tailandia", currency: "THB", flag: "🇹🇭" },
+  // Americas
+  { code: "MX", label: "México",          currency: "MXN", flag: "🇲🇽" },
+  { code: "US", label: "EE.UU.",          currency: "USD", flag: "🇺🇸" },
+  { code: "BR", label: "Brasil",          currency: "BRL", flag: "🇧🇷" },
+  { code: "CO", label: "Colombia",        currency: "COP", flag: "🇨🇴" },
+  // UK + Europe (Bridge native)
+  { code: "GB", label: "Reino Unido",     currency: "GBP", flag: "🇬🇧" },
+  { code: "DE", label: "Alemania",        currency: "EUR", flag: "🇩🇪" },
+  { code: "FR", label: "Francia",         currency: "EUR", flag: "🇫🇷" },
+  { code: "ES", label: "España",          currency: "EUR", flag: "🇪🇸" },
+  { code: "IT", label: "Italia",          currency: "EUR", flag: "🇮🇹" },
+  { code: "NL", label: "Países Bajos",    currency: "EUR", flag: "🇳🇱" },
+  { code: "PT", label: "Portugal",        currency: "EUR", flag: "🇵🇹" },
+  { code: "BE", label: "Bélgica",         currency: "EUR", flag: "🇧🇪" },
+  { code: "AT", label: "Austria",         currency: "EUR", flag: "🇦🇹" },
+  { code: "IE", label: "Irlanda",         currency: "EUR", flag: "🇮🇪" },
+  { code: "FI", label: "Finlandia",       currency: "EUR", flag: "🇫🇮" },
+  { code: "GR", label: "Grecia",          currency: "EUR", flag: "🇬🇷" },
+  { code: "CY", label: "Chipre",          currency: "EUR", flag: "🇨🇾" },
+  { code: "EE", label: "Estonia",         currency: "EUR", flag: "🇪🇪" },
+  { code: "LV", label: "Letonia",         currency: "EUR", flag: "🇱🇻" },
+  { code: "LT", label: "Lituania",        currency: "EUR", flag: "🇱🇹" },
+  { code: "LU", label: "Luxemburgo",      currency: "EUR", flag: "🇱🇺" },
+  { code: "MT", label: "Malta",           currency: "EUR", flag: "🇲🇹" },
+  { code: "SK", label: "Eslovaquia",      currency: "EUR", flag: "🇸🇰" },
+  { code: "SI", label: "Eslovenia",       currency: "EUR", flag: "🇸🇮" },
+  { code: "HR", label: "Croacia",         currency: "EUR", flag: "🇭🇷" },
+  { code: "SE", label: "Suecia",          currency: "EUR", flag: "🇸🇪" },
+  { code: "DK", label: "Dinamarca",       currency: "EUR", flag: "🇩🇰" },
+  { code: "NO", label: "Noruega",         currency: "EUR", flag: "🇳🇴" },
+  { code: "PL", label: "Polonia",         currency: "EUR", flag: "🇵🇱" },
+  { code: "CZ", label: "Rep. Checa",      currency: "EUR", flag: "🇨🇿" },
+  { code: "HU", label: "Hungría",         currency: "EUR", flag: "🇭🇺" },
+  { code: "RO", label: "Rumania",         currency: "EUR", flag: "🇷🇴" },
+  { code: "BG", label: "Bulgaria",        currency: "EUR", flag: "🇧🇬" },
+  { code: "CH", label: "Suiza",           currency: "EUR", flag: "🇨🇭" },
+  { code: "IS", label: "Islandia",        currency: "EUR", flag: "🇮🇸" },
+  { code: "LI", label: "Liechtenstein",   currency: "EUR", flag: "🇱🇮" },
+  { code: "AD", label: "Andorra",         currency: "EUR", flag: "🇦🇩" },
+  { code: "MC", label: "Mónaco",          currency: "EUR", flag: "🇲🇨" },
+  { code: "SM", label: "San Marino",      currency: "EUR", flag: "🇸🇲" },
+  { code: "XK", label: "Kosovo",          currency: "EUR", flag: "🇽🇰" },
+  { code: "VA", label: "Vaticano",        currency: "EUR", flag: "🇻🇦" },
 ];
 
 interface BridgeQuote {
@@ -64,8 +95,9 @@ interface CheckoutResponse {
 }
 
 export default function P2PPage() {
-  const t      = useTranslations("p2p");
-  const router = useRouter();
+  const t            = useTranslations("p2p");
+  const router       = useRouter();
+  const searchParams = useSearchParams();
 
   const [step,         setStep]         = useState<Step>("form");
   const [payMode,      setPayMode]      = useState<PayMode>("card");
@@ -73,6 +105,8 @@ export default function P2PPage() {
   const [email,        setEmail]        = useState("");
   const [country,      setCountry]      = useState("MX");
   const [account,      setAccount]      = useState("");
+  const [bankInfo,     setBankInfo]     = useState<BankInfo | null>(null);
+  const [clabeValid,   setClabeValid]   = useState<boolean | null>(null);
   const [amountLocal,  setAmountLocal]  = useState("");  // in local currency (MXN, BRL, etc.)
   const [recipientPhone, setRecipientPhone] = useState("");
   const [shareLink,    setShareLink]    = useState("");
@@ -89,13 +123,50 @@ export default function P2PPage() {
   const hasBankRail     = BANK_RAIL_COUNTRIES.has(country);
   const currency        = selectedCountry.currency;
 
+  // Pre-populate from URL query params (e.g. from Calculator or WhatsApp bot)
+  useEffect(() => {
+    const amt  = searchParams.get("amount");
+    const cur  = searchParams.get("currency");
+    const cty  = searchParams.get("country");
+    if (amt && !isNaN(parseFloat(amt))) setAmountLocal(amt);
+    if (cty && COUNTRY_OPTIONS.some(c => c.code === cty.toUpperCase())) {
+      setCountry(cty.toUpperCase());
+    }
+    // currency hint: if USD source, default to bank rail for Bridge countries
+    if (cur === "USD" || cur === "CAD") {
+      const resolvedCountry = cty?.toUpperCase() ?? "MX";
+      if (BANK_RAIL_COUNTRIES.has(resolvedCountry)) setPayMode("bank");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Reset pay mode when country changes to one without bank rail
   useEffect(() => {
     if (!hasBankRail && payMode === "bank") {
       setPayMode("card");
       setAccount("");
     }
+    // Clear CLABE detection when country changes
+    setBankInfo(null);
+    setClabeValid(null);
   }, [country, hasBankRail, payMode]);
+
+  // CLABE bank detection — fires when account changes and country is MX
+  useEffect(() => {
+    if (country !== "MX" || payMode !== "bank") {
+      setBankInfo(null);
+      setClabeValid(null);
+      return;
+    }
+    const digits = account.replace(/\D/g, "");
+    if (digits.length === 18) {
+      setBankInfo(detectBank(digits));
+      setClabeValid(validateClabe(digits));
+    } else {
+      setBankInfo(null);
+      setClabeValid(null);
+    }
+  }, [account, country, payMode]);
 
   // Live quote: debounce on amount + email + country change
   useEffect(() => {
@@ -485,11 +556,10 @@ export default function P2PPage() {
           <div>
             <label className="block text-xs text-slate-400 mb-1">
               {country === "MX" ? t("clabe_label")
-                : ["DE","FR","ES","IT","NL","PT","BE","AT","IE"].includes(country) ? "IBAN"
+                : SEPA_COUNTRIES.has(country) ? `IBAN · Recibirás EUR (SEPA)`
                 : country === "BR" ? "Chave PIX"
-                : country === "GB" ? "Sort Code / Account Number (XXXXXX/XXXXXXXX)"
-                : country === "CA" ? "Transit / Account (XXXXX/XXXXXXX)"
-                : country === "IN" ? "IFSC / Account (XXXXXXXXXX/XXXXXXXX)"
+                : country === "GB" ? "Sort Code / Account (00-00-00 / 12345678)"
+                : country === "CO" ? "Número de cuenta Bre-B"
                 : "Número de cuenta"}
             </label>
             <input
@@ -497,14 +567,43 @@ export default function P2PPage() {
               inputMode={country === "MX" ? "numeric" : "text"}
               value={account}
               onChange={(e) => setAccount(country === "MX" ? e.target.value.replace(/\D/g, "").slice(0, 18) : e.target.value)}
-              placeholder={country === "MX" ? t("clabe_placeholder") : ""}
+              placeholder={
+                country === "MX" ? t("clabe_placeholder")
+                : SEPA_COUNTRIES.has(country) ? "DE89 3704 0044 0532 0130 00"
+                : country === "BR" ? "CPF, email, celular o llave aleatoria"
+                : country === "GB" ? "20-00-00 / 55779911"
+                : country === "CO" ? "Número de cuenta"
+                : ""
+              }
               className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors ${
-                country === "MX" && account.length > 0 && account.length !== 18
-                  ? "border-red-500" : "border-slate-700 focus:border-emerald-500"
+                country === "MX" && account.length > 0
+                  ? clabeValid === false ? "border-red-500"
+                  : clabeValid === true  ? "border-emerald-500"
+                  : "border-slate-700"
+                : "border-slate-700 focus:border-emerald-500"
               }`}
             />
+            {/* CLABE bank detection */}
+            {country === "MX" && bankInfo && (
+              <div className="flex items-center gap-2 mt-2">
+                <span
+                  className="inline-block px-2 py-0.5 rounded text-xs font-semibold text-white"
+                  style={{ backgroundColor: bankInfo.color }}
+                >
+                  {bankInfo.shortName}
+                </span>
+                <span className="text-slate-400 text-xs">{bankInfo.name}</span>
+                {clabeValid === true && <span className="text-emerald-400 text-xs">✓ CLABE válida</span>}
+                {clabeValid === false && <span className="text-red-400 text-xs">✗ Dígito de control inválido</span>}
+              </div>
+            )}
             {country === "MX" && account.length > 0 && account.length !== 18 && (
               <p className="text-xs text-red-400 mt-1">{t("error_invalid_clabe")}</p>
+            )}
+            {SEPA_COUNTRIES.has(country) && (
+              <p className="text-xs text-slate-500 mt-1">
+                ℹ️ El pago se acredita en Euros (EUR) independientemente de la moneda local
+              </p>
             )}
           </div>
         )}

@@ -65,6 +65,12 @@ export const NATIVE_RAILS: Record<string, {
   CH: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
   IS: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
   LI: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  // SEPA micro-states and additional territories
+  AD: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },  // Andorra
+  MC: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },  // Monaco
+  SM: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },  // San Marino
+  XK: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },  // Kosovo
+  VA: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },  // Vatican City
 };
 
 export interface LiquidationAddress {
@@ -140,6 +146,11 @@ const COUNTRY_ADDRESSES: Record<string, { street: string; city: string; state: s
   CH: { street: "123 Main Street", city: "Zurich",           state: "ZH",  postal_code: "8001"     },
   IS: { street: "123 Main Street", city: "Reykjavik",        state: "1",   postal_code: "101"      },
   LI: { street: "123 Main Street", city: "Vaduz",            state: "11",  postal_code: "9490"     },
+  AD: { street: "123 Main Street", city: "Andorra la Vella", state: "07",  postal_code: "AD500"    },
+  MC: { street: "123 Main Street", city: "Monaco",           state: "MC",  postal_code: "98000"    },
+  SM: { street: "123 Main Street", city: "San Marino",       state: "01",  postal_code: "47890"    },
+  XK: { street: "123 Main Street", city: "Pristina",         state: "PR",  postal_code: "10000"    },
+  VA: { street: "00120 Città del Vaticano", city: "Vatican", state: "VA",  postal_code: "00120"    },
 };
 
 // Complete ISO 3166-1 alpha-2 → alpha-3 mapping (all 249 UN countries/territories)
