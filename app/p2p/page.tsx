@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Copy, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -108,6 +108,25 @@ interface CheckoutResponse {
   country:         string;
 }
 
+// Bridge FX fees by corridor (confirmed Bridge email julio 2026)
+const BRIDGE_FX_RATES: Record<string, number> = {
+  MXN: 0.005, EUR: 0.005, BRL: 0.0055, GBP: 0.005, COP: 0.005, USD: 0,
+};
+
+// Local Bridge fee calculation — no API call needed during form filling
+function calcBridgeFees(amtLocal: number, localCurrency: string, fxRate: number, isNew: boolean) {
+  const usd     = amtLocal * fxRate;
+  const onramp  = parseFloat((usd * 0.005).toFixed(2));
+  const offramp = parseFloat((usd * 0.0025).toFixed(2));
+  const fxPct   = BRIDGE_FX_RATES[localCurrency] ?? 0.005;
+  const fxFee   = parseFloat((usd * fxPct).toFixed(2));
+  const omniSvc = parseFloat(Math.max(usd * 0.005, 1.99).toFixed(2));
+  const omniFlat = 0.99;
+  const kyc      = isNew ? 2.00 : 0;
+  const total    = parseFloat((usd + onramp + offramp + fxFee + omniSvc + omniFlat + kyc).toFixed(2));
+  return { usd: parseFloat(usd.toFixed(2)), onramp, offramp, fxFee, fxPct, omniSvc, omniFlat, kyc, total };
+}
+
 // Wise fee helpers (Canada relay)
 // Wise CAD→MXN ~1.08%+CA$1.93, CAD→USD ~0.37%+CA$0.50, CAD→EUR ~0.58%+CA$0.50
 // Usamos 1.10% + CA$3 mínimo como estimado conservador para todos los corredores
@@ -139,15 +158,14 @@ export default function P2PPage() {
   const [shareLink,      setShareLink]      = useState("");
   const [copied,         setCopied]         = useState(false);
   const [errorMsg,       setErrorMsg]       = useState("");
-  const [submitting,     setSubmitting]     = useState(false);
-  const [quote,          setQuote]          = useState<BridgeQuote | null>(null);
-  const [quoteLoading,   setQuoteLoading]   = useState(false);
-  const [fxRate,         setFxRate]         = useState<number | null>(null);
-  const [kycUrl,         setKycUrl]         = useState<string | null>(null);
+  const [submitting,       setSubmitting]       = useState(false);
+  const [isNew,            setIsNew]            = useState(true);
+  const [fxRate,           setFxRate]           = useState<number | null>(null);
+  const [kycUrl,           setKycUrl]           = useState<string | null>(null);
+  const [realSenderTotal,  setRealSenderTotal]  = useState<string | null>(null);
   // Canada relay: tracks whether instruction screen is shown after submit
   const [caSubmitted,    setCaSubmitted]    = useState(false);
   const [caRef,          setCaRef]          = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedCountry = COUNTRY_OPTIONS.find((c) => c.code === country) ?? COUNTRY_OPTIONS[0];
   const currency        = selectedCountry.currency;
@@ -171,10 +189,9 @@ export default function P2PPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Clear account + quote when country or srcCurrency changes
+  // Clear account when country or srcCurrency changes
   useEffect(() => {
     setAccount("");
-    setQuote(null);
     setBankInfo(null);
     setClabeValid(null);
     setCaSubmitted(false);
@@ -197,38 +214,33 @@ export default function P2PPage() {
     }
   }, [account, country, srcCurrency]);
 
-  // Live Bridge quote (only for USD/Bridge rail)
+  // Fetch FX rate when country/currency changes — lightweight, no Bridge API call
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    const amt = parseFloat(amountLocal);
-    if (!amt || amt < 1 || !email.includes("@") || rail !== "bridge") { setQuote(null); return; }
+    if (rail !== "bridge") return;
+    getFXRate(currency, "USD").then(r => { if (r) setFxRate(r); }).catch(() => {});
+  }, [currency, country, rail]);
 
-    debounceRef.current = setTimeout(async () => {
-      setQuoteLoading(true);
-      try {
-        const rate = await getFXRate(currency, "USD");
-        setFxRate(rate);
-        if (!rate) return;
-        const res = await fetch("/api/bridge/quote", {
-          method:  "POST",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ amount: parseFloat(amountLocal) * rate, email: email.toLowerCase(), type: "p2p", country }),
-        });
-        if (res.ok) setQuote(await res.json() as BridgeQuote);
-      } catch { /* ignore */ } finally {
-        setQuoteLoading(false);
-      }
-    }, 700);
-  }, [amountLocal, email, country, currency, rail]);
-
-  // Bridge link generation
+  // Bridge link generation — gets real fees from Bridge at submit time
   const generateLink = useCallback(async () => {
     const amt = parseFloat(amountLocal);
-    if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt) return;
+    if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt || !fxRate) return;
 
     setSubmitting(true);
     setStep("generating");
     try {
+      // 1. Get real Bridge quote (fees confirmed at this moment)
+      try {
+        const qRes = await fetch("/api/bridge/quote", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: amt * fxRate, email: email.toLowerCase(), type: "p2p", country }),
+        });
+        if (qRes.ok) {
+          const q = await qRes.json() as BridgeQuote;
+          setRealSenderTotal(q.total_sender_pays.toFixed(2));
+        }
+      } catch { /* estimado local ya visible, continuar */ }
+
+      // 2. Generate payment link
       const body: Record<string, unknown> = {
         nombre:          nombre.trim(),
         email:           email.toLowerCase().trim(),
@@ -267,7 +279,7 @@ export default function P2PPage() {
     } finally {
       setSubmitting(false);
     }
-  }, [nombre, email, country, account, amountLocal, recipientPhone]);
+  }, [nombre, email, country, account, amountLocal, recipientPhone, fxRate]);
 
   // Canada relay submit — sends WhatsApp to admin and shows instructions
   const submitCanada = useCallback(() => {
@@ -290,19 +302,17 @@ export default function P2PPage() {
   }, [shareLink]);
 
   const openWhatsApp = useCallback(() => {
-    const senderAmt = quote ? quote.total_sender_pays.toFixed(2) : "?";
-    const msg = t("share_message_cobrar", { name: nombre, amount: parseFloat(amountLocal).toLocaleString(), currency, sender_amount: senderAmt, link: shareLink });
+    const msg = t("share_message_cobrar", { name: nombre, amount: parseFloat(amountLocal).toLocaleString(), currency, sender_amount: realSenderTotal ?? "?", link: shareLink });
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
-  }, [nombre, amountLocal, currency, shareLink, quote, t]);
+  }, [nombre, amountLocal, currency, shareLink, realSenderTotal, t]);
 
   const openTelegram = useCallback(() => {
-    const senderAmt = quote ? quote.total_sender_pays.toFixed(2) : "?";
-    const msg = t("share_message_cobrar", { name: nombre, amount: parseFloat(amountLocal).toLocaleString(), currency, sender_amount: senderAmt, link: shareLink });
+    const msg = t("share_message_cobrar", { name: nombre, amount: parseFloat(amountLocal).toLocaleString(), currency, sender_amount: realSenderTotal ?? "?", link: shareLink });
     window.open(`https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent(msg)}`, "_blank");
-  }, [nombre, amountLocal, currency, shareLink, quote, t]);
+  }, [nombre, amountLocal, currency, shareLink, realSenderTotal, t]);
 
   const accountValid = account.trim().length >= 5;
-  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && parseFloat(amountLocal) >= 1 && rail === "bridge";
+  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && parseFloat(amountLocal) >= 1 && rail === "bridge" && !!fxRate;
   const canadaReady  = !!nombre.trim() && accountValid && parseFloat(amountLocal) >= 1;
 
   // ── Generating ──────────────────────────────────────────────────────────────
@@ -319,7 +329,7 @@ export default function P2PPage() {
 
   // ── Share (Bridge) ───────────────────────────────────────────────────────────
   if (step === "share") {
-    const senderAmt = quote ? quote.total_sender_pays.toFixed(2) : null;
+    const senderAmt = realSenderTotal;
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col px-5 pt-12 pb-10 max-w-sm mx-auto w-full">
         <button onClick={() => setStep("form")} className="flex items-center gap-1 text-slate-400 text-sm mb-8 hover:text-white transition-colors">
@@ -358,7 +368,7 @@ export default function P2PPage() {
               {copied ? "✓" : t("share_copy")}
             </button>
           </div>
-          <button onClick={() => { setStep("form"); setNombre(""); setEmail(""); setAccount(""); setAmountLocal(""); setRecipientPhone(""); setQuote(null); setKycUrl(null); }}
+          <button onClick={() => { setStep("form"); setNombre(""); setEmail(""); setAccount(""); setAmountLocal(""); setRecipientPhone(""); setRealSenderTotal(null); setKycUrl(null); }}
             className="text-slate-500 hover:text-slate-300 text-xs transition-colors">
             + {t("new_transfer")}
           </button>
@@ -523,54 +533,66 @@ export default function P2PPage() {
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
             </div>
 
-            {/* Live Bridge fee breakdown */}
-            {(quoteLoading || quote) && (
-              <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
-                <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-3">{t("fee_breakdown_title")}</p>
-                {quoteLoading ? (
-                  <div className="flex items-center gap-2 text-slate-500 text-xs py-2">
-                    <div className="w-3 h-3 border border-slate-500 border-t-transparent rounded-full animate-spin" />
-                    {t("fee_loading")}
+            {/* Primera vez toggle */}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={isNew} onChange={e => setIsNew(e.target.checked)}
+                className="w-4 h-4 accent-emerald-500" />
+              <span className="text-slate-400 text-xs">Primera transacción (incluye verificación KYC $2)</span>
+            </label>
+
+            {/* Fee breakdown — cálculo local, sin API call, instantáneo */}
+            {fxRate && parseFloat(amountLocal) >= 1 && (() => {
+              const f = calcBridgeFees(parseFloat(amountLocal), currency, fxRate, isNew);
+              return (
+                <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-2">Desglose de tarifas</p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Receptor recibe</span>
+                    <span className="text-white font-semibold">{parseFloat(amountLocal).toLocaleString()} {currency}</span>
                   </div>
-                ) : quote ? (
-                  <>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">{t("fee_principal")}</span>
-                      <span className="text-white font-semibold">{parseFloat(amountLocal).toLocaleString()} {currency}</span>
-                    </div>
-                    {fxRate && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-slate-600">≈ USD estimado</span>
-                        <span className="text-slate-500">${(parseFloat(amountLocal) * fxRate).toFixed(2)} USD</span>
-                      </div>
-                    )}
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">≈ equivalente USD</span>
+                    <span className="text-slate-400">${f.usd.toFixed(2)} USD</span>
+                  </div>
+                  <div className="border-t border-slate-800 pt-1 mt-1" />
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">Bridge on-ramp (USD→USDC · 0.50%)</span>
+                    <span className="text-blue-400">+${f.onramp.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">Bridge off-ramp (USDC→local · 0.25%)</span>
+                    <span className="text-blue-400">+${f.offramp.toFixed(2)}</span>
+                  </div>
+                  {f.fxFee > 0 && (
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">{t("fee_bridge_conversion")} (0.75%+FX)</span>
-                      <span className="text-slate-400">${quote.bridge_total.toFixed(2)} USD</span>
+                      <span className="text-slate-500">Bridge FX (→{currency} · {(f.fxPct * 100).toFixed(2)}%)</span>
+                      <span className="text-blue-400">+${f.fxFee.toFixed(2)}</span>
                     </div>
+                  )}
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">OmniPay servicio (0.50%)</span>
+                    <span className="text-emerald-400">+${f.omniSvc.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">OmniPay flat</span>
+                    <span className="text-emerald-400">+${f.omniFlat.toFixed(2)}</span>
+                  </div>
+                  {f.kyc > 0 && (
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">{t("fee_platform")} (0.50%)</span>
-                      <span className="text-slate-400">${quote.omnipay_service.toFixed(2)} USD</span>
+                      <span className="text-amber-500">KYC verificación (única vez)</span>
+                      <span className="text-amber-400">+${f.kyc.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">{t("fee_network")} (fijo)</span>
-                      <span className="text-slate-400">${quote.omnipay_flat.toFixed(2)} USD</span>
-                    </div>
-                    {quote.kyc_surcharge > 0 && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-amber-500">{t("fee_kyc_first")}</span>
-                        <span className="text-amber-400">${quote.kyc_surcharge.toFixed(2)} USD</span>
-                      </div>
-                    )}
-                    <div className="border-t border-slate-700 pt-2 flex justify-between text-sm font-bold">
-                      <span className="text-white">{t("fee_total_to_send")}</span>
-                      <span className="text-emerald-400">${quote.total_sender_pays.toFixed(2)} USD</span>
-                    </div>
-                    <p className="text-[10px] text-slate-600 text-center mt-1">{t("fee_approx_note")}</p>
-                  </>
-                ) : null}
-              </div>
-            )}
+                  )}
+                  <div className="border-t border-slate-700 pt-2 flex justify-between text-sm font-bold">
+                    <span className="text-white">Emisor paga en total</span>
+                    <span className="text-emerald-400">${f.total.toFixed(2)} USD</span>
+                  </div>
+                  <p className="text-[10px] text-slate-600 text-center mt-1">
+                    1 {currency} = {fxRate.toFixed(4)} USD · Tipo de cambio live
+                  </p>
+                </div>
+              );
+            })()}
 
             {/* Teléfono (opcional) */}
             <div>
@@ -580,7 +602,7 @@ export default function P2PPage() {
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
             </div>
 
-            <button onClick={generateLink} disabled={submitting || !bridgeReady || quoteLoading}
+            <button onClick={generateLink} disabled={submitting || !bridgeReady}
               className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
               {submitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}
             </button>
