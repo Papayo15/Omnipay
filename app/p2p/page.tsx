@@ -484,12 +484,16 @@ export default function P2PPage() {
 
               {/* Fee breakdown — shown as soon as amount is entered */}
               {parseFloat(caAmount) > 0 && (() => {
-                const amt     = parseFloat(caAmount) || 0;
-                const wise    = parseFloat((Math.max(amt * 0.008, 3.00)).toFixed(2)); // Wise 0.80% mín $3 CAD
-                const fx      = parseFloat((amt * 0.02).toFixed(2));                  // FX cambio de moneda 2%
-                const omni    = parseFloat((Math.max(amt * 0.005, 1.99)).toFixed(2)); // OmniPay 0.50% mín $1.99
-                const flat    = 0.99;
-                const total   = parseFloat((amt + wise + fx + omni + flat).toFixed(2));
+                const amt      = parseFloat(caAmount) || 0;
+                // Wise: transferencia + FX entrada (CAD→intermedio) + FX salida (→moneda local)
+                // CAD→MXN ~1.08%+CA$1.93, CAD→USD ~0.37%+CA$0.50, CAD→EUR ~0.58%+CA$0.50
+                // Usamos 1.10% + CA$3 mínimo — cubre todos los corredores sin pérdida
+                const wiseFeeTotal = parseFloat((Math.max(amt * 0.011, 3.00)).toFixed(2));
+                const wiseFxIn     = parseFloat((wiseFeeTotal * 0.55).toFixed(2)); // FX entrada
+                const wiseFxOut    = parseFloat((wiseFeeTotal - wiseFxIn).toFixed(2)); // FX salida
+                const omni         = parseFloat((Math.max(amt * 0.005, 1.99)).toFixed(2));
+                const flat         = 0.99;
+                const total        = parseFloat((amt + wiseFeeTotal + omni + flat).toFixed(2));
                 return (
                   <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
                     <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-2">
@@ -500,15 +504,15 @@ export default function P2PPage() {
                       <span className="text-white font-semibold">CA${amt.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">Wise relay (0.80%, mín CA$3)</span>
-                      <span className="text-slate-400">+CA${wise.toFixed(2)}</span>
+                      <span className="text-slate-500">Wise FX entrada (CAD→intermedio ~0.60%)</span>
+                      <span className="text-slate-400">+CA${wiseFxIn.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">Cambio de moneda (2%)</span>
-                      <span className="text-slate-400">+CA${fx.toFixed(2)}</span>
+                      <span className="text-slate-500">Wise FX salida (→moneda local ~0.50%)</span>
+                      <span className="text-slate-400">+CA${wiseFxOut.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">{t("fee_platform")} (0.50%)</span>
+                      <span className="text-slate-500">{t("fee_platform")} (0.50%, mín CA$1.99)</span>
                       <span className="text-slate-400">+CA${omni.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-xs">
@@ -519,6 +523,9 @@ export default function P2PPage() {
                       <span className="text-white">{t("fee_total_to_send")}</span>
                       <span className="text-red-400">CA${total.toFixed(2)}</span>
                     </div>
+                    <p className="text-[10px] text-slate-600 text-center">
+                      Wise publica: CAD→MXN ~1.08%, CAD→USD ~0.37%, CAD→EUR ~0.58%
+                    </p>
                   </div>
                 );
               })()}
