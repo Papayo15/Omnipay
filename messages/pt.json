@@ -327,6 +327,25 @@
     "kyc_pending_body": "Complete sua verificação de identidade (KYC) para ativar os recebimentos.",
     "kyc_complete_link": "Completar verificação KYC →",
     "sender_ref_usd": "~${amount} USD referência",
-    "fee_sender_sees_own_currency": "O remetente verá o valor exato na sua moeda ao abrir o link"
+    "fee_sender_sees_own_currency": "O remetente verá o valor exato na sua moeda ao abrir o link",
+    "tab_41countries": "🌍 41 Países",
+    "tab_canada": "🇨🇦 Do/Para Canadá",
+    "p2p_header_sub": "O destinatário preenche os dados — o remetente recebe o link de pagamento",
+    "canada_info": "Transferências do Canadá para outro país ou para uma conta canadense. Via Wise — processamento manual até o Bridge estar ativo.",
+    "canada_recipient_name": "Nome do destinatário",
+    "canada_destination": "País de destino",
+    "canada_amount_label": "Valor a enviar (CAD)",
+    "canada_phone_label": "Telefone do destinatário (opcional)",
+    "canada_submit": "Gerar instruções de pagamento →",
+    "canada_created_title": "Solicitação criada",
+    "canada_created_sub": "O remetente deve transferir para esta conta",
+    "canada_instructions_label": "Instruções para o remetente",
+    "canada_send_to": "Enviar para",
+    "canada_wise_name": "OmniPay (Wise CAD)",
+    "canada_amount_row": "Valor",
+    "canada_reference": "Referência",
+    "canada_wise_note": "📌 O número da conta Wise CAD será enviado pelo WhatsApp.",
+    "canada_processing_note": "Processamos a transferência via Wise em 1-2 dias úteis.",
+    "canada_new_request": "+ Nova solicitação"
   }
 }

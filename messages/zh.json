@@ -327,6 +327,25 @@
     "kyc_pending_body": "完成身份验证(KYC)以激活收款功能。",
     "kyc_complete_link": "完成KYC验证 →",
     "sender_ref_usd": "~${amount} USD 参考",
-    "fee_sender_sees_own_currency": "发款人打开链接时将看到其货币的精确金额"
+    "fee_sender_sees_own_currency": "发款人打开链接时将看到其货币的精确金额",
+    "tab_41countries": "🌍 41个国家",
+    "tab_canada": "🇨🇦 加拿大汇款",
+    "p2p_header_sub": "Recipient fills in their details — sender gets the payment link",
+    "canada_info": "Transfers from Canada to another country, or to a Canadian account. Via Wise — processed manually until Bridge is active.",
+    "canada_recipient_name": "Recipient name",
+    "canada_destination": "Destination country",
+    "canada_amount_label": "Amount to send (CAD)",
+    "canada_phone_label": "Recipient phone (optional)",
+    "canada_submit": "Generate payment instructions →",
+    "canada_created_title": "Request created",
+    "canada_created_sub": "The sender must transfer to this account",
+    "canada_instructions_label": "Instructions for the sender",
+    "canada_send_to": "Send to",
+    "canada_wise_name": "OmniPay (Wise CAD)",
+    "canada_amount_row": "Amount",
+    "canada_reference": "Reference",
+    "canada_wise_note": "📌 The Wise CAD account number will be sent via WhatsApp.",
+    "canada_processing_note": "We process the transfer via Wise within 1-2 business days.",
+    "canada_new_request": "+ New request"
   }
 }

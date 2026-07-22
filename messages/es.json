@@ -305,6 +305,25 @@
     "card_or_bank": "¿Cómo quieres recibir el dinero?",
     "error_card_unavailable": "Tarjeta no disponible para este país. Usa cuenta bancaria.",
     "sender_ref_usd": "~${amount} USD de referencia",
-    "fee_sender_sees_own_currency": "El emisor verá el monto exacto en su moneda al abrir el link"
+    "fee_sender_sees_own_currency": "El emisor verá el monto exacto en su moneda al abrir el link",
+    "tab_41countries": "🌍 41 Países",
+    "tab_canada": "🇨🇦 Desde/Para Canadá",
+    "p2p_header_sub": "El receptor llena sus datos — el emisor recibe el link de pago",
+    "canada_info": "Envíos desde Canadá a otro país, o hacia una cuenta canadiense. Vía Wise — procesamos manualmente hasta que Bridge esté activo.",
+    "canada_recipient_name": "Nombre del receptor",
+    "canada_destination": "País destino",
+    "canada_amount_label": "Monto a enviar (CAD)",
+    "canada_phone_label": "Teléfono receptor (opcional)",
+    "canada_submit": "Generar instrucciones de pago →",
+    "canada_created_title": "Solicitud creada",
+    "canada_created_sub": "El emisor debe transferir a esta cuenta",
+    "canada_instructions_label": "Instrucciones para el emisor",
+    "canada_send_to": "Enviar a",
+    "canada_wise_name": "OmniPay (Wise CAD)",
+    "canada_amount_row": "Monto",
+    "canada_reference": "Referencia",
+    "canada_wise_note": "📌 El número de cuenta Wise CAD se enviará por WhatsApp.",
+    "canada_processing_note": "Procesamos el envío vía Wise en 1-2 días hábiles.",
+    "canada_new_request": "+ Nueva solicitud"
   }
 }

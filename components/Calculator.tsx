@@ -9,6 +9,8 @@ import { COUNTRIES } from "@/constants/countries";
 const BRIDGE_ONRAMP_PCT  = 0.005;   // 0.50%
 const BRIDGE_OFFRAMP_PCT = 0.0025;  // 0.25%
 const WISE_PCT           = 0.008;   // 0.80%
+const WISE_MIN           = 3.00;    // Wise mínimo $3 CAD
+const FX_PCT             = 0.02;    // 2.00% cambio de moneda
 const STRIPE_PCT         = 0.029;   // 2.90%
 const STRIPE_FLAT        = 0.30;
 const OMNIPAY_PCT        = 0.005;   // 0.50%
@@ -54,33 +56,39 @@ function calcQuote(
   if (channel === "bridge") {
     const onramp  = parseFloat((amount * BRIDGE_ONRAMP_PCT).toFixed(2));
     const offramp = parseFloat((amount * BRIDGE_OFFRAMP_PCT).toFixed(2));
+    const fx      = parseFloat((amount * FX_PCT).toFixed(2));
     const omni    = parseFloat((Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN) + OMNIPAY_FLAT_P2P).toFixed(2));
     const kyc     = isNew ? KYC_P2P : 0;
-    lines.push({ label: "Bridge on-ramp (fiat→USDC)",  provider: "Bridge.xyz", amount: onramp  });
+    lines.push({ label: "Bridge on-ramp (fiat→USDC)",   provider: "Bridge.xyz", amount: onramp  });
     lines.push({ label: "Bridge off-ramp (USDC→local)", provider: "Bridge.xyz", amount: offramp });
-    lines.push({ label: "OmniPay servicio",             provider: "OmniPay",    amount: Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN) });
-    lines.push({ label: "OmniPay flat",                 provider: "OmniPay",    amount: OMNIPAY_FLAT_P2P });
+    lines.push({ label: "Cambio de moneda (2%)",         provider: "OmniPay",    amount: fx      });
+    lines.push({ label: "OmniPay servicio (0.50%)",      provider: "OmniPay",    amount: Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN) });
+    lines.push({ label: "OmniPay flat",                  provider: "OmniPay",    amount: OMNIPAY_FLAT_P2P });
     if (kyc > 0) lines.push({ label: "Verificación de identidad (única vez)", provider: "Bridge.xyz", amount: kyc, note: "Solo en tu primera transacción" });
-    total = parseFloat((amount + onramp + offramp + omni + kyc).toFixed(2));
+    total = parseFloat((amount + onramp + offramp + fx + omni + kyc).toFixed(2));
   } else if (channel === "wise") {
-    const wise = parseFloat((amount * WISE_PCT).toFixed(2));
+    const wise = parseFloat((Math.max(amount * WISE_PCT, WISE_MIN)).toFixed(2));
+    const fx   = parseFloat((amount * FX_PCT).toFixed(2));
     const omni = parseFloat((Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN) + OMNIPAY_FLAT_P2P).toFixed(2));
-    lines.push({ label: "Wise transferencia + FX",  provider: "Wise",    amount: wise });
-    lines.push({ label: "OmniPay servicio",          provider: "OmniPay", amount: Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN) });
-    lines.push({ label: "OmniPay flat",              provider: "OmniPay", amount: OMNIPAY_FLAT_P2P });
-    total = parseFloat((amount + wise + omni).toFixed(2));
+    lines.push({ label: "Wise relay (0.80%, mín CA$3)", provider: "Wise",    amount: wise });
+    lines.push({ label: "Cambio de moneda (2%)",         provider: "OmniPay", amount: fx   });
+    lines.push({ label: "OmniPay servicio (0.50%)",      provider: "OmniPay", amount: Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN) });
+    lines.push({ label: "OmniPay flat",                  provider: "OmniPay", amount: OMNIPAY_FLAT_P2P });
+    total = parseFloat((amount + wise + fx + omni).toFixed(2));
   } else {
     // B2B
     const stripe = parseFloat((amount * STRIPE_PCT + STRIPE_FLAT).toFixed(2));
-    const wise   = parseFloat((amount * WISE_PCT).toFixed(2));
+    const wise   = parseFloat((Math.max(amount * WISE_PCT, WISE_MIN)).toFixed(2));
+    const fx     = parseFloat((amount * FX_PCT).toFixed(2));
     const omni   = parseFloat((Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN) + OMNIPAY_FLAT_B2B).toFixed(2));
     const kyb    = isNew ? KYB_B2B : 0;
-    lines.push({ label: "Stripe aceptación de pago",   provider: "Stripe",  amount: stripe, note: "2.9% + $0.30" });
-    lines.push({ label: "Wise transferencia + FX",      provider: "Wise",    amount: wise   });
-    lines.push({ label: "OmniPay servicio",             provider: "OmniPay", amount: Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN) });
-    lines.push({ label: "OmniPay flat B2B",             provider: "OmniPay", amount: OMNIPAY_FLAT_B2B });
+    lines.push({ label: "Stripe aceptación de pago",    provider: "Stripe",  amount: stripe, note: "2.9% + $0.30" });
+    lines.push({ label: "Wise transferencia (0.80%)",    provider: "Wise",    amount: wise   });
+    lines.push({ label: "Cambio de moneda (2%)",         provider: "OmniPay", amount: fx     });
+    lines.push({ label: "OmniPay servicio (0.50%)",      provider: "OmniPay", amount: Math.max(amount * OMNIPAY_PCT, OMNIPAY_MIN) });
+    lines.push({ label: "OmniPay flat B2B",              provider: "OmniPay", amount: OMNIPAY_FLAT_B2B });
     if (kyb > 0) lines.push({ label: "Verificación empresa (única vez)", provider: "Bridge.xyz", amount: kyb, note: "Solo en tu primera transacción" });
-    total = parseFloat((amount + stripe + wise + omni + kyb).toFixed(2));
+    total = parseFloat((amount + stripe + wise + fx + omni + kyb).toFixed(2));
   }
 
   const recipientAmount = fxRate ? parseFloat((amount * fxRate).toFixed(2)) : null;

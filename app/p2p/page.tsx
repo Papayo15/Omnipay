@@ -411,7 +411,7 @@ export default function P2PPage() {
                 : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
             }`}
           >
-            🌍 41 Países
+            {t("tab_41countries")}
           </button>
           <button
             onClick={() => { setOrigin("ca"); setCaStep("form"); }}
@@ -421,7 +421,7 @@ export default function P2PPage() {
                 : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
             }`}
           >
-            🇨🇦 Desde/Para Canadá
+            {t("tab_canada")}
           </button>
         </div>
       </div>
@@ -432,29 +432,22 @@ export default function P2PPage() {
           {caStep === "form" ? (
             <>
               <p className="text-slate-500 text-xs bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 leading-relaxed">
-                📋 Cubre envíos <strong className="text-slate-300">desde</strong> Canadá a otro país, y envíos <strong className="text-slate-300">hacia</strong> una cuenta canadiense. Todo vía nuestra cuenta Wise — procesamos manualmente hasta que Bridge esté activo.
+                {t("canada_info")}
               </p>
 
               {/* Nombre receptor */}
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Nombre del receptor</label>
-                <input
-                  type="text"
-                  value={caName}
-                  onChange={(e) => setCaName(e.target.value)}
+                <label className="block text-xs text-slate-400 mb-1">{t("canada_recipient_name")}</label>
+                <input type="text" value={caName} onChange={(e) => setCaName(e.target.value)}
                   placeholder="María García"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm"
-                />
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm" />
               </div>
 
               {/* País destino */}
               <div>
-                <label className="block text-xs text-slate-400 mb-1">País destino</label>
-                <select
-                  value={caCountry}
-                  onChange={(e) => { setCaCountry(e.target.value); setCaAccount(""); }}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500"
-                >
+                <label className="block text-xs text-slate-400 mb-1">{t("canada_destination")}</label>
+                <select value={caCountry} onChange={(e) => { setCaCountry(e.target.value); setCaAccount(""); }}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500">
                   {COUNTRY_OPTIONS.map((c) => (
                     <option key={c.code} value={c.code}>{c.flag} {c.label} — {c.currency}</option>
                   ))}
@@ -464,118 +457,139 @@ export default function P2PPage() {
               {/* Cuenta destino */}
               <div>
                 <label className="block text-xs text-slate-400 mb-1">
-                  {caCountry === "MX" ? "CLABE (18 dígitos)"
+                  {caCountry === "MX" ? t("clabe_label")
                     : caCountry === "BR" ? "Chave PIX"
                     : caCountry === "GB" ? "Sort Code / Account"
                     : caCountry === "CO" ? "Cuenta Bre-B"
                     : caCountry === "US" ? "Routing / Account"
                     : "IBAN"}
                 </label>
-                <input
-                  type="text"
-                  inputMode={caCountry === "MX" ? "numeric" : "text"}
-                  value={caAccount}
-                  onChange={(e) => setCaAccount(e.target.value)}
-                  placeholder={
-                    caCountry === "MX" ? "646180528000000001"
-                    : caCountry === "BR" ? "CPF, email o celular"
-                    : caCountry === "GB" ? "20-00-00 / 55779911"
-                    : "IBAN o número de cuenta"
-                  }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm font-mono"
-                />
+                <input type="text" inputMode={caCountry === "MX" ? "numeric" : "text"}
+                  value={caAccount} onChange={(e) => setCaAccount(e.target.value)}
+                  placeholder={caCountry === "MX" ? "646180528000000001" : caCountry === "BR" ? "CPF, email o celular" : caCountry === "GB" ? "20-00-00 / 55779911" : "IBAN o número de cuenta"}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm font-mono" />
               </div>
 
               {/* Monto en CAD */}
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Monto a enviar (CAD)</label>
+                <label className="block text-xs text-slate-400 mb-1">{t("canada_amount_label")}</label>
                 <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3">
                   <span className="text-slate-400 text-sm">CA$</span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    min="1"
-                    value={caAmount}
-                    onChange={(e) => setCaAmount(e.target.value)}
-                    placeholder="500"
-                    className="flex-1 bg-transparent text-white text-lg font-semibold outline-none"
-                  />
+                  <input type="number" inputMode="decimal" min="1" value={caAmount}
+                    onChange={(e) => setCaAmount(e.target.value)} placeholder="500"
+                    className="flex-1 bg-transparent text-white text-lg font-semibold outline-none" />
                   <span className="text-slate-500 text-sm">CAD</span>
                 </div>
               </div>
 
-              {/* Teléfono receptor (opcional) */}
+              {/* Fee breakdown — shown as soon as amount is entered */}
+              {parseFloat(caAmount) > 0 && (() => {
+                const amt     = parseFloat(caAmount) || 0;
+                const wise    = parseFloat((Math.max(amt * 0.008, 3.00)).toFixed(2)); // Wise 0.80% mín $3 CAD
+                const fx      = parseFloat((amt * 0.02).toFixed(2));                  // FX cambio de moneda 2%
+                const omni    = parseFloat((Math.max(amt * 0.005, 1.99)).toFixed(2)); // OmniPay 0.50% mín $1.99
+                const flat    = 0.99;
+                const total   = parseFloat((amt + wise + fx + omni + flat).toFixed(2));
+                return (
+                  <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
+                    <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-2">
+                      {t("fee_breakdown_title")}
+                    </p>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">{t("fee_principal")}</span>
+                      <span className="text-white font-semibold">CA${amt.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">Wise relay (0.80%, mín CA$3)</span>
+                      <span className="text-slate-400">+CA${wise.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">Cambio de moneda (2%)</span>
+                      <span className="text-slate-400">+CA${fx.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_platform")} (0.50%)</span>
+                      <span className="text-slate-400">+CA${omni.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_network")} (fijo)</span>
+                      <span className="text-slate-400">+CA${flat.toFixed(2)}</span>
+                    </div>
+                    <div className="border-t border-slate-700 pt-2 flex justify-between text-sm font-bold">
+                      <span className="text-white">{t("fee_total_to_send")}</span>
+                      <span className="text-red-400">CA${total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Teléfono receptor */}
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Teléfono receptor (opcional — para notificación)</label>
-                <input
-                  type="tel"
-                  inputMode="tel"
-                  value={caPhone}
-                  onChange={(e) => setCaPhone(e.target.value)}
+                <label className="block text-xs text-slate-400 mb-1">{t("canada_phone_label")}</label>
+                <input type="tel" inputMode="tel" value={caPhone} onChange={(e) => setCaPhone(e.target.value)}
                   placeholder="+52 55 1234 5678"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm"
-                />
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm" />
               </div>
 
               <button
                 disabled={!caName.trim() || !caAccount.trim() || parseFloat(caAmount) < 1}
                 onClick={() => {
-                  // Notify admin via WhatsApp
                   const adminNumber = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
-                  const msg = `🇨🇦 NUEVO ENVÍO P2P (CAD)\n\nReceptor: ${caName}\nPaís destino: ${caCountry}\nCuenta: ${caAccount}\nMonto: CA$${caAmount} CAD${caPhone ? `\nTel receptor: ${caPhone}` : ""}\n\nProcesar vía Wise → Bridge`;
+                  const amt   = parseFloat(caAmount) || 0;
+                  const wise  = (amt * 0.008).toFixed(2);
+                  const omni  = (Math.max(amt * 0.005, 1.99) + 0.99).toFixed(2);
+                  const total = (amt + parseFloat(wise) + parseFloat(omni)).toFixed(2);
+                  const msg = `🇨🇦 NUEVO P2P CANADÁ\n\nReceptor: ${caName}\nDestino: ${caCountry}\nCuenta: ${caAccount}\nPrincipal: CA$${caAmount}\nWise fee: CA$${wise}\nOmniPay: CA$${omni}\nEmisor paga: CA$${total}${caPhone ? `\nTel: ${caPhone}` : ""}\n\nProcesar vía Wise → Bridge/Wise al destino`;
                   if (adminNumber) window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(msg)}`, "_blank");
                   setCaStep("instructions");
                 }}
                 className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-3 transition-colors"
               >
-                Generar instrucciones de pago →
+                {t("canada_submit")}
               </button>
             </>
           ) : (
-            /* Instructions screen */
             <div className="space-y-4">
               <div className="text-center">
                 <div className="text-4xl mb-2">✅</div>
-                <h3 className="text-white font-bold text-lg">Solicitud creada</h3>
-                <p className="text-slate-400 text-xs mt-1">El emisor debe enviar el dinero a esta cuenta</p>
+                <h3 className="text-white font-bold text-lg">{t("canada_created_title")}</h3>
+                <p className="text-slate-400 text-xs mt-1">{t("canada_created_sub")}</p>
               </div>
 
               <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 space-y-3">
-                <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest">Instrucciones para el emisor</p>
+                <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest">{t("canada_instructions_label")}</p>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Enviar a</span>
-                    <span className="text-white font-semibold">OmniPay (Wise CAD)</span>
+                    <span className="text-slate-400">{t("canada_send_to")}</span>
+                    <span className="text-white font-semibold">{t("canada_wise_name")}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Monto</span>
-                    <span className="text-white font-semibold">CA${parseFloat(caAmount || "0").toFixed(2)}</span>
+                    <span className="text-slate-400">{t("canada_amount_row")}</span>
+                    <span className="text-white font-semibold">
+                      CA${(parseFloat(caAmount||"0") * 1.013 + 0.99).toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Referencia</span>
+                    <span className="text-slate-400">{t("canada_reference")}</span>
                     <span className="text-emerald-400 font-mono font-semibold">OP-{Date.now().toString(36).toUpperCase()}</span>
                   </div>
                 </div>
                 <div className="border-t border-slate-700 pt-3">
-                  <p className="text-slate-500 text-xs">📌 El número de cuenta Wise CAD se te enviará por WhatsApp al administrador.</p>
+                  <p className="text-slate-500 text-xs">{t("canada_wise_note")}</p>
                 </div>
               </div>
 
               <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-xl px-4 py-3">
                 <p className="text-emerald-400 text-xs">
-                  ✅ Receptor: <span className="font-semibold">{caName}</span> en {COUNTRY_OPTIONS.find(c=>c.code===caCountry)?.label}<br/>
-                  Cuenta: <span className="font-mono">{caAccount}</span>
+                  ✅ {t("canada_recipient_name")}: <span className="font-semibold">{caName}</span><br/>
+                  {COUNTRY_OPTIONS.find(c=>c.code===caCountry)?.flag} {COUNTRY_OPTIONS.find(c=>c.code===caCountry)?.label} · <span className="font-mono">{caAccount}</span>
                 </p>
-                <p className="text-slate-500 text-xs mt-2">
-                  Una vez que recibamos el CAD lo procesamos vía Bridge/Wise al destino en 1-2 días hábiles.
-                </p>
+                <p className="text-slate-500 text-xs mt-2">{t("canada_processing_note")}</p>
               </div>
 
-              <button
-                onClick={() => { setCaStep("form"); setCaName(""); setCaAccount(""); setCaAmount(""); setCaPhone(""); setCaCountry("MX"); }}
-                className="w-full border border-slate-600 text-slate-400 hover:text-white rounded-xl py-3 text-sm transition-colors"
-              >
-                + Nueva solicitud
+              <button onClick={() => { setCaStep("form"); setCaName(""); setCaAccount(""); setCaAmount(""); setCaPhone(""); setCaCountry("MX"); }}
+                className="w-full border border-slate-600 text-slate-400 hover:text-white rounded-xl py-3 text-sm transition-colors">
+                {t("canada_new_request")}
               </button>
             </div>
           )}
