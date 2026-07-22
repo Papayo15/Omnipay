@@ -3,10 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Copy, Check } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getFXRate } from "@/lib/fx";
 import { validateClabe, detectBank, type BankInfo } from "@/lib/clabe";
-import Calculator from "@/components/Calculator";
 
 type Step    = "form" | "generating" | "share" | "error";
 type SrcCur  = "USD" | "CAD";
@@ -123,9 +122,8 @@ function calcWiseFees(cadAmount: number) {
 }
 
 export default function P2PPage() {
-  const t            = useTranslations("p2p");
-  const router       = useRouter();
-  const searchParams = useSearchParams();
+  const t      = useTranslations("p2p");
+  const router = useRouter();
 
   // Source currency determines rail: USD → Bridge, CAD → Wise Canada relay
   const [srcCurrency,    setSrcCurrency]    = useState<SrcCur>("USD");
@@ -159,11 +157,12 @@ export default function P2PPage() {
              : BANK_RAIL_COUNTRIES.has(country) ? "bridge"
              : "unavailable";
 
-  // Pre-populate from URL query params
+  // Pre-populate from URL query params (uses window to avoid useSearchParams reload)
   useEffect(() => {
-    const amt = searchParams.get("amount");
-    const cur = searchParams.get("currency");
-    const cty = searchParams.get("country");
+    const p   = new URLSearchParams(window.location.search);
+    const amt = p.get("amount");
+    const cur = p.get("currency");
+    const cty = p.get("country");
     if (amt && !isNaN(parseFloat(amt))) setAmountLocal(amt);
     if (cty && COUNTRY_OPTIONS.some(c => c.code === cty.toUpperCase())) {
       setCountry(cty.toUpperCase());
@@ -396,26 +395,12 @@ export default function P2PPage() {
         <p className="text-slate-500 text-xs mb-4">{t("page_sub")}</p>
       </div>
 
-      {/* Calculator — Bridge + Wise for price comparison */}
-      <div className="w-full max-w-sm mx-auto px-5 mb-6">
-        <Calculator visibleChannels={["bridge", "wise"]} />
-      </div>
-
-      {/* Divider */}
-      <div className="w-full max-w-sm mx-auto px-5 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-slate-800" />
-          <span className="text-slate-600 text-xs">{t("form_intro")}</span>
-          <div className="flex-1 h-px bg-slate-800" />
-        </div>
-      </div>
-
       {/* Form */}
       <div id="p2p-form" className="space-y-4 flex-1 max-w-sm mx-auto w-full px-5">
 
         {/* ── Moneda de envío — determina el riel automáticamente ── */}
         <div>
-          <label className="block text-xs text-slate-400 mb-2">{t("country_label")} · ¿en qué moneda envías?</label>
+          <label className="block text-xs text-slate-400 mb-2">¿En qué moneda envías?</label>
           <div className="flex gap-2">
             <button
               onClick={() => setSrcCurrency("USD")}
