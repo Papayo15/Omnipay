@@ -324,6 +324,10 @@
     "canada_reference": "Referencia",
     "canada_wise_note": "📌 El número de cuenta Wise CAD se enviará por WhatsApp.",
     "canada_processing_note": "Procesamos el envío vía Wise en 1-2 días hábiles.",
-    "canada_new_request": "+ Nueva solicitud"
+    "canada_new_request": "+ Nueva solicitud",
+    "unsupported_note": "¿No ves tu país? Estamos ampliando nuestra red — próximamente más destinos.",
+    "zero_data_note": "🔒 No guardamos ningún dato personal · Bridge.xyz · AES-256-GCM",
+    "page_sub": "El receptor llena sus datos — el emisor recibe el link de pago",
+    "form_intro": "Datos del receptor"
   }
 }

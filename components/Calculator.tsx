@@ -134,9 +134,17 @@ function fmt(n: number, currency = "USD"): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 2 }).format(n);
 }
 
-export default function Calculator() {
+interface CalcProps {
+  /** Restrict which channel tabs are shown. Default: all three. */
+  visibleChannels?: Channel[];
+  /** Called when user clicks "Proceder". Overrides default routing. */
+  onProceed?: () => void;
+}
+
+export default function Calculator({ visibleChannels, onProceed }: CalcProps = {}) {
   const router = useRouter();
-  const [channel, setChannel] = useState<Channel>("bridge");
+  const allowed: Channel[] = visibleChannels ?? ["bridge", "wise", "b2b"];
+  const [channel, setChannel] = useState<Channel>(allowed[0]);
   const [amount, setAmount]   = useState("300");
   const [country, setCountry] = useState("MX");
   const [isNew, setIsNew]     = useState(true);
@@ -175,17 +183,15 @@ export default function Calculator() {
   }, [channel, amount, destCurrency, fxRate, isNew]);
 
   function handleProceed() {
+    if (onProceed) { onProceed(); return; }
     const n = parseFloat(amount);
     if (!n) return;
     if (channel === "b2b") {
-      router.push("/");
+      router.push("/b2b");
     } else {
       router.push(`/p2p?amount=${n}&currency=${srcCurrency}&country=${country}`);
     }
   }
-
-  // Channel selector tabs
-  const channels: Channel[] = ["bridge", "wise", "b2b"];
 
   return (
     <div className="w-full max-w-md mx-auto rounded-2xl bg-slate-900 border border-slate-700 overflow-hidden">
@@ -193,7 +199,7 @@ export default function Calculator() {
       <div className="px-5 pt-5 pb-3 border-b border-slate-800">
         <p className="text-slate-400 text-xs uppercase tracking-wider mb-2">Simula tu envío</p>
         <div className="flex gap-1">
-          {channels.map(ch => (
+          {allowed.map(ch => (
             <button
               key={ch}
               onClick={() => setChannel(ch)}

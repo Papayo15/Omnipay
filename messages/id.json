@@ -346,6 +346,10 @@
     "canada_reference": "Reference",
     "canada_wise_note": "📌 The Wise CAD account number will be sent via WhatsApp.",
     "canada_processing_note": "We process the transfer via Wise within 1-2 business days.",
-    "canada_new_request": "+ New request"
+    "canada_new_request": "+ New request",
+    "unsupported_note": "Tidak melihat negara Anda? Kami memperluas jaringan — segera hadir lebih banyak tujuan.",
+    "zero_data_note": "🔒 Tidak menyimpan data pribadi · Bridge.xyz · AES-256-GCM",
+    "page_sub": "Penerima mengisi detail — pengirim menerima tautan pembayaran",
+    "form_intro": "Detail penerima"
   }
 }

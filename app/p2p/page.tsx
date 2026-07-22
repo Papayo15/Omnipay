@@ -6,6 +6,7 @@ import { ArrowLeft, Copy, Check, CreditCard, Building2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getFXRate } from "@/lib/fx";
 import { validateClabe, detectBank, type BankInfo } from "@/lib/clabe";
+import Calculator from "@/components/Calculator";
 
 type Step     = "form" | "generating" | "share" | "error";
 type PayMode  = "card" | "bank";
@@ -392,16 +393,35 @@ export default function P2PPage() {
       {/* Back */}
       <div className="max-w-2xl mx-auto w-full px-6 pt-6">
         <button onClick={() => router.push("/")} className="flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors">
-          ← OmniPay Global
+          ← OmniPay
         </button>
       </div>
 
       {/* Header */}
-      <div className="w-full max-w-sm mx-auto px-5 pt-6 pb-2">
-        <h2 className="text-white font-bold text-lg mb-1">💸 Envío P2P</h2>
-        <p className="text-slate-500 text-xs mb-5">Receptor llena sus datos — el emisor recibe el link de pago</p>
+      <div className="w-full max-w-sm mx-auto px-5 pt-5 pb-2">
+        <h1 className="text-white font-bold text-lg mb-1">🌍 {t("page_title")}</h1>
+        <p className="text-slate-500 text-xs mb-4">{t("page_sub")}</p>
+      </div>
 
-        {/* Origin tabs */}
+      {/* Calculator — P2P channels only (Bridge + Wise) */}
+      <div className="w-full max-w-sm mx-auto px-5 mb-6">
+        <Calculator
+          visibleChannels={["bridge", "wise"]}
+          onProceed={() => document.getElementById("p2p-form")?.scrollIntoView({ behavior: "smooth" })}
+        />
+      </div>
+
+      {/* Divider */}
+      <div className="w-full max-w-sm mx-auto px-5 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-slate-800" />
+          <span className="text-slate-600 text-xs">{t("form_intro")}</span>
+          <div className="flex-1 h-px bg-slate-800" />
+        </div>
+      </div>
+
+      {/* Origin tabs */}
+      <div className="w-full max-w-sm mx-auto px-5">
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => { setOrigin("us"); setStep("form"); }}
@@ -840,8 +860,13 @@ export default function P2PPage() {
           {submitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}
         </button>
 
-        <p className="text-center text-xs text-slate-600 pb-2">
-          🔒 Bridge.xyz · AES-256-GCM · {t("feat3_title")}
+        {/* Unsupported country hint */}
+        <div className="text-center py-1">
+          <p className="text-slate-600 text-[11px]">{t("unsupported_note")}</p>
+        </div>
+
+        <p className="text-center text-xs text-slate-700 pb-6">
+          {t("zero_data_note")}
         </p>
 
       </div>
