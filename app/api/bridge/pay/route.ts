@@ -194,7 +194,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         payment_rails:       di.payment_rails,
         // What to deposit
         amount_to_deposit:   quote.total_sender_pays.toFixed(2),
-        instructions:        `Deposita exactamente ${quote.total_sender_pays.toFixed(2)} ${source_currency.toUpperCase()} a esta cuenta. Bridge convertirá y enviará automáticamente a ${meta.nombre} en ${meta.country}.`,
+        instructions:        `Deposita exactamente ${quote.total_sender_pays.toFixed(2)} ${source_currency.toUpperCase()} a esta cuenta. Bridge convierte al instante y ${meta.nombre} recibe en minutos vía ${meta.country === "MX" ? "SPEI" : meta.country === "BR" ? "PIX" : meta.country === "GB" ? "Faster Payments" : "transferencia local"}.`,
       },
       fee_breakdown: {
         amount_principal:  quote.amount_principal,
