@@ -44,6 +44,7 @@ interface PayResponse {
   needs_kyc:            boolean;
   kyc_url?:             string | null;
   error?:               string;
+  bridge_details?:      unknown;
 }
 
 const CURRENCIES = [
@@ -114,7 +115,8 @@ export default function PagarPage() {
       });
       const data = await res.json() as PayResponse;
       if (!res.ok || data.error) {
-        setErrorMsg(data.error ?? "Error al procesar el pago");
+        const detail = data.bridge_details ? "\n" + JSON.stringify(data.bridge_details, null, 2) : "";
+        setErrorMsg((data.error ?? "Error al procesar el pago") + detail);
         setStep("error");
         return;
       }

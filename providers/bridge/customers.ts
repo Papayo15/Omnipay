@@ -52,7 +52,9 @@ export async function patchCustomerAddress(customerId: string, country: string):
   if (isSandbox) {
     // Compliance fields required for sof_individual_primary_purpose (needed by ALL endorsements).
     // Without these, pending[] stays empty and simulate_kyc_approval approves nothing.
+    // signed_agreement_id is also required by Bridge sandbox PUT endpoint.
     const FAKE_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII=";
+    update.signed_agreement_id           = crypto.randomUUID();
     update.account_purpose               = "payments_to_friends_or_family_abroad";
     update.source_of_funds               = "salary";
     update.employment_status             = "employed";
