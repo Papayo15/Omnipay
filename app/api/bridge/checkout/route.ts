@@ -234,15 +234,6 @@ export async function POST(req: NextRequest): Promise<Response> {
       amount_target,
       receive_method,
       recipient_phone,
-      // Bank details included for Wise payout (token is AES-256-GCM encrypted — never stored in plaintext)
-      clabe:          clabe          ?? null,
-      iban:           iban           ?? null,
-      bic:            bic            ?? null,
-      pix_key:        pix_key        ?? null,
-      routing_number: routing_number ?? null,
-      account_number: account_number ?? null,
-      sort_code:      sort_code      ?? null,
-      bank_name:      bank_name      ?? null,
     });
     const metaToken = await encryptPayload({
       account:        meta,
