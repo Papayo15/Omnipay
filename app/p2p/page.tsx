@@ -223,7 +223,15 @@ export default function P2PPage() {
   // Bridge link generation — gets real fees from Bridge at submit time
   const generateLink = useCallback(async () => {
     const amt = parseFloat(amountLocal);
-    if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt || !fxRate) return;
+    if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt) return;
+
+    // If FX rate not yet loaded, fetch it now before proceeding
+    let rate = fxRate;
+    if (!rate) {
+      rate = await getFXRate(currency, "USD").catch(() => null);
+      if (rate) setFxRate(rate);
+      if (!rate) { setErrorMsg("No se pudo obtener el tipo de cambio. Intenta de nuevo."); setStep("error"); return; }
+    }
 
     setSubmitting(true);
     setStep("generating");
@@ -232,7 +240,7 @@ export default function P2PPage() {
       try {
         const qRes = await fetch("/api/bridge/quote", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: amt * fxRate, email: email.toLowerCase(), type: "p2p", country }),
+          body: JSON.stringify({ amount: amt * rate, email: email.toLowerCase(), type: "p2p", country }),
         });
         if (qRes.ok) {
           const q = await qRes.json() as BridgeQuote;
@@ -317,7 +325,7 @@ export default function P2PPage() {
   }, [nombre, amountLocal, currency, shareLink, realSenderTotal, t]);
 
   const accountValid = account.trim().length >= 5;
-  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && parseFloat(amountLocal) >= 1 && rail === "bridge" && !!fxRate;
+  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && parseFloat(amountLocal) >= 1 && rail === "bridge";
   const canadaReady  = !!nombre.trim() && accountValid && parseFloat(amountLocal) >= 1;
 
   // ── Generating ──────────────────────────────────────────────────────────────
