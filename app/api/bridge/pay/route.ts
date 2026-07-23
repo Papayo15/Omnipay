@@ -75,9 +75,27 @@ export async function POST(req: NextRequest): Promise<Response> {
       );
     }
 
-    // 2. Build fee quote with dynamic KYC check for the SENDER (Bridge = our DB)
+    // 2. Convert amount_target (local currency) → USD for the quote
+    // meta.amount_target is what the receptor wants to receive in meta.target_currency (e.g. 3000 MXN)
+    // We need to send USD into the virtual account, so convert first.
+    let amountUSD = meta.amount_target;
+    if (meta.target_currency && meta.target_currency !== "USD") {
+      try {
+        const fxRes = await fetch(
+          `https://open.er-api.com/v6/latest/${meta.target_currency}`,
+          { cache: "no-store" },
+        );
+        if (fxRes.ok) {
+          const fxData = await fxRes.json() as { rates?: Record<string, number> };
+          const rate = fxData.rates?.USD;
+          if (rate) amountUSD = parseFloat((meta.amount_target * rate).toFixed(2));
+        }
+      } catch { /* use amount_target as-is if FX lookup fails */ }
+    }
+
+    // 2b. Build fee quote with dynamic KYC check for the SENDER
     const quote = await buildDynamicQuote({
-      amount:  meta.amount_target,
+      amount:  amountUSD,
       country: meta.country,
       email:   sender_email.toLowerCase(),
       type:    "p2p",
@@ -190,7 +208,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         kyc_surcharge:     quote.kyc_surcharge,
         is_new_customer:   quote.is_new_customer,
         total_to_send:     quote.total_sender_pays,
-        recipient_gets:    `${meta.amount_target} ${meta.target_currency}`,
+        recipient_gets:    `${meta.amount_target.toLocaleString("es-MX")} ${meta.target_currency}`,
       },
       recipient: {
         name:    meta.nombre,
