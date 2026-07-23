@@ -273,7 +273,7 @@ export default function PagarPage() {
           <p className="text-white text-xs font-semibold">¿Qué sigue?</p>
           <div className="flex gap-3 items-start">
             <span className="text-[#00C9C8] font-bold text-sm w-5 flex-shrink-0">1</span>
-            <p className="text-slate-400 text-xs leading-relaxed">Abre tu banco online y envía exactamente <strong className="text-white">{di.amount_to_deposit} {di.currency.toUpperCase()}</strong> mediante wire transfer o ACH a la cuenta de arriba.</p>
+            <p className="text-slate-400 text-xs leading-relaxed">Abre tu banco online y envía exactamente <strong className="text-white">{di.amount_to_deposit} {di.currency.toUpperCase()}</strong> mediante <strong className="text-white">{di.currency.toUpperCase() === "EUR" ? "transferencia SEPA" : di.currency.toUpperCase() === "GBP" ? "Faster Payments" : di.currency.toUpperCase() === "BRL" ? "PIX" : di.currency.toUpperCase() === "MXN" ? "SPEI" : "transferencia ACH"}</strong> a la cuenta de arriba.</p>
           </div>
           <div className="flex gap-3 items-start">
             <span className="text-[#00C9C8] font-bold text-sm w-5 flex-shrink-0">2</span>
