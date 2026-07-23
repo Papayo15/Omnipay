@@ -100,8 +100,11 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (isSandbox) {
       try {
         await createKycLink({ full_name: sender_name, email: sender_email.toLowerCase(), type: "individual", endorsements: ["base", "sepa"] });
-      } catch { /* duplicate_record fine */ }
-      try { await simulateKycApproval(senderCustomer.id); } catch { /* may already be approved */ }
+      } catch (e) {
+        const ke = e as Error & { type?: string };
+        if (ke.type !== "duplicate_record") throw ke; // surface non-duplicate errors
+      }
+      await simulateKycApproval(senderCustomer.id); // must succeed for VA creation
     }
 
     const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
