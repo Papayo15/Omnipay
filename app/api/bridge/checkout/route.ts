@@ -107,7 +107,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     // In sandbox: ALSO sets compliance fields (account_purpose, source_of_funds, place_of_birth, etc.)
     // so that base+sepa+spei+pix+fps+cop endorsements reach "pending" state.
     // Applies to both NEW and EXISTING customers — idempotent, safe to call repeatedly.
-    try { await patchCustomerAddress(customer.id, country_upper); } catch { /* best-effort */ }
+    try { await patchCustomerAddress(customer.id, country_upper, true); } catch { /* best-effort */ }
 
     // Build liquidation params early — needed to create external account BEFORE simulate_kyc_approval.
     // Some rails (SPEI, PIX, FPS, COP) require account_processing which is only satisfied
