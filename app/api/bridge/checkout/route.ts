@@ -145,7 +145,13 @@ export async function POST(req: NextRequest): Promise<Response> {
     // when payout_fiat:pending. Uses a separate idempotency key prefix ("pre-ext-")
     // so createLiquidationAddress can still find/reuse it via duplicate_external_account.
     if (receive_method === "bank") {
-      try { await ensureExternalAccount(liqParams); } catch { /* best-effort */ }
+      try { await ensureExternalAccount(liqParams); } catch (extErr) {
+        const e2 = extErr as Error & { message?: string; type?: string };
+        // "not active" here means the same endorsement issue — will be caught at createLiquidationAddress
+        if (!e2.type?.includes("duplicate") && !e2.message?.toLowerCase().includes("not active")) {
+          console.warn("[bridge/checkout] ensureExternalAccount:", e2.message);
+        }
+      }
     }
 
     // 2. KYC gate (production only — sandbox uses simulate_kyc_approval above)
@@ -179,7 +185,42 @@ export async function POST(req: NextRequest): Promise<Response> {
     // 3. Create liquidation address (Bridge converts USDC → local fiat → bank/card)
     // External account was already created above — createLiquidationAddress reuses it via
     // duplicate_external_account handling.
-    const liqAddr = await createLiquidationAddress(liqParams);
+    let liqAddr: Awaited<ReturnType<typeof createLiquidationAddress>>;
+    try {
+      liqAddr = await createLiquidationAddress(liqParams);
+    } catch (liqErr) {
+      // Bridge returns "not active" when the customer's rail-specific endorsement isn't approved yet.
+      // Even if base KYC is done, SPEI/PIX/FPS/COP each need their own endorsement approval.
+      // Redirect the customer to complete KYC for the missing endorsement.
+      const e2 = liqErr as Error & { message?: string };
+      const isNotActive = e2.message?.toLowerCase().includes("not active")
+        || e2.message?.toLowerCase().includes("account_not_active");
+      if (isNotActive && !isSandbox) {
+        let kycUrl: string | null = getKycUrlFromCustomer(customer);
+        if (!kycUrl) {
+          try {
+            const kycLink = await createKycLink({
+              full_name: nombre, email: email.toLowerCase(),
+              type: "individual", endorsements,
+            });
+            kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
+          } catch (e3) {
+            const err3 = e3 as Error & { type?: string; details?: Record<string, unknown> };
+            if (err3.type === "duplicate_record") {
+              const ex = err3.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
+              kycUrl = ex?.kyc_link ?? ex?.url ?? null;
+            }
+          }
+        }
+        return NextResponse.json({
+          needs_kyc:   true,
+          kyc_url:     kycUrl,
+          customer_id: customer.id,
+          message:     "Tu verificación necesita aprobación adicional para este corredor. Completa el proceso y vuelve a intentarlo.",
+        }, { status: 202 });
+      }
+      throw liqErr;
+    }
 
     // 4. Encrypt metadata into token
     const targetCurrency = getTargetCurrency(country_upper);
