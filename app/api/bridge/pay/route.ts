@@ -94,10 +94,8 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
-    // Patch address + compliance fields — best-effort, customer already has address from createCustomer
-    let patchErr: string | null = null;
-    try { await patchCustomerAddress(senderCustomer.id, "US"); }
-    catch (e) { patchErr = (e as Error).message; }
+    // Patch address + compliance fields (same as checkout receiver flow)
+    try { await patchCustomerAddress(senderCustomer.id, "US", true); } catch { /* best-effort */ }
 
     if (isSandbox) {
       try {
@@ -105,9 +103,6 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch { /* duplicate_record fine */ }
       try { await simulateKycApproval(senderCustomer.id); } catch { /* may already be approved */ }
     }
-
-    // If patch failed AND virtual account creation also fails, we'll surface the patch error for debug
-    void patchErr;
 
     const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
     const orderId = `OP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
