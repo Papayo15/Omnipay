@@ -122,8 +122,21 @@ export async function POST(req: NextRequest): Promise<Response> {
   const quote = await getWiseQuote(currency, meta.target_currency, meta.amount_target);
 
   // Principal = amount Wise needs to receive (excluding OmniPay fee)
-  // OmniPay fee is added on top so the recipient gets the full quoted amount
-  const principal    = quote?.sourceAmount ?? 0;
+  // Fallback to open.er-api.com if Wise quote unavailable
+  let principal = quote?.sourceAmount ?? 0;
+  if (!principal) {
+    try {
+      const fxRes = await fetch(
+        `https://open.er-api.com/v6/latest/${meta.target_currency}`,
+        { cache: "no-store" },
+      );
+      if (fxRes.ok) {
+        const fxData = await fxRes.json() as { rates?: Record<string, number> };
+        const rate = fxData.rates?.[currency.toUpperCase()];
+        if (rate) principal = parseFloat((meta.amount_target * rate).toFixed(2));
+      }
+    } catch { /* keep 0 */ }
+  }
   const omnipayFee   = parseFloat((Math.max(principal * OMNI_PCT, OMNI_MIN) + OMNI_FLAT).toFixed(2));
   const totalToSend  = parseFloat((principal + omnipayFee).toFixed(2));
 
