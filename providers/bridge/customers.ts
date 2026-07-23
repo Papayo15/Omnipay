@@ -42,12 +42,18 @@ const ALPHA2_TO_ALPHA3: Record<string, string> = {
 // In sandbox: also includes all required KYC compliance fields so that
 // simulate_kyc_approval can approve endorsements for ALL rails (base, sepa, spei, pix, fps, cop).
 // country param is alpha-2 (e.g. "MX" or "DE").
-export async function patchCustomerAddress(customerId: string, country: string, includeComplianceFields = false): Promise<void> {
+export async function patchCustomerAddress(customerId: string, country: string, includeComplianceFields = false, endorsements?: string[]): Promise<void> {
   const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
   const iso3      = ALPHA2_TO_ALPHA3[country] ?? "USA";
   const addr      = ADDRESS_DEFAULTS[iso3] ?? ADDRESS_DEFAULTS["USA"];
 
   const update: Record<string, unknown> = { residential_address: addr };
+
+  // Always include endorsements if provided — Bridge adds them to pending state
+  // for existing customers who were created without rail-specific endorsements.
+  if (endorsements?.length) {
+    update.endorsements = endorsements;
+  }
 
   if (isSandbox && includeComplianceFields) {
     // Compliance fields needed ONLY during initial customer setup so simulate_kyc_approval works.
