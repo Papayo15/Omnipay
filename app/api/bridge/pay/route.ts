@@ -11,7 +11,7 @@
 //                 liquidation address auto-pays receptor via SPEI/card/ACH etc.
 
 import { NextRequest, NextResponse }              from "next/server";
-import { getOrCreateCustomer, getKycLink }        from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getKycLink, patchCustomerAddress, createKycLink, simulateKycApproval } from "@/providers/bridge/customers";
 import { createVirtualAccount }                   from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
 import { buildDynamicQuote }                      from "@/lib/bridge-fees";
@@ -85,11 +85,24 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // 3. Get or create Bridge customer for the SENDER (KYC)
     const { customer: senderCustomer, needsKyc } = await getOrCreateCustomer({
-      type:       "individual",
-      email:      sender_email.toLowerCase(),
-      first_name: sender_name.split(" ")[0],
-      last_name:  sender_name.split(" ").slice(1).join(" ") || "-",
+      type:        "individual",
+      email:       sender_email.toLowerCase(),
+      first_name:  sender_name.split(" ")[0],
+      last_name:   sender_name.split(" ").slice(1).join(" ") || "-",
+      endorsements: ["base", "sepa"],
     });
+
+    const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
+
+    // Sender also needs a residential address — same as receiver flow
+    try { await patchCustomerAddress(senderCustomer.id, "US"); } catch { /* best-effort */ }
+
+    if (isSandbox) {
+      try {
+        await createKycLink({ full_name: sender_name, email: sender_email.toLowerCase(), type: "individual", endorsements: ["base", "sepa"] });
+      } catch { /* duplicate_record fine */ }
+      try { await simulateKycApproval(senderCustomer.id); } catch { /* may already be approved */ }
+    }
 
     const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
     const orderId = `OP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
