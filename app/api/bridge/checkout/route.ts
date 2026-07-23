@@ -12,7 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getKycLink, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, simulateKycApproval, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getKycLink, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     // In sandbox: ALSO sets compliance fields (account_purpose, source_of_funds, place_of_birth, etc.)
     // so that base+sepa+spei+pix+fps+cop endorsements reach "pending" state.
     // Applies to both NEW and EXISTING customers — idempotent, safe to call repeatedly.
-    try { await patchCustomerAddress(customer.id, country_upper, true, endorsements); } catch { /* best-effort */ }
+    try { await patchCustomerAddress(customer.id, country_upper, true); } catch { /* best-effort */ }
 
     // Build liquidation params early — needed to create external account BEFORE simulate_kyc_approval.
     // Some rails (SPEI, PIX, FPS, COP) require account_processing which is only satisfied
@@ -129,12 +129,16 @@ export async function POST(req: NextRequest): Promise<Response> {
     //    One KYC link per email max — duplicate_record just means it's already pending.
     // 2. simulate_kyc_approval approves all pending endorsements.
     if (isSandbox) {
+      // For existing customers that may have been created with only base+sepa,
+      // explicitly add the rail-specific endorsement to pending state via a
+      // minimal PUT (no compliance fields, so Bridge won't reject it).
+      try { await ensureEndorsements(customer.id, endorsements); } catch { /* ignore */ }
       try {
         await createKycLink({
           full_name:    nombre,
           email:        email.toLowerCase(),
           type:         "individual",
-          endorsements, // ["base", "sepa"] or ["base", "spei"] etc.
+          endorsements,
         });
       } catch { /* duplicate_record = already pending, fine */ }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }

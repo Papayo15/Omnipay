@@ -42,18 +42,12 @@ const ALPHA2_TO_ALPHA3: Record<string, string> = {
 // In sandbox: also includes all required KYC compliance fields so that
 // simulate_kyc_approval can approve endorsements for ALL rails (base, sepa, spei, pix, fps, cop).
 // country param is alpha-2 (e.g. "MX" or "DE").
-export async function patchCustomerAddress(customerId: string, country: string, includeComplianceFields = false, endorsements?: string[]): Promise<void> {
+export async function patchCustomerAddress(customerId: string, country: string, includeComplianceFields = false): Promise<void> {
   const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
   const iso3      = ALPHA2_TO_ALPHA3[country] ?? "USA";
   const addr      = ADDRESS_DEFAULTS[iso3] ?? ADDRESS_DEFAULTS["USA"];
 
   const update: Record<string, unknown> = { residential_address: addr };
-
-  // Always include endorsements if provided — Bridge adds them to pending state
-  // for existing customers who were created without rail-specific endorsements.
-  if (endorsements?.length) {
-    update.endorsements = endorsements;
-  }
 
   if (isSandbox && includeComplianceFields) {
     // Compliance fields needed ONLY during initial customer setup so simulate_kyc_approval works.
@@ -154,6 +148,15 @@ const ADDRESS_DEFAULTS: Record<string, { street_line_1: string; city: string; su
   ESP: { street_line_1: "123 Main Street", city: "Madrid",          subdivision: "MD",   postal_code: "28001",  country: "ESP" },
   CAN: { street_line_1: "123 Main Street", city: "Toronto",         subdivision: "ON",   postal_code: "M5H2N2", country: "CAN" },
 };
+
+// Add endorsements to an existing customer (sandbox + production).
+// Sends a minimal PUT with only `endorsements` — no compliance fields —
+// so Bridge doesn't reject it for already-created customers.
+// Call this BEFORE createKycLink + simulateKycApproval so the new
+// rail-specific endorsement (spei/pix/fps/cop) enters pending state.
+export async function ensureEndorsements(customerId: string, endorsements: string[]): Promise<void> {
+  await bridgeRequest("PUT", `/customers/${customerId}`, { endorsements });
+}
 
 // Sandbox only — instantly approves KYC without going through Persona
 export async function simulateKycApproval(customerId: string): Promise<void> {
