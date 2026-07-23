@@ -95,7 +95,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
     // Sender also needs a residential address — same as receiver flow
-    try { await patchCustomerAddress(senderCustomer.id, "US"); } catch { /* best-effort */ }
+    await patchCustomerAddress(senderCustomer.id, "US");
 
     if (isSandbox) {
       try {
