@@ -182,8 +182,8 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("x-wise-signature-sha256") ?? "";
     const publicKey = process.env.WISE_WEBHOOK_PUBLIC_KEY ?? "";
 
-    // Verify RSA-SHA256 signature
-    if (publicKey && signature) {
+    // Verify RSA-SHA256 signature (skip in test mode)
+    if (publicKey && signature && process.env.WISE_SKIP_SIG !== "true") {
       try {
         const verify = createVerify("SHA256");
         verify.update(rawBody);
