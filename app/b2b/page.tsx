@@ -48,6 +48,27 @@ interface ShareQuote {
   originCurrency: string;
 }
 
+// ── Local B2B fee calculation (no API call during form fill) ─────────────────
+const STRIPE_PCT   = 0.029;
+const STRIPE_FLAT  = 0.30;
+const WISE_B2B_PCT = 0.011;
+const WISE_B2B_MIN = 3.00;
+const OMNI_PCT     = 0.005;
+const OMNI_MIN     = 1.99;
+const OMNI_FLAT    = 1.99;
+const KYB_FEE      = 10.00;
+
+function calcB2BFees(cadAmount: number, isNew: boolean) {
+  const stripe  = parseFloat((cadAmount * STRIPE_PCT + STRIPE_FLAT).toFixed(2));
+  const wise    = parseFloat(Math.max(cadAmount * WISE_B2B_PCT, WISE_B2B_MIN).toFixed(2));
+  const wiseFxIn  = parseFloat((wise * 0.55).toFixed(2));
+  const wiseFxOut = parseFloat((wise - wiseFxIn).toFixed(2));
+  const omniSvc = parseFloat(Math.max(cadAmount * OMNI_PCT, OMNI_MIN).toFixed(2));
+  const kyb     = isNew ? KYB_FEE : 0;
+  const total   = parseFloat((cadAmount + stripe + wise + omniSvc + OMNI_FLAT + kyb).toFixed(2));
+  return { stripe, wise, wiseFxIn, wiseFxOut, omniSvc, kyb, total };
+}
+
 // ── Countries ─────────────────────────────────────────────────────────────────
 const COUNTRIES = [
   { code: "MX", name: "México",         currency: "MXN", phone: "+52"  },
@@ -214,6 +235,7 @@ export default function B2BPage() {
   const [receiveMode,    setReceiveMode]  = useState<ReceiveMode>("bank");
   const [recipientPhone, setRPhone]       = useState("");
   const [senderPhone,    setSPhone]       = useState("");
+  const [isNew,          setIsNew]        = useState(false);
   const [submitting,     setSubmitting]   = useState(false);
   const [formError,      setFormError]    = useState("");
 
@@ -622,6 +644,39 @@ export default function B2BPage() {
           <input value={senderPhone} onChange={(e) => setSPhone(e.target.value)} placeholder="+1 416 555 0123" inputMode="tel"
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm" />
         </div>
+
+        {/* KYB toggle */}
+        <label className="flex items-center gap-3 cursor-pointer select-none">
+          <div onClick={() => setIsNew((v) => !v)}
+            className={`w-10 h-5 rounded-full transition-colors flex-shrink-0 ${isNew ? "bg-indigo-600" : "bg-slate-700"}`}>
+            <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${isNew ? "translate-x-5 ml-0.5" : "translate-x-0.5 ml-0.5"}`} />
+          </div>
+          <span className="text-xs text-slate-400">Primera empresa (incluye verificación KYB +$10.00 única vez)</span>
+        </label>
+
+        {/* Live fee estimate */}
+        {(() => {
+          const amt = parseFloat(amount);
+          if (!amt || amt <= 0) return null;
+          const f = calcB2BFees(amt, isNew);
+          return (
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 space-y-1.5 text-xs">
+              <p className="text-slate-400 font-medium uppercase tracking-wide text-[10px] mb-2">Estimado de costos (CAD)</p>
+              <div className="flex justify-between text-slate-300"><span>Monto a transferir</span><span className="font-mono">${amt.toFixed(2)}</span></div>
+              <div className="flex justify-between text-slate-400"><span>Stripe aceptación (2.9%+$0.30)</span><span className="font-mono">+ ${f.stripe.toFixed(2)}</span></div>
+              <div className="flex justify-between text-slate-400"><span>Wise FX entrada (CAD→intermedio ~0.60%)</span><span className="font-mono">+ ${f.wiseFxIn.toFixed(2)}</span></div>
+              <div className="flex justify-between text-slate-400"><span>Wise FX salida (→moneda local ~0.50%)</span><span className="font-mono">+ ${f.wiseFxOut.toFixed(2)}</span></div>
+              <div className="flex justify-between text-slate-400"><span>OmniPay servicio (0.50%)</span><span className="font-mono">+ ${f.omniSvc.toFixed(2)}</span></div>
+              <div className="flex justify-between text-slate-400"><span>OmniPay flat B2B</span><span className="font-mono">+ ${OMNI_FLAT.toFixed(2)}</span></div>
+              {f.kyb > 0 && <div className="flex justify-between text-slate-400"><span>Verificación KYB (única vez)</span><span className="font-mono">+ ${f.kyb.toFixed(2)}</span></div>}
+              <div className="border-t border-slate-700 pt-1.5 flex justify-between font-semibold text-white">
+                <span>Total que paga el cliente</span>
+                <span className="font-mono text-indigo-300">${f.total.toFixed(2)} CAD</span>
+              </div>
+              <p className="text-slate-600 text-[10px] pt-0.5">Estimado local · Tarifas reales confirmadas al generar el link</p>
+            </div>
+          );
+        })()}
 
         {formError && <p className="text-red-400 text-sm">{formError}</p>}
 
