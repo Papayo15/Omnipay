@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Zap, ArrowLeft, CheckCircle2, Copy, Check, AlertCircle } from "lucide-react";
 
 type Step = "form" | "loading" | "instructions" | "error";
@@ -76,6 +77,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
 }
 
 export default function PagarPage() {
+  const t = useTranslations("pagar_bridge");
   const [token, setToken]           = useState<string | null>(null);
   const [step,  setStep]            = useState<Step>("form");
   const [name,  setName]            = useState("");
@@ -176,7 +178,7 @@ export default function PagarPage() {
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center gap-4">
         <div className="w-10 h-10 border-2 border-[#00C9C8] border-t-transparent rounded-full animate-spin" />
-        <p className="text-slate-400 text-sm">Generando instrucciones de pago…</p>
+        <p className="text-slate-400 text-sm">{t("loading")}</p>
       </main>
     );
   }
@@ -357,7 +359,7 @@ export default function PagarPage() {
           onClick={handleSubmit}
           disabled={!name.trim() || !email.includes("@")}
           className="w-full bg-[#00C9C8] hover:bg-[#00b3b2] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-black font-bold py-4 rounded-2xl text-sm mt-2">
-          Obtener instrucciones de pago →
+          {t("submit")}
         </button>
 
         <p className="text-center text-xs text-slate-600 pb-4">
