@@ -151,6 +151,12 @@ export default function PagarPage() {
         }),
       });
       const data = await res.json() as PayResponse;
+      // 202 = KYC required before VA can be created
+      if (res.status === 202 && data.needs_kyc) {
+        setResult(data);
+        setStep("instructions"); // instructions screen shows KYC banner
+        return;
+      }
       if (!res.ok || data.error) {
         const detail = data.bridge_details ? "\n" + JSON.stringify(data.bridge_details, null, 2) : "";
         setErrorMsg((data.error ?? t("error_payment")) + detail);

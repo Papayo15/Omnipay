@@ -11,7 +11,7 @@
 //                 liquidation address auto-pays receptor via SPEI/card/ACH etc.
 
 import { NextRequest, NextResponse }              from "next/server";
-import { getOrCreateCustomer, getKycLink, patchCustomerAddress, createKycLink, simulateKycApproval } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, createKycLink, simulateKycApproval } from "@/providers/bridge/customers";
 import { createVirtualAccount }                   from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
 import { buildDynamicQuote }                      from "@/lib/bridge-fees";
@@ -116,17 +116,37 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Patch address + compliance fields (same as checkout receiver flow)
     try { await patchCustomerAddress(senderCustomer.id, "US", true); } catch { /* best-effort */ }
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+
     if (isSandbox) {
       try {
         await createKycLink({ full_name: sender_name, email: sender_email.toLowerCase(), type: "individual", endorsements: ["base", "sepa"] });
       } catch (e) {
         const ke = e as Error & { type?: string };
-        if (ke.type !== "duplicate_record") throw ke; // surface non-duplicate errors
+        if (ke.type !== "duplicate_record") throw ke;
       }
-      await simulateKycApproval(senderCustomer.id); // must succeed for VA creation
+      await simulateKycApproval(senderCustomer.id);
     }
 
-    const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+    // KYC gate (production) — same pattern as checkout/route.ts
+    // Must run AFTER sandbox simulate so sandbox flow is never blocked here
+    const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
+    if (needsKyc && !skipKyc && !isSandbox) {
+      let kycUrl: string | null = getKycUrlFromCustomer(senderCustomer);
+      if (!kycUrl) {
+        try {
+          const kycLink = await getKycLink(senderCustomer.id);
+          kycUrl = kycLink.url ?? kycLink.kyc_link ?? null;
+        } catch { /* best-effort */ }
+      }
+      return NextResponse.json({
+        needs_kyc:   true,
+        kyc_url:     kycUrl,
+        customer_id: senderCustomer.id,
+        message:     "Completa tu verificación de identidad y vuelve a intentarlo.",
+      }, { status: 202 });
+    }
+
     const orderId = `OP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     // 4. Create Virtual Account for sender
@@ -159,15 +179,6 @@ export async function POST(req: NextRequest): Promise<Response> {
       senderLocale,
       recipientLocale:    meta.recipient_locale ?? "es",
     });
-
-    // 6. KYC link for sender if needed (non-blocking)
-    let kycUrl: string | null = null;
-    if (needsKyc) {
-      try {
-        const kycLink = await getKycLink(senderCustomer.id);
-        kycUrl = kycLink.url ?? kycLink.kyc_link ?? null;
-      } catch { /* non-critical */ }
-    }
 
     const di = va.source_deposit_instructions;
     const railLabel = source_currency === "eur" ? "SEPA"
@@ -223,8 +234,8 @@ export async function POST(req: NextRequest): Promise<Response> {
         country: meta.country,
         method:  meta.receive_method,
       },
-      needs_kyc:  needsKyc,
-      kyc_url:    kycUrl,
+      needs_kyc:  false,
+      kyc_url:    null,
       track_url:  `${appUrl}/api/bridge/track?order_id=${orderId}`,
       sender_phone: sender_phone ?? null,
     });
