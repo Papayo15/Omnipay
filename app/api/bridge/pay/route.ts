@@ -150,7 +150,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       payInProvider:      "bridge-va",
       payOutProvider:     "bridge-liq",
       senderEmail:        sender_email.toLowerCase(),
-      recipientEmail:     meta.recipient_phone ?? undefined,
+      recipientEmail:     (meta as { email?: string }).email ?? undefined,
       trackUrl:           `${appUrl}/api/bridge/track?order_id=${orderId}`,
     });
 

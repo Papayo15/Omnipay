@@ -198,18 +198,21 @@ async function handleCompletion(orderId: string, data: Record<string, unknown>) 
     `Comprobante: ${receiptUrl}`,
   );
 
-  // Email to sender on completion
+  const completionHtml = (role: "emisor" | "receptor") => `
+    <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
+      <h2 style="color:#16a34a;margin:0 0 16px">✅ Pago completado</h2>
+      ${role === "emisor"
+        ? `<p>Tu envío a <strong>${order?.recipientName}</strong> fue exitoso.</p>`
+        : `<p>Recibiste tu pago de OmniPay.</p>`}
+      ${destAmount ? `<p>Monto recibido: <strong>${destAmount} ${(destCurrency ?? "").toUpperCase()}</strong></p>` : ""}
+      <p><a href="${receiptUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Ver comprobante →</a></p>
+      <p style="color:#6b7280;font-size:12px;margin-top:16px">OmniPay · Ref: ${orderId}</p>
+    </div>`;
+
   if (order?.senderEmail) {
-    await sendEmailNotification(
-      order.senderEmail,
-      "OmniPay: pago completado ✅",
-      `<div style="font-family:sans-serif;max-width:480px;margin:auto">
-        <h2 style="color:#16a34a">¡Pago completado!</h2>
-        <p><strong>${order.recipientName}</strong> ya recibió su dinero.</p>
-        ${destAmount ? `<p>Monto recibido: <strong>${destAmount} ${(destCurrency ?? "").toUpperCase()}</strong></p>` : ""}
-        <p>Comprobante: <a href="${receiptUrl}" style="color:#2563eb">${receiptUrl}</a></p>
-        <p style="color:#6b7280;font-size:13px">Este email fue generado automáticamente por OmniPay.</p>
-      </div>`,
-    );
+    await sendEmailNotification(order.senderEmail, "OmniPay: pago completado ✅", completionHtml("emisor"));
+  }
+  if (order?.recipientEmail && order.recipientEmail !== order.senderEmail) {
+    await sendEmailNotification(order.recipientEmail, "OmniPay: recibiste un pago ✅", completionHtml("receptor"));
   }
 }

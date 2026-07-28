@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Zap, ArrowLeft, CheckCircle2, Copy, Check, AlertCircle, Clock } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Zap, ArrowLeft, CheckCircle2, Copy, Check, AlertCircle } from "lucide-react";
 
 type Step = "form" | "loading" | "instructions" | "error";
 
@@ -56,13 +57,6 @@ interface RatePreview {
   rate:            number | null;
 }
 
-interface TrackData {
-  step:          number;   // 1-4
-  status:        string;
-  label:         string;
-  error_message?: string;
-}
-
 const CURRENCIES = [
   { code: "usd", label: "USD — Dólares americanos", flag: "🇺🇸" },
   { code: "eur", label: "EUR — Euros",               flag: "🇪🇺" },
@@ -101,82 +95,6 @@ function CopyField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function TrackingBar({ orderId, t }: { orderId: string; t: ReturnType<typeof useTranslations> }) {
-  const [track, setTrack] = useState<TrackData | null>(null);
-
-  useEffect(() => {
-    if (!orderId) return;
-    let active = true;
-    const poll = async () => {
-      try {
-        const res = await fetch(`/api/bridge/track?order_id=${orderId}`);
-        if (res.ok) {
-          const d = await res.json() as TrackData;
-          if (active) setTrack(d);
-          if (d.step >= 4 || d.status === "FAILED") clearInterval(iv);
-        }
-      } catch { /* non-critical */ }
-    };
-    poll();
-    const iv = setInterval(poll, 10_000);
-    return () => { active = false; clearInterval(iv); };
-  }, [orderId]);
-
-  const steps = [
-    t("track_step1"),
-    t("track_step2"),
-    t("track_step3"),
-    t("track_step4"),
-  ];
-
-  const current = track?.step ?? 1;
-  const failed  = track?.status === "FAILED";
-
-  return (
-    <div className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 mb-4">
-      <p className="text-slate-400 text-[10px] uppercase tracking-wide mb-3">
-        {t("track_pending")}
-      </p>
-
-      {failed ? (
-        <div className="flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-red-400 text-xs font-semibold">{t("track_error")}</p>
-            {track?.error_message && (
-              <p className="text-slate-400 text-xs mt-0.5">{track.error_message}</p>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center gap-1">
-          {steps.map((label, i) => {
-            const stepNum = i + 1;
-            const done    = stepNum < current;
-            const active  = stepNum === current;
-            return (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors
-                  ${done   ? "bg-emerald-500 text-white"
-                  : active ? "bg-[#00C9C8] text-black animate-pulse"
-                  :          "bg-slate-700 text-slate-500"}`}>
-                  {done ? "✓" : stepNum}
-                </div>
-                <p className={`text-[9px] text-center leading-tight
-                  ${done ? "text-emerald-400" : active ? "text-[#00C9C8]" : "text-slate-600"}`}>
-                  {label}
-                </p>
-                {i < steps.length - 1 && (
-                  <div className={`absolute hidden`} />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function PagarPage() {
   const t = useTranslations("pagar_bridge");
@@ -191,7 +109,7 @@ export default function PagarPage() {
   const [copiedAll, setCopiedAll]     = useState(false);
   const [ratePreview, setRatePreview] = useState<RatePreview | null>(null);
   const [rateLoading, setRateLoading] = useState(false);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -333,12 +251,6 @@ export default function PagarPage() {
           </div>
         )}
 
-        {/* Speed badge */}
-        <div className="flex items-center gap-2 bg-slate-800/40 border border-slate-700 rounded-xl px-3 py-2 mb-4">
-          <Clock className="w-3.5 h-3.5 text-[#00C9C8] flex-shrink-0" />
-          <p className="text-[#00C9C8] text-xs font-medium">{t(`speed_${rk}`)}</p>
-        </div>
-
         {/* Deposit instructions */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mb-4">
           <div className="flex items-center justify-between mb-3">
@@ -421,19 +333,12 @@ export default function PagarPage() {
 
         {/* "Ya realicé la transferencia" button */}
         <button
-          onClick={() => {
-            trackRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-          }}
+          onClick={() => router.push(`/seguimiento?order_id=${result.order_id}`)}
           className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2 mb-4"
         >
           <CheckCircle2 className="w-5 h-5" />
           {t("confirm_sent")}
         </button>
-
-        {/* Tracking bar */}
-        <div ref={trackRef}>
-          <TrackingBar orderId={result.order_id} t={t} />
-        </div>
 
         <p className="text-slate-600 text-[10px] text-center pb-2">
           Ref: {result.order_id} · 🔒 Bridge procesa el pago de forma segura

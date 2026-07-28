@@ -233,6 +233,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       liq_addr_address: liqAddr.address,
       customer_id:      customer.id,
       nombre,
+      email:            email.toLowerCase(),
       country:          country_upper,
       target_currency:  targetCurrency,
       amount_target,
