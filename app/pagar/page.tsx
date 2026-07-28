@@ -57,13 +57,14 @@ interface RatePreview {
   rate:            number | null;
 }
 
-// MXN and BRL as pay-in currencies require Bridge Virtual Account enablement
-// per account — contact Bridge support to activate. EUR/GBP also need SEPA/FPS VA enablement.
-// USD is universally available on all Bridge accounts.
+// All Bridge Virtual Account source currencies. Labels resolved via t(`currency_${code}`).
+// USD always available. EUR/GBP/MXN/BRL require Bridge account enablement (requested via support).
 const CURRENCIES = [
-  { code: "usd", label: "USD — US Dollars",          flag: "🇺🇸" },
-  { code: "eur", label: "EUR — Euros",               flag: "🇪🇺" },
-  { code: "gbp", label: "GBP — British Pounds",      flag: "🇬🇧" },
+  { code: "usd", flag: "🇺🇸" },
+  { code: "eur", flag: "🇪🇺" },
+  { code: "gbp", flag: "🇬🇧" },
+  { code: "mxn", flag: "🇲🇽" },
+  { code: "brl", flag: "🇧🇷" },
 ];
 
 // Rail → i18n key suffix (normalized)
@@ -395,7 +396,7 @@ export default function PagarPage() {
           <select value={currency} onChange={(e) => setCurrency(e.target.value)}
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00C9C8] text-sm">
             {CURRENCIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.flag} {c.label}</option>
+              <option key={c.code} value={c.code}>{c.flag} {t(`currency_${c.code}`)}</option>
             ))}
           </select>
 

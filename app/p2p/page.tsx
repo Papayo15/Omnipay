@@ -23,65 +23,53 @@ const SEPA_COUNTRIES = new Set([
   "SE","DK","NO","PL","CZ","HU","RO","BG","CH","IS","LI","AD","MC","SM","XK","VA",
 ]);
 
-// Destination country list — Bridge-native first, then common unsupported
+// Destination country list — only Bridge-native rails (41 countries) + CA (Wise relay)
+// Labels are resolved via t(`country_${code}`) inside the component
 const COUNTRY_OPTIONS = [
-  // Americas (Bridge native)
-  { code: "MX", label: "México",          currency: "MXN", flag: "🇲🇽" },
-  { code: "US", label: "EE.UU.",          currency: "USD", flag: "🇺🇸" },
-  { code: "BR", label: "Brasil",          currency: "BRL", flag: "🇧🇷" },
-  { code: "CO", label: "Colombia",        currency: "COP", flag: "🇨🇴" },
-  // Americas (próximamente)
-  { code: "CA", label: "Canadá",          currency: "CAD", flag: "🇨🇦" },
-  { code: "AR", label: "Argentina",       currency: "ARS", flag: "🇦🇷" },
-  { code: "CL", label: "Chile",           currency: "CLP", flag: "🇨🇱" },
-  { code: "PE", label: "Perú",            currency: "PEN", flag: "🇵🇪" },
-  { code: "EC", label: "Ecuador",         currency: "USD", flag: "🇪🇨" },
-  { code: "DO", label: "Rep. Dominicana", currency: "DOP", flag: "🇩🇴" },
-  // UK + Europe (Bridge native)
-  { code: "GB", label: "Reino Unido",     currency: "GBP", flag: "🇬🇧" },
-  { code: "DE", label: "Alemania",        currency: "EUR", flag: "🇩🇪" },
-  { code: "FR", label: "Francia",         currency: "EUR", flag: "🇫🇷" },
-  { code: "ES", label: "España",          currency: "EUR", flag: "🇪🇸" },
-  { code: "IT", label: "Italia",          currency: "EUR", flag: "🇮🇹" },
-  { code: "NL", label: "Países Bajos",    currency: "EUR", flag: "🇳🇱" },
-  { code: "PT", label: "Portugal",        currency: "EUR", flag: "🇵🇹" },
-  { code: "BE", label: "Bélgica",         currency: "EUR", flag: "🇧🇪" },
-  { code: "AT", label: "Austria",         currency: "EUR", flag: "🇦🇹" },
-  { code: "IE", label: "Irlanda",         currency: "EUR", flag: "🇮🇪" },
-  { code: "FI", label: "Finlandia",       currency: "EUR", flag: "🇫🇮" },
-  { code: "GR", label: "Grecia",          currency: "EUR", flag: "🇬🇷" },
-  { code: "CY", label: "Chipre",          currency: "EUR", flag: "🇨🇾" },
-  { code: "EE", label: "Estonia",         currency: "EUR", flag: "🇪🇪" },
-  { code: "LV", label: "Letonia",         currency: "EUR", flag: "🇱🇻" },
-  { code: "LT", label: "Lituania",        currency: "EUR", flag: "🇱🇹" },
-  { code: "LU", label: "Luxemburgo",      currency: "EUR", flag: "🇱🇺" },
-  { code: "MT", label: "Malta",           currency: "EUR", flag: "🇲🇹" },
-  { code: "SK", label: "Eslovaquia",      currency: "EUR", flag: "🇸🇰" },
-  { code: "SI", label: "Eslovenia",       currency: "EUR", flag: "🇸🇮" },
-  { code: "HR", label: "Croacia",         currency: "EUR", flag: "🇭🇷" },
-  { code: "SE", label: "Suecia",          currency: "EUR", flag: "🇸🇪" },
-  { code: "DK", label: "Dinamarca",       currency: "EUR", flag: "🇩🇰" },
-  { code: "NO", label: "Noruega",         currency: "EUR", flag: "🇳🇴" },
-  { code: "PL", label: "Polonia",         currency: "EUR", flag: "🇵🇱" },
-  { code: "CZ", label: "Rep. Checa",      currency: "EUR", flag: "🇨🇿" },
-  { code: "HU", label: "Hungría",         currency: "EUR", flag: "🇭🇺" },
-  { code: "RO", label: "Rumania",         currency: "EUR", flag: "🇷🇴" },
-  { code: "BG", label: "Bulgaria",        currency: "EUR", flag: "🇧🇬" },
-  { code: "CH", label: "Suiza",           currency: "EUR", flag: "🇨🇭" },
-  { code: "IS", label: "Islandia",        currency: "EUR", flag: "🇮🇸" },
-  { code: "LI", label: "Liechtenstein",   currency: "EUR", flag: "🇱🇮" },
-  { code: "AD", label: "Andorra",         currency: "EUR", flag: "🇦🇩" },
-  { code: "MC", label: "Mónaco",          currency: "EUR", flag: "🇲🇨" },
-  { code: "SM", label: "San Marino",      currency: "EUR", flag: "🇸🇲" },
-  { code: "XK", label: "Kosovo",          currency: "EUR", flag: "🇽🇰" },
-  { code: "VA", label: "Vaticano",        currency: "EUR", flag: "🇻🇦" },
-  // Asia / África / Otros (próximamente)
-  { code: "IN", label: "India",           currency: "INR", flag: "🇮🇳" },
-  { code: "PH", label: "Filipinas",       currency: "PHP", flag: "🇵🇭" },
-  { code: "NG", label: "Nigeria",         currency: "NGN", flag: "🇳🇬" },
-  { code: "KE", label: "Kenia",           currency: "KES", flag: "🇰🇪" },
-  { code: "MA", label: "Marruecos",       currency: "MAD", flag: "🇲🇦" },
-  { code: "PK", label: "Pakistán",        currency: "PKR", flag: "🇵🇰" },
+  // Americas
+  { code: "MX", currency: "MXN", flag: "🇲🇽" },
+  { code: "US", currency: "USD", flag: "🇺🇸" },
+  { code: "BR", currency: "BRL", flag: "🇧🇷" },
+  { code: "CO", currency: "COP", flag: "🇨🇴" },
+  { code: "CA", currency: "CAD", flag: "🇨🇦" },
+  // UK + Europe (Bridge native — SEPA + FPS)
+  { code: "GB", currency: "GBP", flag: "🇬🇧" },
+  { code: "DE", currency: "EUR", flag: "🇩🇪" },
+  { code: "FR", currency: "EUR", flag: "🇫🇷" },
+  { code: "ES", currency: "EUR", flag: "🇪🇸" },
+  { code: "IT", currency: "EUR", flag: "🇮🇹" },
+  { code: "NL", currency: "EUR", flag: "🇳🇱" },
+  { code: "PT", currency: "EUR", flag: "🇵🇹" },
+  { code: "BE", currency: "EUR", flag: "🇧🇪" },
+  { code: "AT", currency: "EUR", flag: "🇦🇹" },
+  { code: "IE", currency: "EUR", flag: "🇮🇪" },
+  { code: "FI", currency: "EUR", flag: "🇫🇮" },
+  { code: "GR", currency: "EUR", flag: "🇬🇷" },
+  { code: "CY", currency: "EUR", flag: "🇨🇾" },
+  { code: "EE", currency: "EUR", flag: "🇪🇪" },
+  { code: "LV", currency: "EUR", flag: "🇱🇻" },
+  { code: "LT", currency: "EUR", flag: "🇱🇹" },
+  { code: "LU", currency: "EUR", flag: "🇱🇺" },
+  { code: "MT", currency: "EUR", flag: "🇲🇹" },
+  { code: "SK", currency: "EUR", flag: "🇸🇰" },
+  { code: "SI", currency: "EUR", flag: "🇸🇮" },
+  { code: "HR", currency: "EUR", flag: "🇭🇷" },
+  { code: "SE", currency: "EUR", flag: "🇸🇪" },
+  { code: "DK", currency: "EUR", flag: "🇩🇰" },
+  { code: "NO", currency: "EUR", flag: "🇳🇴" },
+  { code: "PL", currency: "EUR", flag: "🇵🇱" },
+  { code: "CZ", currency: "EUR", flag: "🇨🇿" },
+  { code: "HU", currency: "EUR", flag: "🇭🇺" },
+  { code: "RO", currency: "EUR", flag: "🇷🇴" },
+  { code: "BG", currency: "EUR", flag: "🇧🇬" },
+  { code: "CH", currency: "EUR", flag: "🇨🇭" },
+  { code: "IS", currency: "EUR", flag: "🇮🇸" },
+  { code: "LI", currency: "EUR", flag: "🇱🇮" },
+  { code: "AD", currency: "EUR", flag: "🇦🇩" },
+  { code: "MC", currency: "EUR", flag: "🇲🇨" },
+  { code: "SM", currency: "EUR", flag: "🇸🇲" },
+  { code: "XK", currency: "EUR", flag: "🇽🇰" },
+  { code: "VA", currency: "EUR", flag: "🇻🇦" },
 ];
 
 interface BridgeQuote {
@@ -409,7 +397,7 @@ export default function P2PPage() {
           <select value={country} onChange={(e) => setCountry(e.target.value)}
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500">
             {COUNTRY_OPTIONS.map((c) => (
-              <option key={c.code} value={c.code}>{c.flag} {c.label} — {c.currency}</option>
+              <option key={c.code} value={c.code}>{c.flag} {t(`country_${c.code}`)} — {c.currency}</option>
             ))}
           </select>
         </div>
