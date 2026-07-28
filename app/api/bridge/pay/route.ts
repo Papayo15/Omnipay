@@ -54,15 +54,16 @@ export async function POST(req: NextRequest): Promise<Response> {
     // 1. Decrypt token — contains receptor's liquidation address + order metadata
     const decrypted = await decryptPayload(token);
     let meta: {
-      liq_addr_id:       string;
-      liq_addr_address:  string;  // USDC Polygon address
-      customer_id:       string;
-      nombre:            string;
-      country:           string;
-      target_currency:   string;
-      amount_target:     number;
-      receive_method:    string;
-      recipient_phone?:  string;
+      liq_addr_id:        string;
+      liq_addr_address:   string;  // USDC Polygon address
+      customer_id:        string;
+      nombre:             string;
+      country:            string;
+      target_currency:    string;
+      amount_target:      number;
+      receive_method:     string;
+      recipient_phone?:   string;
+      recipient_locale?:  string;
     };
 
     try { meta = JSON.parse(decrypted.account); }
@@ -141,6 +142,9 @@ export async function POST(req: NextRequest): Promise<Response> {
       reference:           orderId,
     });
 
+    // Sender's locale from cookie (for email i18n)
+    const senderLocale = req.cookies.get("OMNIPAY_LOCALE")?.value ?? "es";
+
     // 5. Create local in-memory order for tracking
     createOrder(orderId, {
       destinationCountry: meta.country,
@@ -151,7 +155,9 @@ export async function POST(req: NextRequest): Promise<Response> {
       payOutProvider:     "bridge-liq",
       senderEmail:        sender_email.toLowerCase(),
       recipientEmail:     (meta as { email?: string }).email ?? undefined,
-      trackUrl:           `${appUrl}/api/bridge/track?order_id=${orderId}`,
+      trackUrl:           `${appUrl}/seguimiento?order_id=${orderId}`,
+      senderLocale,
+      recipientLocale:    meta.recipient_locale ?? "es",
     });
 
     // 6. KYC link for sender if needed (non-blocking)

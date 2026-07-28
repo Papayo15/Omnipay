@@ -48,6 +48,8 @@ export interface OrderRecord {
   senderEmail?:       string;
   recipientEmail?:    string;
   trackUrl?:          string;
+  senderLocale?:      string;   // BCP-47 locale of the sender (for email i18n)
+  recipientLocale?:   string;   // BCP-47 locale of the recipient (for email i18n)
 }
 
 // ── Almacén en memoria (reemplazar con KV en producción) ─────────────────────

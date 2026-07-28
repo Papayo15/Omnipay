@@ -153,14 +153,14 @@ export default function PagarPage() {
       const data = await res.json() as PayResponse;
       if (!res.ok || data.error) {
         const detail = data.bridge_details ? "\n" + JSON.stringify(data.bridge_details, null, 2) : "";
-        setErrorMsg((data.error ?? "Error al procesar el pago") + detail);
+        setErrorMsg((data.error ?? t("error_payment")) + detail);
         setStep("error");
         return;
       }
       setResult(data);
       setStep("instructions");
     } catch {
-      setErrorMsg("Error de conexión. Intenta de nuevo.");
+      setErrorMsg(t("error_connection"));
       setStep("error");
     }
   }, [token, name, email, currency, phone]);
@@ -199,10 +199,10 @@ export default function PagarPage() {
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5">
         <AlertCircle className="w-14 h-14 text-red-400" />
-        <h2 className="text-xl font-semibold text-white">Algo salió mal</h2>
+        <h2 className="text-xl font-semibold text-white">{t("error_title")}</h2>
         <p className="text-slate-400 text-sm max-w-xs whitespace-pre-wrap">{errorMsg}</p>
         <button onClick={() => setStep("form")} className="text-[#00C9C8] text-sm underline mt-2">
-          ← Volver al formulario
+          {t("error_back")}
         </button>
       </main>
     );
@@ -234,7 +234,7 @@ export default function PagarPage() {
         <div className="flex items-center gap-2 mb-4">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
           <div>
-            <p className="text-white font-semibold text-sm">Instrucciones listas</p>
+            <p className="text-white font-semibold text-sm">{t("instructions_ready")}</p>
             <p className="text-slate-500 text-xs">Ref: {result.order_id}</p>
           </div>
         </div>
@@ -242,11 +242,11 @@ export default function PagarPage() {
         {/* KYC banner */}
         {result.needs_kyc && result.kyc_url && (
           <div className="bg-amber-900/30 border border-amber-500/40 rounded-xl p-4 mb-4">
-            <p className="text-amber-400 text-xs font-semibold mb-1">⚠️ Verificación requerida</p>
-            <p className="text-slate-400 text-xs mb-2">Completa tu verificación de identidad antes de enviar el depósito.</p>
+            <p className="text-amber-400 text-xs font-semibold mb-1">{t("kyc_required_title")}</p>
+            <p className="text-slate-400 text-xs mb-2">{t("kyc_required_body")}</p>
             <a href={result.kyc_url} target="_blank" rel="noopener noreferrer"
               className="block text-center bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold py-2 px-4 rounded-lg transition-colors">
-              Verificar identidad →
+              {t("kyc_verify_button")}
             </a>
           </div>
         )}
@@ -254,80 +254,82 @@ export default function PagarPage() {
         {/* Deposit instructions */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mb-4">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-slate-500 text-[10px] uppercase tracking-wide">Deposita via {di.rail}</p>
+            <p className="text-slate-500 text-[10px] uppercase tracking-wide">{t("deposit_via").replace("{rail}", di.rail)}</p>
             <button onClick={copyAll}
               className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-lg">
-              {copiedAll ? <><Check size={12} className="text-emerald-400" /> Copiado</> : <><Copy size={12} /> Copiar todo</>}
+              {copiedAll ? <><Check size={12} className="text-emerald-400" /> {t("copied")}</> : <><Copy size={12} /> {t("copy_all")}</>}
             </button>
           </div>
 
           {/* Amount */}
           <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg px-3 py-2 mb-3">
-            <p className="text-slate-400 text-[10px] uppercase tracking-wide">Monto exacto a depositar</p>
+            <p className="text-slate-400 text-[10px] uppercase tracking-wide">{t("amount_label")}</p>
             <p className="text-emerald-400 text-xl font-bold font-mono">{di.amount_to_deposit} {di.currency.toUpperCase()}</p>
-            <p className="text-slate-500 text-[10px] mt-0.5">Envía exactamente este monto</p>
+            <p className="text-slate-500 text-[10px] mt-0.5">{t("amount_note")}</p>
           </div>
 
-          {di.routing_number   && <CopyField label="Routing number (ABA)"      value={di.routing_number} />}
-          {di.account_number   && <CopyField label="Account number"             value={di.account_number} />}
-          {di.bank_name        && <CopyField label="Banco"                      value={di.bank_name} />}
-          {di.beneficiary_name && <CopyField label="Beneficiario"               value={di.beneficiary_name} />}
-          {di.beneficiary_address && <CopyField label="Dirección beneficiario"  value={di.beneficiary_address} />}
-          {di.iban             && <CopyField label="IBAN"                       value={di.iban} />}
-          {di.bic              && <CopyField label="BIC / SWIFT"                value={di.bic} />}
-          {di.account_holder   && <CopyField label="Titular de cuenta"          value={di.account_holder} />}
-          {di.clabe            && <CopyField label="CLABE"                      value={di.clabe} />}
-          {di.br_code          && <CopyField label="Chave PIX / BR Code"        value={di.br_code} />}
-          {di.sort_code        && <CopyField label="Sort code"                  value={di.sort_code} />}
+          {di.routing_number      && <CopyField label="Routing number (ABA)"    value={di.routing_number} />}
+          {di.account_number      && <CopyField label="Account number"           value={di.account_number} />}
+          {di.bank_name           && <CopyField label={t("field_bank")}          value={di.bank_name} />}
+          {di.beneficiary_name    && <CopyField label={t("field_beneficiary")}   value={di.beneficiary_name} />}
+          {di.beneficiary_address && <CopyField label={t("field_beneficiary_address")} value={di.beneficiary_address} />}
+          {di.iban                && <CopyField label="IBAN"                     value={di.iban} />}
+          {di.bic                 && <CopyField label="BIC / SWIFT"              value={di.bic} />}
+          {di.account_holder      && <CopyField label={t("field_account_holder")} value={di.account_holder} />}
+          {di.clabe               && <CopyField label="CLABE"                    value={di.clabe} />}
+          {di.br_code             && <CopyField label="Chave PIX / BR Code"      value={di.br_code} />}
+          {di.sort_code           && <CopyField label="Sort code"                value={di.sort_code} />}
         </div>
 
         {/* Fee breakdown */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mb-4 text-xs space-y-1.5">
-          <p className="text-slate-500 uppercase tracking-wide text-[10px] mb-2">Desglose de tarifas</p>
-          <div className="flex justify-between text-slate-300"><span>Principal</span><span className="font-mono">${fee.amount_principal.toFixed(2)}</span></div>
-          <div className="flex justify-between text-slate-400"><span>Bridge on-ramp (0.50%)</span><span className="font-mono">+ ${fee.bridge_onramp.toFixed(2)}</span></div>
-          <div className="flex justify-between text-slate-400"><span>Bridge off-ramp (0.25%)</span><span className="font-mono">+ ${fee.bridge_offramp.toFixed(2)}</span></div>
-          <div className="flex justify-between text-slate-400"><span>OmniPay servicio</span><span className="font-mono">+ ${fee.omnipay_service.toFixed(2)}</span></div>
-          <div className="flex justify-between text-slate-400"><span>OmniPay flat</span><span className="font-mono">+ ${fee.omnipay_flat.toFixed(2)}</span></div>
+          <p className="text-slate-500 uppercase tracking-wide text-[10px] mb-2">{t("fee_title")}</p>
+          <div className="flex justify-between text-slate-300"><span>{t("fee_principal")}</span><span className="font-mono">${fee.amount_principal.toFixed(2)}</span></div>
+          <div className="flex justify-between text-slate-400"><span>{t("fee_onramp")}</span><span className="font-mono">+ ${fee.bridge_onramp.toFixed(2)}</span></div>
+          <div className="flex justify-between text-slate-400"><span>{t("fee_offramp")}</span><span className="font-mono">+ ${fee.bridge_offramp.toFixed(2)}</span></div>
+          <div className="flex justify-between text-slate-400"><span>{t("fee_service")}</span><span className="font-mono">+ ${fee.omnipay_service.toFixed(2)}</span></div>
+          <div className="flex justify-between text-slate-400"><span>{t("fee_flat")}</span><span className="font-mono">+ ${fee.omnipay_flat.toFixed(2)}</span></div>
           {fee.kyc_surcharge > 0 && (
             <div className="flex justify-between text-slate-400">
-              <span>Verificación identidad (única vez)</span>
+              <span>{t("fee_kyc")}</span>
               <span className="font-mono">+ ${fee.kyc_surcharge.toFixed(2)}</span>
             </div>
           )}
           <div className="border-t border-slate-700 pt-1.5 flex justify-between font-semibold text-white">
-            <span>Total a depositar</span>
+            <span>{t("fee_total")}</span>
             <span className="font-mono text-[#00C9C8]">${fee.total_to_send.toFixed(2)} {di.currency.toUpperCase()}</span>
           </div>
           <div className="flex justify-between text-emerald-400 font-semibold pt-0.5">
-            <span>Receptor recibe</span>
+            <span>{t("fee_recipient")}</span>
             <span className="font-mono">{fee.recipient_gets}</span>
           </div>
         </div>
 
         {/* Rail-specific instructions */}
         <div className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 mb-4 space-y-3">
-          <p className="text-white text-xs font-semibold">¿Cómo enviar?</p>
+          <p className="text-white text-xs font-semibold">{t("how_to_send")}</p>
           <div className="flex gap-3 items-start">
             <span className="text-[#00C9C8] font-bold text-sm w-5 flex-shrink-0">1</span>
             <div>
               <p className="text-slate-400 text-xs leading-relaxed">{t(`instructions_${rk}`)}</p>
               {rk === "ach" && (
-                <p className="text-slate-600 text-xs mt-1">🇨🇦 Desde Canadá: usa tu cuenta USD y haz un wire transfer a este routing number.</p>
+                <p className="text-slate-600 text-xs mt-1">{t("canada_note")}</p>
               )}
             </div>
           </div>
           <div className="flex gap-3 items-start">
             <span className="text-[#00C9C8] font-bold text-sm w-5 flex-shrink-0">2</span>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              Usa el monto exacto: <strong className="text-white">{di.amount_to_deposit} {di.currency.toUpperCase()}</strong>. Cualquier diferencia rechaza la transacción.
-            </p>
+            <p className="text-slate-400 text-xs leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: t("step2_exact")
+                .replace("{amount}", `<strong class="text-white">${di.amount_to_deposit}</strong>`)
+                .replace("{currency}", `<strong class="text-white">${di.currency.toUpperCase()}</strong>`) }} />
           </div>
           <div className="flex gap-3 items-start">
             <span className="text-[#00C9C8] font-bold text-sm w-5 flex-shrink-0">3</span>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              <strong className="text-white">{result.recipient.name}</strong> recibirá <strong className="text-white">{fee.recipient_gets}</strong> automáticamente.
-            </p>
+            <p className="text-slate-400 text-xs leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: t("step3_recipient")
+                .replace("{name}", `<strong class="text-white">${result.recipient.name}</strong>`)
+                .replace("{amount}", `<strong class="text-white">${fee.recipient_gets}</strong>`) }} />
           </div>
         </div>
 
@@ -341,7 +343,7 @@ export default function PagarPage() {
         </button>
 
         <p className="text-slate-600 text-[10px] text-center pb-2">
-          Ref: {result.order_id} · 🔒 Bridge procesa el pago de forma segura
+          {t("footer_ref").replace("{order_id}", result.order_id)}
         </p>
       </main>
     );
@@ -353,33 +355,33 @@ export default function PagarPage() {
       <div className="pt-8 pb-6">
         <button onClick={() => window.history.back()}
           className="flex items-center gap-1 text-slate-400 hover:text-white text-sm mb-6 transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Volver
+          <ArrowLeft className="w-4 h-4" /> {t("form_back")}
         </button>
         <div className="flex items-center gap-2 mb-1">
           <Zap className="w-5 h-5 text-[#00C9C8]" />
           <span className="text-white font-bold">OmniPay</span>
         </div>
-        <h1 className="text-white font-bold text-xl mt-4 mb-1">Enviar pago</h1>
-        <p className="text-slate-400 text-sm">Alguien te compartió este link de cobro. Completa tus datos para obtener las instrucciones de depósito.</p>
+        <h1 className="text-white font-bold text-xl mt-4 mb-1">{t("form_title")}</h1>
+        <p className="text-slate-400 text-sm">{t("form_subtitle")}</p>
       </div>
 
       <div className="space-y-4 flex-1">
         <div>
-          <label className="block text-xs text-slate-400 mb-1">Tu nombre completo</label>
+          <label className="block text-xs text-slate-400 mb-1">{t("form_name_label")}</label>
           <input value={name} onChange={(e) => setName(e.target.value)}
             placeholder="Juan Pérez"
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#00C9C8] text-sm" />
         </div>
 
         <div>
-          <label className="block text-xs text-slate-400 mb-1">Tu email</label>
+          <label className="block text-xs text-slate-400 mb-1">{t("form_email_label")}</label>
           <input value={email} onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com" inputMode="email" type="email"
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#00C9C8] text-sm" />
         </div>
 
         <div>
-          <label className="block text-xs text-slate-400 mb-1">Moneda con la que pagas</label>
+          <label className="block text-xs text-slate-400 mb-1">{t("form_currency_label")}</label>
           <select value={currency} onChange={(e) => setCurrency(e.target.value)}
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00C9C8] text-sm">
             {CURRENCIES.map((c) => (
@@ -407,12 +409,12 @@ export default function PagarPage() {
             </div>
           )}
           {rateLoading && (
-            <p className="mt-2 text-slate-500 text-[11px] px-1 animate-pulse">Calculando tasa...</p>
+            <p className="mt-2 text-slate-500 text-[11px] px-1 animate-pulse">{t("form_rate_loading")}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-xs text-slate-400 mb-1">Tu teléfono (opcional)</label>
+          <label className="block text-xs text-slate-400 mb-1">{t("form_phone_label")}</label>
           <input value={phone} onChange={(e) => setPhone(e.target.value)}
             placeholder="+1 416 555 0123" inputMode="tel"
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#00C9C8] text-sm" />
@@ -426,7 +428,7 @@ export default function PagarPage() {
         </button>
 
         <p className="text-center text-xs text-slate-600 pb-4">
-          🔒 Zero datos almacenados · Bridge procesa el pago
+          {t("form_trust")}
         </p>
       </div>
     </main>

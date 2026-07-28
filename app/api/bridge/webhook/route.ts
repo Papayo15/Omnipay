@@ -18,6 +18,7 @@ import { mapTransferStatus }                    from "@/providers/bridge/transfe
 import { updateOrder, getOrder }                from "@/lib/order-state";
 import { sendAdminWhatsApp, sendEmailNotification } from "@/lib/notify";
 import { buildReceiptURL }                      from "@/lib/link";
+import { emailStrings }                         from "@/lib/email-i18n";
 
 // Node.js runtime required — redis package uses Node TCP sockets (incompatible with Edge)
 export const runtime = "nodejs";
@@ -141,15 +142,17 @@ export async function POST(req: NextRequest): Promise<Response> {
       const order = getOrder(orderId);
       if (order?.senderEmail) {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+        const eT = emailStrings(order.senderLocale);
         await sendEmailNotification(
           order.senderEmail,
-          "OmniPay: depósito recibido ✅",
-          `<div style="font-family:sans-serif;max-width:480px;margin:auto">
-            <h2 style="color:#16a34a">¡Depósito confirmado!</h2>
-            <p>Recibimos tu depósito y estamos procesando el envío a <strong>${order.recipientName}</strong>.</p>
-            <p>Sigue el estado en tiempo real:<br>
-               <a href="${order.trackUrl ?? appUrl}" style="color:#2563eb">${order.trackUrl ?? appUrl}</a></p>
-            <p style="color:#6b7280;font-size:13px">Este email fue generado automáticamente por OmniPay.</p>
+          eT.deposit_subject,
+          `<div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
+            <h2 style="color:#16a34a;margin:0 0 16px">${eT.deposit_h2}</h2>
+            <p>${eT.deposit_body(order.recipientName)}</p>
+            <p><a href="${order.trackUrl ?? appUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:8px">${eT.deposit_cta}</a></p>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+            <p style="color:#6b7280;font-size:13px;text-align:center">${eT.footer_thanks}</p>
+            <p style="color:#9ca3af;font-size:11px;margin-top:4px">OmniPay · ${eT.footer_auto}</p>
           </div>`,
         );
       }
@@ -198,21 +201,25 @@ async function handleCompletion(orderId: string, data: Record<string, unknown>) 
     `Comprobante: ${receiptUrl}`,
   );
 
-  const completionHtml = (role: "emisor" | "receptor") => `
+  const buildCompletionHtml = (eTx: ReturnType<typeof emailStrings>, role: "sender" | "recipient") => `
     <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
-      <h2 style="color:#16a34a;margin:0 0 16px">✅ Pago completado</h2>
-      ${role === "emisor"
-        ? `<p>Tu envío a <strong>${order?.recipientName}</strong> fue exitoso.</p>`
-        : `<p>Recibiste tu pago de OmniPay.</p>`}
-      ${destAmount ? `<p>Monto recibido: <strong>${destAmount} ${(destCurrency ?? "").toUpperCase()}</strong></p>` : ""}
-      <p><a href="${receiptUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Ver comprobante →</a></p>
-      <p style="color:#6b7280;font-size:12px;margin-top:16px">OmniPay · Ref: ${orderId}</p>
+      <h2 style="color:#16a34a;margin:0 0 16px">${eTx.completed_h2}</h2>
+      ${role === "sender"
+        ? `<p>${eTx.completed_sender(order?.recipientName ?? "")}</p>`
+        : `<p>${eTx.completed_receiver}</p>`}
+      ${destAmount ? `<p>${eTx.amount_received(destAmount, (destCurrency ?? "").toUpperCase())}</p>` : ""}
+      <p><a href="${receiptUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold">${eTx.receipt_cta}</a></p>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+      <p style="color:#6b7280;font-size:13px;text-align:center">${eTx.footer_thanks}</p>
+      <p style="color:#9ca3af;font-size:11px;margin-top:8px">OmniPay · ${eTx.ref} ${orderId}</p>
     </div>`;
 
   if (order?.senderEmail) {
-    await sendEmailNotification(order.senderEmail, "OmniPay: pago completado ✅", completionHtml("emisor"));
+    const eTsender = emailStrings(order.senderLocale);
+    await sendEmailNotification(order.senderEmail, eTsender.completed_subject, buildCompletionHtml(eTsender, "sender"));
   }
   if (order?.recipientEmail && order.recipientEmail !== order.senderEmail) {
-    await sendEmailNotification(order.recipientEmail, "OmniPay: recibiste un pago ✅", completionHtml("receptor"));
+    const eTrecipient = emailStrings(order.recipientLocale);
+    await sendEmailNotification(order.recipientEmail, eTrecipient.completed_subject, buildCompletionHtml(eTrecipient, "recipient"));
   }
 }

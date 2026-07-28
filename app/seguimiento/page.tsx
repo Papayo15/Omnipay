@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Zap, CheckCircle2, AlertCircle, Mail } from "lucide-react";
 
 interface TrackData {
@@ -10,14 +11,8 @@ interface TrackData {
   error_message?: string;
 }
 
-const STEPS = [
-  { label: "Depósito recibido",  sub: "Bridge confirmó tu pago" },
-  { label: "Procesando",          sub: "Convirtiendo a USDC" },
-  { label: "Enviando",            sub: "Transfiriendo al receptor" },
-  { label: "Completado",          sub: "El receptor ya tiene su dinero" },
-];
-
 export default function SeguimientoPage() {
+  const t = useTranslations("seguimiento");
   const [orderId, setOrderId] = useState<string | null>(null);
   const [track,   setTrack]   = useState<TrackData | null>(null);
   const [done,    setDone]    = useState(false);
@@ -53,6 +48,13 @@ export default function SeguimientoPage() {
 
   const current = track?.step ?? 1;
 
+  const STEPS = [
+    { label: t("step1_label"), sub: t("step1_sub") },
+    { label: t("step2_label"), sub: t("step2_sub") },
+    { label: t("step3_label"), sub: t("step3_sub") },
+    { label: t("step4_label"), sub: t("step4_sub") },
+  ];
+
   return (
     <main className="min-h-screen bg-[#0f172a] flex flex-col max-w-sm mx-auto w-full px-5 pb-12">
 
@@ -64,8 +66,8 @@ export default function SeguimientoPage() {
 
       {/* Title */}
       <div className="mb-8">
-        <h1 className="text-white font-bold text-xl mb-1">Estado del envío</h1>
-        {orderId && <p className="text-slate-500 text-xs font-mono">Ref: {orderId}</p>}
+        <h1 className="text-white font-bold text-xl mb-1">{t("page_title")}</h1>
+        {orderId && <p className="text-slate-500 text-xs font-mono">{t("ref")} {orderId}</p>}
       </div>
 
       {/* Failed state */}
@@ -74,11 +76,11 @@ export default function SeguimientoPage() {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-red-400 font-semibold text-sm">Transferencia fallida</p>
+              <p className="text-red-400 font-semibold text-sm">{t("failed_title")}</p>
               {track?.error_message && (
                 <p className="text-slate-400 text-xs mt-1">{track.error_message}</p>
               )}
-              <p className="text-slate-500 text-xs mt-2">Contacta a soporte con tu referencia de orden.</p>
+              <p className="text-slate-500 text-xs mt-2">{t("failed_support")}</p>
             </div>
           </div>
         </div>
@@ -88,8 +90,8 @@ export default function SeguimientoPage() {
       {done && !failed && (
         <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-2xl p-5 mb-6 text-center">
           <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
-          <p className="text-white font-bold text-lg">¡Pago completado!</p>
-          <p className="text-slate-400 text-sm mt-1">El receptor ya recibió su dinero.</p>
+          <p className="text-white font-bold text-lg">{t("completed_title")}</p>
+          <p className="text-slate-400 text-sm mt-1">{t("completed_sub")}</p>
         </div>
       )}
 
@@ -119,10 +121,6 @@ export default function SeguimientoPage() {
                     {s.sub}
                   </p>
                 </div>
-                {/* Connector line */}
-                {i < STEPS.length - 1 && (
-                  <div className="absolute" /> /* spacing handled by space-y-4 */
-                )}
               </div>
             );
           })}
@@ -131,7 +129,7 @@ export default function SeguimientoPage() {
         {/* Status note */}
         {!done && !failed && (
           <p className="text-slate-600 text-[10px] text-center mt-4 animate-pulse">
-            Actualizando cada 10 segundos…
+            {t("polling_note")}
           </p>
         )}
       </div>
@@ -140,15 +138,15 @@ export default function SeguimientoPage() {
       <div className="bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-4 flex items-start gap-3">
         <Mail className="w-4 h-4 text-[#00C9C8] flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-white text-xs font-semibold">Comprobante por email</p>
+          <p className="text-white text-xs font-semibold">{t("email_title")}</p>
           <p className="text-slate-400 text-xs mt-0.5 leading-relaxed">
-            Cuando se complete el envío, tanto el emisor como el receptor recibirán el comprobante en su correo electrónico.
+            {t("email_body")}
           </p>
         </div>
       </div>
 
       <p className="text-slate-700 text-[10px] text-center mt-8">
-        🔒 OmniPay · Zero datos almacenados
+        {t("footer")}
       </p>
     </main>
   );

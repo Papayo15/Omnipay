@@ -228,17 +228,19 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // 4. Encrypt metadata into token
     const targetCurrency = getTargetCurrency(country_upper);
+    const recipientLocale = req.cookies.get("OMNIPAY_LOCALE")?.value ?? "es";
     const meta = JSON.stringify({
-      liq_addr_id:      liqAddr.id,
-      liq_addr_address: liqAddr.address,
-      customer_id:      customer.id,
+      liq_addr_id:       liqAddr.id,
+      liq_addr_address:  liqAddr.address,
+      customer_id:       customer.id,
       nombre,
-      email:            email.toLowerCase(),
-      country:          country_upper,
-      target_currency:  targetCurrency,
+      email:             email.toLowerCase(),
+      country:           country_upper,
+      target_currency:   targetCurrency,
       amount_target,
       receive_method,
       recipient_phone,
+      recipient_locale:  recipientLocale,
     });
     const metaToken = await encryptPayload({
       account:        meta,
