@@ -11,7 +11,7 @@
 //                 liquidation address auto-pays receptor via SPEI/card/ACH etc.
 
 import { NextRequest, NextResponse }              from "next/server";
-import { getOrCreateCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, createKycLink, simulateKycApproval } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval } from "@/providers/bridge/customers";
 import { createVirtualAccount }                   from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
 import { buildDynamicQuote }                      from "@/lib/bridge-fees";
@@ -119,10 +119,22 @@ export async function POST(req: NextRequest): Promise<Response> {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
 
     if (isSandbox) {
+      try { await ensureEndorsements(senderCustomer.id, ["base", "sepa"]); } catch { /* best-effort */ }
       try {
         await createKycLink({ full_name: sender_name, email: sender_email.toLowerCase(), type: "individual", endorsements: ["base", "sepa"] });
       } catch { /* duplicate_record = already pending, fine */ }
       try { await simulateKycApproval(senderCustomer.id); } catch { /* may already be approved */ }
+
+      // Verify customer is actually active after simulate — if not, Bridge will reject VA creation
+      const verified = await getCustomer(senderCustomer.id);
+      const isActive = verified.status === "active" || verified.kyc_status === "approved";
+      if (!isActive) {
+        console.error(`[bridge/pay] sender ${senderCustomer.id} still not active after simulate. status=${verified.status} kyc=${verified.kyc_status}`);
+        return NextResponse.json({
+          error: "La cuenta del emisor no pudo activarse en Bridge sandbox. Intenta de nuevo o revisa los logs.",
+          bridge_type: "kyc_not_active",
+        }, { status: 422 });
+      }
     }
 
     // KYC gate (production) — same pattern as checkout/route.ts
