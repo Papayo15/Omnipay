@@ -74,9 +74,9 @@ export default function LanguageSwitcher({ currentLocale }: Props) {
       {open && (
         <div
           role="listbox"
-          className="absolute right-0 mt-1.5 w-48 max-h-72 overflow-y-auto
+          className="absolute right-0 mt-1.5 w-80 max-h-[80vh] overflow-y-auto
                      bg-[#1e293b] border border-[#334155] rounded-xl shadow-xl
-                     z-50 py-1"
+                     z-50 p-2 grid grid-cols-2 gap-0.5"
         >
           {LOCALES.map((locale) => (
             <button
@@ -84,16 +84,16 @@ export default function LanguageSwitcher({ currentLocale }: Props) {
               role="option"
               aria-selected={locale.code === currentLocale}
               onClick={() => switchLocale(locale.code)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left
+              className={`flex items-center gap-2 px-2.5 py-2 text-sm text-left rounded-lg
                           transition-colors duration-100
                           ${locale.code === currentLocale
                             ? "bg-[#6366f1]/20 text-white"
                             : "text-[#cbd5e1] hover:bg-[#334155] hover:text-white"}`}
             >
-              <span className="text-base leading-none w-5 text-center">{locale.flag}</span>
-              <span>{locale.label}</span>
+              <span className="text-base leading-none flex-shrink-0">{locale.flag}</span>
+              <span className="truncate">{locale.label}</span>
               {locale.code === currentLocale && (
-                <span className="ml-auto text-[#6366f1]">✓</span>
+                <span className="ml-auto text-[#6366f1] flex-shrink-0">✓</span>
               )}
             </button>
           ))}
