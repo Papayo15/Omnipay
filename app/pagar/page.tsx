@@ -57,12 +57,13 @@ interface RatePreview {
   rate:            number | null;
 }
 
+// MXN and BRL as pay-in currencies require Bridge Virtual Account enablement
+// per account — contact Bridge support to activate. EUR/GBP also need SEPA/FPS VA enablement.
+// USD is universally available on all Bridge accounts.
 const CURRENCIES = [
-  { code: "usd", label: "USD — Dólares americanos", flag: "🇺🇸" },
+  { code: "usd", label: "USD — US Dollars",          flag: "🇺🇸" },
   { code: "eur", label: "EUR — Euros",               flag: "🇪🇺" },
-  { code: "gbp", label: "GBP — Libras esterlinas",  flag: "🇬🇧" },
-  { code: "mxn", label: "MXN — Pesos mexicanos",    flag: "🇲🇽" },
-  { code: "brl", label: "BRL — Reales brasileños",  flag: "🇧🇷" },
+  { code: "gbp", label: "GBP — British Pounds",      flag: "🇬🇧" },
 ];
 
 // Rail → i18n key suffix (normalized)
