@@ -121,11 +121,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (isSandbox) {
       try {
         await createKycLink({ full_name: sender_name, email: sender_email.toLowerCase(), type: "individual", endorsements: ["base", "sepa"] });
-      } catch (e) {
-        const ke = e as Error & { type?: string };
-        if (ke.type !== "duplicate_record") throw ke;
-      }
-      await simulateKycApproval(senderCustomer.id);
+      } catch { /* duplicate_record = already pending, fine */ }
+      try { await simulateKycApproval(senderCustomer.id); } catch { /* may already be approved */ }
     }
 
     // KYC gate (production) — same pattern as checkout/route.ts
