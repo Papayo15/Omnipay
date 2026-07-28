@@ -398,7 +398,12 @@ export default function PagarPage() {
           <p className="text-white text-xs font-semibold">¿Cómo enviar?</p>
           <div className="flex gap-3 items-start">
             <span className="text-[#00C9C8] font-bold text-sm w-5 flex-shrink-0">1</span>
-            <p className="text-slate-400 text-xs leading-relaxed">{t(`instructions_${rk}`)}</p>
+            <div>
+              <p className="text-slate-400 text-xs leading-relaxed">{t(`instructions_${rk}`)}</p>
+              {rk === "ach" && (
+                <p className="text-slate-600 text-xs mt-1">🇨🇦 Desde Canadá: usa tu cuenta USD y haz un wire transfer a este routing number.</p>
+              )}
+            </div>
           </div>
           <div className="flex gap-3 items-start">
             <span className="text-[#00C9C8] font-bold text-sm w-5 flex-shrink-0">2</span>

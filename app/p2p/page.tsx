@@ -9,18 +9,6 @@ import { validateClabe, detectBank, type BankInfo } from "@/lib/clabe";
 
 type Step = "form" | "generating" | "share" | "error";
 
-// Wise CAD relay fees (Canada senders only)
-// ~1.10% + CA$3 min as conservative estimate for all corridors
-function calcWiseFees(cadAmount: number) {
-  const wiseFeeTotal = parseFloat(Math.max(cadAmount * 0.011, 3.00).toFixed(2));
-  const wiseFxIn     = parseFloat((wiseFeeTotal * 0.55).toFixed(2));
-  const wiseFxOut    = parseFloat((wiseFeeTotal - wiseFxIn).toFixed(2));
-  const omniSvc      = parseFloat(Math.max(cadAmount * 0.005, 1.99).toFixed(2));
-  const omniFlat     = 0.99;
-  const total        = parseFloat((cadAmount + wiseFeeTotal + omniSvc + omniFlat).toFixed(2));
-  return { wiseFeeTotal, wiseFxIn, wiseFxOut, omniSvc, omniFlat, total };
-}
-
 // All 41 countries with native Bridge bank rail (SPEI/ACH/PIX/FPS/Bre-B/SEPA)
 const BANK_RAIL_COUNTRIES = new Set([
   "MX","US","BR","GB","CO",
@@ -160,20 +148,11 @@ export default function P2PPage() {
   const [fxRate,          setFxRate]          = useState<number | null>(null);
   const [kycUrl,          setKycUrl]          = useState<string | null>(null);
   const [realSenderTotal, setRealSenderTotal] = useState<string | null>(null);
-  // Canada relay — sender pays in CAD via Wise, Bridge moves the funds
-  const [senderInCanada,  setSenderInCanada]  = useState(false);
-  const [caSubmitted,     setCaSubmitted]     = useState(false);
-  const [caRef,           setCaRef]           = useState("");
 
   const selectedCountry = COUNTRY_OPTIONS.find((c) => c.code === country) ?? COUNTRY_OPTIONS[0];
   const currency        = selectedCountry.currency;
 
-  // Rail auto-detection:
-  //   Canada sender → Wise relay (CAD)
-  //   All others    → Bridge (if destination country has native rail)
-  const rail = senderInCanada ? "wise-canada"
-             : BANK_RAIL_COUNTRIES.has(country) ? "bridge"
-             : "unavailable";
+  const rail = BANK_RAIL_COUNTRIES.has(country) ? "bridge" : "unavailable";
 
   // Pre-populate from URL query params (uses window to avoid useSearchParams reload)
   useEffect(() => {
@@ -187,13 +166,12 @@ export default function P2PPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Clear account when country or sender rail changes
+  // Clear account when country changes
   useEffect(() => {
     setAccount("");
     setBankInfo(null);
     setClabeValid(null);
-    setCaSubmitted(false);
-  }, [country, senderInCanada]);
+  }, [country]);
 
   // CLABE bank detection
   useEffect(() => {
@@ -210,9 +188,8 @@ export default function P2PPage() {
       setBankInfo(null);
       setClabeValid(null);
     }
-  }, [account, country, senderInCanada]);
+  }, [account, country]);
 
-  // Fetch FX rate when country/currency changes — lightweight, no Bridge API call
   useEffect(() => {
     if (rail !== "bridge") return;
     getFXRate(currency, "USD").then(r => { if (r) setFxRate(r); }).catch(() => {});
@@ -292,19 +269,6 @@ export default function P2PPage() {
     }
   }, [nombre, email, country, account, amountLocal, recipientPhone, fxRate]);
 
-  // Canada relay — notify admin via WhatsApp and show sender instructions
-  const submitCanada = useCallback(() => {
-    const amt   = parseFloat(amountLocal) || 0;
-    const { wiseFxIn, wiseFxOut, omniSvc, omniFlat, total } = calcWiseFees(amt);
-    const adminNumber = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
-    const ref   = `OP-${Date.now().toString(36).toUpperCase()}`;
-    setCaRef(ref);
-    const destLabel = COUNTRY_OPTIONS.find(c => c.code === country)?.label ?? country;
-    const msg = `🇨🇦 NUEVO P2P CANADÁ\n\nReceptor: ${nombre}\nDestino: ${destLabel} (${country})\nCuenta: ${account}\nPrincipal: CA$${amt.toFixed(2)}\nWise FX entrada: CA$${wiseFxIn.toFixed(2)}\nWise FX salida: CA$${wiseFxOut.toFixed(2)}\nOmniPay: CA$${(omniSvc + omniFlat).toFixed(2)}\nEmisor paga: CA$${total.toFixed(2)}${recipientPhone ? `\nTel receptor: ${recipientPhone}` : ""}\nRef: ${ref}\n\nProcesar vía Wise relay → Bridge`;
-    if (adminNumber) window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(msg)}`, "_blank");
-    setCaSubmitted(true);
-  }, [nombre, country, account, amountLocal, recipientPhone]);
-
   const copyLink = useCallback(async () => {
     await navigator.clipboard.writeText(shareLink);
     setCopied(true);
@@ -323,7 +287,6 @@ export default function P2PPage() {
 
   const accountValid = account.trim().length >= 5;
   const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && parseFloat(amountLocal) >= 1 && rail === "bridge";
-  const canadaReady  = !!nombre.trim() && accountValid && parseFloat(amountLocal) >= 1;
 
   // ── Generating ──────────────────────────────────────────────────────────────
   if (step === "generating") {
@@ -586,153 +549,12 @@ export default function P2PPage() {
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
             </div>
 
-            {/* Opción avanzada — emisor en Canadá */}
-            <label className="flex items-center gap-2 cursor-pointer pt-1">
-              <input type="checkbox" checked={senderInCanada} onChange={e => setSenderInCanada(e.target.checked)}
-                className="w-4 h-4 accent-red-500" />
-              <span className="text-slate-600 text-xs">Mi emisor paga desde Canadá en CAD</span>
-            </label>
-
             <button onClick={generateLink} disabled={submitting || !bridgeReady}
               className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
               {submitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}
             </button>
           </>
         )}
-
-        {/* ══ WISE CANADA FORM (CAD) ══════════════════════════════════════════ */}
-        {rail === "wise-canada" && !caSubmitted && (
-          <>
-            <p className="text-slate-500 text-xs bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 leading-relaxed">
-              {t("canada_info")}
-            </p>
-
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">
-                {country === "MX" ? t("clabe_label")
-                  : country === "BR" ? "Chave PIX"
-                  : country === "GB" ? "Sort Code / Account (00-00-00 / 12345678)"
-                  : country === "CO" ? "Cuenta Bre-B"
-                  : country === "US" ? "Routing / Account"
-                  : SEPA_COUNTRIES.has(country) ? "IBAN (SEPA)"
-                  : "IBAN o número de cuenta"}
-              </label>
-              <input type="text" inputMode={country === "MX" ? "numeric" : "text"}
-                value={account} onChange={(e) => setAccount(e.target.value)}
-                placeholder={country === "MX" ? "646180528000000001" : country === "BR" ? "CPF, email o celular" : country === "GB" ? "20-00-00 / 55779911" : "IBAN o número de cuenta"}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm font-mono" />
-            </div>
-
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">{t("canada_amount_label")}</label>
-              <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3">
-                <span className="text-slate-400 text-sm">CA$</span>
-                <input type="number" inputMode="decimal" min="1" value={amountLocal}
-                  onChange={(e) => setAmountLocal(e.target.value)} placeholder="500"
-                  className="flex-1 bg-transparent text-white text-lg font-semibold outline-none" />
-                <span className="text-slate-500 text-sm">CAD</span>
-              </div>
-            </div>
-
-            {parseFloat(amountLocal) > 0 && (() => {
-              const { wiseFxIn, wiseFxOut, omniSvc, omniFlat, total } = calcWiseFees(parseFloat(amountLocal));
-              return (
-                <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-2">{t("fee_breakdown_title")}</p>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">{t("fee_principal")}</span>
-                    <span className="text-white font-semibold">CA${parseFloat(amountLocal).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Wise FX entrada (CAD→intermedio ~0.60%)</span>
-                    <span className="text-green-400">+CA${wiseFxIn.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Wise FX salida (→moneda local ~0.50%)</span>
-                    <span className="text-green-400">+CA${wiseFxOut.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">OmniPay (0.50% + flat)</span>
-                    <span className="text-emerald-400">+CA${(omniSvc + omniFlat).toFixed(2)}</span>
-                  </div>
-                  <div className="border-t border-slate-700 pt-2 flex justify-between text-sm font-bold">
-                    <span className="text-white">{t("fee_total_to_send")}</span>
-                    <span className="text-red-400">CA${total.toFixed(2)}</span>
-                  </div>
-                </div>
-              );
-            })()}
-
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">{t("canada_phone_label")}</label>
-              <input type="tel" inputMode="tel" value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)}
-                placeholder="+52 55 1234 5678"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm" />
-            </div>
-
-            <button onClick={submitCanada} disabled={!canadaReady}
-              className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-3 transition-colors">
-              {t("canada_submit")}
-            </button>
-          </>
-        )}
-
-        {/* Canada: instrucciones post-envío */}
-        {rail === "wise-canada" && caSubmitted && (() => {
-          const amt = parseFloat(amountLocal) || 0;
-          const { wiseFxIn, wiseFxOut, omniSvc, omniFlat, total } = calcWiseFees(amt);
-          return (
-            <div className="space-y-4">
-              <div className="text-center">
-                <div className="text-4xl mb-2">✅</div>
-                <h3 className="text-white font-bold text-lg">{t("canada_created_title")}</h3>
-                <p className="text-slate-400 text-xs mt-1">{t("canada_created_sub")}</p>
-              </div>
-              <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 space-y-3">
-                <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest">{t("canada_instructions_label")}</p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">{t("canada_send_to")}</span>
-                    <span className="text-white font-semibold">{t("canada_wise_name")}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">{t("canada_amount_row")}</span>
-                    <span className="text-white font-semibold">CA${total.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Wise FX entrada</span>
-                    <span className="text-slate-400">+CA${wiseFxIn.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Wise FX salida</span>
-                    <span className="text-slate-400">+CA${wiseFxOut.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">OmniPay</span>
-                    <span className="text-slate-400">+CA${(omniSvc + omniFlat).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">{t("canada_reference")}</span>
-                    <span className="text-emerald-400 font-mono font-semibold">{caRef}</span>
-                  </div>
-                </div>
-                <div className="border-t border-slate-700 pt-3">
-                  <p className="text-slate-500 text-xs">{t("canada_wise_note")}</p>
-                </div>
-              </div>
-              <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-xl px-4 py-3">
-                <p className="text-emerald-400 text-xs">
-                  ✅ {t("canada_recipient_name")}: <span className="font-semibold">{nombre}</span><br/>
-                  {COUNTRY_OPTIONS.find(c => c.code === country)?.flag} {COUNTRY_OPTIONS.find(c => c.code === country)?.label} · <span className="font-mono">{account}</span>
-                </p>
-              </div>
-              <button onClick={() => { setCaSubmitted(false); setNombre(""); setAccount(""); setAmountLocal(""); setRecipientPhone(""); setCaRef(""); }}
-                className="w-full border border-slate-600 text-slate-400 hover:text-white rounded-xl py-3 text-sm transition-colors">
-                {t("canada_new_request")}
-              </button>
-            </div>
-          );
-        })()}
 
         <p className="text-center text-xs text-slate-700 pb-6">
           {t("zero_data_note")}
