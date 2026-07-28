@@ -451,13 +451,6 @@ export default function P2PPage() {
           </select>
         </div>
 
-        {/* Canada toggle — shown discreetly, only when relevant */}
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" checked={senderInCanada} onChange={e => setSenderInCanada(e.target.checked)}
-            className="w-4 h-4 accent-red-500" />
-          <span className="text-slate-400 text-xs">🇨🇦 Mi emisor paga en CAD desde Canadá (Wise relay)</span>
-        </label>
-
         {/* Bridge: país no soportado por Bridge (solo si no es Canada relay) */}
         {rail === "unavailable" && (
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-4">
@@ -592,6 +585,13 @@ export default function P2PPage() {
                 placeholder="+52 55 1234 5678"
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
             </div>
+
+            {/* Opción avanzada — emisor en Canadá */}
+            <label className="flex items-center gap-2 cursor-pointer pt-1">
+              <input type="checkbox" checked={senderInCanada} onChange={e => setSenderInCanada(e.target.checked)}
+                className="w-4 h-4 accent-red-500" />
+              <span className="text-slate-600 text-xs">Mi emisor paga desde Canadá en CAD</span>
+            </label>
 
             <button onClick={generateLink} disabled={submitting || !bridgeReady}
               className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
