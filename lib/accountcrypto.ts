@@ -11,6 +11,7 @@ export interface SecurePayload {
   receiveMode?: ReceiveMode; // rail de dispersión — undefined = "bank" (Wise)
   recipientPhone?: string;   // E.164 — for SMS/WhatsApp notification to recipient
   senderPhone?: string;      // E.164 — for SMS/WhatsApp notification to sender/payer
+  senderEmail?: string;      // for Resend email notification to sender
 }
 
 async function importKey(): Promise<CryptoKey> {
