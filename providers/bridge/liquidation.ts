@@ -306,12 +306,13 @@ export async function ensureExternalAccount(params: CreateLiquidationParams): Pr
     ?? params.pixKey?.slice(-4)
     ?? params.accountNumber?.slice(-4)
     ?? "xxxx";
+  const day = Math.floor(Date.now() / 86_400_000); // rotates every 24h
   const extAcctBody = buildExternalAccountBody(params);
   try {
     const extAcct = await createExternalAccount(
       params.customerId,
       extAcctBody,
-      `pre-ext-${params.customerId}-${country}-${identKey}`,
+      `pre-ext-${params.customerId}-${country}-${identKey}-${day}`,
     );
     if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
     return extAcct.id;
@@ -344,11 +345,12 @@ export async function createLiquidationAddress(
   // when the same account info has been registered before — we reuse that id.
   const extAcctBody = buildExternalAccountBody(params);
   let extAcctId: string;
+  const day = Math.floor(Date.now() / 86_400_000);
   try {
     const extAcct = await createExternalAccount(
       params.customerId,
       extAcctBody,
-      `ext-${params.customerId}-${country}-${identKey}`,
+      `ext-${params.customerId}-${country}-${identKey}-${day}`,
     );
     if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
     extAcctId = extAcct.id;
@@ -366,7 +368,7 @@ export async function createLiquidationAddress(
   // destination_currency are all at root level alongside currency and chain.
   const destCurrency = NATIVE_RAILS[country]?.currency ?? "usd";
   const destRail     = NATIVE_RAILS[country]?.rail ?? "ach";
-  const liqKey       = `liq7-${params.customerId}-${country}-${identKey}`;
+  const liqKey       = `liq7-${params.customerId}-${country}-${identKey}-${day}`;
   const liqBody      = {
     currency:                 "usdc",
     chain:                    "polygon",
