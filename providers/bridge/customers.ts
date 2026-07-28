@@ -127,11 +127,12 @@ export async function createCustomer(params: {
       body.nationalities = [iso3];
     }
   }
+  const day = Math.floor(Date.now() / 86_400_000);
   return bridgeRequest<BridgeCustomer>(
     "POST",
     "/customers",
     body,
-    `customer-${params.email.toLowerCase()}`,
+    `customer-${params.email.toLowerCase()}-${day}`,
   );
 }
 
@@ -160,8 +161,9 @@ export async function ensureEndorsements(customerId: string, endorsements: strin
 
 // Sandbox only — instantly approves KYC without going through Persona
 export async function simulateKycApproval(customerId: string): Promise<void> {
+  const day = Math.floor(Date.now() / 86_400_000);
   await bridgeRequest("POST", `/customers/${customerId}/simulate_kyc_approval`,
-    undefined, `sim-${customerId}`);
+    undefined, `sim-${customerId}-${day}`);
 }
 
 // Find existing customer by email — returns null if not found or any error
