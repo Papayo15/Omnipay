@@ -239,6 +239,18 @@ export async function POST(req: NextRequest): Promise<Response> {
   } catch (e) {
     const err = e as Error & { type?: string; status?: number; details?: unknown };
     console.error("[bridge/pay]", err.message, err.type, err.status, JSON.stringify(err.details));
+
+    // Friendly message for currency not enabled on Bridge account
+    const msg = err.message ?? "";
+    if (msg.toLowerCase().includes("not fully enabled") || msg.toLowerCase().includes("virtual account")) {
+      const currencyMatch = msg.match(/\b([A-Z]{3})\b/);
+      const currency = currencyMatch?.[1] ?? source_currency?.toUpperCase() ?? "";
+      return NextResponse.json({
+        error: `${currency} no está habilitado en nuestra cuenta Bridge para envíos de esa moneda. Intenta con USD o EUR, o contáctanos.`,
+        currency_not_enabled: currency,
+      }, { status: 422 });
+    }
+
     return NextResponse.json({
       error:          err.message,
       bridge_type:    err.type ?? null,

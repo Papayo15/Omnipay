@@ -158,7 +158,10 @@ export default function PagarPage() {
         return;
       }
       if (!res.ok || data.error) {
-        const detail = data.bridge_details ? "\n" + JSON.stringify(data.bridge_details, null, 2) : "";
+        // Clean message for currency-not-enabled — no raw JSON
+        const detail = (data as { currency_not_enabled?: string }).currency_not_enabled
+          ? ""
+          : data.bridge_details ? "\n" + JSON.stringify(data.bridge_details, null, 2) : "";
         setErrorMsg((data.error ?? t("error_payment")) + detail);
         setStep("error");
         return;
