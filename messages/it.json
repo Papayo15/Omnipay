@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Effettua invio →",
-    "loading": "Generazione istruzioni…"
+    "loading": "Generazione istruzioni…",
+    "track_step1": "In attesa del deposito",
+    "track_step2": "Elaborazione",
+    "track_step3": "Conversione",
+    "track_step4": "Inviato ✓",
+    "track_error": "Trasferimento fallito",
+    "track_pending": "Stato del trasferimento in tempo reale",
+    "instructions_spei": "Apri la tua app bancaria → Bonifici → SPEI → inserisci il CLABE e l'importo esatto",
+    "instructions_pix": "Apri la tua app bancaria → PIX → Paga → inserisci la chiave PIX e l'importo esatto",
+    "instructions_sepa": "Apri la tua banca → Bonifico SEPA → inserisci IBAN, BIC e l'importo esatto",
+    "instructions_ach": "Apri la tua banca → Bonifico ACH → inserisci il Routing Number e Account Number",
+    "instructions_fps": "Apri la tua banca → Paga → Faster Payments → inserisci Sort Code e Account Number",
+    "speed_spei": "⚡ Di solito in 2–4 ore",
+    "speed_pix": "⚡ Di solito in pochi minuti",
+    "speed_sepa": "🕐 1–2 giorni lavorativi",
+    "speed_ach": "🕐 2–3 giorni lavorativi",
+    "speed_fps": "⚡ Di solito in 2 ore",
+    "rate_preview": "Tasso approssimativo: 1 {src} = {rate} {tgt}",
+    "amount_preview": "Paghi ~{amount} {src} · Il destinatario riceve {target}",
+    "confirm_sent": "Ho effettuato il bonifico — Vedi stato →"
   }
 }

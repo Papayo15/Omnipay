@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Aika kuɗi →",
-    "loading": "Ana ƙirƙirar umarni…"
+    "loading": "Ana ƙirƙirar umarni…",
+    "track_step1": "Jiran aika kuɗi",
+    "track_step2": "Yana aiwatarwa",
+    "track_step3": "Yana canzawa",
+    "track_step4": "An aika ✓",
+    "track_error": "Canja kuɗi ya kasa",
+    "track_pending": "Yanayin aika kuɗi na yanzu",
+    "instructions_spei": "Buɗe app na banki → Canja kuɗi → SPEI → shigar CLABE da adadin daidai",
+    "instructions_pix": "Buɗe app na banki → PIX → Biya → shigar maɓallin PIX da adadin daidai",
+    "instructions_sepa": "Buɗe banki → SEPA Transfer → shigar IBAN, BIC da adadin daidai",
+    "instructions_ach": "Buɗe banki → ACH Transfer → shigar Routing Number da Account Number",
+    "instructions_fps": "Buɗe banki → Biya → Faster Payments → shigar Sort Code da Account Number",
+    "speed_spei": "⚡ Yawanci cikin awowi 2–4",
+    "speed_pix": "⚡ Yawanci cikin mintuna",
+    "speed_sepa": "🕐 Kwana 1–2 na aiki",
+    "speed_ach": "🕐 Kwana 2–3 na aiki",
+    "speed_fps": "⚡ Yawanci cikin awowi 2",
+    "rate_preview": "Ƙididdiga ta musayar: 1 {src} = {rate} {tgt}",
+    "amount_preview": "Za ka biya ~{amount} {src} · Mai karɓa yana karɓar {target}",
+    "confirm_sent": "Na aika kuɗin — Duba yanayin →"
   }
 }

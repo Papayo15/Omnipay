@@ -8,8 +8,8 @@ import { getWiseAccountType, buildWiseAccountDetails } from "@/lib/wise-accounts
 // El receptor confirma su método de cobro. Este endpoint:
 //   1. Verifica HMAC del link (stateless)
 //   2. Verifica que el emisor pagó en Stripe
-//   3. Dispersa vía Paysend (push a tarjeta 16 dígitos) o Wise (cuenta bancaria)
-//   4. Repone balances Paysend + Wise via Stripe Instant Payout (asíncrono)
+//   3. Dispersa vía Wise (cuenta bancaria) o Thunes (wallet móvil)
+//   4. Repone balance Wise via Stripe Instant Payout (asíncrono)
 //   5. Genera comprobante firmado HMAC
 
 // ── Balance checks ─────────────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ async function executeWise(
   return String(transfer.id);
 }
 
-// ── Thunes transfer (wallets móviles — fallback cuando Paysend no llega) ───────
+// ── Thunes transfer (wallets móviles — fallback para países sin cobertura Wise) ──
 
 function thunesPayer(countryCode: string): string {
   const map: Record<string, string> = {
@@ -224,7 +224,7 @@ export async function POST(req: NextRequest) {
 
     try {
       if (receiveMode === "card") {
-        // Push a tarjeta no disponible (Paysend/NIUM eliminados) → usar P2P en /p2p
+        // Push a tarjeta no disponible → usar P2P en /p2p
         return NextResponse.json(
           { error: "Card push no disponible. Usa omnipay.com/p2p para envíos LATAM.", errorCode: "RAIL_UNAVAILABLE" },
           { status: 503 },

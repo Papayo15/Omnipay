@@ -71,7 +71,7 @@ export interface PayOutFeeInfo {
   source:       "live" | "mock" | "cached";
 }
 
-export type PayOutProviderName = "bridge" | "bitso-direct" | "belo" | "paysend";
+export type PayOutProviderName = "bridge" | "bitso-direct" | "belo";
 
 /** Contrato que todo proveedor de Pay-out debe cumplir */
 export interface IPayOutProvider {

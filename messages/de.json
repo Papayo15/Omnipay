@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Überweisung senden →",
-    "loading": "Anweisungen werden erstellt…"
+    "loading": "Anweisungen werden erstellt…",
+    "track_step1": "Warte auf Einzahlung",
+    "track_step2": "Verarbeitung",
+    "track_step3": "Umwandlung",
+    "track_step4": "Gesendet ✓",
+    "track_error": "Überweisung fehlgeschlagen",
+    "track_pending": "Echtzeit-Überweisungsstatus",
+    "instructions_spei": "Öffnen Sie Ihre Banking-App → Überweisungen → SPEI → geben Sie die CLABE und den genauen Betrag ein",
+    "instructions_pix": "Öffnen Sie Ihre Banking-App → PIX → Zahlen → geben Sie den PIX-Schlüssel und den genauen Betrag ein",
+    "instructions_sepa": "Öffnen Sie Ihre Bank → SEPA-Überweisung → geben Sie IBAN, BIC und den genauen Betrag ein",
+    "instructions_ach": "Öffnen Sie Ihre Bank → ACH-Überweisung → geben Sie Routing Number und Account Number ein",
+    "instructions_fps": "Öffnen Sie Ihre Bank → Zahlung → Faster Payments → geben Sie Sort Code und Account Number ein",
+    "speed_spei": "⚡ Normalerweise in 2–4 Stunden",
+    "speed_pix": "⚡ Normalerweise in Minuten",
+    "speed_sepa": "🕐 1–2 Werktage",
+    "speed_ach": "🕐 2–3 Werktage",
+    "speed_fps": "⚡ Normalerweise in 2 Stunden",
+    "rate_preview": "Ungefährer Kurs: 1 {src} = {rate} {tgt}",
+    "amount_preview": "Sie zahlen ~{amount} {src} · Empfänger erhält {target}",
+    "confirm_sent": "Überweisung durchgeführt — Status anzeigen →"
   }
 }

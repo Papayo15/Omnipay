@@ -149,6 +149,9 @@ export async function POST(req: NextRequest): Promise<Response> {
       recipientAccount:   meta.liq_addr_id,
       payInProvider:      "bridge-va",
       payOutProvider:     "bridge-liq",
+      senderEmail:        sender_email.toLowerCase(),
+      recipientEmail:     meta.recipient_phone ?? undefined,
+      trackUrl:           `${appUrl}/api/bridge/track?order_id=${orderId}`,
     });
 
     // 6. KYC link for sender if needed (non-blocking)
@@ -201,7 +204,6 @@ export async function POST(req: NextRequest): Promise<Response> {
         provider:          quote.provider,
         bridge_onramp:     quote.bridge_onramp,
         bridge_offramp:    quote.bridge_offramp,
-        paysend_cost:      quote.paysend_cost,
         provider_cost:     quote.provider_cost_total,
         omnipay_service:   quote.omnipay_service,
         omnipay_flat:      quote.omnipay_flat,

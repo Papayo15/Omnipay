@@ -44,6 +44,10 @@ export interface OrderRecord {
   createdAt:          number;     // Unix ms
   updatedAt:          number;
   completedAt?:       number;
+  // Email notifications (transient — not persisted to any external store)
+  senderEmail?:       string;
+  recipientEmail?:    string;
+  trackUrl?:          string;
 }
 
 // ── Almacén en memoria (reemplazar con KV en producción) ─────────────────────

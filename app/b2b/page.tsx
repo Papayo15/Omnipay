@@ -235,6 +235,7 @@ export default function B2BPage() {
   const [receiveMode,    setReceiveMode]  = useState<ReceiveMode>("bank");
   const [recipientPhone, setRPhone]       = useState("");
   const [senderPhone,    setSPhone]       = useState("");
+  const [senderEmail,    setSenderEmail]  = useState("");
   const [isNew,          setIsNew]        = useState(false);
   const [submitting,     setSubmitting]   = useState(false);
   const [formError,      setFormError]    = useState("");
@@ -291,27 +292,7 @@ export default function B2BPage() {
     return () => clearInterval(iv);
   }, [step, secsLeft]);
 
-  // Progress animation
-  useEffect(() => {
-    if (step !== "progress") return;
-    const t1 = setTimeout(() => setProgressStep(1), 2500);
-    const t2 = setTimeout(() => setProgressStep(2), 5000);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [step]);
-
-  // Poll confirm
-  useEffect(() => {
-    if (step !== "progress" || !piId) return;
-    const iv = setInterval(async () => {
-      try {
-        const res  = await fetch(`/api/pay/confirm?pi=${piId}`);
-        const data = await res.json() as { status: string };
-        if (data.status === "succeeded") { clearInterval(iv); setTimeout(() => setStep("done"), 800); }
-        else if (data.status === "payment_failed") { clearInterval(iv); setErrorMsg(t("error_default")); setStep("error"); }
-      } catch {}
-    }, 2000);
-    return () => clearInterval(iv);
-  }, [step, piId]);
+  // Note: "progress" step no longer used — PI confirmation goes directly to "done".
 
   function handleCountryChange(input: string) {
     setCountryName(input);
@@ -336,6 +317,7 @@ export default function B2BPage() {
           receiveAmount: parsed, receiveCurrency: currency, targetCountry: country,
           originCountry: "CA", recipientPhone: recipientPhone.trim() || undefined,
           senderPhone: senderPhone.trim() || undefined,
+          senderEmail: senderEmail.trim() || undefined,
         }),
       });
       const data = await res.json() as { share_link?: string; quote?: ShareQuote; error?: string };
@@ -408,12 +390,47 @@ export default function B2BPage() {
 
   // ── DONE ─────────────────────────────────────────────────────────────────────
   if (step === "done") {
+    // Exact delivery estimate: today + 5 business days
+    const eta = (() => {
+      const d = new Date();
+      let count = 0;
+      while (count < 5) {
+        d.setDate(d.getDate() + 1);
+        if (d.getDay() !== 0 && d.getDay() !== 6) count++;
+      }
+      return d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    })();
+
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5 max-w-sm mx-auto w-full">
         <CheckCircle2 className="w-16 h-16 text-emerald-400" />
         <h2 className="text-2xl font-bold text-white">{t("done_title")}</h2>
-        <p className="text-slate-400 text-sm max-w-xs">{t("done_msg", { name: summary?.recipientName ?? "…" })}</p>
-        <div className="w-full space-y-3 mt-2">
+
+        {/* Status timeline */}
+        <div className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-4 text-left space-y-3">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-white text-sm font-medium">{t("done_stripe_confirmed")}</p>
+              <p className="text-slate-400 text-xs">{t("done_stripe_sub")}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Clock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5 animate-pulse" />
+            <div>
+              <p className="text-white text-sm font-medium">{t("done_delivery_note")}</p>
+              <p className="text-slate-400 text-xs">{t("done_delivery_date", { date: eta })}</p>
+            </div>
+          </div>
+          {senderEmail && (
+            <div className="flex items-start gap-3">
+              <span className="text-[#00C9C8] text-sm flex-shrink-0 mt-0.5">✉</span>
+              <p className="text-slate-400 text-xs">{t("done_email_note")}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="w-full space-y-3 mt-1">
           <button onClick={() => window.open(buildWhatsAppLink(buildReceiptMsg()), "_blank")}
             className="w-full bg-[#25D366] hover:bg-[#1fb85a] active:scale-95 transition-all text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2">
             <Send className="w-4 h-4" />{t("done_whatsapp")}
@@ -521,7 +538,12 @@ export default function B2BPage() {
                   <div className="border-t border-slate-700 pt-1.5 flex justify-between text-sm font-semibold text-white"><span>{t("checkout_total")}</span><span className="font-mono">{fmt(summary.cadAmount, "CAD")}</span></div>
                 </div>
               )}
-              {summary.payoutDelayed && <p className="text-amber-400 text-xs mt-1">⏱ {t("checkout_delayed_badge")}</p>}
+              {summary.payoutDelayed && (
+                <div className="mt-3 bg-amber-900/20 border border-amber-500/30 rounded-xl px-4 py-3 text-left">
+                  <p className="text-amber-400 text-xs font-semibold mb-1">⏱ {t("checkout_delayed_title")}</p>
+                  <p className="text-amber-300 text-xs leading-relaxed">{t("checkout_delayed_block")}</p>
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -536,7 +558,7 @@ export default function B2BPage() {
         </div>
         <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: "night" } }}>
           <PaymentForm summary={summary}
-            onSuccess={(id) => { setPiId(id); setProgressStep(0); setStep("progress"); }}
+            onSuccess={(id) => { setPiId(id); setStep("done"); }}
             onError={(msg) => { setErrorMsg(msg); setStep("error"); }} t={t} />
         </Elements>
       </main>
@@ -642,6 +664,13 @@ export default function B2BPage() {
         <div>
           <label className="block text-xs text-slate-400 mb-1">{t("label_client_phone")}</label>
           <input value={senderPhone} onChange={(e) => setSPhone(e.target.value)} placeholder="+1 416 555 0123" inputMode="tel"
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm" />
+        </div>
+
+        <div>
+          <label className="block text-xs text-slate-400 mb-1">{t("b2b_sender_email_label")}</label>
+          <input value={senderEmail} onChange={(e) => setSenderEmail(e.target.value)}
+            placeholder="cliente@empresa.com" type="email" inputMode="email"
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm" />
         </div>
 

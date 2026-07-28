@@ -25,7 +25,7 @@ interface CheckoutBody {
   email:            string;
   country:          string;
   receive_method:   ReceiveMethod;
-  card_number?:     string;  // reserved — Paysend pending
+  card_number?:     string;  // reserved for future card push rail
   clabe?:           string;
   iban?:            string;
   bic?:             string;  // SEPA BIC/SWIFT code

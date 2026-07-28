@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Realizar envio →",
-    "loading": "Gerando instruções…"
+    "loading": "Gerando instruções…",
+    "track_step1": "Aguardando depósito",
+    "track_step2": "Processando",
+    "track_step3": "Convertendo",
+    "track_step4": "Enviado ✓",
+    "track_error": "Transferência falhou",
+    "track_pending": "Status da transferência em tempo real",
+    "instructions_spei": "Abra seu app bancário → Transferências → SPEI → insira o CLABE e o valor exato",
+    "instructions_pix": "Abra seu app bancário → PIX → Pagar → insira a chave PIX e o valor exato",
+    "instructions_sepa": "Abra seu banco → Transferência SEPA → insira o IBAN, BIC e o valor exato",
+    "instructions_ach": "Abra seu banco → ACH Transfer → insira o Routing Number e Account Number",
+    "instructions_fps": "Abra seu banco → Pay → Faster Payments → insira o Sort Code e Account Number",
+    "speed_spei": "⚡ Normalmente em 2–4 horas",
+    "speed_pix": "⚡ Normalmente em minutos",
+    "speed_sepa": "🕐 1–2 dias úteis",
+    "speed_ach": "🕐 2–3 dias úteis",
+    "speed_fps": "⚡ Normalmente em 2 horas",
+    "rate_preview": "Taxa aprox.: 1 {src} = {rate} {tgt}",
+    "amount_preview": "Você paga ~{amount} {src} · Destinatário recebe {target}",
+    "confirm_sent": "Fiz a transferência — Ver status →"
   }
 }

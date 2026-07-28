@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "송금하기 →",
-    "loading": "지침 생성 중…"
+    "loading": "지침 생성 중…",
+    "track_step1": "입금 대기",
+    "track_step2": "처리 중",
+    "track_step3": "변환 중",
+    "track_step4": "전송 완료 ✓",
+    "track_error": "송금 실패",
+    "track_pending": "실시간 송금 상태",
+    "instructions_spei": "뱅킹 앱 열기 → 이체 → SPEI → CLABE와 정확한 금액 입력",
+    "instructions_pix": "뱅킹 앱 열기 → PIX → 결제 → PIX 키와 정확한 금액 입력",
+    "instructions_sepa": "은행 열기 → SEPA 이체 → IBAN, BIC와 정확한 금액 입력",
+    "instructions_ach": "은행 열기 → ACH 이체 → 라우팅 번호와 계좌번호 입력",
+    "instructions_fps": "은행 열기 → 결제 → Faster Payments → Sort Code와 계좌번호 입력",
+    "speed_spei": "⚡ 보통 2–4시간 이내",
+    "speed_pix": "⚡ 보통 수분 이내",
+    "speed_sepa": "🕐 1–2 영업일",
+    "speed_ach": "🕐 2–3 영업일",
+    "speed_fps": "⚡ 보통 2시간 이내",
+    "rate_preview": "대략적인 환율: 1 {src} = {rate} {tgt}",
+    "amount_preview": "지불 ~{amount} {src} · 수취인은 {target}을 받습니다",
+    "confirm_sent": "이체했습니다 — 상태 확인 →"
   }
 }

@@ -43,9 +43,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     rate_note:       "Exchange rate provided by Bridge · Subject to change at settlement",
     summary: {
       you_send:      `$${quote.total_sender_pays.toFixed(2)} USD`,
-      provider_fee:  quote.provider === "paysend"
-        ? `$${(quote.paysend_cost ?? 0).toFixed(2)} USD (Paysend)`
-        : `$${bridgeFeeTotal.toFixed(2)} USD (0.75% Bridge)`,
+      provider_fee:  `$${bridgeFeeTotal.toFixed(2)} USD (0.75% Bridge)`,
       omnipay_fee:   `$${(quote.omnipay_service + quote.omnipay_flat).toFixed(2)} USD`,
       kyc_note:      quote.is_new_customer
         ? `$${quote.kyc_surcharge.toFixed(2)} one-time identity verification (required by regulation)`

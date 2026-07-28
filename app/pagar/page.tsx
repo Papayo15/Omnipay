@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Zap, ArrowLeft, CheckCircle2, Copy, Check, AlertCircle } from "lucide-react";
+import { Zap, ArrowLeft, CheckCircle2, Copy, Check, AlertCircle, Clock } from "lucide-react";
 
 type Step = "form" | "loading" | "instructions" | "error";
 
@@ -48,13 +48,38 @@ interface PayResponse {
   bridge_details?:      unknown;
 }
 
+interface RatePreview {
+  source_currency: string;
+  target_currency: string;
+  recipient_gets:  number;
+  amount_to_pay:   number;
+  rate:            number | null;
+}
+
+interface TrackData {
+  step:          number;   // 1-4
+  status:        string;
+  label:         string;
+  error_message?: string;
+}
+
 const CURRENCIES = [
-  { code: "usd", label: "USD — Dólares americanos",    flag: "🇺🇸" },
-  { code: "eur", label: "EUR — Euros",                  flag: "🇪🇺" },
-  { code: "gbp", label: "GBP — Libras esterlinas",     flag: "🇬🇧" },
-  { code: "mxn", label: "MXN — Pesos mexicanos",       flag: "🇲🇽" },
-  { code: "brl", label: "BRL — Reales brasileños",     flag: "🇧🇷" },
+  { code: "usd", label: "USD — Dólares americanos", flag: "🇺🇸" },
+  { code: "eur", label: "EUR — Euros",               flag: "🇪🇺" },
+  { code: "gbp", label: "GBP — Libras esterlinas",  flag: "🇬🇧" },
+  { code: "mxn", label: "MXN — Pesos mexicanos",    flag: "🇲🇽" },
+  { code: "brl", label: "BRL — Reales brasileños",  flag: "🇧🇷" },
 ];
+
+// Rail → i18n key suffix (normalized)
+function railKey(rail: string): string {
+  const r = rail.toLowerCase();
+  if (r.includes("spei"))  return "spei";
+  if (r.includes("pix"))   return "pix";
+  if (r.includes("sepa"))  return "sepa";
+  if (r.includes("faster") || r.includes("fps")) return "fps";
+  return "ach";
+}
 
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
@@ -76,29 +101,121 @@ function CopyField({ label, value }: { label: string; value: string }) {
   );
 }
 
+function TrackingBar({ orderId, t }: { orderId: string; t: ReturnType<typeof useTranslations> }) {
+  const [track, setTrack] = useState<TrackData | null>(null);
+
+  useEffect(() => {
+    if (!orderId) return;
+    let active = true;
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/bridge/track?order_id=${orderId}`);
+        if (res.ok) {
+          const d = await res.json() as TrackData;
+          if (active) setTrack(d);
+          if (d.step >= 4 || d.status === "FAILED") clearInterval(iv);
+        }
+      } catch { /* non-critical */ }
+    };
+    poll();
+    const iv = setInterval(poll, 10_000);
+    return () => { active = false; clearInterval(iv); };
+  }, [orderId]);
+
+  const steps = [
+    t("track_step1"),
+    t("track_step2"),
+    t("track_step3"),
+    t("track_step4"),
+  ];
+
+  const current = track?.step ?? 1;
+  const failed  = track?.status === "FAILED";
+
+  return (
+    <div className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 mb-4">
+      <p className="text-slate-400 text-[10px] uppercase tracking-wide mb-3">
+        {t("track_pending")}
+      </p>
+
+      {failed ? (
+        <div className="flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-red-400 text-xs font-semibold">{t("track_error")}</p>
+            {track?.error_message && (
+              <p className="text-slate-400 text-xs mt-0.5">{track.error_message}</p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-1">
+          {steps.map((label, i) => {
+            const stepNum = i + 1;
+            const done    = stepNum < current;
+            const active  = stepNum === current;
+            return (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors
+                  ${done   ? "bg-emerald-500 text-white"
+                  : active ? "bg-[#00C9C8] text-black animate-pulse"
+                  :          "bg-slate-700 text-slate-500"}`}>
+                  {done ? "✓" : stepNum}
+                </div>
+                <p className={`text-[9px] text-center leading-tight
+                  ${done ? "text-emerald-400" : active ? "text-[#00C9C8]" : "text-slate-600"}`}>
+                  {label}
+                </p>
+                {i < steps.length - 1 && (
+                  <div className={`absolute hidden`} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PagarPage() {
   const t = useTranslations("pagar_bridge");
-  const [token, setToken]           = useState<string | null>(null);
-  const [step,  setStep]            = useState<Step>("form");
-  const [name,  setName]            = useState("");
-  const [email, setEmail]           = useState("");
-  const [phone, setPhone]           = useState("");
-  const [currency, setCurrency]     = useState("usd");
-  const [result, setResult]         = useState<PayResponse | null>(null);
-  const [errorMsg, setErrorMsg]     = useState("");
-  const [copiedAll, setCopiedAll]   = useState(false);
+  const [token, setToken]             = useState<string | null>(null);
+  const [step,  setStep]              = useState<Step>("form");
+  const [name,  setName]              = useState("");
+  const [email, setEmail]             = useState("");
+  const [phone, setPhone]             = useState("");
+  const [currency, setCurrency]       = useState("usd");
+  const [result, setResult]           = useState<PayResponse | null>(null);
+  const [errorMsg, setErrorMsg]       = useState("");
+  const [copiedAll, setCopiedAll]     = useState(false);
+  const [ratePreview, setRatePreview] = useState<RatePreview | null>(null);
+  const [rateLoading, setRateLoading] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     const t = p.get("t");
     const type = p.get("type");
     if (!t || type !== "p2p") {
-      // Not a P2P link — redirect to home
       window.location.href = "/";
       return;
     }
     setToken(t);
   }, []);
+
+  // Fetch rate preview whenever token + currency changes
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    setRateLoading(true);
+    fetch(`/api/bridge/rate?token=${encodeURIComponent(token)}&currency=${currency}`)
+      .then((r) => r.json())
+      .then((d: RatePreview) => { if (!cancelled) setRatePreview(d); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setRateLoading(false); });
+    return () => { cancelled = true; };
+  }, [token, currency]);
 
   const handleSubmit = useCallback(async () => {
     if (!token || !name.trim() || !email.includes("@")) return;
@@ -135,15 +252,15 @@ export default function PagarPage() {
     const di = result.deposit_instructions;
     const lines = [
       `Monto a depositar: ${di.amount_to_deposit} ${di.currency.toUpperCase()}`,
-      di.routing_number  ? `Routing number: ${di.routing_number}` : null,
-      di.account_number  ? `Account number: ${di.account_number}` : null,
-      di.bank_name       ? `Banco: ${di.bank_name}` : null,
-      di.beneficiary_name ? `Beneficiario: ${di.beneficiary_name}` : null,
-      di.iban            ? `IBAN: ${di.iban}` : null,
-      di.bic             ? `BIC/SWIFT: ${di.bic}` : null,
-      di.clabe           ? `CLABE: ${di.clabe}` : null,
-      di.br_code         ? `PIX/BR Code: ${di.br_code}` : null,
-      di.sort_code       ? `Sort code: ${di.sort_code}` : null,
+      di.routing_number   ? `Routing number: ${di.routing_number}`  : null,
+      di.account_number   ? `Account number: ${di.account_number}`  : null,
+      di.bank_name        ? `Banco: ${di.bank_name}`                : null,
+      di.beneficiary_name ? `Beneficiario: ${di.beneficiary_name}`  : null,
+      di.iban             ? `IBAN: ${di.iban}`                      : null,
+      di.bic              ? `BIC/SWIFT: ${di.bic}`                  : null,
+      di.clabe            ? `CLABE: ${di.clabe}`                    : null,
+      di.br_code          ? `PIX/BR Code: ${di.br_code}`            : null,
+      di.sort_code        ? `Sort code: ${di.sort_code}`            : null,
       `\nRef de orden: ${result.order_id}`,
     ].filter(Boolean).join("\n");
     navigator.clipboard.writeText(lines).catch(() => {});
@@ -165,7 +282,7 @@ export default function PagarPage() {
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5">
         <AlertCircle className="w-14 h-14 text-red-400" />
         <h2 className="text-xl font-semibold text-white">Algo salió mal</h2>
-        <p className="text-slate-400 text-sm max-w-xs">{errorMsg}</p>
+        <p className="text-slate-400 text-sm max-w-xs whitespace-pre-wrap">{errorMsg}</p>
         <button onClick={() => setStep("form")} className="text-[#00C9C8] text-sm underline mt-2">
           ← Volver al formulario
         </button>
@@ -187,6 +304,8 @@ export default function PagarPage() {
   if (step === "instructions" && result) {
     const di  = result.deposit_instructions;
     const fee = result.fee_breakdown;
+    const rk  = railKey(di.rail);
+
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col pb-10 max-w-sm mx-auto w-full px-5">
         <div className="pt-8 pb-4 flex items-center gap-2">
@@ -194,10 +313,10 @@ export default function PagarPage() {
           <span className="text-white font-bold">OmniPay</span>
         </div>
 
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-2 mb-4">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
           <div>
-            <p className="text-white font-semibold text-sm">Instrucciones generadas</p>
+            <p className="text-white font-semibold text-sm">Instrucciones listas</p>
             <p className="text-slate-500 text-xs">Ref: {result.order_id}</p>
           </div>
         </div>
@@ -214,11 +333,10 @@ export default function PagarPage() {
           </div>
         )}
 
-        {/* Who receives */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mb-4">
-          <p className="text-slate-500 text-[10px] uppercase tracking-wide mb-1">Receptor</p>
-          <p className="text-white font-semibold">{result.recipient.name}</p>
-          <p className="text-slate-400 text-xs">{result.recipient.country} · vía Bridge</p>
+        {/* Speed badge */}
+        <div className="flex items-center gap-2 bg-slate-800/40 border border-slate-700 rounded-xl px-3 py-2 mb-4">
+          <Clock className="w-3.5 h-3.5 text-[#00C9C8] flex-shrink-0" />
+          <p className="text-[#00C9C8] text-xs font-medium">{t(`speed_${rk}`)}</p>
         </div>
 
         {/* Deposit instructions */}
@@ -231,24 +349,24 @@ export default function PagarPage() {
             </button>
           </div>
 
-          {/* Amount — always first */}
+          {/* Amount */}
           <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg px-3 py-2 mb-3">
             <p className="text-slate-400 text-[10px] uppercase tracking-wide">Monto exacto a depositar</p>
             <p className="text-emerald-400 text-xl font-bold font-mono">{di.amount_to_deposit} {di.currency.toUpperCase()}</p>
-            <p className="text-slate-500 text-[10px] mt-0.5">Envía exactamente este monto — Bridge no acepta montos parciales</p>
+            <p className="text-slate-500 text-[10px] mt-0.5">Envía exactamente este monto</p>
           </div>
 
-          {di.routing_number  && <CopyField label="Routing number (ABA)"  value={di.routing_number} />}
-          {di.account_number  && <CopyField label="Account number"         value={di.account_number} />}
-          {di.bank_name       && <CopyField label="Banco"                  value={di.bank_name} />}
-          {di.beneficiary_name && <CopyField label="Beneficiario"          value={di.beneficiary_name} />}
-          {di.beneficiary_address && <CopyField label="Dirección beneficiario" value={di.beneficiary_address} />}
-          {di.iban            && <CopyField label="IBAN"                   value={di.iban} />}
-          {di.bic             && <CopyField label="BIC / SWIFT"            value={di.bic} />}
-          {di.account_holder  && <CopyField label="Titular de cuenta"      value={di.account_holder} />}
-          {di.clabe           && <CopyField label="CLABE"                  value={di.clabe} />}
-          {di.br_code         && <CopyField label="Chave PIX / BR Code"    value={di.br_code} />}
-          {di.sort_code       && <CopyField label="Sort code"              value={di.sort_code} />}
+          {di.routing_number   && <CopyField label="Routing number (ABA)"      value={di.routing_number} />}
+          {di.account_number   && <CopyField label="Account number"             value={di.account_number} />}
+          {di.bank_name        && <CopyField label="Banco"                      value={di.bank_name} />}
+          {di.beneficiary_name && <CopyField label="Beneficiario"               value={di.beneficiary_name} />}
+          {di.beneficiary_address && <CopyField label="Dirección beneficiario"  value={di.beneficiary_address} />}
+          {di.iban             && <CopyField label="IBAN"                       value={di.iban} />}
+          {di.bic              && <CopyField label="BIC / SWIFT"                value={di.bic} />}
+          {di.account_holder   && <CopyField label="Titular de cuenta"          value={di.account_holder} />}
+          {di.clabe            && <CopyField label="CLABE"                      value={di.clabe} />}
+          {di.br_code          && <CopyField label="Chave PIX / BR Code"        value={di.br_code} />}
+          {di.sort_code        && <CopyField label="Sort code"                  value={di.sort_code} />}
         </div>
 
         {/* Fee breakdown */}
@@ -259,7 +377,12 @@ export default function PagarPage() {
           <div className="flex justify-between text-slate-400"><span>Bridge off-ramp (0.25%)</span><span className="font-mono">+ ${fee.bridge_offramp.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate-400"><span>OmniPay servicio</span><span className="font-mono">+ ${fee.omnipay_service.toFixed(2)}</span></div>
           <div className="flex justify-between text-slate-400"><span>OmniPay flat</span><span className="font-mono">+ ${fee.omnipay_flat.toFixed(2)}</span></div>
-          {fee.kyc_surcharge > 0 && <div className="flex justify-between text-slate-400"><span>Verificación KYC (única vez)</span><span className="font-mono">+ ${fee.kyc_surcharge.toFixed(2)}</span></div>}
+          {fee.kyc_surcharge > 0 && (
+            <div className="flex justify-between text-slate-400">
+              <span>Verificación identidad (única vez)</span>
+              <span className="font-mono">+ ${fee.kyc_surcharge.toFixed(2)}</span>
+            </div>
+          )}
           <div className="border-t border-slate-700 pt-1.5 flex justify-between font-semibold text-white">
             <span>Total a depositar</span>
             <span className="font-mono text-[#00C9C8]">${fee.total_to_send.toFixed(2)} {di.currency.toUpperCase()}</span>
@@ -270,35 +393,42 @@ export default function PagarPage() {
           </div>
         </div>
 
-        {/* Next steps */}
+        {/* Rail-specific instructions */}
         <div className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 mb-4 space-y-3">
-          <p className="text-white text-xs font-semibold">¿Qué sigue?</p>
+          <p className="text-white text-xs font-semibold">¿Cómo enviar?</p>
           <div className="flex gap-3 items-start">
             <span className="text-[#00C9C8] font-bold text-sm w-5 flex-shrink-0">1</span>
-            <p className="text-slate-400 text-xs leading-relaxed">Abre tu banco online y envía exactamente <strong className="text-white">{di.amount_to_deposit} {di.currency.toUpperCase()}</strong> mediante <strong className="text-white">{di.currency.toUpperCase() === "EUR" ? "transferencia SEPA" : di.currency.toUpperCase() === "GBP" ? "Faster Payments" : di.currency.toUpperCase() === "BRL" ? "PIX" : di.currency.toUpperCase() === "MXN" ? "SPEI" : "transferencia ACH"}</strong> a la cuenta de arriba.</p>
+            <p className="text-slate-400 text-xs leading-relaxed">{t(`instructions_${rk}`)}</p>
           </div>
           <div className="flex gap-3 items-start">
             <span className="text-[#00C9C8] font-bold text-sm w-5 flex-shrink-0">2</span>
-            <p className="text-slate-400 text-xs leading-relaxed">Bridge detecta el depósito y lo convierte al instante. No hay espera en el lado de Bridge — el envío es en minutos.</p>
+            <p className="text-slate-400 text-xs leading-relaxed">
+              Usa el monto exacto: <strong className="text-white">{di.amount_to_deposit} {di.currency.toUpperCase()}</strong>. Cualquier diferencia rechaza la transacción.
+            </p>
           </div>
           <div className="flex gap-3 items-start">
             <span className="text-[#00C9C8] font-bold text-sm w-5 flex-shrink-0">3</span>
-            <p className="text-slate-400 text-xs leading-relaxed">El receptor recibe <strong className="text-white">{fee.recipient_gets}</strong> directamente en su cuenta vía {result.recipient.country === "MX" ? "SPEI" : result.recipient.country === "BR" ? "PIX" : result.recipient.country === "GB" ? "Faster Payments" : "transferencia"} — instantáneo.</p>
+            <p className="text-slate-400 text-xs leading-relaxed">
+              <strong className="text-white">{result.recipient.name}</strong> recibirá <strong className="text-white">{fee.recipient_gets}</strong> automáticamente.
+            </p>
           </div>
         </div>
 
-        {/* Notify admin button */}
+        {/* "Ya realicé la transferencia" button */}
         <button
           onClick={() => {
-            const adminNumber = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g, "") || "1234567890";
-            const msg = `✅ PAGO ENVIADO\n\nRef: ${result.order_id}\nEmisor: ${name}\nMonto depositado: ${di.amount_to_deposit} ${di.currency.toUpperCase()}\nReceptor: ${result.recipient.name} (${result.recipient.country})\nRecibe: ${fee.recipient_gets}\n\nPor favor confirmar recepción.`;
-            window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(msg)}`, "_blank");
+            trackRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
           }}
-          className="w-full bg-[#25D366] hover:bg-[#20ba59] active:scale-95 transition-all text-white font-semibold py-4 rounded-2xl text-sm flex items-center justify-center gap-2 mb-4"
+          className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2 mb-4"
         >
-          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          Ya realicé la transferencia — notificar
+          <CheckCircle2 className="w-5 h-5" />
+          {t("confirm_sent")}
         </button>
+
+        {/* Tracking bar */}
+        <div ref={trackRef}>
+          <TrackingBar orderId={result.order_id} t={t} />
+        </div>
 
         <p className="text-slate-600 text-[10px] text-center pb-2">
           Ref: {result.order_id} · 🔒 Bridge procesa el pago de forma segura
@@ -346,6 +476,29 @@ export default function PagarPage() {
               <option key={c.code} value={c.code}>{c.flag} {c.label}</option>
             ))}
           </select>
+
+          {/* Rate preview */}
+          {ratePreview && !rateLoading && (
+            <div className="mt-2 bg-slate-800/60 border border-slate-700 rounded-lg px-3 py-2">
+              {ratePreview.rate && (
+                <p className="text-slate-400 text-[11px]">
+                  {t("rate_preview")
+                    .replace("{src}", ratePreview.source_currency)
+                    .replace("{rate}", ratePreview.rate.toLocaleString())
+                    .replace("{tgt}", ratePreview.target_currency)}
+                </p>
+              )}
+              <p className="text-[#00C9C8] text-xs font-semibold mt-0.5">
+                {t("amount_preview")
+                  .replace("{amount}", ratePreview.amount_to_pay.toFixed(2))
+                  .replace("{src}", ratePreview.source_currency)
+                  .replace("{target}", `${ratePreview.recipient_gets.toLocaleString()} ${ratePreview.target_currency}`)}
+              </p>
+            </div>
+          )}
+          {rateLoading && (
+            <p className="mt-2 text-slate-500 text-[11px] px-1 animate-pulse">Calculando tasa...</p>
+          )}
         </div>
 
         <div>

@@ -20,10 +20,11 @@ interface RemesaRequestBody {
   receiveMode?: "bank" | "card" | "wallet"; // rail de dispersión (default: "bank" → Wise)
   receiveAmount: number;     // monto que quiere recibir (e.g., 1000)
   receiveCurrency: string;   // moneda del receptor (e.g., "MXN")
-  targetCountry: string;     // código ISO del país receptor — para enrutamiento Wise/Paysend/Thunes
+  targetCountry: string;     // código ISO del país receptor — para enrutamiento Wise
   originCountry: string;     // país del emisor — solo para calcular el quote de preview
   recipientPhone?: string;   // E.164 — para notificación cuando llega el dinero
   senderPhone?: string;      // E.164 — para notificación cuando se confirma el envío
+  senderEmail?: string;      // para email de confirmación via Resend
 }
 
 // Mapa país → moneda para el quote de preview en la moneda del emisor
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
       recipientName, recipientAccount,
       receiveMode,
       receiveAmount, receiveCurrency, targetCountry,
-      originCountry, recipientPhone, senderPhone,
+      originCountry, recipientPhone, senderPhone, senderEmail,
     } = body;
 
     if (!recipientName?.trim() || !recipientAccount?.trim()
@@ -85,12 +86,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Un solo ciphertext AES-256-GCM con cuenta + modo + teléfonos (Regla 3).
-    // El webhook lo desencripta → lee receiveMode → enruta a Wise / Paysend / Thunes.
+    // El webhook lo desencripta → lee receiveMode → enruta a Wise / Thunes.
     const encryptedPayload = await encryptPayload({
       account:        recipientAccount.trim(),
       receiveMode:    receiveMode ?? "bank",
       recipientPhone: recipientPhone?.trim(),
       senderPhone:    senderPhone?.trim(),
+      senderEmail:    senderEmail?.trim(),
     });
 
     // Token solo guarda monto en MXN — sin cadAmount (Regla 1).

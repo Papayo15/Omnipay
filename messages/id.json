@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Kirim uang →",
-    "loading": "Membuat instruksi…"
+    "loading": "Membuat instruksi…",
+    "track_step1": "Menunggu setoran",
+    "track_step2": "Memproses",
+    "track_step3": "Mengkonversi",
+    "track_step4": "Terkirim ✓",
+    "track_error": "Transfer gagal",
+    "track_pending": "Status transfer real-time",
+    "instructions_spei": "Buka aplikasi bank → Transfer → SPEI → masukkan CLABE dan jumlah tepat",
+    "instructions_pix": "Buka aplikasi bank → PIX → Bayar → masukkan kunci PIX dan jumlah tepat",
+    "instructions_sepa": "Buka bank → Transfer SEPA → masukkan IBAN, BIC dan jumlah tepat",
+    "instructions_ach": "Buka bank → Transfer ACH → masukkan Routing Number dan Account Number",
+    "instructions_fps": "Buka bank → Bayar → Faster Payments → masukkan Sort Code dan Account Number",
+    "speed_spei": "⚡ Biasanya dalam 2–4 jam",
+    "speed_pix": "⚡ Biasanya dalam hitungan menit",
+    "speed_sepa": "🕐 1–2 hari kerja",
+    "speed_ach": "🕐 2–3 hari kerja",
+    "speed_fps": "⚡ Biasanya dalam 2 jam",
+    "rate_preview": "Nilai tukar perkiraan: 1 {src} = {rate} {tgt}",
+    "amount_preview": "Anda membayar ~{amount} {src} · Penerima mendapat {target}",
+    "confirm_sent": "Saya sudah transfer — Cek status →"
   }
 }

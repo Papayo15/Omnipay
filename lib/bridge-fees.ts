@@ -1,9 +1,8 @@
-// OmniPay fee engine — multi-provider (Bridge + Paysend + B2B)
+// OmniPay fee engine — Bridge P2P + B2B
 //
-// Three channels, each with its own cost structure:
-//   bridge  → MX/US/BR/GB/CO/SEPA — native bank rails via Bridge.xyz
-//   paysend → 170+ countries — card push via Paysend/Zuba
-//   b2b     → Stripe capture + Wise payout (primary) / Bridge (secondary when rails active)
+// Two channels:
+//   bridge → 41 corridors (MX/US/BR/GB/CO/SEPA) — native bank rails via Bridge.xyz
+//   b2b    → Stripe capture + Wise payout
 //
 // OmniPay charges: 0.50% + flat on all channels (min $1.99)
 // ALL provider costs shown in total_sender_pays — the sender sees one final number.
@@ -19,7 +18,7 @@
 //   OmniPay service:        $6.99  (0.50%+$1.99)
 //   KYB (1ª vez):           $10.00
 //   Total sender pays:      $1,054.29 (1ª vez) / $1,044.29 (recurrente)
-//   Delivery:               3-4 días hábiles (Stripe payout → Wise transfer)
+//   Delivery:               4-5 días hábiles (Stripe payout → Wise transfer)
 
 import { findCustomerByEmail } from "@/providers/bridge/customers";
 import { NATIVE_RAILS }        from "@/providers/bridge/liquidation";
@@ -50,23 +49,18 @@ export const KYB_FEE_B2B = 10.00;
 // We quote 0.80% — slightly over most corridors, under worst case
 export const WISE_B2B_PCT = 0.008;  // 0.80% Wise transfer + FX
 
-// Paysend estimated costs (update when enterprise contract arrives)
-export const PAYSEND_PCT  = 0.015;  // ~1.50% enterprise estimate
-export const PAYSEND_FLAT = 0.50;   // $0.50 flat
-
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type QuoteProvider = "bridge" | "paysend" | "b2b";
+export type QuoteProvider = "bridge" | "b2b";
 
 export interface FeeQuote {
   amount_principal:    number;
   provider:            QuoteProvider;
   // Provider costs (all included in total_sender_pays — sender sees one number)
   stripe_fee?:         number;  // B2B only: 2.9%+$0.30 Stripe card acceptance
-  wise_fee?:           number;  // B2B only: Wise transfer + FX conversion (~0.80%)
+  wise_fee?:           number;  // B2B only: Wise transfer + FX conversion (live rate)
   bridge_onramp?:      number;  // P2P Bridge only
   bridge_offramp?:     number;  // P2P Bridge only
-  paysend_cost?:       number;  // Paysend/Zuba card push
   provider_cost_total: number;
   // OmniPay
   omnipay_service:     number;
@@ -87,10 +81,10 @@ export function calcStaticQuote(
   type:    "p2p" | "b2b",
   isNew:   boolean = true,
 ): FeeQuote {
-  const provider: QuoteProvider = type === "b2b"       ? "b2b"
-    : NATIVE_RAILS[country.toUpperCase()]               ? "bridge"
-    : "paysend";
-
+  if (type !== "b2b" && !NATIVE_RAILS[country.toUpperCase()]) {
+    throw new Error(`Country ${country} is not supported by Bridge. Only 41 corridors available.`);
+  }
+  const provider: QuoteProvider = type === "b2b" ? "b2b" : "bridge";
   return _buildQuote(amount, provider, type, isNew);
 }
 
@@ -104,6 +98,10 @@ export async function buildDynamicQuote(params: {
 }): Promise<FeeQuote> {
   const { amount, country, email, type } = params;
 
+  if (type !== "b2b" && !NATIVE_RAILS[country.toUpperCase()]) {
+    throw new Error(`Country ${country} is not supported by Bridge. Only 41 corridors available.`);
+  }
+
   // Bridge is our DB — conservative fallback to isNew=true if lookup fails
   let isNew = true;
   try {
@@ -115,10 +113,7 @@ export async function buildDynamicQuote(params: {
     }
   } catch { /* network error — assume new customer */ }
 
-  const provider: QuoteProvider = type === "b2b"       ? "b2b"
-    : NATIVE_RAILS[country.toUpperCase()]               ? "bridge"
-    : "paysend";
-
+  const provider: QuoteProvider = type === "b2b" ? "b2b" : "bridge";
   return _buildQuote(amount, provider, type, isNew);
 }
 
@@ -134,25 +129,19 @@ function _buildQuote(
   const kyc  = isNew ? (type === "b2b" ? KYB_FEE_B2B : KYC_FEE_P2P) : 0;
 
   let providerCostTotal: number;
-  let stripeFee:    number | undefined;
-  let wiseFee:      number | undefined;
-  let bridgeOnramp: number | undefined;
+  let stripeFee:     number | undefined;
+  let wiseFee:       number | undefined;
+  let bridgeOnramp:  number | undefined;
   let bridgeOfframp: number | undefined;
-  let paysendCost:  number | undefined;
 
   if (provider === "b2b") {
-    // Stripe card acceptance + Wise transfer/FX — both included so sender sees the real cost
     stripeFee         = parseFloat((amount * STRIPE_PCT + STRIPE_FLAT).toFixed(2));
     wiseFee           = parseFloat((amount * WISE_B2B_PCT).toFixed(2));
     providerCostTotal = stripeFee + wiseFee;
-  } else if (provider === "bridge") {
-    bridgeOnramp  = parseFloat((amount * BRIDGE_ONRAMP_PCT).toFixed(2));
-    bridgeOfframp = parseFloat((amount * BRIDGE_OFFRAMP_PCT).toFixed(2));
-    providerCostTotal = bridgeOnramp + bridgeOfframp;
   } else {
-    // paysend — card push 170+ countries
-    paysendCost       = parseFloat((amount * PAYSEND_PCT + PAYSEND_FLAT).toFixed(2));
-    providerCostTotal = paysendCost;
+    bridgeOnramp      = parseFloat((amount * BRIDGE_ONRAMP_PCT).toFixed(2));
+    bridgeOfframp     = parseFloat((amount * BRIDGE_OFFRAMP_PCT).toFixed(2));
+    providerCostTotal = bridgeOnramp + bridgeOfframp;
   }
 
   const omnipayService = parseFloat(
@@ -168,7 +157,6 @@ function _buildQuote(
     wise_fee:            wiseFee,
     bridge_onramp:       bridgeOnramp,
     bridge_offramp:      bridgeOfframp,
-    paysend_cost:        paysendCost,
     provider_cost_total: parseFloat(providerCostTotal.toFixed(2)),
     omnipay_service:     omnipayService,
     omnipay_flat:        flat,

@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Gửi tiền →",
-    "loading": "Đang tạo hướng dẫn…"
+    "loading": "Đang tạo hướng dẫn…",
+    "track_step1": "Chờ tiền gửi",
+    "track_step2": "Đang xử lý",
+    "track_step3": "Đang chuyển đổi",
+    "track_step4": "Đã gửi ✓",
+    "track_error": "Chuyển tiền thất bại",
+    "track_pending": "Trạng thái chuyển tiền thực tế",
+    "instructions_spei": "Mở ứng dụng ngân hàng → Chuyển khoản → SPEI → nhập CLABE và số tiền chính xác",
+    "instructions_pix": "Mở ứng dụng ngân hàng → PIX → Thanh toán → nhập khóa PIX và số tiền chính xác",
+    "instructions_sepa": "Mở ngân hàng → Chuyển khoản SEPA → nhập IBAN, BIC và số tiền chính xác",
+    "instructions_ach": "Mở ngân hàng → Chuyển khoản ACH → nhập Routing Number và Account Number",
+    "instructions_fps": "Mở ngân hàng → Thanh toán → Faster Payments → nhập Sort Code và Account Number",
+    "speed_spei": "⚡ Thường trong 2–4 giờ",
+    "speed_pix": "⚡ Thường trong vài phút",
+    "speed_sepa": "🕐 1–2 ngày làm việc",
+    "speed_ach": "🕐 2–3 ngày làm việc",
+    "speed_fps": "⚡ Thường trong 2 giờ",
+    "rate_preview": "Tỷ giá ước tính: 1 {src} = {rate} {tgt}",
+    "amount_preview": "Bạn trả ~{amount} {src} · Người nhận nhận {target}",
+    "confirm_sent": "Tôi đã chuyển tiền — Xem trạng thái →"
   }
 }

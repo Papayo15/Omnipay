@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Verzending uitvoeren →",
-    "loading": "Instructies genereren…"
+    "loading": "Instructies genereren…",
+    "track_step1": "Wachten op storting",
+    "track_step2": "Verwerking",
+    "track_step3": "Conversie",
+    "track_step4": "Verzonden ✓",
+    "track_error": "Overboeking mislukt",
+    "track_pending": "Real-time overboekingsstatus",
+    "instructions_spei": "Open uw bank-app → Overboekingen → SPEI → voer de CLABE en het exacte bedrag in",
+    "instructions_pix": "Open uw bank-app → PIX → Betalen → voer de PIX-sleutel en het exacte bedrag in",
+    "instructions_sepa": "Open uw bank → SEPA-overboeking → voer IBAN, BIC en het exacte bedrag in",
+    "instructions_ach": "Open uw bank → ACH-overboeking → voer het Routing Number en Account Number in",
+    "instructions_fps": "Open uw bank → Betalen → Faster Payments → voer Sort Code en Account Number in",
+    "speed_spei": "⚡ Normaal binnen 2–4 uur",
+    "speed_pix": "⚡ Normaal binnen minuten",
+    "speed_sepa": "🕐 1–2 werkdagen",
+    "speed_ach": "🕐 2–3 werkdagen",
+    "speed_fps": "⚡ Normaal binnen 2 uur",
+    "rate_preview": "Ong. koers: 1 {src} = {rate} {tgt}",
+    "amount_preview": "U betaalt ~{amount} {src} · Ontvanger krijgt {target}",
+    "confirm_sent": "Overboeking uitgevoerd — Status bekijken →"
   }
 }

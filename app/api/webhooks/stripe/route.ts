@@ -20,7 +20,7 @@ import Stripe                                                    from "stripe";
 import { parseCobrarV2Link, parseRemesaV2Link, buildReceiptURL } from "@/lib/link";
 import { decryptPayload }                                        from "@/lib/accountcrypto";
 import { getWiseAccountType, buildWiseAccountDetails }           from "@/lib/wise-accounts";
-import { sendB2BPendingNotification, sendPaymentNotification, sendAdminWhatsApp } from "@/lib/notify";
+import { sendEmailNotification, sendPaymentNotification, sendAdminWhatsApp } from "@/lib/notify";
 import { getRedis }                                              from "@/lib/redis";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -143,8 +143,6 @@ async function processPendingOrders(
   try { redis = await getRedis(); }
   catch (e) { console.error("[stripe/webhook] Redis unavailable:", (e as Error).message); return; }
 
-  const twoDaysAgo = Date.now() - 2 * 24 * 60 * 60 * 1000;
-
   for await (const key of redis.scanIterator({ MATCH: "b2b:pending:*", COUNT: 100 })) {
     const k   = String(key);
     const raw = await redis.get(k);
@@ -154,7 +152,7 @@ async function processPendingOrders(
     try { entry = JSON.parse(raw) as PendingB2BToken; }
     catch { await redis.del(k); continue; }
 
-    if (entry.createdAt > twoDaysAgo) continue; // demasiado reciente, esperar
+    // Gate removido — payout.paid solo dispara cuando Stripe ya depositó en Wise
 
     // ── Descifrar token en memoria — PII nunca sale de este scope ────────────
     try {
@@ -162,6 +160,7 @@ async function processPendingOrders(
       let recipientAccount: string;
       let recipientPhone:   string;
       let senderPhone:      string;
+      let senderEmail:      string;
       let targetCurrency:   string;
       let targetCountry:    string;
 
@@ -173,6 +172,7 @@ async function processPendingOrders(
         recipientAccount = dec.account;
         recipientPhone   = dec.recipientPhone ?? "";
         senderPhone      = dec.senderPhone    ?? "";
+        senderEmail      = (dec as { senderEmail?: string }).senderEmail ?? "";
         targetCurrency   = payload.receiveCurrency;
         targetCountry    = payload.targetCountry;
       } else {
@@ -183,6 +183,7 @@ async function processPendingOrders(
         recipientAccount = dec.account;
         recipientPhone   = dec.recipientPhone ?? "";
         senderPhone      = dec.senderPhone    ?? "";
+        senderEmail      = (dec as { senderEmail?: string }).senderEmail ?? "";
         targetCurrency   = payload.currency;
         targetCountry    = (JSON.parse(raw) as { targetCountry?: string }).targetCountry ?? "MX";
       }
@@ -205,9 +206,14 @@ async function processPendingOrders(
         appUrl, linkSecret,
       ).catch(() => `${appUrl}/resultado?ref=${txId}`);
 
+      const completionHtml = (role: "sender" | "recipient") => `
+        <div style="font-family:sans-serif;max-width:480px;margin:auto">
+          <h2 style="color:#16a34a">¡Transferencia completada!</h2>
+          <p>${role === "sender" ? `Su pago a <strong>${recipientName}</strong> fue procesado.` : `Recibirá <strong>${entry.principalCAD} CAD → ${targetCurrency}</strong>.`}</p>
+          <p>Comprobante: <a href="${receiptUrl}" style="color:#2563eb">${receiptUrl}</a></p>
+        </div>`;
       await Promise.allSettled([
-        recipientPhone ? sendPaymentNotification(recipientPhone, receiptUrl, entry.principalCAD, targetCurrency, recipientName) : Promise.resolve(),
-        senderPhone    ? sendPaymentNotification(senderPhone,    receiptUrl, entry.principalCAD, targetCurrency, recipientName) : Promise.resolve(),
+        senderEmail    ? sendEmailNotification(senderEmail,    "OmniPay: transferencia completada ✅", completionHtml("sender")) : Promise.resolve(),
         sendAdminWhatsApp(`✅ OmniPay B2B completado\nPI: ${entry.piId}\nWise TX: ${txId}\nPrincipal: ${entry.principalCAD} CAD → ${targetCurrency}`),
       ]);
 
@@ -290,6 +296,7 @@ export async function POST(req: NextRequest) {
       //   2. Obtener senderPhone para SMS de confirmación
       // PII existe solo en este bloque y se descarta al salir — nunca va a Redis
       let senderPhone   = "";
+      let senderEmail   = "";
       let recipientName = "";
       let principalCAD  = 0;
 
@@ -299,6 +306,7 @@ export async function POST(req: NextRequest) {
           if (p) {
             const d       = await decryptPayload(p.encryptedPayload);
             senderPhone   = d.senderPhone ?? "";
+            senderEmail   = (d as { senderEmail?: string }).senderEmail ?? "";
             recipientName = p.recipientName;
             // meta.cad_amount = lo que el emisor debe depositar en CAD al receptor
             principalCAD  = parseFloat(meta.cad_amount ?? "0");
@@ -308,6 +316,7 @@ export async function POST(req: NextRequest) {
           if (p) {
             const d       = await decryptPayload(p.encryptedPayload);
             senderPhone   = d.senderPhone ?? "";
+            senderEmail   = (d as { senderEmail?: string }).senderEmail ?? "";
             recipientName = p.recipientName;
             principalCAD  = p.amount; // monto del link = lo que recibe el receptor
           }
@@ -321,12 +330,21 @@ export async function POST(req: NextRequest) {
 
       // Confirmar al emisor — PII usado aquí y descartado
       await Promise.allSettled([
-        senderPhone
-          ? sendB2BPendingNotification(senderPhone, recipientName, principalCAD, "CAD", piId.slice(-8))
+        senderEmail
+          ? sendEmailNotification(
+              senderEmail,
+              "OmniPay: pago recibido — en procesamiento ✅",
+              `<div style="font-family:sans-serif;max-width:480px;margin:auto">
+                <h2 style="color:#4f46e5">¡Pago confirmado!</h2>
+                <p>Stripe procesó el cargo. La transferencia a <strong>${recipientName}</strong> se ejecutará en <strong>4-5 días hábiles</strong> vía Wise.</p>
+                <p>Ref: <code>${piId.slice(-8)}</code></p>
+                <p style="color:#6b7280;font-size:13px">Te enviaremos un email cuando se complete.</p>
+              </div>`,
+            )
           : Promise.resolve(),
-        sendAdminWhatsApp(`💳 OmniPay B2B confirmado\nPI: ${piId}\nPrincipal: ${principalCAD} CAD\nEntrega: 3-4 días hábiles`),
+        sendAdminWhatsApp(`💳 OmniPay B2B confirmado\nPI: ${piId}\nPrincipal: ${principalCAD} CAD\nEntrega: 4-5 días hábiles`),
       ]);
-      // ── senderPhone, recipientName descartados aquí ───────────────────────
+      // ── senderPhone, senderEmail, recipientName descartados aquí ─────────
 
       // Guardar en Redis: SOLO token cifrado + principal (número, no PII)
       await storePendingToken({ piId, token, sig: sigHmac, type, principalCAD, createdAt: Date.now() });

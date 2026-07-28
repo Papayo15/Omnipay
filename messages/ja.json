@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "送金する →",
-    "loading": "指示を生成中…"
+    "loading": "指示を生成中…",
+    "track_step1": "入金待ち",
+    "track_step2": "処理中",
+    "track_step3": "変換中",
+    "track_step4": "送金完了 ✓",
+    "track_error": "送金失敗",
+    "track_pending": "リアルタイム送金状況",
+    "instructions_spei": "銀行アプリを開く → 振込 → SPEI → CLABEと正確な金額を入力",
+    "instructions_pix": "銀行アプリを開く → PIX → 支払い → PIXキーと正確な金額を入力",
+    "instructions_sepa": "銀行を開く → SEPA振込 → IBAN、BICと正確な金額を入力",
+    "instructions_ach": "銀行を開く → ACH振込 → ルーティングナンバーと口座番号を入力",
+    "instructions_fps": "銀行を開く → 支払い → Faster Payments → Sort Codeと口座番号を入力",
+    "speed_spei": "⚡ 通常2〜4時間以内",
+    "speed_pix": "⚡ 通常数分以内",
+    "speed_sepa": "🕐 1〜2営業日",
+    "speed_ach": "🕐 2〜3営業日",
+    "speed_fps": "⚡ 通常2時間以内",
+    "rate_preview": "概算レート: 1 {src} = {rate} {tgt}",
+    "amount_preview": "支払い ~{amount} {src} · 受取人は{target}を受け取ります",
+    "confirm_sent": "振込しました — 状況を確認 →"
   }
 }

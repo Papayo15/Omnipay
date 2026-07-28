@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Effectuer l'envoi →",
-    "loading": "Génération des instructions…"
+    "loading": "Génération des instructions…",
+    "track_step1": "En attente de dépôt",
+    "track_step2": "Traitement en cours",
+    "track_step3": "Conversion",
+    "track_step4": "Envoyé ✓",
+    "track_error": "Virement échoué",
+    "track_pending": "Suivi du virement en temps réel",
+    "instructions_spei": "Ouvrez votre appli bancaire → Virements → SPEI → entrez le CLABE et le montant exact",
+    "instructions_pix": "Ouvrez votre appli bancaire → PIX → Payer → entrez la clé PIX et le montant exact",
+    "instructions_sepa": "Ouvrez votre banque → Virement SEPA → entrez l'IBAN, BIC et le montant exact",
+    "instructions_ach": "Ouvrez votre banque → Virement ACH → entrez le Routing Number et Account Number",
+    "instructions_fps": "Ouvrez votre banque → Pay → Faster Payments → entrez le Sort Code et Account Number",
+    "speed_spei": "⚡ Généralement en 2–4 heures",
+    "speed_pix": "⚡ Généralement en quelques minutes",
+    "speed_sepa": "🕐 1–2 jours ouvrables",
+    "speed_ach": "🕐 2–3 jours ouvrables",
+    "speed_fps": "⚡ Généralement en 2 heures",
+    "rate_preview": "Taux approx. : 1 {src} = {rate} {tgt}",
+    "amount_preview": "Vous payez ~{amount} {src} · Le bénéficiaire reçoit {target}",
+    "confirm_sent": "J'ai effectué le virement — Voir le suivi →"
   }
 }

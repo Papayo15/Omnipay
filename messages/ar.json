@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "إرسال التحويل →",
-    "loading": "جارٍ إنشاء التعليمات…"
+    "loading": "جارٍ إنشاء التعليمات…",
+    "track_step1": "في انتظار الإيداع",
+    "track_step2": "جارٍ المعالجة",
+    "track_step3": "التحويل",
+    "track_step4": "تم الإرسال ✓",
+    "track_error": "فشل التحويل",
+    "track_pending": "حالة التحويل الفوري",
+    "instructions_spei": "افتح تطبيق بنكك ← التحويلات ← SPEI ← أدخل رقم CLABE والمبلغ الدقيق",
+    "instructions_pix": "افتح تطبيق بنكك ← PIX ← دفع ← أدخل مفتاح PIX والمبلغ الدقيق",
+    "instructions_sepa": "افتح بنكك ← تحويل SEPA ← أدخل IBAN وBIC والمبلغ الدقيق",
+    "instructions_ach": "افتح بنكك ← تحويل ACH ← أدخل رقم التوجيه ورقم الحساب",
+    "instructions_fps": "افتح بنكك ← دفع ← Faster Payments ← أدخل Sort Code ورقم الحساب",
+    "speed_spei": "⚡ عادةً خلال 2–4 ساعات",
+    "speed_pix": "⚡ عادةً خلال دقائق",
+    "speed_sepa": "🕐 1–2 أيام عمل",
+    "speed_ach": "🕐 2–3 أيام عمل",
+    "speed_fps": "⚡ عادةً خلال ساعتين",
+    "rate_preview": "سعر تقريبي: 1 {src} = {rate} {tgt}",
+    "amount_preview": "ستدفع ~{amount} {src} · المستلم يحصل على {target}",
+    "confirm_sent": "أجريت التحويل — عرض الحالة ←"
   }
 }

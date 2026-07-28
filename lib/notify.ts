@@ -1,5 +1,24 @@
 // Notificaciones post-pago — stateless, fire-and-forget
 // Enviado SOLO desde el webhook del servidor, nunca desde el cliente.
+// Email via Resend (3,000/mes gratis). SMS via Twilio (legacy, solo si vars configuradas).
+
+// ── Email (Resend) ────────────────────────────────────────────────────────────
+// Requiere: RESEND_API_KEY en variables de entorno
+// From: onboarding@resend.dev (no requiere dominio verificado)
+// En producción: cambiar a "OmniPay <no-reply@omnipay.ca>" tras verificar SPF/DKIM en resend.com
+export async function sendEmailNotification(
+  to: string,
+  subject: string,
+  html: string,
+): Promise<void> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key || !to) return;
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: "OmniPay <onboarding@resend.dev>", to, subject, html }),
+  }).catch(() => {});
+}
 
 function fmt(amount: number, currency: string): string {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency }).format(amount);
@@ -21,7 +40,7 @@ async function sendSMS(phone: string, body: string): Promise<void> {
   }).catch(() => {});
 }
 
-// B2B — confirmación de pago pendiente (Stripe cobrado, Wise ejecutará en 3-4 días)
+// B2B — confirmación de pago pendiente (Stripe cobrado, Wise ejecutará en 4-5 días hábiles)
 export async function sendB2BPendingNotification(
   senderPhone:   string,
   recipientName: string,
@@ -31,7 +50,7 @@ export async function sendB2BPendingNotification(
 ): Promise<void> {
   const body =
     `✅ OmniPay: Tu pago de ${fmt(amount, currency)} a ${recipientName} fue confirmado. ` +
-    `El receptor lo recibirá en 3-4 días hábiles. ` +
+    `El receptor lo recibirá en 4-5 días hábiles. ` +
     `Referencia: ${piRef}`;
   await sendSMS(senderPhone, body);
 }

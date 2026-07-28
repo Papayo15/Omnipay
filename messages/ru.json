@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Отправить деньги →",
-    "loading": "Создание инструкций…"
+    "loading": "Создание инструкций…",
+    "track_step1": "Ожидание перевода",
+    "track_step2": "Обработка",
+    "track_step3": "Конвертация",
+    "track_step4": "Отправлено ✓",
+    "track_error": "Перевод не выполнен",
+    "track_pending": "Статус перевода в реальном времени",
+    "instructions_spei": "Откройте приложение банка → Переводы → SPEI → введите CLABE и точную сумму",
+    "instructions_pix": "Откройте приложение банка → PIX → Оплата → введите ключ PIX и точную сумму",
+    "instructions_sepa": "Откройте банк → SEPA-перевод → введите IBAN, BIC и точную сумму",
+    "instructions_ach": "Откройте банк → ACH-перевод → введите Routing Number и Account Number",
+    "instructions_fps": "Откройте банк → Оплата → Faster Payments → введите Sort Code и Account Number",
+    "speed_spei": "⚡ Обычно в течение 2–4 часов",
+    "speed_pix": "⚡ Обычно в течение нескольких минут",
+    "speed_sepa": "🕐 1–2 рабочих дня",
+    "speed_ach": "🕐 2–3 рабочих дня",
+    "speed_fps": "⚡ Обычно в течение 2 часов",
+    "rate_preview": "Примерный курс: 1 {src} = {rate} {tgt}",
+    "amount_preview": "Вы платите ~{amount} {src} · Получатель получает {target}",
+    "confirm_sent": "Перевод выполнен — Смотреть статус →"
   }
 }

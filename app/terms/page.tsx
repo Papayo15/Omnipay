@@ -25,7 +25,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="text-xl font-semibold text-white mb-3">2. Description of Service</h2>
-          <p>OmniPay provides international money transfer and business payment services. We facilitate transfers between senders and recipients in supported countries using licensed third-party payment processors including Bridge.xyz, Stripe, Paysend, and Wise. OmniPay does not hold, store, or manage funds directly.</p>
+          <p>OmniPay provides international money transfer and business payment services. We facilitate transfers between senders and recipients in supported countries using licensed third-party payment processors including Bridge.xyz, Stripe, and Wise. OmniPay does not hold, store, or manage funds directly.</p>
         </section>
 
         <section>
@@ -40,7 +40,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="text-xl font-semibold text-white mb-3">5. Fees and Pricing</h2>
-          <p>OmniPay charges a service fee of 0.50% of the transferred amount plus a flat operational fee ($0.99 for P2P, $1.99 for B2B transfers). Additional fees charged by payment processors (Bridge.xyz 0.75%, Stripe 2.9%+$0.30, Paysend ~1.5%) are passed through transparently. All fees are disclosed before you confirm a transaction. Exchange rates are provided by Bridge.xyz and may fluctuate.</p>
+          <p>OmniPay charges a service fee of 0.50% of the transferred amount plus a flat operational fee ($0.99 for P2P, $1.99 for B2B transfers). Additional fees charged by payment processors (Bridge.xyz 0.75%, Stripe 2.9%+$0.30, Wise ~0.8%) are passed through transparently. All fees are disclosed before you confirm a transaction. Exchange rates are provided by Bridge.xyz and Wise and may fluctuate.</p>
         </section>
 
         <section>

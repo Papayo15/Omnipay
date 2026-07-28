@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "पैसे भेजें →",
-    "loading": "निर्देश तैयार हो रहे हैं…"
+    "loading": "निर्देश तैयार हो रहे हैं…",
+    "track_step1": "जमा की प्रतीक्षा",
+    "track_step2": "प्रक्रिया में",
+    "track_step3": "परिवर्तन",
+    "track_step4": "भेजा गया ✓",
+    "track_error": "स्थानांतरण विफल",
+    "track_pending": "रियल-टाइम ट्रांसफर स्थिति",
+    "instructions_spei": "अपना बैंकिंग ऐप खोलें → ट्रांसफर → SPEI → CLABE और सटीक राशि दर्ज करें",
+    "instructions_pix": "अपना बैंकिंग ऐप खोलें → PIX → भुगतान → PIX कुंजी और सटीक राशि दर्ज करें",
+    "instructions_sepa": "अपना बैंक खोलें → SEPA ट्रांसफर → IBAN, BIC और सटीक राशि दर्ज करें",
+    "instructions_ach": "अपना बैंक खोलें → ACH ट्रांसफर → Routing Number और Account Number दर्ज करें",
+    "instructions_fps": "अपना बैंक खोलें → Pay → Faster Payments → Sort Code और Account Number दर्ज करें",
+    "speed_spei": "⚡ आमतौर पर 2–4 घंटों में",
+    "speed_pix": "⚡ आमतौर पर कुछ मिनटों में",
+    "speed_sepa": "🕐 1–2 व्यावसायिक दिन",
+    "speed_ach": "🕐 2–3 व्यावसायिक दिन",
+    "speed_fps": "⚡ आमतौर पर 2 घंटों में",
+    "rate_preview": "अनुमानित दर: 1 {src} = {rate} {tgt}",
+    "amount_preview": "आप भुगतान करेंगे ~{amount} {src} · प्राप्तकर्ता को मिलेगा {target}",
+    "confirm_sent": "मैंने ट्रांसफर कर दिया — स्थिति देखें →"
   }
 }

@@ -16,7 +16,7 @@ import { getRedis }                             from "@/lib/redis";
 import { verifyBridgeWebhook, parseWebhookEvent } from "@/providers/bridge/webhooks";
 import { mapTransferStatus }                    from "@/providers/bridge/transfers";
 import { updateOrder, getOrder }                from "@/lib/order-state";
-import { sendAdminWhatsApp, sendPaymentNotification } from "@/lib/notify";
+import { sendAdminWhatsApp, sendEmailNotification } from "@/lib/notify";
 import { buildReceiptURL }                      from "@/lib/link";
 
 // Node.js runtime required — redis package uses Node TCP sockets (incompatible with Edge)
@@ -138,6 +138,21 @@ export async function POST(req: NextRequest): Promise<Response> {
     const orderId   = reference.startsWith("OP-") ? reference : null;
     if (orderId) {
       updateOrder(orderId, { status: "LIQUIDATING_FIAT" });
+      const order = getOrder(orderId);
+      if (order?.senderEmail) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+        await sendEmailNotification(
+          order.senderEmail,
+          "OmniPay: depósito recibido ✅",
+          `<div style="font-family:sans-serif;max-width:480px;margin:auto">
+            <h2 style="color:#16a34a">¡Depósito confirmado!</h2>
+            <p>Recibimos tu depósito y estamos procesando el envío a <strong>${order.recipientName}</strong>.</p>
+            <p>Sigue el estado en tiempo real:<br>
+               <a href="${order.trackUrl ?? appUrl}" style="color:#2563eb">${order.trackUrl ?? appUrl}</a></p>
+            <p style="color:#6b7280;font-size:13px">Este email fue generado automáticamente por OmniPay.</p>
+          </div>`,
+        );
+      }
     }
   }
 
@@ -183,9 +198,18 @@ async function handleCompletion(orderId: string, data: Record<string, unknown>) 
     `Comprobante: ${receiptUrl}`,
   );
 
-  // SMS to recipient (if phone stored in order — future: pass phone in order metadata)
-  if (order?.recipientName && destAmount) {
-    // sendPaymentNotification would need recipient phone stored in order state
-    // Currently the phone is in the encrypted token — future improvement: store in order on pay
+  // Email to sender on completion
+  if (order?.senderEmail) {
+    await sendEmailNotification(
+      order.senderEmail,
+      "OmniPay: pago completado ✅",
+      `<div style="font-family:sans-serif;max-width:480px;margin:auto">
+        <h2 style="color:#16a34a">¡Pago completado!</h2>
+        <p><strong>${order.recipientName}</strong> ya recibió su dinero.</p>
+        ${destAmount ? `<p>Monto recibido: <strong>${destAmount} ${(destCurrency ?? "").toUpperCase()}</strong></p>` : ""}
+        <p>Comprobante: <a href="${receiptUrl}" style="color:#2563eb">${receiptUrl}</a></p>
+        <p style="color:#6b7280;font-size:13px">Este email fue generado automáticamente por OmniPay.</p>
+      </div>`,
+    );
   }
 }

@@ -5,7 +5,7 @@
 //
 // Variables de entorno que controlan el routing:
 //   PAYOUT_PROVIDER_MX=bridge | bitso-direct | belo
-//   PAYOUT_PROVIDER_GLOBAL=bridge | paysend
+//   PAYOUT_PROVIDER_GLOBAL=bridge
 //
 // La lógica de fallback automático vive aquí:
 //   - Si el proveedor principal lanza { code: "UNSUPPORTED_CORRIDOR" }

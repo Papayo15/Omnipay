@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "ገንዘብ ላክ →",
-    "loading": "መመሪያዎች እየተፈጠሩ ናቸው…"
+    "loading": "መመሪያዎች እየተፈጠሩ ናቸው…",
+    "track_step1": "ተቀማጭ ሲጠብቅ",
+    "track_step2": "በሂደት ላይ",
+    "track_step3": "በመቀየር ላይ",
+    "track_step4": "ተላልፏል ✓",
+    "track_error": "ዝውውር አልተሳካም",
+    "track_pending": "የዝውውር ሁኔታ በቀጥታ",
+    "instructions_spei": "የባንክ አፕ ይክፈቱ → ዝውውሮች → SPEI → CLABE እና ትክክለኛ መጠን ያስገቡ",
+    "instructions_pix": "የባንክ አፕ ይክፈቱ → PIX → ይክፈሉ → PIX ቁልፍ እና ትክክለኛ መጠን ያስገቡ",
+    "instructions_sepa": "ባንክዎን ይክፈቱ → SEPA ዝውውር → IBAN, BIC እና ትክክለኛ መጠን ያስገቡ",
+    "instructions_ach": "ባንክዎን ይክፈቱ → ACH ዝውውር → Routing Number እና Account Number ያስገቡ",
+    "instructions_fps": "ባንክዎን ይክፈቱ → ክፍያ → Faster Payments → Sort Code እና Account Number ያስገቡ",
+    "speed_spei": "⚡ ብዙ ጊዜ በ2–4 ሰዓት ውስጥ",
+    "speed_pix": "⚡ ብዙ ጊዜ በጥቂት ደቂቃዎች ውስጥ",
+    "speed_sepa": "🕐 1–2 የሥራ ቀናት",
+    "speed_ach": "🕐 2–3 የሥራ ቀናት",
+    "speed_fps": "⚡ ብዙ ጊዜ በ2 ሰዓት ውስጥ",
+    "rate_preview": "ግምታዊ ምንዛሬ: 1 {src} = {rate} {tgt}",
+    "amount_preview": "~{amount} {src} ይከፍላሉ · ተቀባዩ {target} ይቀበላሉ",
+    "confirm_sent": "ዝውውሩን አካሄድኩ — ሁኔታ ይፈትሹ →"
   }
 }

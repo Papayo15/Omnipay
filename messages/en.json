@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Send money →",
-    "loading": "Generating instructions…"
+    "loading": "Generating instructions…",
+    "track_step1": "Awaiting deposit",
+    "track_step2": "Processing",
+    "track_step3": "Converting",
+    "track_step4": "Sent ✓",
+    "track_error": "Transfer failed",
+    "track_pending": "Live transfer status",
+    "instructions_spei": "Open your banking app → Transfers → SPEI → enter the CLABE and exact amount",
+    "instructions_pix": "Open your banking app → PIX → Pay → enter the PIX key and exact amount",
+    "instructions_sepa": "Open your bank → SEPA Transfer → enter the IBAN, BIC and exact amount",
+    "instructions_ach": "Open your bank → ACH Transfer → enter the Routing Number and Account Number",
+    "instructions_fps": "Open your bank → Pay → Faster Payments → enter the Sort Code and Account Number",
+    "speed_spei": "⚡ Normally within 2–4 hours",
+    "speed_pix": "⚡ Normally within minutes",
+    "speed_sepa": "🕐 1–2 business days",
+    "speed_ach": "🕐 2–3 business days",
+    "speed_fps": "⚡ Normally within 2 hours",
+    "rate_preview": "Approx. rate: 1 {src} = {rate} {tgt}",
+    "amount_preview": "You pay ~{amount} {src} · Recipient gets {target}",
+    "confirm_sent": "I've made the transfer — Check status →"
   }
 }

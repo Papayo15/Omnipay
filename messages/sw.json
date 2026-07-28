@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Tuma pesa →",
-    "loading": "Inaunda maelekezo…"
+    "loading": "Inaunda maelekezo…",
+    "track_step1": "Kusubiri amana",
+    "track_step2": "Inashughulikiwa",
+    "track_step3": "Inabadilishwa",
+    "track_step4": "Imetumwa ✓",
+    "track_error": "Uhamisho umeshindwa",
+    "track_pending": "Hali ya uhamisho wa wakati halisi",
+    "instructions_spei": "Fungua programu ya benki → Uhamishaji → SPEI → ingiza CLABE na kiasi halisi",
+    "instructions_pix": "Fungua programu ya benki → PIX → Lipa → ingiza ufunguo wa PIX na kiasi halisi",
+    "instructions_sepa": "Fungua benki yako → Uhamisho wa SEPA → ingiza IBAN, BIC na kiasi halisi",
+    "instructions_ach": "Fungua benki yako → Uhamisho wa ACH → ingiza Routing Number na Account Number",
+    "instructions_fps": "Fungua benki yako → Lipa → Faster Payments → ingiza Sort Code na Account Number",
+    "speed_spei": "⚡ Kawaida ndani ya masaa 2–4",
+    "speed_pix": "⚡ Kawaida ndani ya dakika chache",
+    "speed_sepa": "🕐 Siku 1–2 za kazi",
+    "speed_ach": "🕐 Siku 2–3 za kazi",
+    "speed_fps": "⚡ Kawaida ndani ya masaa 2",
+    "rate_preview": "Kiwango cha makadirio: 1 {src} = {rate} {tgt}",
+    "amount_preview": "Unalipa ~{amount} {src} · Mpokeaji anapata {target}",
+    "confirm_sent": "Nimetuma fedha — Angalia hali →"
   }
 }

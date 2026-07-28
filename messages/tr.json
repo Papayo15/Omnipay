@@ -354,6 +354,25 @@
   },
   "pagar_bridge": {
     "submit": "Para gönder →",
-    "loading": "Talimatlar oluşturuluyor…"
+    "loading": "Talimatlar oluşturuluyor…",
+    "track_step1": "Havale bekleniyor",
+    "track_step2": "İşleniyor",
+    "track_step3": "Dönüştürülüyor",
+    "track_step4": "Gönderildi ✓",
+    "track_error": "Transfer başarısız",
+    "track_pending": "Gerçek zamanlı transfer durumu",
+    "instructions_spei": "Bankacılık uygulamanızı açın → Transferler → SPEI → CLABE ve tam tutarı girin",
+    "instructions_pix": "Bankacılık uygulamanızı açın → PIX → Öde → PIX anahtarını ve tam tutarı girin",
+    "instructions_sepa": "Bankanızı açın → SEPA Transferi → IBAN, BIC ve tam tutarı girin",
+    "instructions_ach": "Bankanızı açın → ACH Transferi → Routing Number ve Account Number girin",
+    "instructions_fps": "Bankanızı açın → Öde → Faster Payments → Sort Code ve Account Number girin",
+    "speed_spei": "⚡ Genellikle 2–4 saat içinde",
+    "speed_pix": "⚡ Genellikle dakikalar içinde",
+    "speed_sepa": "🕐 1–2 iş günü",
+    "speed_ach": "🕐 2–3 iş günü",
+    "speed_fps": "⚡ Genellikle 2 saat içinde",
+    "rate_preview": "Tahmini kur: 1 {src} = {rate} {tgt}",
+    "amount_preview": "~{amount} {src} ödeyeceksiniz · Alıcı {target} alır",
+    "confirm_sent": "Transferi yaptım — Durumu görüntüle →"
   }
 }

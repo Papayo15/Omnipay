@@ -12,13 +12,13 @@
 //   Bre-B     → COP  → Colombia (beta)
 //
 // NOT supported by Bridge: Canada EFT, India IMPS, Philippines InstaPay
-// Those require Paysend/Kuba (pending contract) for card push.
+// Those corridors are not available on this platform.
 
 import { bridgeRequest } from "./client";
 import { createExternalAccount } from "./external-accounts";
 
 // Countries with native payment rails on Bridge.
-// All other countries → card-only (Paysend/Kuba, pending).
+// All other countries → not supported on this platform.
 export const NATIVE_RAILS: Record<string, {
   rail:     string;
   currency: string;
@@ -88,7 +88,7 @@ export interface CreateLiquidationParams {
   customerId:      string;
   country:         string;
   receiveMethod:   ReceiveMethod;
-  // Card fields (card push — requires Paysend, pending)
+  // Card fields (card push — not available on this platform)
   cardNumber?:     string;
   // Bank fields — depend on country rail
   clabe?:          string;
@@ -218,7 +218,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
   };
 
   const native = NATIVE_RAILS[country];
-  if (!native) throw new Error(`No native rail for country ${country}. Use card (Paysend) instead.`);
+  if (!native) throw new Error(`No native rail for country ${country}. Only Bridge-supported corridors are available.`);
 
   // SPEI / Mexico — CLABE
   if (native.rail === "spei") {
@@ -335,7 +335,7 @@ export async function createLiquidationAddress(
     ?? "xxxx";
 
   if (params.receiveMethod === "card") {
-    // Card push — requires Paysend/Kuba (pending contract). Bridge does not support card.
+    // Card push is not supported — Bridge requires bank receive method.
     throw new Error("Card push is not yet available. Use bank receive method.");
   }
 
