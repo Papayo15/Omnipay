@@ -11,7 +11,7 @@
 //                 liquidation address auto-pays receptor via SPEI/card/ACH etc.
 
 import { NextRequest, NextResponse }              from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, simulateKycApproval, createTosLink } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink } from "@/providers/bridge/customers";
 import { createVirtualAccount }                   from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
 import { buildDynamicQuote }                      from "@/lib/bridge-fees";
@@ -129,31 +129,26 @@ export async function POST(req: NextRequest): Promise<Response> {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
 
     if (isSandbox) {
-      if (needsKyc) {
-        // getOrCreateCustomer already set ["base","sepa"] to pending in the creation body.
-        // Skip ensureEndorsements + createKycLink — they're redundant and add ~500ms latency.
-        try { await simulateKycApproval(senderCustomer.id); } catch (simErr) {
-          console.warn(`[bridge/pay] simulateKycApproval: ${(simErr as Error).message}`);
-        }
-        // Poll until active — sandbox KYC approval is async; max 5×700ms = 3.5s
-        let senderActive = false;
-        for (let i = 0; i < 5; i++) {
-          await new Promise(r => setTimeout(r, 700));
-          try {
-            const verified = await getCustomer(senderCustomer.id);
-            senderActive = verified.status === "active" || verified.kyc_status === "approved";
-            console.log(`[bridge/pay] poll ${i + 1}/5: status=${verified.status} active=${senderActive}`);
-            if (senderActive) break;
-          } catch { break; }
-        }
-        if (!senderActive) {
-          return NextResponse.json({
-            error: "La cuenta del emisor no pudo activarse en Bridge sandbox. Intenta de nuevo en unos segundos.",
-            bridge_type: "kyc_not_active",
-          }, { status: 422 });
-        }
-      } else {
-        console.log(`[bridge/pay] sender already active, skipping KYC simulate`);
+      try { await ensureEndorsements(senderCustomer.id, ["base", "sepa"]); } catch { /* best-effort */ }
+      try {
+        await createKycLink({ full_name: sender_name, email: sender_email.toLowerCase(), type: "individual", endorsements: ["base", "sepa"] });
+      } catch { /* duplicate_record = already pending, fine */ }
+      try { await simulateKycApproval(senderCustomer.id); } catch (simErr) {
+        console.warn(`[bridge/pay] simulateKycApproval: ${(simErr as Error).message}`);
+      }
+      // Poll until active — sandbox KYC is async; max 6×1000ms = 6s
+      for (let i = 0; i < 6; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        try {
+          const verified = await getCustomer(senderCustomer.id);
+          const isActive = verified.status === "active" || verified.kyc_status === "approved";
+          console.log(`[bridge/pay] sender poll ${i + 1}/6: status=${verified.status} active=${isActive}`);
+          if (isActive) break;
+          // Retry simulate on 3rd attempt — sometimes Bridge needs a second call
+          if (i === 2) {
+            try { await simulateKycApproval(senderCustomer.id); } catch { /* retry, ignore */ }
+          }
+        } catch { break; }
       }
     }
 
