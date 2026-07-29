@@ -148,15 +148,26 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch { /* duplicate_record = already pending, fine */ }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
 
-      // Verify KYC actually activated after simulation
+      // Brief pause — sandbox KYC approval is async, status may lag by ~500ms
+      await new Promise(r => setTimeout(r, 800));
+
+      // Verify KYC actually activated (best-effort — createLiquidationAddress will catch it too)
       try {
         const verified = await getCustomer(customer.id);
-        const isActive = verified.status === "active" || verified.kyc_status === "approved";
+        console.log(`[bridge/checkout] sandbox KYC status id=${customer.id} status=${verified.status} kyc=${verified.kyc_status}`);
+        const ACTIVE = ["active", "approved"];
+        const isActive = ACTIVE.includes(verified.status ?? "") || ACTIVE.includes(verified.kyc_status ?? "");
         if (!isActive) {
-          return NextResponse.json({
-            error: "La cuenta del receptor no pudo activarse en Bridge sandbox.",
-            bridge_type: "kyc_not_active",
-          }, { status: 422 });
+          // Try once more after another pause before giving up
+          await new Promise(r => setTimeout(r, 1200));
+          const retry = await getCustomer(customer.id);
+          const isActiveRetry = ACTIVE.includes(retry.status ?? "") || ACTIVE.includes(retry.kyc_status ?? "");
+          if (!isActiveRetry) {
+            return NextResponse.json({
+              error: "La cuenta del receptor no pudo activarse en Bridge sandbox. Intenta de nuevo en unos segundos.",
+              bridge_type: "kyc_not_active",
+            }, { status: 422 });
+          }
         }
       } catch { /* best-effort — proceed and let createLiquidationAddress surface real error */ }
     }
