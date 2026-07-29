@@ -56,11 +56,29 @@ export interface OrderRecord {
   recipientLocale?:   string;   // BCP-47 locale of the recipient (for email i18n)
 }
 
-// ── Almacén en memoria (reemplazar con KV en producción) ─────────────────────
+// ── Almacén: in-memory (L1) + Redis (L2 para persistencia cross-instancia) ────
 const orderStore = new Map<string, OrderRecord>();
+const ORDER_TTL_MS  = 48 * 60 * 60 * 1000;  // 48 horas
+const REDIS_TTL_SEC = 48 * 60 * 60;           // 48 horas
 
-// TTL: 48 horas. Las órdenes expiradas se limpian en getOrder().
-const ORDER_TTL_MS = 48 * 60 * 60 * 1000;
+// Lazy-loaded Redis client — only imported in Node.js runtime
+async function redisSet(orderId: string, record: OrderRecord): Promise<void> {
+  try {
+    const { getRedis } = await import("@/lib/redis");
+    const redis = await getRedis();
+    await redis.set(`order:${orderId}`, JSON.stringify(record), { EX: REDIS_TTL_SEC });
+  } catch { /* Redis failure never blocks the critical path */ }
+}
+
+async function redisGet(orderId: string): Promise<OrderRecord | null> {
+  try {
+    const { getRedis } = await import("@/lib/redis");
+    const redis = await getRedis();
+    const raw = await redis.get(`order:${orderId}`);
+    if (!raw) return null;
+    return JSON.parse(raw as string) as OrderRecord;
+  } catch { return null; }
+}
 
 export function createOrder(
   orderId: string,
@@ -75,18 +93,31 @@ export function createOrder(
     ...init,
   };
   orderStore.set(orderId, record);
+  // Strip PII before persisting to Redis (emails, account numbers)
+  const safe = { ...record, senderEmail: undefined, recipientEmail: undefined, recipientAccount: "****" };
+  void redisSet(orderId, safe);
   return record;
 }
 
 export function getOrder(orderId: string): OrderRecord | null {
   const record = orderStore.get(orderId);
-  if (!record) return null;
-  // Expirar órdenes antiguas
-  if (Date.now() - record.createdAt > ORDER_TTL_MS) {
-    orderStore.delete(orderId);
-    return null;
+  if (record) {
+    if (Date.now() - record.createdAt > ORDER_TTL_MS) {
+      orderStore.delete(orderId);
+      return null;
+    }
+    return record;
   }
-  return record;
+  return null;
+}
+
+// Async variant — falls back to Redis when not in local memory
+export async function getOrderAsync(orderId: string): Promise<OrderRecord | null> {
+  const local = getOrder(orderId);
+  if (local) return local;
+  const remote = await redisGet(orderId);
+  if (remote) orderStore.set(orderId, remote);  // warm local cache
+  return remote;
 }
 
 export function updateOrder(
@@ -104,14 +135,10 @@ export function updateOrder(
     FAILED:              [],
   };
 
-  // Validar transición de estado si se está cambiando el status
   if (patch.status && patch.status !== existing.status) {
     const allowed = VALID_TRANSITIONS[existing.status];
     if (!allowed.includes(patch.status)) {
-      console.warn(
-        `[OrderState] Transición inválida: ${existing.status} → ${patch.status} para ${orderId}`,
-      );
-      // No lanzar — loguear y continuar (mejor que bloquear el webhook)
+      console.warn(`[OrderState] Transición inválida: ${existing.status} → ${patch.status} para ${orderId}`);
     }
   }
 
@@ -122,6 +149,8 @@ export function updateOrder(
     completedAt: patch.status === "COMPLETED" ? Date.now() : existing.completedAt,
   };
   orderStore.set(orderId, updated);
+  const safe = { ...updated, senderEmail: undefined, recipientEmail: undefined, recipientAccount: "****" };
+  void redisSet(orderId, safe);
   return updated;
 }
 

@@ -5,9 +5,10 @@
 // In production, swap the Map for a KV store (Upstash/Vercel KV) for multi-instance support.
 
 import { NextRequest, NextResponse } from "next/server";
-import { getOrder }                  from "@/lib/order-state";
+import { getOrderAsync }             from "@/lib/order-state";
 
-export const runtime = "edge";
+// nodejs — Redis TCP not compatible with edge runtime
+export const runtime = "nodejs";
 
 const STATUS_LABELS: Record<string, { label: string; description: string; step: number }> = {
   PENDING_PAYIN: {
@@ -38,13 +39,13 @@ const STATUS_LABELS: Record<string, { label: string; description: string; step: 
 };
 
 export async function GET(req: NextRequest): Promise<Response> {
-  const orderId = req.nextUrl.searchParams.get("order_id");
+  const orderId = req.nextUrl.searchParams.get("order_id") ?? "";
 
   if (!orderId) {
     return NextResponse.json({ error: "order_id is required" }, { status: 400 });
   }
 
-  const order = getOrder(orderId);
+  const order = await getOrderAsync(orderId);
 
   if (!order) {
     return NextResponse.json({

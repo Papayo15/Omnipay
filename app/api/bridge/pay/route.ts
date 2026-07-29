@@ -284,6 +284,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       },
       needs_kyc:  false,
       kyc_url:    null,
+      is_sandbox: isSandbox,
       track_url:  `${appUrl}/api/bridge/track?order_id=${orderId}`,
       sender_phone: sender_phone ?? null,
     });

@@ -47,6 +47,7 @@ interface PayResponse {
   kyc_url?:             string | null;
   needs_tos?:           boolean;
   tos_url?:             string | null;
+  is_sandbox?:          boolean;
   error?:               string;
   bridge_details?:      unknown;
 }
@@ -61,11 +62,12 @@ interface RatePreview {
 
 // All Bridge Virtual Account source currencies. Labels resolved via t(`currency_${code}`).
 // USD always available. EUR/GBP/MXN/BRL require Bridge account enablement (requested via support).
-// MXN/BRL removed until Bridge enables those Virtual Accounts on our account
 const CURRENCIES = [
   { code: "usd", flag: "🇺🇸" },
   { code: "eur", flag: "🇪🇺" },
   { code: "gbp", flag: "🇬🇧" },
+  { code: "mxn", flag: "🇲🇽" },
+  { code: "brl", flag: "🇧🇷" },
 ];
 
 // Rail → i18n key suffix (normalized)
@@ -99,7 +101,6 @@ function CopyField({ label, value }: { label: string; value: string }) {
 }
 
 
-const isSandbox = process.env.NEXT_PUBLIC_BRIDGE_SANDBOX === "true";
 const MIN_AMOUNT_USD = 20;
 
 export default function PagarPage() {
@@ -404,8 +405,8 @@ export default function PagarPage() {
           {t("confirm_sent")}
         </button>
 
-        {/* Sandbox-only: skip waiting for real webhooks */}
-        {isSandbox && (
+        {/* Sandbox-only: skip waiting for real webhooks. Uses is_sandbox from API response, not client env var */}
+        {result.is_sandbox && (
           <button
             onClick={handleSandboxAdvance}
             disabled={sandboxAdvancing}
