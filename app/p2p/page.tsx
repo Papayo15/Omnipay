@@ -189,8 +189,9 @@ export default function P2PPage() {
     if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt) return;
 
     // Convert local amount to USD to enforce $20 minimum
+    // fxRate = getFXRate(currency, "USD") → local→USD (e.g. 0.057 for MXN)
     const rateNow = fxRate ?? 1;
-    const amtUSD  = currency === "USD" ? amt : amt / rateNow;
+    const amtUSD  = currency === "USD" ? amt : amt * rateNow;
     if (amtUSD < 20) {
       setErrorMsg("El monto mínimo de envío es $20 USD.");
       setStep("error");

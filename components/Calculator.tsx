@@ -31,12 +31,12 @@ const BRIDGE_FX_RATES: Record<string, number> = {
   USD: 0,      // Sin FX (misma moneda)
 };
 
-// OmniPay margin
+// OmniPay margin — must match lib/bridge-fees.ts
 const OMNIPAY_PCT        = 0.005;   // 0.50%
-const OMNIPAY_FLAT_P2P   = 0.99;
+const OMNIPAY_FLAT_P2P   = 0.49;   // updated 2026-07-29
 const OMNIPAY_FLAT_B2B   = 1.99;
-const OMNIPAY_MIN        = 1.99;
-const KYC_P2P            = 2.00;
+const OMNIPAY_MIN        = 0.99;   // updated 2026-07-29
+const KYC_P2P            = 0.00;   // absorbed as acquisition cost
 const KYB_B2B            = 10.00;
 
 // Countries with native Bridge bank rails
@@ -256,16 +256,18 @@ export default function Calculator({ visibleChannels }: CalcProps = {}) {
           </div>
         )}
 
-        {/* Primera vez toggle */}
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isNew}
-            onChange={e => setIsNew(e.target.checked)}
-            className="w-4 h-4 accent-emerald-500"
-          />
-          <span className="text-slate-400 text-xs">Primera transacción (incluye verificación)</span>
-        </label>
+        {/* Primera vez toggle — solo visible para B2B (KYB $10 real de Bridge) */}
+        {channel === "b2b" && (
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isNew}
+              onChange={e => setIsNew(e.target.checked)}
+              className="w-4 h-4 accent-emerald-500"
+            />
+            <span className="text-slate-400 text-xs">Primera transacción empresarial (incluye KYB)</span>
+          </label>
+        )}
 
         {/* Fee breakdown */}
         {quote && (

@@ -56,9 +56,16 @@ export async function POST(req: NextRequest): Promise<Response> {
       { status: 400 },
     );
   }
-  if (amount_target < 20) {
+  // Minimum $20 USD equivalent — table updated quarterly, conservative (slightly above mid-market)
+  const MIN_LOCAL: Record<string, number> = {
+    USD: 20, MXN: 380, BRL: 110, EUR: 19, GBP: 16,
+    COP: 85_000, ARS: 20_000, CLP: 19_000, PEN: 75,
+  };
+  const targetCurrency = getTargetCurrency(country.toUpperCase());
+  const minLocal = MIN_LOCAL[targetCurrency] ?? 20;
+  if (amount_target < minLocal) {
     return NextResponse.json(
-      { error: "El monto mínimo de envío es $20 USD." },
+      { error: `El monto mínimo de envío es el equivalente a $20 USD (mín. ${minLocal} ${targetCurrency}).` },
       { status: 400 },
     );
   }
