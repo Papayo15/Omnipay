@@ -607,14 +607,11 @@ export default function B2BPage() {
         </div>
       </div>
 
-      {/* Calculator — Wise (b2b) and Bridge channels */}
+      {/* Calculator — Stripe + Wise (b2b) only; Bridge has its own page */}
       <div className="w-full max-w-sm mx-auto px-5 mb-6">
         <Calculator
-          visibleChannels={["b2b", "bridge"]}
-          rateNotes={{
-            b2b:    t("calc_rate_note_wise"),
-            bridge: t("calc_rate_note_bridge"),
-          }}
+          visibleChannels={["b2b"]}
+          rateNotes={{ b2b: t("calc_rate_note_wise") }}
         />
       </div>
 
