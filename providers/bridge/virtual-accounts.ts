@@ -88,8 +88,8 @@ export async function createVirtualAccount(
     "POST",
     `/customers/${params.customerId}/virtual_accounts`,
     body,
-    // Idempotency key uses destinationAddress (stable) so same VA is returned for same sender+recipient
-    `va-${params.customerId}-${params.reference ?? params.destinationAddress.slice(-12)}`,
+    // Idempotency key includes currency — USD/EUR/etc are distinct VAs; same key + different body = Bridge error
+    `va-${params.customerId}-${params.sourceCurrency}-${params.reference ?? params.destinationAddress.slice(-12)}`,
   );
 }
 
