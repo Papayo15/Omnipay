@@ -136,13 +136,20 @@ export async function POST(req: NextRequest): Promise<Response> {
       try { await simulateKycApproval(senderCustomer.id); } catch (simErr) {
         console.warn(`[bridge/pay] simulateKycApproval: ${(simErr as Error).message}`);
       }
-      // Brief pause — sandbox KYC is async
-      await new Promise(r => setTimeout(r, 1000));
-      // Log status for debugging — not a blocker; createVirtualAccount is the real gate
-      try {
-        const verified = await getCustomer(senderCustomer.id);
-        console.log(`[bridge/pay] sender after simulate: id=${senderCustomer.id} status=${verified.status} kyc_status=${verified.kyc_status}`);
-      } catch { /* best-effort */ }
+      // Poll until active — sandbox KYC approval is async; createVirtualAccount needs active status
+      for (let i = 0; i < 6; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        try {
+          const verified = await getCustomer(senderCustomer.id);
+          const isActive = verified.status === "active" || verified.kyc_status === "approved";
+          console.log(`[bridge/pay] sender poll ${i + 1}/6: id=${senderCustomer.id} status=${verified.status} kyc=${verified.kyc_status} active=${isActive}`);
+          if (isActive) break;
+          // Retry simulate on 3rd attempt — sometimes Bridge needs a second call
+          if (i === 2) {
+            try { await simulateKycApproval(senderCustomer.id); } catch { /* retry, ignore error */ }
+          }
+        } catch { break; }
+      }
     }
 
     // KYC gate (production) — same pattern as checkout/route.ts

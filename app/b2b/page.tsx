@@ -584,24 +584,31 @@ export default function B2BPage() {
         <Calculator visibleChannels={["b2b"]} />
       </div>
 
-      {/* Bridge Wire banner — faster & cheaper alternative */}
-      <div className="w-full max-w-sm mx-auto px-5 mb-4">
-        <a href="/b2b-bridge" className="block bg-emerald-900/20 border border-emerald-500/30 hover:border-emerald-400/60 rounded-xl px-4 py-3 transition-colors group">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <p className="text-emerald-400 text-xs font-semibold">{t("b2b_bridge_banner_title")}</p>
-              <p className="text-slate-400 text-xs mt-0.5 leading-relaxed">{t("b2b_bridge_banner_body")}</p>
-            </div>
-            <span className="text-emerald-400 text-lg flex-shrink-0 group-hover:translate-x-1 transition-transform">→</span>
-          </div>
-        </a>
-      </div>
+      {/* Channel selector */}
+      <div className="w-full max-w-sm mx-auto px-5 mb-5">
+        <p className="text-slate-500 text-[11px] text-center uppercase tracking-widest mb-3">{t("b2b_channel_title")}</p>
+        <div className="grid grid-cols-2 gap-3">
 
-      {/* 3-4 days notice */}
-      <div className="w-full max-w-sm mx-auto px-5 mb-4">
-        <div className="bg-amber-900/20 border border-amber-500/30 rounded-xl px-4 py-3 flex items-start gap-2">
-          <span className="text-amber-400 text-sm mt-0.5">⏱</span>
-          <p className="text-amber-300 text-xs leading-relaxed">{t("b2b_days_note")}</p>
+          {/* Wise card — scrolls to form */}
+          <a href="#b2b-form"
+            className="flex flex-col bg-slate-800/70 border border-slate-700 hover:border-indigo-500/70 rounded-2xl p-3.5 transition-all group cursor-pointer">
+            <span className="text-base mb-1 leading-none">{t("b2b_wise_title")}</span>
+            <span className="text-slate-400 text-[11px] leading-snug flex-1 mt-1">{t("b2b_wise_desc")}</span>
+            <span className="mt-3 inline-flex items-center gap-1 text-indigo-400 text-[11px] font-semibold group-hover:text-indigo-300 transition-colors">
+              {t("b2b_wise_btn")} <span className="group-hover:translate-y-0.5 transition-transform inline-block">↓</span>
+            </span>
+          </a>
+
+          {/* Bridge card — links to /b2b-bridge */}
+          <a href="/b2b-bridge"
+            className="flex flex-col bg-emerald-900/20 border border-emerald-600/40 hover:border-emerald-400/70 hover:bg-emerald-900/30 rounded-2xl p-3.5 transition-all group">
+            <span className="text-base mb-1 leading-none">{t("b2b_bridge_title")}</span>
+            <span className="text-slate-400 text-[11px] leading-snug flex-1 mt-1">{t("b2b_bridge_desc")}</span>
+            <span className="mt-3 inline-flex items-center gap-1 text-emerald-400 text-[11px] font-semibold group-hover:text-emerald-300 transition-colors">
+              {t("b2b_bridge_btn")} <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
+            </span>
+          </a>
+
         </div>
       </div>
 
