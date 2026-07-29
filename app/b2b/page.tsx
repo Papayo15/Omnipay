@@ -579,11 +579,6 @@ export default function B2BPage() {
         <p className="text-slate-500 text-xs">{t("b2b_page_sub")}</p>
       </div>
 
-      {/* Calculator — B2B channel only */}
-      <div className="w-full max-w-sm mx-auto px-5 mb-6">
-        <Calculator visibleChannels={["b2b"]} />
-      </div>
-
       {/* Channel selector */}
       <div className="w-full max-w-sm mx-auto px-5 mb-5">
         <p className="text-slate-500 text-[11px] text-center uppercase tracking-widest mb-3">{t("b2b_channel_title")}</p>
@@ -610,6 +605,11 @@ export default function B2BPage() {
           </a>
 
         </div>
+      </div>
+
+      {/* Calculator — B2B channel only */}
+      <div className="w-full max-w-sm mx-auto px-5 mb-6">
+        <Calculator visibleChannels={["b2b"]} />
       </div>
 
       {/* Divider */}
