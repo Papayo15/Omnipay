@@ -146,30 +146,20 @@ export async function POST(req: NextRequest): Promise<Response> {
           endorsements,
         });
       } catch { /* duplicate_record = already pending, fine */ }
-      try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
+      try {
+        await simulateKycApproval(customer.id);
+      } catch (simErr) {
+        console.warn(`[bridge/checkout] simulateKycApproval failed (may already be approved): ${(simErr as Error).message}`);
+      }
 
-      // Brief pause — sandbox KYC approval is async, status may lag by ~500ms
-      await new Promise(r => setTimeout(r, 800));
+      // Brief pause — sandbox KYC approval is async
+      await new Promise(r => setTimeout(r, 1000));
 
-      // Verify KYC actually activated (best-effort — createLiquidationAddress will catch it too)
+      // Log status for debugging — not a blocker; createLiquidationAddress is the real gate
       try {
         const verified = await getCustomer(customer.id);
-        console.log(`[bridge/checkout] sandbox KYC status id=${customer.id} status=${verified.status} kyc=${verified.kyc_status}`);
-        const ACTIVE = ["active", "approved"];
-        const isActive = ACTIVE.includes(verified.status ?? "") || ACTIVE.includes(verified.kyc_status ?? "");
-        if (!isActive) {
-          // Try once more after another pause before giving up
-          await new Promise(r => setTimeout(r, 1200));
-          const retry = await getCustomer(customer.id);
-          const isActiveRetry = ACTIVE.includes(retry.status ?? "") || ACTIVE.includes(retry.kyc_status ?? "");
-          if (!isActiveRetry) {
-            return NextResponse.json({
-              error: "La cuenta del receptor no pudo activarse en Bridge sandbox. Intenta de nuevo en unos segundos.",
-              bridge_type: "kyc_not_active",
-            }, { status: 422 });
-          }
-        }
-      } catch { /* best-effort — proceed and let createLiquidationAddress surface real error */ }
+        console.log(`[bridge/checkout] sandbox after simulate: id=${customer.id} status=${verified.status} kyc_status=${verified.kyc_status}`);
+      } catch { /* best-effort */ }
     }
 
     // ToS gate for new customers in production — Bridge requires signed ToS before customer creation
