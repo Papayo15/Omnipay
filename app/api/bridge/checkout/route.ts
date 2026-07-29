@@ -134,32 +134,32 @@ export async function POST(req: NextRequest): Promise<Response> {
     //    One KYC link per email max — duplicate_record just means it's already pending.
     // 2. simulate_kyc_approval approves all pending endorsements.
     if (isSandbox) {
-      // For existing customers that may have been created with only base+sepa,
-      // explicitly add the rail-specific endorsement to pending state via a
-      // minimal PUT (no compliance fields, so Bridge won't reject it).
+      // Always ensure rail-specific endorsement is pending before simulate
       try { await ensureEndorsements(customer.id, endorsements); } catch { /* ignore */ }
       try {
-        await createKycLink({
-          full_name:    nombre,
-          email:        email.toLowerCase(),
-          type:         "individual",
-          endorsements,
-        });
-      } catch { /* duplicate_record = already pending, fine */ }
-      try {
-        await simulateKycApproval(customer.id);
-      } catch (simErr) {
-        console.warn(`[bridge/checkout] simulateKycApproval failed (may already be approved): ${(simErr as Error).message}`);
+        await createKycLink({ full_name: nombre, email: email.toLowerCase(), type: "individual", endorsements });
+      } catch { /* duplicate_record = already pending */ }
+      try { await simulateKycApproval(customer.id); } catch (simErr) {
+        console.warn(`[bridge/checkout] simulateKycApproval: ${(simErr as Error).message}`);
       }
 
-      // Brief pause — sandbox KYC approval is async
-      await new Promise(r => setTimeout(r, 500));
-
-      // Log status for debugging — not a blocker; createLiquidationAddress is the real gate
-      try {
-        const verified = await getCustomer(customer.id);
-        console.log(`[bridge/checkout] sandbox after simulate: id=${customer.id} status=${verified.status} kyc_status=${verified.kyc_status}`);
-      } catch { /* best-effort */ }
+      // Poll until active — sandbox KYC approval is async; max 5×700ms = 3.5s
+      let recipientActive = false;
+      for (let i = 0; i < 5; i++) {
+        await new Promise(r => setTimeout(r, 700));
+        try {
+          const verified = await getCustomer(customer.id);
+          recipientActive = verified.status === "active" || verified.kyc_status === "approved";
+          console.log(`[bridge/checkout] poll ${i + 1}/5: status=${verified.status} active=${recipientActive}`);
+          if (recipientActive) break;
+        } catch { break; }
+      }
+      if (!recipientActive) {
+        return NextResponse.json({
+          error: "La cuenta del receptor no pudo activarse en Bridge sandbox. Intenta de nuevo en unos segundos.",
+          bridge_type: "kyc_not_active",
+        }, { status: 422 });
+      }
     }
 
     // ToS gate for new customers in production — Bridge requires signed ToS before customer creation
