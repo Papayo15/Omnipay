@@ -607,9 +607,15 @@ export default function B2BPage() {
         </div>
       </div>
 
-      {/* Calculator — B2B channel only */}
+      {/* Calculator — Wise (b2b) and Bridge channels */}
       <div className="w-full max-w-sm mx-auto px-5 mb-6">
-        <Calculator visibleChannels={["b2b"]} />
+        <Calculator
+          visibleChannels={["b2b", "bridge"]}
+          rateNotes={{
+            b2b:    t("calc_rate_note_wise"),
+            bridge: t("calc_rate_note_bridge"),
+          }}
+        />
       </div>
 
       {/* Divider */}

@@ -147,9 +147,11 @@ function fmt(n: number, currency = "USD"): string {
 interface CalcProps {
   /** Restrict which channel tabs are shown. Default: all three. */
   visibleChannels?: Channel[];
+  /** Override the FX provider note shown per channel. Key = channel, value = translated string. */
+  rateNotes?: Partial<Record<Channel, string>>;
 }
 
-export default function Calculator({ visibleChannels }: CalcProps = {}) {
+export default function Calculator({ visibleChannels, rateNotes }: CalcProps = {}) {
   const allowed: Channel[] = visibleChannels ?? ["bridge", "wise", "b2b"];
   const [channel, setChannel] = useState<Channel>(allowed[0]);
   const [amount, setAmount]   = useState("300");
@@ -285,9 +287,9 @@ export default function Calculator({ visibleChannels }: CalcProps = {}) {
                 <span className="font-mono">{fmt(quote.recipientAmount, destCurrency)} {destCurrency}</span>
               </div>
             )}
-            {channel === "b2b" && (
+            {rateNotes?.[channel] && (
               <p className="text-slate-500 text-xs pt-1">
-                El tipo de cambio final lo determina Wise en el momento del pago
+                {rateNotes[channel]}
               </p>
             )}
           </div>
