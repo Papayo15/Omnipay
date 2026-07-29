@@ -136,15 +136,22 @@ export async function POST(req: NextRequest): Promise<Response> {
       try { await simulateKycApproval(senderCustomer.id); } catch (simErr) {
         console.warn(`[bridge/pay] simulateKycApproval: ${(simErr as Error).message}`);
       }
-      // Poll until active — sandbox KYC is async; max 3×800ms = 2.4s
-      for (let i = 0; i < 3; i++) {
-        await new Promise(r => setTimeout(r, 800));
+      // Poll until active — sandbox KYC is async; max 6×1200ms = 7.2s
+      let senderActive = false;
+      for (let i = 0; i < 6; i++) {
+        await new Promise(r => setTimeout(r, 1200));
         try {
           const verified = await getCustomer(senderCustomer.id);
-          const isActive = verified.status === "active" || verified.kyc_status === "approved";
-          console.log(`[bridge/pay] sender poll ${i + 1}/3: status=${verified.status} active=${isActive}`);
-          if (isActive) break;
+          senderActive = verified.status === "active" || verified.kyc_status === "approved";
+          console.log(`[bridge/pay] sender poll ${i + 1}/6: status=${verified.status} active=${senderActive}`);
+          if (senderActive) break;
         } catch { break; }
+      }
+      if (!senderActive) {
+        return NextResponse.json({
+          error: "La cuenta del emisor no pudo activarse en Bridge sandbox. Intenta de nuevo en unos segundos.",
+          bridge_type: "kyc_not_active",
+        }, { status: 422 });
       }
     }
 
