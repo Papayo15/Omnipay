@@ -101,7 +101,7 @@ const BRIDGE_FX_RATES: Record<string, number> = {
 };
 
 // Local Bridge fee calculation — no API call needed during form filling
-function calcBridgeFees(amtLocal: number, localCurrency: string, fxRate: number, isNew: boolean) {
+function calcBridgeFees(amtLocal: number, localCurrency: string, fxRate: number) {
   const usd     = amtLocal * fxRate;
   const onramp  = parseFloat((usd * 0.005).toFixed(2));
   const offramp = parseFloat((usd * 0.0025).toFixed(2));
@@ -132,7 +132,6 @@ export default function P2PPage() {
   const [copied,          setCopied]          = useState(false);
   const [errorMsg,        setErrorMsg]        = useState("");
   const [submitting,      setSubmitting]      = useState(false);
-  const [isNew,           setIsNew]           = useState(true);
   const [fxRate,          setFxRate]          = useState<number | null>(null);
   const [kycUrl,          setKycUrl]          = useState<string | null>(null);
   const [realSenderTotal, setRealSenderTotal] = useState<string | null>(null);
@@ -483,7 +482,7 @@ export default function P2PPage() {
 
             {/* Fee breakdown — cálculo local, sin API call, instantáneo */}
             {fxRate && parseFloat(amountLocal) >= 1 && (() => {
-              const f = calcBridgeFees(parseFloat(amountLocal), currency, fxRate, false);
+              const f = calcBridgeFees(parseFloat(amountLocal), currency, fxRate);
               const amtUSD = currency === "USD" ? parseFloat(amountLocal) : parseFloat(amountLocal) * fxRate;
               const belowMin = amtUSD < 20;
               if (belowMin) {
