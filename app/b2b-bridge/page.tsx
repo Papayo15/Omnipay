@@ -43,6 +43,7 @@ interface B2BPayResponse {
   kyb_url?:             string | null;
   needs_tos?:           boolean;
   tos_url?:             string | null;
+  is_sandbox?:          boolean;
   error?:               string;
 }
 
@@ -54,7 +55,7 @@ const CURRENCIES = [
   { code: "brl", flag: "🇧🇷", label: "BRL — Real Brasileiro" },
 ];
 
-const isSandbox = process.env.NEXT_PUBLIC_BRIDGE_SANDBOX === "true";
+// isSandbox is now read from the API response (result.is_sandbox) — not a client env var
 
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
@@ -314,7 +315,7 @@ export default function B2BBridgePage() {
           Ya realicé la transferencia
         </button>
 
-        {isSandbox && (
+        {result.is_sandbox && (
           <button
             onClick={handleSandboxAdvance}
             disabled={sandboxAdvancing}

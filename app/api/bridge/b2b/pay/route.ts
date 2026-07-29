@@ -220,8 +220,9 @@ export async function POST(req: NextRequest): Promise<Response> {
         total_to_send:    quote.total_sender_pays,
         recipient_gets:   `${meta.amount_target.toLocaleString()} ${meta.target_currency}`,
       },
-      recipient: { name: meta.nombre, country: meta.country, method: meta.receive_method },
+      recipient:  { name: meta.nombre, country: meta.country, method: meta.receive_method },
       needs_kyb:  false,
+      is_sandbox: isSandbox,
       track_url:  `${appUrl}/api/bridge/track?order_id=${orderId}`,
     });
   } catch (e) {
