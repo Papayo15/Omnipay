@@ -460,7 +460,12 @@
     "currency_eur": "EUR — Euro",
     "currency_gbp": "GBP — Pauni ya Uingereza",
     "currency_mxn": "MXN — Peso ya Meksiko",
-    "currency_brl": "BRL — Real ya Brazili"
+    "currency_brl": "BRL — Real ya Brazili",
+    "va_save_title": "💾 Hifadhi maelezo haya ya benki",
+    "va_save_body": "Mara ijayo, hamisha moja kwa moja kutoka benki yako kwenye akaunti hii. Pesa itafika kwa mpokeaji kiotomatiki bila kutembelea OmniPay tena.",
+    "tos_required_title": "⚠️ Kubali Masharti ya Bridge",
+    "tos_required_body": "Lazima ukubali masharti ya Bridge kabla ya kuendelea. Bonyeza, kubali, na urudi ukurasa huu.",
+    "tos_accept_button": "Kubali Masharti →"
   },
   "seguimiento": {
     "page_title": "Hali ya uhamisho",

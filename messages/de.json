@@ -460,7 +460,12 @@
     "currency_eur": "EUR — Euro",
     "currency_gbp": "GBP — Britisches Pfund",
     "currency_mxn": "MXN — Mexikanischer Peso",
-    "currency_brl": "BRL — Brasilianischer Real"
+    "currency_brl": "BRL — Brasilianischer Real",
+    "va_save_title": "💾 Bankdaten speichern",
+    "va_save_body": "Beim nächsten Mal überweisen Sie direkt von Ihrer Bank an dieses Konto. Das Geld kommt automatisch beim Empfänger an — ohne OmniPay zu besuchen.",
+    "tos_required_title": "⚠️ Bridge-Bedingungen akzeptieren",
+    "tos_required_body": "Sie müssen die Bridge-Bedingungen akzeptieren, bevor Sie fortfahren. Klicken Sie, akzeptieren Sie und kehren Sie zu dieser Seite zurück.",
+    "tos_accept_button": "Bridge-Bedingungen akzeptieren →"
   },
   "seguimiento": {
     "page_title": "Überweisungsstatus",

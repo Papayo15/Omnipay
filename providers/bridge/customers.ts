@@ -249,4 +249,21 @@ export function getKycUrlFromCustomer(customer: BridgeCustomer): string | null {
   return customer.tos_link ?? null;
 }
 
+// Creates a Bridge ToS link for production — required before new customer creation.
+// In sandbox, `signed_agreement_id: crypto.randomUUID()` is used instead.
+// Production: call this, get { id, url }, redirect user to url, then retry checkout.
+export async function createTosLink(params: {
+  full_name: string;
+  email:     string;
+  type:      "individual" | "business";
+}): Promise<{ id: string; url: string }> {
+  const day = Math.floor(Date.now() / 86_400_000);
+  return bridgeRequest<{ id: string; url: string }>(
+    "POST",
+    "/tos_links",
+    params,
+    `tos-${params.email.toLowerCase()}-${day}`,
+  );
+}
+
 export { BridgeError };

@@ -15,7 +15,7 @@ import { NextRequest, NextResponse }            from "next/server";
 import { getRedis }                             from "@/lib/redis";
 import { verifyBridgeWebhook, parseWebhookEvent } from "@/providers/bridge/webhooks";
 import { mapTransferStatus }                    from "@/providers/bridge/transfers";
-import { updateOrder, getOrder }                from "@/lib/order-state";
+import { updateOrder, getOrder, createOrder }   from "@/lib/order-state";
 import { sendAdminWhatsApp, sendEmailNotification } from "@/lib/notify";
 import { buildReceiptURL }                      from "@/lib/link";
 import { emailStrings }                         from "@/lib/email-i18n";
@@ -135,26 +135,70 @@ export async function POST(req: NextRequest): Promise<Response> {
   // ── Virtual Account deposit received ──────────────────────────────────────
 
   if (type === "virtual_account.deposit_received") {
+    const vaId      = String(data.virtual_account_id ?? data.id ?? "");
     const reference = String(data.developer_reference ?? "");
-    const orderId   = reference.startsWith("OP-") ? reference : null;
-    if (orderId) {
-      updateOrder(orderId, { status: "LIQUIDATING_FIAT" });
-      const order = getOrder(orderId);
-      if (order?.senderEmail) {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
-        const eT = emailStrings(order.senderLocale);
-        await sendEmailNotification(
-          order.senderEmail,
-          eT.deposit_subject,
-          `<div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
-            <h2 style="color:#16a34a;margin:0 0 16px">${eT.deposit_h2}</h2>
-            <p>${eT.deposit_body(order.recipientName)}</p>
-            <p><a href="${order.trackUrl ?? appUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:8px">${eT.deposit_cta}</a></p>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
-            <p style="color:#6b7280;font-size:13px;text-align:center">${eT.footer_thanks}</p>
-            <p style="color:#9ca3af;font-size:11px;margin-top:4px">OmniPay · ${eT.footer_auto}</p>
-          </div>`,
-        );
+
+    // Case 1: active OP- order exists → first-time deposit, advance state + email sender
+    if (reference.startsWith("OP-")) {
+      const order = getOrder(reference);
+      if (order && order.status === "PENDING_PAYIN") {
+        updateOrder(reference, { status: "LIQUIDATING_FIAT" });
+        if (order.senderEmail) {
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+          const eT = emailStrings(order.senderLocale);
+          await sendEmailNotification(
+            order.senderEmail,
+            eT.deposit_subject,
+            `<div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
+              <h2 style="color:#16a34a;margin:0 0 16px">${eT.deposit_h2}</h2>
+              <p>${eT.deposit_body(order.recipientName)}</p>
+              <p><a href="${order.trackUrl ?? appUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:8px">${eT.deposit_cta}</a></p>
+              <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+              <p style="color:#6b7280;font-size:13px;text-align:center">${eT.footer_thanks}</p>
+              <p style="color:#9ca3af;font-size:11px;margin-top:4px">OmniPay · ${eT.footer_auto}</p>
+            </div>`,
+          );
+        }
+      }
+    }
+
+    // Case 2: "Efecto Memoria" — recurring / unsolicited deposit
+    // Sender transferred directly from their bank without going through OmniPay.
+    // Auto-create a tracking order so the payment is processed correctly.
+    else if (vaId && process.env.REDIS_URL) {
+      try {
+        const redis   = await getRedis();
+        const metaStr = await redis.get(`va:${vaId}`);
+        if (metaStr) {
+          const vaMeta = JSON.parse(metaStr) as {
+            liq_addr_id:         string;
+            destination_country: string;
+            target_currency:     string;
+            source_currency:     string;
+          };
+          const newOrderId = `OP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+          createOrder(newOrderId, {
+            orderType:          "p2p",
+            destinationCountry: vaMeta.destination_country,
+            targetCurrency:     vaMeta.target_currency,
+            recipientName:      "OmniPay Transfer",  // no name stored — privacy policy
+            recipientAccount:   vaMeta.liq_addr_id,
+            payInProvider:      "bridge-va",
+            payOutProvider:     "bridge-liq",
+          });
+          updateOrder(newOrderId, { status: "LIQUIDATING_FIAT" });
+          await sendAdminWhatsApp(
+            `🔄 OmniPay — Depósito recurrente (Efecto Memoria)\n` +
+            `VA: ${vaId}\n` +
+            `Orden auto-creada: ${newOrderId}\n` +
+            `País: ${vaMeta.destination_country} · ${vaMeta.target_currency}`,
+          );
+          console.log(`[bridge/webhook] Efecto Memoria: auto-order ${newOrderId} for VA ${vaId}`);
+        } else {
+          console.warn(`[bridge/webhook] deposit_received VA ${vaId} — no Redis metadata found`);
+        }
+      } catch (e) {
+        console.error("[bridge/webhook] Efecto Memoria Redis lookup failed:", (e as Error).message);
       }
     }
   }
@@ -164,7 +208,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-async function handleCompletion(orderId: string, data: Record<string, unknown>) {
+export async function handleCompletion(orderId: string, data: Record<string, unknown>) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
   const secret = process.env.LINK_SECRET ?? "";
   const order  = getOrder(orderId);

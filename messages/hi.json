@@ -460,7 +460,12 @@
     "currency_eur": "EUR — यूरो",
     "currency_gbp": "GBP — ब्रिटिश पाउंड",
     "currency_mxn": "MXN — मैक्सिकन पेसो",
-    "currency_brl": "BRL — ब्राज़ीलियाई रियाल"
+    "currency_brl": "BRL — ब्राज़ीलियाई रियाल",
+    "va_save_title": "💾 बैंक विवरण सेव करें",
+    "va_save_body": "अगली बार, सीधे अपने बैंक ऐप से इस खाते में ट्रांसफर करें। पैसा OmniPay पर आए बिना स्वचालित रूप से प्राप्तकर्ता तक पहुंच जाएगा।",
+    "tos_required_title": "⚠️ Bridge की शर्तें स्वीकार करें",
+    "tos_required_body": "जारी रखने से पहले Bridge की शर्तें स्वीकार करें। क्लिक करें, स्वीकार करें, और इस पेज पर वापस आएं।",
+    "tos_accept_button": "Bridge की शर्तें स्वीकार करें →"
   },
   "seguimiento": {
     "page_title": "स्थानांतरण की स्थिति",

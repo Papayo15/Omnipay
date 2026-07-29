@@ -460,7 +460,12 @@
     "currency_eur": "EUR — 欧元",
     "currency_gbp": "GBP — 英镑",
     "currency_mxn": "MXN — 墨西哥比索",
-    "currency_brl": "BRL — 巴西雷亚尔"
+    "currency_brl": "BRL — 巴西雷亚尔",
+    "va_save_title": "💾 保存这些银行信息",
+    "va_save_body": "下次只需从您的银行直接转账到此账户，资金将自动到达收款人，无需再次访问 OmniPay。",
+    "tos_required_title": "⚠️ 接受 Bridge 条款",
+    "tos_required_body": "在继续之前，您必须接受 Bridge 的条款。点击、接受并返回此页面。",
+    "tos_accept_button": "接受 Bridge 条款 →"
   },
   "seguimiento": {
     "page_title": "转账状态",

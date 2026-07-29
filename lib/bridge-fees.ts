@@ -4,13 +4,12 @@
 //   bridge → 41 corridors (MX/US/BR/GB/CO/SEPA) — native bank rails via Bridge.xyz
 //   b2b    → Stripe capture + Wise payout
 //
-// OmniPay charges: 0.50% + flat on all channels (min $1.99)
+// OmniPay charges: 0.50% + flat on all channels (min $0.99)
 // ALL provider costs shown in total_sender_pays — the sender sees one final number.
-// KYC ($2 P2P / $10 KYB B2B) charged only on first transaction — Opción A dynamic check.
+// KYC absorbed as acquisition cost (P2P) — KYB $10 real Bridge cost (B2B).
 //
 // Competitive position on $300 USD (Bridge channel):
-//   WU ~$17 · Remitly ~$7.50 · Wise ~$6.40
-//   OmniPay 1ª vez: $6.74 · OmniPay recurrente: $4.74 ← cheapest in market
+//   Wise ~$2.81 · Felix Pago ~$3.60 hidden in FX · OmniPay: $4.24 ← transparent & fair
 //
 // B2B example $1,000 CAD → MXN via Stripe + Wise:
 //   Stripe card acceptance: $29.30 (2.9%+$0.30)
@@ -36,12 +35,12 @@ export const STRIPE_FLAT = 0.30;   // $0.30 fixed
 
 // OmniPay margin
 export const OMNIPAY_SERVICE_PCT = 0.005;  // 0.50% OmniPay net revenue
-export const OMNIPAY_FLAT_P2P    = 0.99;
+export const OMNIPAY_FLAT_P2P    = 0.49;   // was 0.99 — lower entry cost
 export const OMNIPAY_FLAT_B2B    = 1.99;  // covers Bridge VA $2/month in B2B
-export const OMNIPAY_MIN_FEE     = 1.99;  // minimum total OmniPay fee
+export const OMNIPAY_MIN_FEE     = 0.99;   // was 1.99 — 0.50% activates from $200
 
-// One-time KYC/KYB (pass-through to Bridge)
-export const KYC_FEE_P2P = 2.00;
+// One-time KYC/KYB — KYC absorbed as acquisition cost; KYB is real Bridge requirement
+export const KYC_FEE_P2P = 0.00;   // was 2.00 — absorbed to improve first-time conversion
 export const KYB_FEE_B2B = 10.00;
 
 // Wise B2B costs (transfer fee + FX spread, conservative estimate covering most corridors)

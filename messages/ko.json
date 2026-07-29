@@ -460,7 +460,12 @@
     "currency_eur": "EUR — 유로",
     "currency_gbp": "GBP — 영국 파운드",
     "currency_mxn": "MXN — 멕시코 페소",
-    "currency_brl": "BRL — 브라질 헤알"
+    "currency_brl": "BRL — 브라질 헤알",
+    "va_save_title": "💾 이 계좌 정보를 저장하세요",
+    "va_save_body": "다음번에는 은행 앱에서 이 계좌로 직접 이체하세요. OmniPay에 다시 들어갈 필요 없이 자동으로 수취인에게 전달됩니다.",
+    "tos_required_title": "⚠️ Bridge 이용약관 동의",
+    "tos_required_body": "계속하려면 Bridge 이용약관에 동의해야 합니다. 클릭, 동의, 이 페이지로 돌아오세요.",
+    "tos_accept_button": "Bridge 이용약관 동의 →"
   },
   "seguimiento": {
     "page_title": "이체 상태",

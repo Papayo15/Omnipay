@@ -54,7 +54,11 @@ export interface CreateVirtualAccountParams {
   destinationNetwork:   "polygon" | "ethereum" | "solana";
   // OmniPay service fee taken automatically by Bridge per deposit
   developerFeePercent?: string;  // "1.25" = 1.25%
+  // Stable per-recipient reference — used as idempotency key (same sender+recipient = same VA)
+  // AND passed to Bridge as developer_reference so webhook.deposit_received carries it.
+  // Use liqAddrId (not orderId) so the VA is reusable across multiple sends.
   reference?:           string;
+  developerReference?:  string;
 }
 
 export async function createVirtualAccount(
@@ -74,12 +78,18 @@ export async function createVirtualAccount(
   if (params.developerFeePercent) {
     body.developer_fee_percent = params.developerFeePercent;
   }
+  // developer_reference appears in webhook events — use stable liqAddrId so the VA
+  // can be identified even on repeat deposits where no pending order exists.
+  if (params.developerReference) {
+    body.developer_reference = params.developerReference;
+  }
 
   return bridgeRequest<VirtualAccount>(
     "POST",
     `/customers/${params.customerId}/virtual_accounts`,
     body,
-    `va-${params.customerId}-${params.reference ?? Date.now()}`,
+    // Idempotency key uses destinationAddress (stable) so same VA is returned for same sender+recipient
+    `va-${params.customerId}-${params.reference ?? params.destinationAddress.slice(-12)}`,
   );
 }
 

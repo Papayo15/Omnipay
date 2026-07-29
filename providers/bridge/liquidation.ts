@@ -82,14 +82,12 @@ export interface LiquidationAddress {
   created_at:  string;
 }
 
-export type ReceiveMethod = "card" | "bank";
+export type ReceiveMethod = "bank";
 
 export interface CreateLiquidationParams {
   customerId:      string;
   country:         string;
   receiveMethod:   ReceiveMethod;
-  // Card fields (card push — not available on this platform)
-  cardNumber?:     string;
   // Bank fields — depend on country rail
   clabe?:          string;
   iban?:           string;
@@ -334,11 +332,6 @@ export async function createLiquidationAddress(
     ?? params.pixKey?.slice(-4)
     ?? params.accountNumber?.slice(-4)
     ?? "xxxx";
-
-  if (params.receiveMethod === "card") {
-    // Card push is not supported — Bridge requires bank receive method.
-    throw new Error("Card push is not yet available. Use bank receive method.");
-  }
 
   // Bank rails: create external account first, then reference it by ID.
   // Bridge returns duplicate_external_account (with the existing id in details)

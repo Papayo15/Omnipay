@@ -460,7 +460,12 @@
     "currency_eur": "EUR — Euro",
     "currency_gbp": "GBP — Pound Inggris",
     "currency_mxn": "MXN — Peso Meksiko",
-    "currency_brl": "BRL — Real Brasil"
+    "currency_brl": "BRL — Real Brasil",
+    "va_save_title": "💾 Simpan detail bank ini",
+    "va_save_body": "Lain kali, transfer langsung dari aplikasi bank Anda ke akun ini. Uang akan tiba secara otomatis tanpa perlu membuka OmniPay lagi.",
+    "tos_required_title": "⚠️ Setujui Syarat Bridge",
+    "tos_required_body": "Anda harus menyetujui syarat Bridge sebelum melanjutkan. Klik, setujui, dan kembali ke halaman ini.",
+    "tos_accept_button": "Setujui Syarat Bridge →"
   },
   "seguimiento": {
     "page_title": "Status transfer",

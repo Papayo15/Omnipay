@@ -460,7 +460,12 @@
     "currency_eur": "EUR — Euro",
     "currency_gbp": "GBP — Livre sterling",
     "currency_mxn": "MXN — Peso mexicain",
-    "currency_brl": "BRL — Réal brésilien"
+    "currency_brl": "BRL — Réal brésilien",
+    "va_save_title": "💾 Enregistrez ces coordonnées bancaires",
+    "va_save_body": "La prochaine fois, transférez directement depuis votre banque vers ce compte. L'argent arrive automatiquement chez le destinataire — sans retourner sur OmniPay.",
+    "tos_required_title": "⚠️ Accepter les conditions de Bridge",
+    "tos_required_body": "Vous devez accepter les conditions de Bridge avant de continuer. Cliquez, acceptez, et revenez sur cette page.",
+    "tos_accept_button": "Accepter les conditions →"
   },
   "seguimiento": {
     "page_title": "Statut du virement",

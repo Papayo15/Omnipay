@@ -460,7 +460,12 @@
     "currency_eur": "EUR — Euro",
     "currency_gbp": "GBP — Brits pond",
     "currency_mxn": "MXN — Mexicaanse peso",
-    "currency_brl": "BRL — Braziliaanse real"
+    "currency_brl": "BRL — Braziliaanse real",
+    "va_save_title": "💾 Bewaar deze bankgegevens",
+    "va_save_body": "De volgende keer, stuur gewoon geld via uw bank naar dit account. Het geld arriveert automatisch bij de ontvanger — zonder OmniPay opnieuw te bezoeken.",
+    "tos_required_title": "⚠️ Accepteer de Bridge-voorwaarden",
+    "tos_required_body": "U moet de Bridge-voorwaarden accepteren voordat u doorgaat. Klik, accepteer, en keer terug naar deze pagina.",
+    "tos_accept_button": "Bridge-voorwaarden accepteren →"
   },
   "seguimiento": {
     "page_title": "Overboekingsstatus",

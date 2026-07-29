@@ -460,7 +460,12 @@
     "currency_eur": "EUR — Euro",
     "currency_gbp": "GBP — İngiliz sterlini",
     "currency_mxn": "MXN — Meksika pesosu",
-    "currency_brl": "BRL — Brezilya reali"
+    "currency_brl": "BRL — Brezilya reali",
+    "va_save_title": "💾 Bu banka bilgilerini kaydet",
+    "va_save_body": "Bir dahaki seferinde, doğrudan bankandan bu hesaba transfer yap. Para, OmniPay'e tekrar girmeden otomatik olarak alıcıya ulaşır.",
+    "tos_required_title": "⚠️ Bridge Şartlarını Kabul Et",
+    "tos_required_body": "Devam etmeden önce Bridge şartlarını kabul etmelisiniz. Tıkla, kabul et ve bu sayfaya geri dön.",
+    "tos_accept_button": "Bridge Şartlarını Kabul Et →"
   },
   "seguimiento": {
     "page_title": "Transfer durumu",

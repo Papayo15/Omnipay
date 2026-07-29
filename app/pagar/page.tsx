@@ -45,6 +45,8 @@ interface PayResponse {
   recipient:            { name: string; country: string; method: string };
   needs_kyc:            boolean;
   kyc_url?:             string | null;
+  needs_tos?:           boolean;
+  tos_url?:             string | null;
   error?:               string;
   bridge_details?:      unknown;
 }
@@ -98,6 +100,9 @@ function CopyField({ label, value }: { label: string; value: string }) {
 }
 
 
+const isSandbox = process.env.NEXT_PUBLIC_BRIDGE_SANDBOX === "true";
+const MIN_AMOUNT_USD = 20;
+
 export default function PagarPage() {
   const t = useTranslations("pagar_bridge");
   const [token, setToken]             = useState<string | null>(null);
@@ -111,6 +116,7 @@ export default function PagarPage() {
   const [copiedAll, setCopiedAll]     = useState(false);
   const [ratePreview, setRatePreview] = useState<RatePreview | null>(null);
   const [rateLoading, setRateLoading] = useState(false);
+  const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -137,8 +143,36 @@ export default function PagarPage() {
     return () => { cancelled = true; };
   }, [token, currency]);
 
+  const handleSandboxAdvance = useCallback(async () => {
+    if (!result?.order_id) return;
+    setSandboxAdvancing(true);
+    try {
+      const res = await fetch(`/api/bridge/sandbox/advance?order_id=${result.order_id}`);
+      if (!res.ok) {
+        const d = await res.json() as { error?: string };
+        setErrorMsg(d.error ?? "Sandbox advance failed");
+        setStep("error");
+      } else {
+        router.push(`/seguimiento?order_id=${result.order_id}`);
+      }
+    } catch {
+      setErrorMsg("Error al avanzar la orden en sandbox");
+      setStep("error");
+    } finally {
+      setSandboxAdvancing(false);
+    }
+  }, [result, router]);
+
   const handleSubmit = useCallback(async () => {
     if (!token || !name.trim() || !email.includes("@")) return;
+
+    // Rate preview amount check (best-effort — rate preview may not be loaded yet)
+    if (ratePreview && ratePreview.amount_to_pay < MIN_AMOUNT_USD) {
+      setErrorMsg(`El monto mínimo de envío es $${MIN_AMOUNT_USD} USD.`);
+      setStep("error");
+      return;
+    }
+
     setStep("loading");
     try {
       const res = await fetch("/api/bridge/pay", {
@@ -153,10 +187,10 @@ export default function PagarPage() {
         }),
       });
       const data = await res.json() as PayResponse;
-      // 202 = KYC required before VA can be created
-      if (res.status === 202 && data.needs_kyc) {
+      // 202 = KYC or ToS required before VA can be created
+      if (res.status === 202) {
         setResult(data);
-        setStep("instructions"); // instructions screen shows KYC banner
+        setStep("instructions"); // instructions screen shows KYC/ToS banner
         return;
       }
       if (!res.ok || data.error) {
@@ -174,7 +208,7 @@ export default function PagarPage() {
       setErrorMsg(t("error_connection"));
       setStep("error");
     }
-  }, [token, name, email, currency, phone]);
+  }, [token, name, email, currency, phone, ratePreview]);
 
   function copyAll() {
     if (!result) return;
@@ -262,6 +296,18 @@ export default function PagarPage() {
           </div>
         )}
 
+        {/* ToS banner — production: new customers must accept Bridge Terms before proceeding */}
+        {result.needs_tos && result.tos_url && (
+          <div className="bg-blue-900/30 border border-blue-500/40 rounded-xl p-4 mb-4">
+            <p className="text-blue-400 text-xs font-semibold mb-1">{t("tos_required_title")}</p>
+            <p className="text-slate-400 text-xs mb-2">{t("tos_required_body")}</p>
+            <a href={result.tos_url} target="_blank" rel="noopener noreferrer"
+              className="block text-center bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors">
+              {t("tos_accept_button")}
+            </a>
+          </div>
+        )}
+
         {/* Deposit instructions */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mb-4">
           <div className="flex items-center justify-between mb-3">
@@ -290,6 +336,12 @@ export default function PagarPage() {
           {di.clabe               && <CopyField label="CLABE"                    value={di.clabe} />}
           {di.br_code             && <CopyField label="Chave PIX / BR Code"      value={di.br_code} />}
           {di.sort_code           && <CopyField label="Sort code"                value={di.sort_code} />}
+        </div>
+
+        {/* Efecto Memoria — tell the user to save these bank details for recurring transfers */}
+        <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-xl px-4 py-3 mb-4">
+          <p className="text-emerald-400 text-xs font-semibold mb-1">{t("va_save_title")}</p>
+          <p className="text-slate-400 text-xs leading-relaxed">{t("va_save_body")}</p>
         </div>
 
         {/* Fee breakdown */}
@@ -352,6 +404,17 @@ export default function PagarPage() {
           <CheckCircle2 className="w-5 h-5" />
           {t("confirm_sent")}
         </button>
+
+        {/* Sandbox-only: skip waiting for real webhooks */}
+        {isSandbox && (
+          <button
+            onClick={handleSandboxAdvance}
+            disabled={sandboxAdvancing}
+            className="w-full border border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20 active:scale-95 disabled:opacity-40 transition-all text-yellow-400 font-semibold py-3 rounded-2xl text-xs mb-4"
+          >
+            {sandboxAdvancing ? "Simulando…" : "⚡ Simular pago (sandbox)"}
+          </button>
+        )}
 
         <p className="text-slate-600 text-[10px] text-center pb-2">
           {t("footer_ref").replace("{order_id}", result.order_id)}

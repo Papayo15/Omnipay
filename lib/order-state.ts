@@ -26,15 +26,19 @@ export type OrderStatus =
   | "COMPLETED"            // Payout exitoso
   | "FAILED";              // Error irrecuperable (se emitió refund si aplica)
 
+export type OrderType = "p2p" | "b2b-bridge" | "b2b-stripe";
+
 export interface OrderRecord {
   orderId:            string;
   status:             OrderStatus;
+  orderType?:         OrderType;  // defaults to "p2p" if not set
   payInProvider?:     string;
   payOutProvider?:    string;
   destinationCountry: string;
   recipientName:      string;
   recipientAccount:   string;     // cifrado — solo se guarda masked para display
   targetCurrency:     string;
+  amount?:            number;     // sender amount in source currency
   usdcGross?:         number;
   usdcNet?:           number;
   omnipayFee?:        number;

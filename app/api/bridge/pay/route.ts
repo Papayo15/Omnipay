@@ -11,13 +11,15 @@
 //                 liquidation address auto-pays receptor via SPEI/card/ACH etc.
 
 import { NextRequest, NextResponse }              from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink } from "@/providers/bridge/customers";
 import { createVirtualAccount }                   from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
 import { buildDynamicQuote }                      from "@/lib/bridge-fees";
 import { createOrder }                            from "@/lib/order-state";
+import { getRedis }                               from "@/lib/redis";
 
-export const runtime = "edge";
+// nodejs required — Redis TCP sockets incompatible with Edge
+export const runtime = "nodejs";
 
 interface PayBody {
   token:           string;   // encrypted token from /api/bridge/checkout
@@ -161,14 +163,21 @@ export async function POST(req: NextRequest): Promise<Response> {
     // 4. Create Virtual Account for sender
     // Bridge flow: sender deposits fiat → VA converts to USDC → sends to liquidation address
     // → liquidation address auto-pays receptor's bank/card
+    //
+    // "Efecto Memoria": VA is STATIC — same sender+recipient always gets the same VA
+    // (same routing number + account number). Sender saves details once in their bank app
+    // and all future transfers arrive automatically without visiting OmniPay again.
     const network = NETWORK_BY_CURRENCY[source_currency] ?? "polygon";
     const va = await createVirtualAccount({
       customerId:          senderCustomer.id,
       sourceCurrency:      source_currency,
-      destinationAddress:  meta.liq_addr_address,  // USDC Polygon address of liquidation addr
+      destinationAddress:  meta.liq_addr_address,
       destinationNetwork:  network,
       developerFeePercent: "0.50",  // OmniPay's 0.50% collected automatically by Bridge
-      reference:           orderId,
+      // Stable reference — uses liq_addr_id so same VA is returned on repeat sends
+      // (idempotency key: va-{customerId}-{liqAddrId})
+      reference:           meta.liq_addr_id,
+      developerReference:  `liq-${meta.liq_addr_id}`,  // appears in deposit_received webhook
     });
 
     // Sender's locale from cookie (for email i18n)
@@ -176,18 +185,35 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // 5. Create local in-memory order for tracking
     createOrder(orderId, {
+      orderType:          "p2p",
       destinationCountry: meta.country,
       targetCurrency:     meta.target_currency,
       recipientName:      meta.nombre,
       recipientAccount:   meta.liq_addr_id,
       payInProvider:      "bridge-va",
       payOutProvider:     "bridge-liq",
+      amount:             amountUSD,
       senderEmail:        sender_email.toLowerCase(),
       recipientEmail:     (meta as { email?: string }).email ?? undefined,
       trackUrl:           `${appUrl}/seguimiento?order_id=${orderId}`,
       senderLocale,
       recipientLocale:    meta.recipient_locale ?? "es",
     });
+
+    // 6. Store VA metadata in Redis for "Efecto Memoria" — no PII, only routing identifiers.
+    // When sender deposits directly from their bank (bypassing OmniPay), the webhook uses
+    // this to auto-create a tracking order. TTL: 1 year (VA is permanent in Bridge).
+    if (process.env.REDIS_URL) {
+      try {
+        const redis = await getRedis();
+        await redis.set(`va:${va.id}`, JSON.stringify({
+          liq_addr_id:         meta.liq_addr_id,
+          destination_country: meta.country,
+          target_currency:     meta.target_currency,
+          source_currency,
+        }), { EX: 365 * 86400 });
+      } catch { /* best-effort — failure here doesn't block the payment */ }
+    }
 
     const di = va.source_deposit_instructions;
     const railLabel = source_currency === "eur" ? "SEPA"

@@ -460,7 +460,12 @@
     "currency_eur": "EUR — Euro",
     "currency_gbp": "GBP — Bảng Anh",
     "currency_mxn": "MXN — Peso Mexico",
-    "currency_brl": "BRL — Real Brazil"
+    "currency_brl": "BRL — Real Brazil",
+    "va_save_title": "💾 Lưu thông tin ngân hàng này",
+    "va_save_body": "Lần tới, chỉ cần chuyển khoản trực tiếp từ ngân hàng của bạn đến tài khoản này. Tiền sẽ tự động đến người nhận mà không cần truy cập OmniPay.",
+    "tos_required_title": "⚠️ Chấp nhận Điều khoản Bridge",
+    "tos_required_body": "Bạn phải chấp nhận điều khoản của Bridge trước khi tiếp tục. Nhấp, chấp nhận và quay lại trang này.",
+    "tos_accept_button": "Chấp nhận Điều khoản Bridge →"
   },
   "seguimiento": {
     "page_title": "Trạng thái chuyển tiền",

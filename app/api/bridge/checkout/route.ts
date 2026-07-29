@@ -2,19 +2,19 @@
 //
 // RECEPTOR generates a payment link.
 // Flow:
-//   1. Receptor provides name, email, country, receive method (card or bank), account details, amount
+//   1. Receptor provides name, email, country, bank account details, amount
 //   2. Server creates/finds customer in Bridge (KYC)
 //   3. If KYC incomplete → return KYC link (202). Receptor must complete, then call again.
-//   4. Server creates a liquidation address (where USDC will flow into their bank/card)
+//   4. Server creates a liquidation address (where USDC will flow into their bank)
 //   5. Server encrypts metadata into a token
 //   6. Returns shareable link: ${APP_URL}/pagar?t={token}&type=p2p
 //
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getKycLink, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
-import type { CreateLiquidationParams, ReceiveMethod } from "@/providers/bridge/liquidation";
+import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
 import { getTargetCurrency }               from "@/lib/routing";
 
@@ -24,8 +24,7 @@ interface CheckoutBody {
   nombre:           string;
   email:            string;
   country:          string;
-  receive_method:   ReceiveMethod;
-  card_number?:     string;  // reserved for future card push rail
+  receive_method:   "bank";
   clabe?:           string;
   iban?:            string;
   bic?:             string;  // SEPA BIC/SWIFT code
@@ -46,7 +45,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const {
     nombre, email, country, receive_method,
-    card_number, clabe, iban, bic, pix_key, routing_number, account_number,
+    clabe, iban, bic, pix_key, routing_number, account_number,
     sort_code, bank_name, bank_code,
     amount_target, recipient_phone,
   } = body;
@@ -57,15 +56,9 @@ export async function POST(req: NextRequest): Promise<Response> {
       { status: 400 },
     );
   }
-  if (receive_method === "card") {
+  if (!NATIVE_RAILS[country.toUpperCase()]) {
     return NextResponse.json(
-      { error: "Card push is not yet available. Use receive_method: \"bank\" with a supported bank account." },
-      { status: 400 },
-    );
-  }
-  if (receive_method === "bank" && !NATIVE_RAILS[country.toUpperCase()]) {
-    return NextResponse.json(
-      { error: `No native bank rail for ${country}. Use receive_method: "card" instead.` },
+      { error: `País no soportado por Bridge en este momento. Países disponibles: MX, US, BR, CO, GB y zona SEPA.` },
       { status: 400 },
     );
   }
@@ -118,7 +111,6 @@ export async function POST(req: NextRequest): Promise<Response> {
       receiveMethod: receive_method,
       ownerName:     nombre,
       ownerType:     "individual",
-      cardNumber:    card_number,
       clabe, iban, bic, pixKey: pix_key,
       routingNumber: routing_number, accountNumber: account_number,
       bankName: bank_name, sortCode: sort_code, bankCode: bank_code,
@@ -142,6 +134,34 @@ export async function POST(req: NextRequest): Promise<Response> {
         });
       } catch { /* duplicate_record = already pending, fine */ }
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
+
+      // Verify KYC actually activated after simulation
+      try {
+        const verified = await getCustomer(customer.id);
+        const isActive = verified.status === "active" || verified.kyc_status === "approved";
+        if (!isActive) {
+          return NextResponse.json({
+            error: "La cuenta del receptor no pudo activarse en Bridge sandbox.",
+            bridge_type: "kyc_not_active",
+          }, { status: 422 });
+        }
+      } catch { /* best-effort — proceed and let createLiquidationAddress surface real error */ }
+    }
+
+    // ToS gate for new customers in production — Bridge requires signed ToS before customer creation
+    if (!isSandbox && isNew) {
+      try {
+        const tosLink = await createTosLink({
+          full_name: nombre,
+          email:     email.toLowerCase(),
+          type:      "individual",
+        });
+        return NextResponse.json({
+          needs_tos: true,
+          tos_url:   tosLink.url,
+          message:   "El receptor debe aceptar los Términos de Bridge antes de continuar.",
+        }, { status: 202 });
+      } catch { /* ToS link creation failed — proceed; Bridge will reject customer creation if truly required */ }
     }
 
     // After simulate, create the external account so payout_fiat becomes active.

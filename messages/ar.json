@@ -460,7 +460,12 @@
     "currency_eur": "EUR — يورو",
     "currency_gbp": "GBP — جنيه إسترليني",
     "currency_mxn": "MXN — بيزو مكسيكي",
-    "currency_brl": "BRL — ريال برازيلي"
+    "currency_brl": "BRL — ريال برازيلي",
+    "va_save_title": "💾 احفظ بياناتك البنكية",
+    "va_save_body": "في المرة القادمة، قم بتحويل الأموال مباشرة من بنكك إلى هذا الحساب. ستصل الأموال تلقائياً إلى المستلم دون الحاجة لزيارة OmniPay.",
+    "tos_required_title": "⚠️ قبول شروط Bridge",
+    "tos_required_body": "يجب قبول شروط Bridge قبل المتابعة. انقر، وافق، ثم عد إلى هذه الصفحة.",
+    "tos_accept_button": "قبول شروط Bridge →"
   },
   "seguimiento": {
     "page_title": "حالة التحويل",

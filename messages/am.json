@@ -460,7 +460,12 @@
     "currency_eur": "EUR — ዩሮ",
     "currency_gbp": "GBP — የብሪቲሽ ፓውንድ",
     "currency_mxn": "MXN — የሜክሲኮ ፔሶ",
-    "currency_brl": "BRL — የብራዚል ሪያል"
+    "currency_brl": "BRL — የብራዚል ሪያል",
+    "va_save_title": "💾 ይህን የባንክ ዝርዝር ያስቀምጡ",
+    "va_save_body": "ሊከፍሉ ሲፈልጉ ወደ ባንክ ፕሮግራምዎ ሂደው ወደ ይህ መለያ ቀጥታ ይላኩ። ገንዘቡ ወደ ተቀባዩ ያለ OmniPay ይደርሳል።",
+    "tos_required_title": "⚠️ የBridge ውሎችን ይቀበሉ",
+    "tos_required_body": "ለመቀጠል የBridge ውሎችን ይቀበሉ። ጠቅ ያድርጉ፣ ይቀበሉ፣ ወደ ይህ ገጽ ይመለሱ።",
+    "tos_accept_button": "ውሎቹን ይቀበሉ →"
   },
   "seguimiento": {
     "page_title": "የላኪ ሁኔታ",
