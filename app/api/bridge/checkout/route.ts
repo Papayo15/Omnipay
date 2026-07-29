@@ -153,7 +153,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       }
 
       // Brief pause — sandbox KYC approval is async
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 500));
 
       // Log status for debugging — not a blocker; createLiquidationAddress is the real gate
       try {

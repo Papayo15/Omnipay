@@ -136,18 +136,14 @@ export async function POST(req: NextRequest): Promise<Response> {
       try { await simulateKycApproval(senderCustomer.id); } catch (simErr) {
         console.warn(`[bridge/pay] simulateKycApproval: ${(simErr as Error).message}`);
       }
-      // Poll until active — sandbox KYC approval is async; createVirtualAccount needs active status
-      for (let i = 0; i < 6; i++) {
-        await new Promise(r => setTimeout(r, 1000));
+      // Poll until active — sandbox KYC is async; max 3×800ms = 2.4s
+      for (let i = 0; i < 3; i++) {
+        await new Promise(r => setTimeout(r, 800));
         try {
           const verified = await getCustomer(senderCustomer.id);
           const isActive = verified.status === "active" || verified.kyc_status === "approved";
-          console.log(`[bridge/pay] sender poll ${i + 1}/6: id=${senderCustomer.id} status=${verified.status} kyc=${verified.kyc_status} active=${isActive}`);
+          console.log(`[bridge/pay] sender poll ${i + 1}/3: status=${verified.status} active=${isActive}`);
           if (isActive) break;
-          // Retry simulate on 3rd attempt — sometimes Bridge needs a second call
-          if (i === 2) {
-            try { await simulateKycApproval(senderCustomer.id); } catch { /* retry, ignore error */ }
-          }
         } catch { break; }
       }
     }
