@@ -61,12 +61,11 @@ interface RatePreview {
 
 // All Bridge Virtual Account source currencies. Labels resolved via t(`currency_${code}`).
 // USD always available. EUR/GBP/MXN/BRL require Bridge account enablement (requested via support).
+// MXN/BRL removed until Bridge enables those Virtual Accounts on our account
 const CURRENCIES = [
   { code: "usd", flag: "🇺🇸" },
   { code: "eur", flag: "🇪🇺" },
   { code: "gbp", flag: "🇬🇧" },
-  { code: "mxn", flag: "🇲🇽" },
-  { code: "brl", flag: "🇧🇷" },
 ];
 
 // Rail → i18n key suffix (normalized)
