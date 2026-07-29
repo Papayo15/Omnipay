@@ -300,6 +300,19 @@ export async function POST(req: NextRequest): Promise<Response> {
   } catch (e) {
     const err = e as Error & { type?: string; status?: number; details?: unknown };
     console.error("[bridge/checkout]", err.message, err.type, err.status, JSON.stringify(err.details));
+
+    // Friendly message when a corridor/currency isn't enabled on the Bridge account yet
+    const detailsStr = JSON.stringify(err.details ?? "");
+    const msg = err.message ?? "";
+    if (msg.toLowerCase().includes("not fully enabled") || detailsStr.toLowerCase().includes("not fully enabled")) {
+      const currencyMatch = detailsStr.match(/\b([A-Z]{3})\b/) ?? msg.match(/\b([A-Z]{3})\b/);
+      const currency = currencyMatch?.[1] ?? targetCurrency ?? "";
+      return NextResponse.json({
+        error: `${currency} no está habilitado aún en nuestra cuenta Bridge. Por el momento puedes recibir en USD, EUR, MXN o GBP. Estamos activando más monedas — contáctanos si necesitas ${currency} urgente.`,
+        currency_not_enabled: currency,
+      }, { status: 422 });
+    }
+
     return NextResponse.json({
       error:          err.message,
       bridge_type:    err.type ?? null,

@@ -291,13 +291,19 @@ export async function POST(req: NextRequest): Promise<Response> {
     const err = e as Error & { type?: string; status?: number; details?: unknown };
     console.error("[bridge/pay]", err.message, err.type, err.status, JSON.stringify(err.details));
 
-    // Friendly message for currency not enabled on Bridge account
+    // Friendly message for currency not enabled on Bridge account.
+    // Bridge returns "not fully enabled" in err.message OR buried in err.details.source.key
     const msg = err.message ?? "";
-    if (msg.toLowerCase().includes("not fully enabled") || msg.toLowerCase().includes("virtual account")) {
-      const currencyMatch = msg.match(/\b([A-Z]{3})\b/);
+    const detailsStr = JSON.stringify(err.details ?? "");
+    const notEnabled = msg.toLowerCase().includes("not fully enabled")
+      || detailsStr.toLowerCase().includes("not fully enabled");
+    if (notEnabled) {
+      // Extract the 3-letter currency from the details string or the source_currency
+      const currencyMatch = detailsStr.match(/\b([A-Z]{3})\b/) ?? msg.match(/\b([A-Z]{3})\b/);
       const currency = currencyMatch?.[1] ?? source_currency?.toUpperCase() ?? "";
+      console.warn(`[bridge/pay] currency not enabled: ${currency}`);
       return NextResponse.json({
-        error: `${currency} no está habilitado en nuestra cuenta Bridge para envíos de esa moneda. Intenta con USD o EUR, o contáctanos.`,
+        error: `${currency} no está habilitado aún en nuestra cuenta Bridge. Por el momento usa USD o EUR. Estamos activando más monedas — contáctanos si necesitas ${currency} urgente.`,
         currency_not_enabled: currency,
       }, { status: 422 });
     }
