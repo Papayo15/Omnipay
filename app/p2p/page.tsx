@@ -107,9 +107,9 @@ function calcBridgeFees(amtLocal: number, localCurrency: string, fxRate: number,
   const offramp = parseFloat((usd * 0.0025).toFixed(2));
   const fxPct   = BRIDGE_FX_RATES[localCurrency] ?? 0.005;
   const fxFee   = parseFloat((usd * fxPct).toFixed(2));
-  const omniSvc = parseFloat(Math.max(usd * 0.005, 1.99).toFixed(2));
-  const omniFlat = 0.99;
-  const kyc      = isNew ? 2.00 : 0;
+  const omniSvc = parseFloat(Math.max(usd * 0.005, 0.99).toFixed(2));
+  const omniFlat = 0.49;
+  const kyc      = 0;  // KYC absorbido por OmniPay — siempre $0 para el usuario
   const total    = parseFloat((usd + onramp + offramp + fxFee + omniSvc + omniFlat + kyc).toFixed(2));
   return { usd: parseFloat(usd.toFixed(2)), onramp, offramp, fxFee, fxPct, omniSvc, omniFlat, kyc, total };
 }
@@ -284,7 +284,10 @@ export default function P2PPage() {
   }, [nombre, amountLocal, currency, shareLink, realSenderTotal, t]);
 
   const accountValid = account.trim().length >= 5;
-  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && parseFloat(amountLocal) >= 1 && rail === "bridge";
+  const amtUSDLocal  = fxRate && parseFloat(amountLocal) >= 1
+    ? (currency === "USD" ? parseFloat(amountLocal) : parseFloat(amountLocal) * fxRate)
+    : 0;
+  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && amtUSDLocal >= 20 && rail === "bridge";
 
   // ── Generating ──────────────────────────────────────────────────────────────
   if (step === "generating") {
@@ -478,16 +481,23 @@ export default function P2PPage() {
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
             </div>
 
-            {/* Primera vez toggle */}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={isNew} onChange={e => setIsNew(e.target.checked)}
-                className="w-4 h-4 accent-emerald-500" />
-              <span className="text-slate-400 text-xs">Primera transacción (incluye verificación KYC $2)</span>
-            </label>
-
             {/* Fee breakdown — cálculo local, sin API call, instantáneo */}
             {fxRate && parseFloat(amountLocal) >= 1 && (() => {
-              const f = calcBridgeFees(parseFloat(amountLocal), currency, fxRate, isNew);
+              const f = calcBridgeFees(parseFloat(amountLocal), currency, fxRate, false);
+              const amtUSD = currency === "USD" ? parseFloat(amountLocal) : parseFloat(amountLocal) * fxRate;
+              const belowMin = amtUSD < 20;
+              if (belowMin) {
+                const minLocal = currency === "USD" ? 20
+                  : currency === "MXN" ? 380 : currency === "BRL" ? 110
+                  : currency === "EUR" ? 19 : currency === "GBP" ? 16
+                  : currency === "COP" ? 85_000 : Math.ceil(20 / fxRate);
+                return (
+                  <div className="bg-red-900/20 border border-red-500/40 rounded-2xl p-4 text-center">
+                    <p className="text-red-400 text-sm font-semibold">Monto mínimo: {minLocal.toLocaleString()} {currency}</p>
+                    <p className="text-slate-500 text-xs mt-1">Equivalente a $20 USD</p>
+                  </div>
+                );
+              }
               return (
                 <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
                   <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-2">Desglose de tarifas</p>
