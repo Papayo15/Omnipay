@@ -497,5 +497,9 @@
     "email_title": "Kuitansi melalui email",
     "email_body": "Setelah transfer selesai, pengirim dan penerima akan menerima kuitansi melalui email.",
     "footer": "🔒 OmniPay · Tidak ada data yang disimpan"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ Apakah klien Anda bisa transfer bank?",
+    "b2b_bridge_banner_body": "Gunakan Bridge Wire — 60% lebih murah dan tiba dalam 1-2 hari bukan 4-5 hari."
   }
 }

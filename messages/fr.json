@@ -497,5 +497,9 @@
     "email_title": "Reçu par e-mail",
     "email_body": "À la fin du virement, l'expéditeur et le bénéficiaire recevront un reçu par e-mail.",
     "footer": "🔒 OmniPay · Aucune donnée stockée"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ Ton client peut faire un virement ?",
+    "b2b_bridge_banner_body": "Utilise Bridge Wire — 60 % moins cher et livré en 1-2 jours au lieu de 4-5."
   }
 }

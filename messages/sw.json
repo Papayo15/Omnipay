@@ -497,5 +497,9 @@
     "email_title": "Risiti kwa barua pepe",
     "email_body": "Uhamisho ukikamilika, mtumaji na mpokeaji wote watapokea risiti kwa barua pepe.",
     "footer": "🔒 OmniPay · Hakuna data iliyohifadhiwa"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ Je, mteja wako anaweza kutuma wire transfer?",
+    "b2b_bridge_banner_body": "Tumia Bridge Wire — nafuu zaidi kwa 60% na inafika siku 1-2 badala ya 4-5."
   }
 }

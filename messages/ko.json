@@ -497,5 +497,9 @@
     "email_title": "이메일 영수증",
     "email_body": "이체가 완료되면 송금인과 수취인 모두 이메일로 영수증을 받습니다.",
     "footer": "🔒 OmniPay · 데이터 저장 없음"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ 고객이 전신 송금을 할 수 있나요?",
+    "b2b_bridge_banner_body": "Bridge Wire 사용 — 60% 저렴하고 4-5일 대신 1-2일 이내에 도착합니다."
   }
 }

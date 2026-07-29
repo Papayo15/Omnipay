@@ -497,5 +497,9 @@
     "email_title": "Rasit ta imel",
     "email_body": "Da zarar canja wurin ya kammala, mai aika da mai karɓa duka za su karɓi rasit ta imel.",
     "footer": "🔒 OmniPay · Babu bayanan da aka adana"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ Shin abokin cinikin ka na iya yin canja kudi?",
+    "b2b_bridge_banner_body": "Yi amfani da Bridge Wire — kashi 60% arha kuma ya isa cikin kwana 1-2 maimakon 4-5."
   }
 }

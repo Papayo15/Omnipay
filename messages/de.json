@@ -497,5 +497,9 @@
     "email_title": "Quittung per E-Mail",
     "email_body": "Wenn die Überweisung abgeschlossen ist, erhalten sowohl Sender als auch Empfänger eine Quittung per E-Mail.",
     "footer": "🔒 OmniPay · Keine Datenspeicherung"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ Kann dein Kunde eine Überweisung machen?",
+    "b2b_bridge_banner_body": "Nutze Bridge Wire — 60% günstiger und in 1-2 Tagen statt 4-5."
   }
 }

@@ -497,5 +497,9 @@
     "email_title": "E-posta ile makbuz",
     "email_body": "Transfer tamamlandığında, hem gönderici hem de alıcı e-posta ile makbuz alacak.",
     "footer": "🔒 OmniPay · Sıfır veri depolanır"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ Müşteriniz havale yapabilir mi?",
+    "b2b_bridge_banner_body": "Bridge Wire kullanın — %60 daha ucuz ve 4-5 yerine 1-2 günde ulaşır."
   }
 }

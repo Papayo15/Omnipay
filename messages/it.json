@@ -497,5 +497,9 @@
     "email_title": "Ricevuta via email",
     "email_body": "Al completamento del trasferimento, mittente e destinatario riceveranno una ricevuta via email.",
     "footer": "🔒 OmniPay · Nessun dato memorizzato"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ Il tuo cliente può fare un bonifico?",
+    "b2b_bridge_banner_body": "Usa Bridge Wire — 60% più economico e arriva in 1-2 giorni invece di 4-5."
   }
 }

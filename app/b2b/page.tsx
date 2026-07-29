@@ -584,6 +584,19 @@ export default function B2BPage() {
         <Calculator visibleChannels={["b2b"]} />
       </div>
 
+      {/* Bridge Wire banner — faster & cheaper alternative */}
+      <div className="w-full max-w-sm mx-auto px-5 mb-4">
+        <a href="/b2b-bridge" className="block bg-emerald-900/20 border border-emerald-500/30 hover:border-emerald-400/60 rounded-xl px-4 py-3 transition-colors group">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-emerald-400 text-xs font-semibold">{t("b2b_bridge_banner_title")}</p>
+              <p className="text-slate-400 text-xs mt-0.5 leading-relaxed">{t("b2b_bridge_banner_body")}</p>
+            </div>
+            <span className="text-emerald-400 text-lg flex-shrink-0 group-hover:translate-x-1 transition-transform">→</span>
+          </div>
+        </a>
+      </div>
+
       {/* 3-4 days notice */}
       <div className="w-full max-w-sm mx-auto px-5 mb-4">
         <div className="bg-amber-900/20 border border-amber-500/30 rounded-xl px-4 py-3 flex items-start gap-2">

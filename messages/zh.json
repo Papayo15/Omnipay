@@ -497,5 +497,9 @@
     "email_title": "电子邮件收据",
     "email_body": "转账完成后，汇款人和收款人都将收到电子邮件收据。",
     "footer": "🔒 OmniPay · 零数据存储"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ 您的客户可以电汇吗？",
+    "b2b_bridge_banner_body": "使用 Bridge Wire — 便宜 60%，1-2 天到账，而不是 4-5 天。"
   }
 }

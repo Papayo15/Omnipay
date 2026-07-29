@@ -475,5 +475,9 @@
     "email_title": "Comprobante por email",
     "email_body": "Cuando se complete el envío, tanto el emisor como el receptor recibirán el comprobante en su correo electrónico.",
     "footer": "🔒 OmniPay · Zero datos almacenados"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ ¿Tu cliente puede hacer wire transfer?",
+    "b2b_bridge_banner_body": "Usa Bridge Wire — 60% más barato y llega en 1-2 días en lugar de 4-5."
   }
 }

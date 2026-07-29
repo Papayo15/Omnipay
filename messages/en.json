@@ -497,5 +497,9 @@
     "email_title": "Receipt by email",
     "email_body": "When the transfer completes, both sender and recipient will receive a receipt by email.",
     "footer": "🔒 OmniPay · Zero data stored"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ Can your client wire transfer?",
+    "b2b_bridge_banner_body": "Use Bridge Wire — 60% cheaper and arrives in 1-2 days instead of 4-5."
   }
 }

@@ -497,5 +497,9 @@
     "email_title": "ደረሰኝ በኢሜል",
     "email_body": "ላኪ እና ተቀባዩ ሁለቱም ሲጠናቀቅ ኢሜል ይቀበላሉ።",
     "footer": "🔒 OmniPay · ምንም ዳታ አይቀመጥም"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ ደንበኛዎ ዋየር ማስተላለፍ ይችላሉ?",
+    "b2b_bridge_banner_body": "Bridge Wire ይጠቀሙ — 60% ርካሽ እና በ4-5 ቀን ፋንታ በ1-2 ቀን ይደርሳል።"
   }
 }

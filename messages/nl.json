@@ -497,5 +497,9 @@
     "email_title": "Ontvangstbewijs per e-mail",
     "email_body": "Wanneer de overboeking is voltooid, ontvangen zowel de verzender als de ontvanger een ontvangstbewijs per e-mail.",
     "footer": "🔒 OmniPay · Geen gegevens opgeslagen"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ Kan je klant een overboeking doen?",
+    "b2b_bridge_banner_body": "Gebruik Bridge Wire — 60% goedkoper en aankomt in 1-2 dagen in plaats van 4-5."
   }
 }

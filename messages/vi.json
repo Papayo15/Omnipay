@@ -497,5 +497,9 @@
     "email_title": "Biên lai qua email",
     "email_body": "Khi chuyển tiền hoàn tất, cả người gửi và người nhận đều sẽ nhận biên lai qua email.",
     "footer": "🔒 OmniPay · Không lưu trữ dữ liệu"
+  },
+  "b2b": {
+    "b2b_bridge_banner_title": "⚡ Khách hàng của bạn có thể chuyển khoản không?",
+    "b2b_bridge_banner_body": "Dùng Bridge Wire — rẻ hơn 60% và đến trong 1-2 ngày thay vì 4-5 ngày."
   }
 }
