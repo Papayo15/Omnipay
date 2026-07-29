@@ -6,7 +6,7 @@
 //
 // OmniPay charges: 0.50% + flat on all channels (min $0.99)
 // ALL provider costs shown in total_sender_pays — the sender sees one final number.
-// KYC absorbed as acquisition cost (P2P) — KYB $10 real Bridge cost (B2B).
+// KYC (P2P) and KYB (B2B) both absorbed as acquisition cost.
 //
 // Competitive position on $300 USD (Bridge channel):
 //   Wise ~$2.81 · Felix Pago ~$3.60 hidden in FX · OmniPay: $4.24 ← transparent & fair
@@ -15,8 +15,7 @@
 //   Stripe card acceptance: $29.30 (2.9%+$0.30)
 //   Wise transfer + FX:     $8.00  (0.80% conservative — varies by corridor)
 //   OmniPay service:        $6.99  (0.50%+$1.99)
-//   KYB (1ª vez):           $10.00
-//   Total sender pays:      $1,054.29 (1ª vez) / $1,044.29 (recurrente)
+//   Total sender pays:      $1,044.29
 //   Delivery:               4-5 días hábiles (Stripe payout → Wise transfer)
 
 import { findCustomerByEmail } from "@/providers/bridge/customers";
@@ -39,9 +38,9 @@ export const OMNIPAY_FLAT_P2P    = 0.49;   // was 0.99 — lower entry cost
 export const OMNIPAY_FLAT_B2B    = 1.99;  // covers Bridge VA $2/month in B2B
 export const OMNIPAY_MIN_FEE     = 0.99;   // was 1.99 — 0.50% activates from $200
 
-// One-time KYC/KYB — KYC absorbed as acquisition cost; KYB is real Bridge requirement
-export const KYC_FEE_P2P = 0.00;   // was 2.00 — absorbed to improve first-time conversion
-export const KYB_FEE_B2B = 10.00;
+// KYC/KYB both absorbed as acquisition cost — zero friction for first-time users
+export const KYC_FEE_P2P = 0.00;
+export const KYB_FEE_B2B = 0.00;
 
 // Wise B2B costs (transfer fee + FX spread, conservative estimate covering most corridors)
 // CAD→MXN ~0.79% · CAD→USD ~0.31% · CAD→EUR ~0.41% · worst case ~1.2%

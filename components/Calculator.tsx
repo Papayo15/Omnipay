@@ -37,7 +37,7 @@ const OMNIPAY_FLAT_P2P   = 0.49;   // updated 2026-07-29
 const OMNIPAY_FLAT_B2B   = 1.99;
 const OMNIPAY_MIN        = 0.99;   // updated 2026-07-29
 const KYC_P2P            = 0.00;   // absorbed as acquisition cost
-const KYB_B2B            = 10.00;
+const KYB_B2B            = 0.00;  // absorbed as acquisition cost (same as KYC P2P)
 
 // Countries with native Bridge bank rails
 const BRIDGE_CODES = new Set([
@@ -256,18 +256,7 @@ export default function Calculator({ visibleChannels }: CalcProps = {}) {
           </div>
         )}
 
-        {/* Primera vez toggle — solo visible para B2B (KYB $10 real de Bridge) */}
-        {channel === "b2b" && (
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isNew}
-              onChange={e => setIsNew(e.target.checked)}
-              className="w-4 h-4 accent-emerald-500"
-            />
-            <span className="text-slate-400 text-xs">Primera transacción empresarial (incluye KYB)</span>
-          </label>
-        )}
+        {/* KYB toggle removed — OmniPay absorbs KYB cost for all B2B channels */}
 
         {/* Fee breakdown */}
         {quote && (
