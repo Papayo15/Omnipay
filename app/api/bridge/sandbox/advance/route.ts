@@ -12,8 +12,8 @@
 // Rejected in production — returns 403.
 
 import { NextRequest, NextResponse } from "next/server";
-import { updateOrder, getOrder }     from "@/lib/order-state";
-import { handleCompletion }          from "@/app/api/bridge/webhook/route";
+import { updateOrder, getOrderAsync } from "@/lib/order-state";
+import { handleCompletion }           from "@/app/api/bridge/webhook/route";
 
 export const runtime = "nodejs";
 
@@ -28,9 +28,10 @@ export async function GET(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: "order_id is required and must start with OP-" }, { status: 400 });
   }
 
-  const order = getOrder(orderId);
+  // getOrderAsync falls back to Redis so this works across Vercel instances
+  const order = await getOrderAsync(orderId);
   if (!order) {
-    return NextResponse.json({ error: `Order ${orderId} not found.` }, { status: 404 });
+    return NextResponse.json({ error: `Order ${orderId} not found in memory or Redis.` }, { status: 404 });
   }
 
   // Step 1 — simulate deposit received

@@ -15,7 +15,7 @@ import { NextRequest, NextResponse }            from "next/server";
 import { getRedis }                             from "@/lib/redis";
 import { verifyBridgeWebhook, parseWebhookEvent } from "@/providers/bridge/webhooks";
 import { mapTransferStatus }                    from "@/providers/bridge/transfers";
-import { updateOrder, getOrder, createOrder }   from "@/lib/order-state";
+import { updateOrder, getOrder, getOrderAsync, createOrder } from "@/lib/order-state";
 import { sendAdminWhatsApp, sendEmailNotification } from "@/lib/notify";
 import { buildReceiptURL }                      from "@/lib/link";
 import { emailStrings }                         from "@/lib/email-i18n";
@@ -211,7 +211,8 @@ export async function POST(req: NextRequest): Promise<Response> {
 export async function handleCompletion(orderId: string, data: Record<string, unknown>) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
   const secret = process.env.LINK_SECRET ?? "";
-  const order  = getOrder(orderId);
+  // getOrderAsync falls back to Redis — works across Vercel instances
+  const order  = await getOrderAsync(orderId);
 
   // Build signed receipt URL
   let receiptUrl = `${appUrl}/resultado?order_id=${orderId}`;
