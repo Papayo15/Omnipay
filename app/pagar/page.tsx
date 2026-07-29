@@ -166,8 +166,8 @@ export default function PagarPage() {
   const handleSubmit = useCallback(async () => {
     if (!token || !name.trim() || !email.includes("@")) return;
 
-    // Rate preview amount check (best-effort — rate preview may not be loaded yet)
-    if (ratePreview && ratePreview.amount_to_pay < MIN_AMOUNT_USD) {
+    // Minimum check on principal (not total+fees) — server enforces this too
+    if (ratePreview && ratePreview.recipient_gets < MIN_AMOUNT_USD) {
       setErrorMsg(`El monto mínimo de envío es $${MIN_AMOUNT_USD} USD.`);
       setStep("error");
       return;

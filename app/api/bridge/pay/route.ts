@@ -96,6 +96,14 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch { /* use amount_target as-is if FX lookup fails */ }
     }
 
+    // Minimum amount guard — prevents uneconomical transactions
+    if (amountUSD < 20) {
+      return NextResponse.json(
+        { error: "El monto mínimo de envío es $20 USD." },
+        { status: 400 },
+      );
+    }
+
     // 2b. Build fee quote with dynamic KYC check for the SENDER
     const quote = await buildDynamicQuote({
       amount:  amountUSD,

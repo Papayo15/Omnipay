@@ -188,6 +188,15 @@ export default function P2PPage() {
     const amt = parseFloat(amountLocal);
     if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt) return;
 
+    // Convert local amount to USD to enforce $20 minimum
+    const rateNow = fxRate ?? 1;
+    const amtUSD  = currency === "USD" ? amt : amt / rateNow;
+    if (amtUSD < 20) {
+      setErrorMsg("El monto mínimo de envío es $20 USD.");
+      setStep("error");
+      return;
+    }
+
     // If FX rate not yet loaded, fetch it now before proceeding
     let rate = fxRate;
     if (!rate) {

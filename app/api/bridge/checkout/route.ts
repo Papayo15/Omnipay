@@ -56,6 +56,12 @@ export async function POST(req: NextRequest): Promise<Response> {
       { status: 400 },
     );
   }
+  if (amount_target < 20) {
+    return NextResponse.json(
+      { error: "El monto mínimo de envío es $20 USD." },
+      { status: 400 },
+    );
+  }
   if (!NATIVE_RAILS[country.toUpperCase()]) {
     return NextResponse.json(
       { error: `País no soportado por Bridge en este momento. Países disponibles: MX, US, BR, CO, GB y zona SEPA.` },
