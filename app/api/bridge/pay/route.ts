@@ -133,18 +133,16 @@ export async function POST(req: NextRequest): Promise<Response> {
       try {
         await createKycLink({ full_name: sender_name, email: sender_email.toLowerCase(), type: "individual", endorsements: ["base", "sepa"] });
       } catch { /* duplicate_record = already pending, fine */ }
-      try { await simulateKycApproval(senderCustomer.id); } catch { /* may already be approved */ }
-
-      // Verify customer is actually active after simulate — if not, Bridge will reject VA creation
-      const verified = await getCustomer(senderCustomer.id);
-      const isActive = verified.status === "active" || verified.kyc_status === "approved";
-      if (!isActive) {
-        console.error(`[bridge/pay] sender ${senderCustomer.id} still not active after simulate. status=${verified.status} kyc=${verified.kyc_status}`);
-        return NextResponse.json({
-          error: "La cuenta del emisor no pudo activarse en Bridge sandbox. Intenta de nuevo o revisa los logs.",
-          bridge_type: "kyc_not_active",
-        }, { status: 422 });
+      try { await simulateKycApproval(senderCustomer.id); } catch (simErr) {
+        console.warn(`[bridge/pay] simulateKycApproval: ${(simErr as Error).message}`);
       }
+      // Brief pause — sandbox KYC is async
+      await new Promise(r => setTimeout(r, 1000));
+      // Log status for debugging — not a blocker; createVirtualAccount is the real gate
+      try {
+        const verified = await getCustomer(senderCustomer.id);
+        console.log(`[bridge/pay] sender after simulate: id=${senderCustomer.id} status=${verified.status} kyc_status=${verified.kyc_status}`);
+      } catch { /* best-effort */ }
     }
 
     // KYC gate (production) — same pattern as checkout/route.ts
