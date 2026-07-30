@@ -124,6 +124,7 @@ export default function P2PPage() {
   const [email,           setEmail]           = useState("");
   const [country,         setCountry]         = useState("MX");
   const [account,         setAccount]         = useState("");
+  const [bic,             setBic]             = useState("");
   const [bankInfo,        setBankInfo]        = useState<BankInfo | null>(null);
   const [clabeValid,      setClabeValid]      = useState<boolean | null>(null);
   const [amountLocal,     setAmountLocal]     = useState("");
@@ -230,7 +231,10 @@ export default function P2PPage() {
         recipient_phone: recipientPhone || undefined,
       };
       if (country === "MX")                 body.clabe          = account;
-      else if (SEPA_COUNTRIES.has(country)) body.iban           = account;
+      else if (SEPA_COUNTRIES.has(country)) {
+        body.iban = account;
+        if (bic.trim()) body.bic = bic.trim().toUpperCase();
+      }
       else if (country === "BR")            body.pix_key        = account;
       else if (country === "GB") {
         const p = account.split("/");
@@ -471,6 +475,22 @@ export default function P2PPage() {
                 <p className="text-xs text-slate-500 mt-1">ℹ️ El pago se acredita en Euros (EUR) independientemente de la moneda local</p>
               )}
             </div>
+
+            {/* BIC/SWIFT — required for SEPA */}
+            {SEPA_COUNTRIES.has(country) && (
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">BIC / SWIFT <span className="text-slate-600">(cód. banco, ej. DEUTDEDB)</span></label>
+                <input
+                  type="text"
+                  value={bic}
+                  onChange={(e) => setBic(e.target.value.replace(/\s+/g, "").toUpperCase())}
+                  placeholder="DEUTDEDBXXX"
+                  maxLength={11}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm font-mono"
+                />
+                <p className="text-xs text-slate-600 mt-1">Lo encuentras en tu banca en línea o en swift.com</p>
+              </div>
+            )}
 
             {/* Monto a recibir */}
             <div>

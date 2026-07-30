@@ -96,9 +96,10 @@ export interface CreateLiquidationParams {
   pixKey?:         string;
   routingNumber?:  string;
   accountNumber?:  string;
-  bankName?:       string;  // ACH: required by Bridge if it can't determine name from routing number
+  bankName?:       string;
   sortCode?:       string;
-  bankCode?:       string;  // Colombia Bre-B
+  bankCode?:       string;
+  documentNumber?: string;  // PIX: CPF (11 digits) or CNPJ (14 digits)
   // Common
   ownerName:       string;
   ownerType?:      "individual" | "business";
@@ -211,6 +212,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
   const base = {
     account_owner_name: params.ownerName,
     account_owner_type: params.ownerType ?? "individual",
+    account_name:       params.ownerName,
     first_name:         firstName,
     last_name:          lastName,
     address,
@@ -225,6 +227,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       ...base,
       currency:     "mxn",
       account_type: "clabe",
+      bank_name:    params.bankName ?? "Mexican Bank",
       clabe:        { account_number: params.clabe! },
     };
   }
@@ -234,7 +237,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       ...base,
       currency:     "usd",
       account_type: "us",
-      bank_name:    params.bankName ?? "Chase Bank",
+      bank_name:    params.bankName ?? "US Bank",
       account: {
         routing_number:      params.routingNumber!,
         account_number:      params.accountNumber!,
@@ -243,15 +246,19 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
     };
   }
   // SEPA / EU — IBAN (31 countries)
-  // iban.country must be ISO2 (2-letter: "ES", "DE", etc.) — NOT ISO3
-  // bic omitted when not provided (undefined values stripped by JSON.stringify)
+  // iban.country: ISO3 (e.g. "ESP", "DEU", "IRL") per Bridge docs — same as address.country
+  // iban.bic: required by Bridge API
   if (native.rail === "sepa") {
-    const ibanBody: Record<string, string> = { account_number: params.iban!.replace(/\s+/g, ""), country };
-    if (params.bic) ibanBody.bic = params.bic;
+    const ibanBody: Record<string, string> = {
+      account_number: params.iban!.replace(/\s+/g, ""),
+      country:        iso3,
+    };
+    if (params.bic) ibanBody.bic = params.bic.replace(/\s+/g, "").toUpperCase();
     return {
       ...base,
       currency:     "eur",
       account_type: "iban",
+      bank_name:    params.bankName ?? "European Bank",
       iban:         ibanBody,
     };
   }
@@ -261,9 +268,10 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       ...base,
       currency:     "gbp",
       account_type: "gb",
+      bank_name:    params.bankName ?? "UK Bank",
       account: {
-        sort_code:      params.sortCode!,
-        account_number: params.accountNumber!,
+        sort_code:      params.sortCode!.replace(/\D/g, ""),
+        account_number: params.accountNumber!.replace(/\D/g, ""),
       },
     };
   }
@@ -273,9 +281,10 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       ...base,
       currency:     "brl",
       account_type: "pix",
+      bank_name:    params.bankName ?? "Brazilian Bank",
       pix_key: {
         pix_key:         params.pixKey!,
-        document_number: "00000000000",  // CPF placeholder for sandbox
+        document_number: params.documentNumber ?? "00000000000",
       },
     };
   }
@@ -285,6 +294,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
       ...base,
       currency:     "cop",
       account_type: "bre_b",
+      bank_name:    params.bankName ?? "Colombian Bank",
       account: {
         bre_b_key: params.accountNumber!,
       },
