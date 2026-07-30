@@ -243,16 +243,16 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
     };
   }
   // SEPA / EU — IBAN (31 countries)
+  // country is NOT sent inside iban object — IBAN already encodes country (first 2 chars)
+  // bic omitted when not provided (undefined values stripped by JSON.stringify)
   if (native.rail === "sepa") {
+    const ibanBody: Record<string, string> = { account_number: params.iban! };
+    if (params.bic) ibanBody.bic = params.bic;
     return {
       ...base,
       currency:     "eur",
       account_type: "iban",
-      iban: {
-        account_number: params.iban!,
-        bic:            params.bic,   // optional but recommended for production
-        country:        iso3,
-      },
+      iban:         ibanBody,
     };
   }
   // Faster Payments / UK
