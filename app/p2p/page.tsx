@@ -435,12 +435,12 @@ export default function P2PPage() {
             <div>
               <label className="block text-xs text-slate-400 mb-1">
                 {country === "MX" ? t("clabe_label")
-                  : SEPA_COUNTRIES.has(country) ? "IBAN · Recibirás EUR (SEPA)"
-                  : country === "BR" ? "Chave PIX"
-                  : country === "GB" ? "Sort Code / Account (00-00-00 / 12345678)"
-                  : country === "US" ? "Routing / Account (123456789 / 12345678)"
-                  : country === "CO" ? "Número de cuenta Bre-B"
-                  : "Número de cuenta"}
+                  : SEPA_COUNTRIES.has(country) ? t("iban_label")
+                  : country === "BR" ? t("pix_label")
+                  : country === "GB" ? `${t("uk_label")} (00-00-00 / 12345678)`
+                  : country === "US" ? `${t("us_label")} (021000021 / 12345678)`
+                  : country === "CO" ? t("co_label")
+                  : t("account_label")}
               </label>
               <input type="text" inputMode={country === "MX" ? "numeric" : "text"}
                 value={account}
@@ -448,10 +448,10 @@ export default function P2PPage() {
                 placeholder={
                   country === "MX" ? t("clabe_placeholder")
                   : SEPA_COUNTRIES.has(country) ? "DE89 3704 0044 0532 0130 00"
-                  : country === "BR" ? "CPF, email, celular o llave aleatoria"
+                  : country === "BR" ? t("pix_placeholder")
                   : country === "GB" ? "20-00-00 / 55779911"
-                  : country === "US" ? "021000021 / 123456789"
-                  : country === "CO" ? "Número de cuenta" : ""}
+                  : country === "US" ? "021000021 / 12345678"
+                  : country === "CO" ? t("co_label") : ""}
                 className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors ${
                   country === "MX" && account.length > 0
                     ? clabeValid === false ? "border-red-500" : clabeValid === true ? "border-emerald-500" : "border-slate-700"
@@ -472,14 +472,14 @@ export default function P2PPage() {
                 <p className="text-xs text-red-400 mt-1">{t("error_invalid_clabe")}</p>
               )}
               {SEPA_COUNTRIES.has(country) && (
-                <p className="text-xs text-slate-500 mt-1">ℹ️ El pago se acredita en Euros (EUR) independientemente de la moneda local</p>
+                <p className="text-xs text-slate-500 mt-1">ℹ️ {t("sepa_eur_note")}</p>
               )}
             </div>
 
             {/* BIC/SWIFT — required for SEPA */}
             {SEPA_COUNTRIES.has(country) && (
               <div>
-                <label className="block text-xs text-slate-400 mb-1">BIC / SWIFT <span className="text-slate-600">(cód. banco, ej. DEUTDEDB)</span></label>
+                <label className="block text-xs text-slate-400 mb-1">{t("bic_label")} <span className="text-slate-600">({t("bic_sublabel")})</span></label>
                 <input
                   type="text"
                   value={bic}
@@ -488,7 +488,7 @@ export default function P2PPage() {
                   maxLength={11}
                   className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm font-mono"
                 />
-                <p className="text-xs text-slate-600 mt-1">Lo encuentras en tu banca en línea o en swift.com</p>
+                <p className="text-xs text-slate-600 mt-1">{t("bic_hint")}</p>
               </div>
             )}
 
