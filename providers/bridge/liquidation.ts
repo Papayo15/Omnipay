@@ -74,12 +74,13 @@ export const NATIVE_RAILS: Record<string, {
 };
 
 export interface LiquidationAddress {
-  id:          string;
-  currency:    string;
-  network:     string;
-  address:     string;
-  destination: Record<string, unknown>;
-  created_at:  string;
+  id:                   string;
+  currency:             string;
+  network:              string;
+  address:              string;
+  destination:          Record<string, unknown>;
+  created_at:           string;
+  external_account_id?: string;
 }
 
 export type ReceiveMethod = "bank";
@@ -361,7 +362,8 @@ export async function createLiquidationAddress(
   // destination_currency are all at root level alongside currency and chain.
   const destCurrency = NATIVE_RAILS[country]?.currency ?? "usd";
   const destRail     = NATIVE_RAILS[country]?.rail ?? "ach";
-  const liqKey       = `liq7-${params.customerId}-${country}-${identKey}-${day}`;
+  // Stable key (no day rotation) — same customer+country+account always reuses the same liq address
+  const liqKey       = `liq8-${params.customerId}-${country}-${identKey}`;
   const liqBody      = {
     currency:                 "usdc",
     chain:                    "polygon",
@@ -370,12 +372,30 @@ export async function createLiquidationAddress(
     destination_currency:     destCurrency,
   };
 
-  return bridgeRequest<LiquidationAddress>(
-    "POST",
-    `/customers/${params.customerId}/liquidation_addresses`,
-    liqBody,
-    liqKey,
-  );
+  try {
+    return await bridgeRequest<LiquidationAddress>(
+      "POST",
+      `/customers/${params.customerId}/liquidation_addresses`,
+      liqBody,
+      liqKey,
+    );
+  } catch (e) {
+    const bridgeErr = e as Error & { type?: string; message?: string; details?: Record<string, unknown> };
+    const isDuplicate = bridgeErr.type?.includes("duplicate")
+      || bridgeErr.message?.toLowerCase().includes("already exists");
+    if (isDuplicate) {
+      // Fetch the existing liquidation address for this customer and return it
+      const list = await bridgeRequest<{ data: LiquidationAddress[] }>(
+        "GET",
+        `/customers/${params.customerId}/liquidation_addresses`,
+      );
+      const existing = (list.data ?? []).find(
+        (la) => la.external_account_id === extAcctId,
+      ) ?? list.data?.[0];
+      if (existing) return existing;
+    }
+    throw e;
+  }
 }
 
 export async function getLiquidationAddress(
