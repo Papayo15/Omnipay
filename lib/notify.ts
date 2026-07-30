@@ -16,7 +16,7 @@ export async function sendEmailNotification(
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: "OmniPay <onboarding@resend.dev>", to, subject, html }),
+    body: JSON.stringify({ from: "OmniPay <no-reply@omnipay.solutions>", to, subject, html }),
   }).catch(() => {});
 }
 
