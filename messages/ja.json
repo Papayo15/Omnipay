@@ -111,7 +111,9 @@
     "receipt_note": "本物の領収書。カードデータなし。",
     "processing_remesa": "送金処理中！",
     "wise_eta_note": "1〜2営業日以内に到着します。入金時にSMSが届きます。",
-    "new_remesa": "新規送金"
+    "new_remesa": "新規送金",
+    "bridge_eta_p2p": "⚡ 送金完了 · 資金が送られました",
+    "bridge_eta_b2b": "🏢 B2B送金処理中 · 3～4営業日で到着"
   },
   "share": {
     "copy": "リンクをコピー",

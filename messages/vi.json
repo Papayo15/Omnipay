@@ -111,7 +111,9 @@
     "receipt_note": "Biên lai xác thực. Không có dữ liệu thẻ.",
     "processing_remesa": "Đang xử lý chuyển tiền!",
     "wise_eta_note": "Chuyển khoản đến trong 1-2 ngày làm việc. SMS khi ghi có.",
-    "new_remesa": "Chuyển tiền mới"
+    "new_remesa": "Chuyển tiền mới",
+    "bridge_eta_p2p": "⚡ Chuyển khoản hoàn tất · Tiền đã được gửi",
+    "bridge_eta_b2b": "🏢 Chuyển khoản B2B đang xử lý · Đến trong 3-4 ngày làm việc"
   },
   "share": {
     "copy": "Sao chép liên kết",

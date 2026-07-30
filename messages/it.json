@@ -111,7 +111,9 @@
     "receipt_note": "Ricevuta autentica. Nessun dato della carta.",
     "processing_remesa": "Rimessa in elaborazione!",
     "wise_eta_note": "Il trasferimento arriva in 1-2 giorni lavorativi. SMS quando accreditato.",
-    "new_remesa": "Nuova rimessa"
+    "new_remesa": "Nuova rimessa",
+    "bridge_eta_p2p": "⚡ Trasferimento completato · I fondi sono stati inviati",
+    "bridge_eta_b2b": "🏢 Trasferimento B2B in corso · Arriva in 3–4 giorni lavorativi"
   },
   "share": {
     "copy": "Copia link",

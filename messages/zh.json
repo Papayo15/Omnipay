@@ -111,7 +111,9 @@
     "receipt_note": "真实收据。不含卡片数据。",
     "processing_remesa": "汇款处理中！",
     "wise_eta_note": "转账将在1-2个工作日内到达。到账时收到短信。",
-    "new_remesa": "新汇款"
+    "new_remesa": "新汇款",
+    "bridge_eta_p2p": "⚡ 转账已完成 · 资金已发送",
+    "bridge_eta_b2b": "🏢 B2B转账进行中 · 3–4个工作日内到达"
   },
   "share": {
     "copy": "复制链接",

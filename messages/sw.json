@@ -111,7 +111,9 @@
     "receipt_note": "Risiti halisi. Haina data ya kadi.",
     "processing_remesa": "Uhamisho unashughulikiwa!",
     "wise_eta_note": "Uhamisho unafika ndani ya siku 1-2 za kazi. SMS utakapopokea.",
-    "new_remesa": "Uhamisho mpya"
+    "new_remesa": "Uhamisho mpya",
+    "bridge_eta_p2p": "⚡ Uhamisho umekamilika · Pesa zimetumwa",
+    "bridge_eta_b2b": "🏢 Uhamisho wa B2B unafanyika · Unafika ndani ya siku 3-4 za kazi"
   },
   "share": {
     "copy": "Nakili kiungo",

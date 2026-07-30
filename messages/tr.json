@@ -111,7 +111,9 @@
     "receipt_note": "Gerçek makbuz. Kart verisi yok.",
     "processing_remesa": "Havale işleniyor!",
     "wise_eta_note": "Transfer 1-2 iş günü içinde ulaşır. Alındığında SMS.",
-    "new_remesa": "Yeni havale"
+    "new_remesa": "Yeni havale",
+    "bridge_eta_p2p": "⚡ Transfer tamamlandı · Para gönderildi",
+    "bridge_eta_b2b": "🏢 B2B transferi devam ediyor · 3-4 iş gününde ulaşır"
   },
   "share": {
     "copy": "Linki kopyala",

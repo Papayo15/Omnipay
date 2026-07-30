@@ -111,7 +111,9 @@
     "receipt_note": "정품 영수증. 카드 데이터 없음.",
     "processing_remesa": "송금 처리 중!",
     "wise_eta_note": "1-2 영업일 내 도착합니다. 입금 시 SMS 수신.",
-    "new_remesa": "새 송금"
+    "new_remesa": "새 송금",
+    "bridge_eta_p2p": "⚡ 이체 완료 · 자금이 전송되었습니다",
+    "bridge_eta_b2b": "🏢 B2B 이체 진행 중 · 3-4영업일 내 도착"
   },
   "share": {
     "copy": "링크 복사",

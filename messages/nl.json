@@ -111,7 +111,9 @@
     "receipt_note": "Authentieke bon. Geen kaartgegevens.",
     "processing_remesa": "Overschrijving in verwerking!",
     "wise_eta_note": "Overschrijving komt in 1-2 werkdagen. SMS bij bijschrijving.",
-    "new_remesa": "Nieuwe overschrijving"
+    "new_remesa": "Nieuwe overschrijving",
+    "bridge_eta_p2p": "⚡ Overboeking voltooid · Geld is verzonden",
+    "bridge_eta_b2b": "🏢 B2B-overboeking loopt · Aankomst in 3–4 werkdagen"
   },
   "share": {
     "copy": "Link kopiëren",

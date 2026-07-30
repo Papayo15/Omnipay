@@ -122,12 +122,12 @@ function ResultadoContent() {
             )}
             {verified && receiptData?.tt === "bridge" && (
               <div className="w-full bg-emerald-900/20 border border-emerald-700/30 rounded-2xl px-4 py-3 text-emerald-300 text-sm text-center">
-                ⚡ Transferencia inmediata vía Bridge · El receptor ya recibió su dinero
+                {t("bridge_eta_p2p")}
               </div>
             )}
             {verified && receiptData?.tt === "bridge-b2b" && (
               <div className="w-full bg-blue-900/20 border border-blue-700/30 rounded-2xl px-4 py-3 text-blue-300 text-sm text-center">
-                🏢 Transferencia B2B vía Bridge · Llega en 3–4 días hábiles
+                {t("bridge_eta_b2b")}
               </div>
             )}
 

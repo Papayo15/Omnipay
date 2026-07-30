@@ -111,7 +111,9 @@
     "receipt_note": "ትክክለኛ ደረሰኝ። የካርድ ዳታ የለም።",
     "processing_remesa": "ሬሚታንስ በሂደት ላይ!",
     "wise_eta_note": "ዝውውሩ በ1-2 የሥራ ቀናት ይደርሳል። ሲገባ SMS።",
-    "new_remesa": "አዲስ ሬሚታንስ"
+    "new_remesa": "አዲስ ሬሚታንስ",
+    "bridge_eta_p2p": "⚡ ዝውውሩ ተጠናቅቋል · ገንዘቡ ተልኳል",
+    "bridge_eta_b2b": "🏢 B2B ዝውውር በሂደት ላይ ነው · በ3-4 የሥራ ቀናት ይደርሳል"
   },
   "share": {
     "copy": "ሊንክ ቅዱ",

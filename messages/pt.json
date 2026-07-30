@@ -111,7 +111,9 @@
     "receipt_note": "Comprovante autêntico. Sem dados de cartão.",
     "processing_remesa": "Remessa em andamento!",
     "wise_eta_note": "A transferência chega em 1-2 dias úteis. SMS quando cair.",
-    "new_remesa": "Nova remessa"
+    "new_remesa": "Nova remessa",
+    "bridge_eta_p2p": "⚡ Transferência concluída · O dinheiro foi enviado",
+    "bridge_eta_b2b": "🏢 Transferência B2B em andamento · Chega em 3–4 dias úteis"
   },
   "share": {
     "copy": "Copiar link",

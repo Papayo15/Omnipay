@@ -111,7 +111,9 @@
     "receipt_note": "Kwitansi asli. Tanpa data kartu.",
     "processing_remesa": "Remitansi sedang diproses!",
     "wise_eta_note": "Transfer tiba dalam 1-2 hari kerja. SMS saat masuk.",
-    "new_remesa": "Remitansi baru"
+    "new_remesa": "Remitansi baru",
+    "bridge_eta_p2p": "⚡ Transfer selesai · Dana telah dikirim",
+    "bridge_eta_b2b": "🏢 Transfer B2B sedang diproses · Tiba dalam 3-4 hari kerja"
   },
   "share": {
     "copy": "Salin tautan",

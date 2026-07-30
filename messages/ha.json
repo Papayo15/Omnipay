@@ -111,7 +111,9 @@
     "receipt_note": "Rasiti na ainihi. Babu bayanan katunan.",
     "processing_remesa": "Ana aika kuɗin!",
     "wise_eta_note": "Canja wurin zai isa cikin kwanaki 1-2. Za ka karbi SMS.",
-    "new_remesa": "Sabon aika kuɗi"
+    "new_remesa": "Sabon aika kuɗi",
+    "bridge_eta_p2p": "⚡ Canja wuri ya kammala · An aika kuɗi",
+    "bridge_eta_b2b": "🏢 Canja wuri na B2B yana gudana · Ya zo cikin kwanaki 3-4 na aiki"
   },
   "share": {
     "copy": "Kwafi hanyar haɗi",

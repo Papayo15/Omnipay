@@ -111,7 +111,9 @@
     "receipt_note": "Comprobante auténtico. No contiene datos de tarjeta ni cuenta bancaria.",
     "processing_remesa": "¡Remesa en proceso!",
     "wise_eta_note": "La transferencia llega en 1-2 días hábiles. Recibirás SMS cuando se acredite.",
-    "new_remesa": "Nueva remesa"
+    "new_remesa": "Nueva remesa",
+    "bridge_eta_p2p": "⚡ Transferencia completada · El dinero ya fue enviado",
+    "bridge_eta_b2b": "🏢 Transferencia B2B en proceso · Llega en 3–4 días hábiles"
   },
   "share": {
     "copy": "Copiar link",

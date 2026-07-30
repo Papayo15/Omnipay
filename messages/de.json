@@ -111,7 +111,9 @@
     "receipt_note": "Authentische Quittung. Enthält keine Karten- oder Bankdaten.",
     "processing_remesa": "Überweisung in Bearbeitung!",
     "wise_eta_note": "Überweisung kommt in 1-2 Werktagen. SMS bei Gutschrift.",
-    "new_remesa": "Neue Überweisung"
+    "new_remesa": "Neue Überweisung",
+    "bridge_eta_p2p": "⚡ Überweisung abgeschlossen · Geld wurde gesendet",
+    "bridge_eta_b2b": "🏢 B2B-Überweisung läuft · Ankunft in 3–4 Werktagen"
   },
   "share": {
     "copy": "Link kopieren",

@@ -111,7 +111,9 @@
     "receipt_note": "Authentic receipt. Contains no card or bank account data.",
     "processing_remesa": "Remittance in progress!",
     "wise_eta_note": "Transfer arrives in 1-2 business days. You will receive an SMS when it credits.",
-    "new_remesa": "New remittance"
+    "new_remesa": "New remittance",
+    "bridge_eta_p2p": "⚡ Transfer completed · Funds have been sent",
+    "bridge_eta_b2b": "🏢 B2B transfer in progress · Arrives in 3–4 business days"
   },
   "share": {
     "copy": "Copy link",

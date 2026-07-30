@@ -111,7 +111,9 @@
     "receipt_note": "Reçu authentique. Sans données de carte.",
     "processing_remesa": "Virement en cours!",
     "wise_eta_note": "Le transfert arrive en 1-2 jours ouvrables. SMS à la réception.",
-    "new_remesa": "Nouveau virement"
+    "new_remesa": "Nouveau virement",
+    "bridge_eta_p2p": "⚡ Virement effectué · Les fonds ont été envoyés",
+    "bridge_eta_b2b": "🏢 Virement B2B en cours · Arrivée en 3–4 jours ouvrables"
   },
   "share": {
     "copy": "Copier le lien",
