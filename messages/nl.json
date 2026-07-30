@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "OmniPay vast tarief",
     "fee_total_sender": "Afzender betaalt totaal",
     "fee_fx_rate": "1 {currency} = {rate} USD · Live wisselkoers",
-    "error_invalid_iban": "Ongeldig IBAN.",
+    "error_invalid_iban": "Ongeldige IBAN. Begint met 2 landletters (bijv. NL02...)",
     "error_invalid_uk": "Verkeerd formaat: Sort Code / Rekening",
     "error_invalid_us": "Verkeerd formaat: Routing / Rekening",
     "error_invalid_pix": "Ongeldige PIX-sleutel.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / Rekening",
     "us_label": "Routing / Rekening",
     "co_label": "Bre-B rekeningnummer",
-    "account_label": "Rekeningnummer"
+    "account_label": "Rekeningnummer",
+    "cpf_label": "CPF of CNPJ (Braziliaans ID)",
+    "cpf_placeholder": "000.000.000-00 of 00.000.000/0001-00",
+    "cpf_hint": "Vereist door Bridge voor Brazilië",
+    "error_invalid_sort_code": "Sort Code moet 6 cijfers hebben",
+    "error_invalid_routing": "Routing number moet 9 cijfers hebben",
+    "error_invalid_account_uk": "UK rekeningnummer moet 8 cijfers hebben",
+    "bic_required": "BIC / SWIFT (vereist)"
   },
   "pagar_bridge": {
     "submit": "Verzending uitvoeren →",

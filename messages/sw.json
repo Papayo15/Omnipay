@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "Ada ya kawaida ya OmniPay",
     "fee_total_sender": "Mtumaji analipa jumla",
     "fee_fx_rate": "1 {currency} = {rate} USD · Kiwango cha sasa",
-    "error_invalid_iban": "IBAN si sahihi.",
+    "error_invalid_iban": "IBAN si sahihi. Inaanza na herufi 2 za nchi",
     "error_invalid_uk": "Umbizo sio sahihi: Sort Code / Akaunti",
     "error_invalid_us": "Umbizo sio sahihi: Routing / Akaunti",
     "error_invalid_pix": "Ufunguo wa PIX si sahihi.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / Akaunti",
     "us_label": "Routing / Akaunti",
     "co_label": "Nambari ya akaunti ya Bre-B",
-    "account_label": "Nambari ya akaunti"
+    "account_label": "Nambari ya akaunti",
+    "cpf_label": "CPF au CNPJ (kitambulisho cha Brazil)",
+    "cpf_placeholder": "000.000.000-00 au 00.000.000/0001-00",
+    "cpf_hint": "Bridge inahitaji CPF kwa Brazil",
+    "error_invalid_sort_code": "Sort Code lazima iwe na tarakimu 6",
+    "error_invalid_routing": "Routing number lazima iwe na tarakimu 9",
+    "error_invalid_account_uk": "Nambari ya akaunti ya UK lazima iwe na tarakimu 8",
+    "bic_required": "BIC / SWIFT (inahitajika)"
   },
   "pagar_bridge": {
     "submit": "Tuma pesa →",

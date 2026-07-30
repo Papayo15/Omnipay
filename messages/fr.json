@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "Frais fixes OmniPay",
     "fee_total_sender": "L'expéditeur paie au total",
     "fee_fx_rate": "1 {currency} = {rate} USD · Taux de change en direct",
-    "error_invalid_iban": "IBAN invalide. Doit commencer par 2 lettres de pays (ex. FR, DE, ES).",
+    "error_invalid_iban": "IBAN invalide. Doit commencer par 2 lettres de pays (ex. FR76...)",
     "error_invalid_uk": "Format incorrect. Utilise: Sort Code / Compte (ex. 20-00-00 / 55779911)",
     "error_invalid_us": "Format incorrect. Utilise: Routing / Compte (ex. 021000021 / 12345678)",
     "error_invalid_pix": "Clé PIX invalide.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / Compte",
     "us_label": "Routing / Compte",
     "co_label": "Numéro de compte Bre-B",
-    "account_label": "Numéro de compte"
+    "account_label": "Numéro de compte",
+    "cpf_label": "CPF ou CNPJ (ID brésilien)",
+    "cpf_placeholder": "000.000.000-00 ou 00.000.000/0001-00",
+    "cpf_hint": "Requis par Bridge pour le Brésil (CPF 11 chiffres ou CNPJ 14 chiffres)",
+    "error_invalid_sort_code": "Le Sort Code doit avoir 6 chiffres (ex. 20-00-00)",
+    "error_invalid_routing": "Le Routing Number doit avoir 9 chiffres",
+    "error_invalid_account_uk": "Le numéro de compte UK doit avoir 8 chiffres",
+    "bic_required": "BIC / SWIFT (requis)"
   },
   "pagar_bridge": {
     "submit": "Effectuer l'envoi →",

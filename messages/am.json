@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "OmniPay ቋሚ ክፍያ",
     "fee_total_sender": "ላኪ ጠቅላላ ይከፍላል",
     "fee_fx_rate": "1 {currency} = {rate} USD · ቀጥታ የምንዛሪ ዋጋ",
-    "error_invalid_iban": "IBAN ልክ አይደለም።",
+    "error_invalid_iban": "IBAN ልክ አይደለም። በ2 የሀገር ፊደላት ይጀምራል",
     "error_invalid_uk": "ቅርጸት ስህተት ነው: Sort Code / መለያ",
     "error_invalid_us": "ቅርጸት ስህተት ነው: Routing / መለያ",
     "error_invalid_pix": "PIX ቁልፍ ልክ አይደለም።",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / መለያ",
     "us_label": "Routing / መለያ",
     "co_label": "Bre-B የመለያ ቁጥር",
-    "account_label": "የመለያ ቁጥር"
+    "account_label": "የመለያ ቁጥር",
+    "cpf_label": "CPF ወይም CNPJ (የብራዚል መታወቂያ)",
+    "cpf_placeholder": "000.000.000-00 ወይም 00.000.000/0001-00",
+    "cpf_hint": "Bridge ለብራዚል CPF ይፈልጋል",
+    "error_invalid_sort_code": "Sort Code 6 ቁጥሮች ሊኖሩት ይገባል",
+    "error_invalid_routing": "Routing number 9 ቁጥሮች ሊኖሩት ይገባል",
+    "error_invalid_account_uk": "የዩኬ መለያ ቁጥር 8 ቁጥሮች ሊኖሩት ይገባል",
+    "bic_required": "BIC / SWIFT (ያስፈልጋል)"
   },
   "pagar_bridge": {
     "submit": "ገንዘብ ላክ →",

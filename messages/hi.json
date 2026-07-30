@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "OmniPay निश्चित शुल्क",
     "fee_total_sender": "प्रेषक कुल भुगतान करता है",
     "fee_fx_rate": "1 {currency} = {rate} USD · लाइव विनिमय दर",
-    "error_invalid_iban": "अमान्य IBAN।",
+    "error_invalid_iban": "IBAN अमान्य। 2 देश अक्षरों से शुरू होता है",
     "error_invalid_uk": "गलत प्रारूप: Sort Code / खाता",
     "error_invalid_us": "गलत प्रारूप: Routing / खाता",
     "error_invalid_pix": "अमान्य PIX कुंजी।",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / खाता",
     "us_label": "Routing / खाता",
     "co_label": "Bre-B खाता संख्या",
-    "account_label": "खाता संख्या"
+    "account_label": "खाता संख्या",
+    "cpf_label": "CPF या CNPJ (ब्राज़ील ID)",
+    "cpf_placeholder": "000.000.000-00 या 00.000.000/0001-00",
+    "cpf_hint": "Bridge को ब्राज़ील के लिए CPF चाहिए",
+    "error_invalid_sort_code": "Sort Code में 6 अंक होने चाहिए",
+    "error_invalid_routing": "Routing number में 9 अंक होने चाहिए",
+    "error_invalid_account_uk": "UK खाता संख्या में 8 अंक होने चाहिए",
+    "bic_required": "BIC / SWIFT (आवश्यक)"
   },
   "pagar_bridge": {
     "submit": "पैसे भेजें →",

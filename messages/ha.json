@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "Kudin OmniPay na tsaye",
     "fee_total_sender": "Mai aika yana biya gaba daya",
     "fee_fx_rate": "1 {currency} = {rate} USD · Farashin kudi na yanzu",
-    "error_invalid_iban": "IBAN mara inganci.",
+    "error_invalid_iban": "IBAN mara inganci. Yana farawa da haruffa 2 na ƙasa",
     "error_invalid_uk": "Tsari ba daidai: Sort Code / Asusun",
     "error_invalid_us": "Tsari ba daidai: Routing / Asusun",
     "error_invalid_pix": "Mabuɗin PIX mara inganci.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / Asusun",
     "us_label": "Routing / Asusun",
     "co_label": "Lambar asusun Bre-B",
-    "account_label": "Lambar asusun"
+    "account_label": "Lambar asusun",
+    "cpf_label": "CPF ko CNPJ (takaddun Brazil)",
+    "cpf_placeholder": "000.000.000-00 ko 00.000.000/0001-00",
+    "cpf_hint": "Bridge na buƙatar CPF don Brazil",
+    "error_invalid_sort_code": "Sort Code dole ne ya ƙunshi lamba 6",
+    "error_invalid_routing": "Routing number dole ne ya ƙunshi lamba 9",
+    "error_invalid_account_uk": "Lambar asusun UK dole ne ta ƙunshi lamba 8",
+    "bic_required": "BIC / SWIFT (tilas ne)"
   },
   "pagar_bridge": {
     "submit": "Aika kuɗi →",

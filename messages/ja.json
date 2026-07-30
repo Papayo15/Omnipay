@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "OmniPay 固定手数料",
     "fee_total_sender": "送金者の合計支払額",
     "fee_fx_rate": "1 {currency} = {rate} USD · リアルタイム為替レート",
-    "error_invalid_iban": "無効なIBAN。",
+    "error_invalid_iban": "無効なIBAN。国コード2文字から始まります",
     "error_invalid_uk": "形式が違います: Sort Code / 口座番号",
     "error_invalid_us": "形式が違います: Routing / 口座番号",
     "error_invalid_pix": "無効なPIXキー。",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / 口座番号",
     "us_label": "Routing / 口座番号",
     "co_label": "Bre-B 口座番号",
-    "account_label": "口座番号"
+    "account_label": "口座番号",
+    "cpf_label": "CPFまたはCNPJ（ブラジルID）",
+    "cpf_placeholder": "000.000.000-00 または 00.000.000/0001-00",
+    "cpf_hint": "BridgeがブラジルにはCPFを要求します",
+    "error_invalid_sort_code": "Sort Codeは6桁の数字が必要です",
+    "error_invalid_routing": "Routing Numberは9桁の数字が必要です",
+    "error_invalid_account_uk": "英国口座番号は8桁が必要です",
+    "bic_required": "BIC / SWIFT（必須）"
   },
   "pagar_bridge": {
     "submit": "送金する →",

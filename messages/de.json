@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "OmniPay Pauschale",
     "fee_total_sender": "Absender zahlt insgesamt",
     "fee_fx_rate": "1 {currency} = {rate} USD · Live-Wechselkurs",
-    "error_invalid_iban": "Ungültige IBAN. Muss mit 2 Länderkürzeln beginnen (z.B. DE, FR, ES).",
+    "error_invalid_iban": "Ungültige IBAN. Muss mit 2 Länderkürzeln beginnen (z.B. DE89...)",
     "error_invalid_uk": "Falsches Format. Verwende: Sort Code / Konto (z.B. 20-00-00 / 55779911)",
     "error_invalid_us": "Falsches Format. Verwende: Routing / Konto (z.B. 021000021 / 12345678)",
     "error_invalid_pix": "Ungültiger PIX-Schlüssel.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / Konto",
     "us_label": "Routing / Konto",
     "co_label": "Bre-B Kontonummer",
-    "account_label": "Kontonummer"
+    "account_label": "Kontonummer",
+    "cpf_label": "CPF oder CNPJ (brasilianische ID)",
+    "cpf_placeholder": "000.000.000-00 oder 00.000.000/0001-00",
+    "cpf_hint": "Für Brasilien von Bridge benötigt (11-stellige CPF oder 14-stellige CNPJ)",
+    "error_invalid_sort_code": "Sort Code muss 6 Ziffern haben (z.B. 20-00-00)",
+    "error_invalid_routing": "Routing Number muss 9 Ziffern haben",
+    "error_invalid_account_uk": "UK-Kontonummer muss 8 Ziffern haben",
+    "bic_required": "BIC / SWIFT (erforderlich)"
   },
   "pagar_bridge": {
     "submit": "Überweisung senden →",

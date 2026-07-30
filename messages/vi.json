@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "Phí cố định OmniPay",
     "fee_total_sender": "Người gửi trả tổng",
     "fee_fx_rate": "1 {currency} = {rate} USD · Tỷ giá trực tiếp",
-    "error_invalid_iban": "IBAN không hợp lệ.",
+    "error_invalid_iban": "IBAN không hợp lệ. Bắt đầu bằng 2 chữ cái quốc gia",
     "error_invalid_uk": "Sai định dạng: Sort Code / Tài khoản",
     "error_invalid_us": "Sai định dạng: Routing / Tài khoản",
     "error_invalid_pix": "Khóa PIX không hợp lệ.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / Tài khoản",
     "us_label": "Routing / Tài khoản",
     "co_label": "Số tài khoản Bre-B",
-    "account_label": "Số tài khoản"
+    "account_label": "Số tài khoản",
+    "cpf_label": "CPF hoặc CNPJ (ID Brazil)",
+    "cpf_placeholder": "000.000.000-00 hoặc 00.000.000/0001-00",
+    "cpf_hint": "Bridge yêu cầu CPF cho Brazil",
+    "error_invalid_sort_code": "Sort Code phải có 6 chữ số",
+    "error_invalid_routing": "Routing number phải có 9 chữ số",
+    "error_invalid_account_uk": "Số tài khoản UK phải có 8 chữ số",
+    "bic_required": "BIC / SWIFT (bắt buộc)"
   },
   "pagar_bridge": {
     "submit": "Gửi tiền →",

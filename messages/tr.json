@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "OmniPay sabit ücret",
     "fee_total_sender": "Gönderen toplam öder",
     "fee_fx_rate": "1 {currency} = {rate} USD · Canlı döviz kuru",
-    "error_invalid_iban": "Geçersiz IBAN.",
+    "error_invalid_iban": "Geçersiz IBAN. 2 ülke harfiyle başlar",
     "error_invalid_uk": "Yanlış format: Sort Code / Hesap",
     "error_invalid_us": "Yanlış format: Routing / Hesap",
     "error_invalid_pix": "Geçersiz PIX anahtarı.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / Hesap",
     "us_label": "Routing / Hesap",
     "co_label": "Bre-B Hesap Numarası",
-    "account_label": "Hesap numarası"
+    "account_label": "Hesap numarası",
+    "cpf_label": "CPF veya CNPJ (Brezilya kimliği)",
+    "cpf_placeholder": "000.000.000-00 veya 00.000.000/0001-00",
+    "cpf_hint": "Bridge, Brezilya için CPF gerektirir",
+    "error_invalid_sort_code": "Sort Code 6 basamak olmalıdır",
+    "error_invalid_routing": "Routing number 9 basamak olmalıdır",
+    "error_invalid_account_uk": "İngiltere hesap numarası 8 basamak olmalıdır",
+    "bic_required": "BIC / SWIFT (zorunlu)"
   },
   "pagar_bridge": {
     "submit": "Para gönder →",

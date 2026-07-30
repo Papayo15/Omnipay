@@ -125,6 +125,7 @@ export default function P2PPage() {
   const [country,         setCountry]         = useState("MX");
   const [account,         setAccount]         = useState("");
   const [bic,             setBic]             = useState("");
+  const [cpf,             setCpf]             = useState("");
   const [bankInfo,        setBankInfo]        = useState<BankInfo | null>(null);
   const [clabeValid,      setClabeValid]      = useState<boolean | null>(null);
   const [amountLocal,     setAmountLocal]     = useState("");
@@ -157,6 +158,8 @@ export default function P2PPage() {
   // Clear account when country changes
   useEffect(() => {
     setAccount("");
+    setCpf("");
+    setBic("");
     setBankInfo(null);
     setClabeValid(null);
   }, [country]);
@@ -187,6 +190,35 @@ export default function P2PPage() {
   const generateLink = useCallback(async () => {
     const amt = parseFloat(amountLocal);
     if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt) return;
+
+    // Format validation
+    if (SEPA_COUNTRIES.has(country)) {
+      const ibanClean = account.replace(/\s+/g, "").toUpperCase();
+      if (!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(ibanClean)) {
+        setErrorMsg(t("error_invalid_iban")); setStep("error"); return;
+      }
+      if (!bic.trim()) {
+        setErrorMsg(t("bic_required")); setStep("error"); return;
+      }
+    }
+    if (country === "GB") {
+      const p = account.split("/");
+      const sc = (p[0] ?? "").replace(/\D/g, "");
+      const an = (p[1] ?? "").replace(/\D/g, "");
+      if (sc.length !== 6 || an.length !== 8) {
+        setErrorMsg(t("error_invalid_sort_code")); setStep("error"); return;
+      }
+    }
+    if (country === "US") {
+      const p = account.split("/");
+      const rn = (p[0] ?? "").replace(/\D/g, "");
+      if (rn.length !== 9) {
+        setErrorMsg(t("error_invalid_routing")); setStep("error"); return;
+      }
+    }
+    if (country === "BR" && !cpf.trim()) {
+      setErrorMsg(t("cpf_label") + " es requerido para Brasil"); setStep("error"); return;
+    }
 
     // Convert local amount to USD to enforce $20 minimum
     // fxRate = getFXRate(currency, "USD") → local→USD (e.g. 0.057 for MXN)
@@ -235,7 +267,10 @@ export default function P2PPage() {
         body.iban = account;
         if (bic.trim()) body.bic = bic.trim().toUpperCase();
       }
-      else if (country === "BR")            body.pix_key        = account;
+      else if (country === "BR") {
+        body.pix_key         = account;
+        body.document_number = cpf.replace(/\D/g, "");
+      }
       else if (country === "GB") {
         const p = account.split("/");
         body.sort_code = p[0]?.trim(); body.account_number = p[1]?.trim();
@@ -268,7 +303,7 @@ export default function P2PPage() {
     } finally {
       setSubmitting(false);
     }
-  }, [nombre, email, country, account, amountLocal, recipientPhone, fxRate]);
+  }, [nombre, email, country, account, bic, cpf, amountLocal, recipientPhone, fxRate, t]);
 
   const copyLink = useCallback(async () => {
     await navigator.clipboard.writeText(shareLink);
@@ -290,7 +325,9 @@ export default function P2PPage() {
   const amtUSDLocal  = fxRate && parseFloat(amountLocal) >= 1
     ? (currency === "USD" ? parseFloat(amountLocal) : parseFloat(amountLocal) * fxRate)
     : 0;
-  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && amtUSDLocal >= 20 && rail === "bridge";
+  const bicRequired  = SEPA_COUNTRIES.has(country) && !bic.trim();
+  const cpfRequired  = country === "BR" && !cpf.trim();
+  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && amtUSDLocal >= 20 && rail === "bridge" && !bicRequired && !cpfRequired;
 
   // ── Generating ──────────────────────────────────────────────────────────────
   if (step === "generating") {
@@ -479,16 +516,42 @@ export default function P2PPage() {
             {/* BIC/SWIFT — required for SEPA */}
             {SEPA_COUNTRIES.has(country) && (
               <div>
-                <label className="block text-xs text-slate-400 mb-1">{t("bic_label")} <span className="text-slate-600">({t("bic_sublabel")})</span></label>
+                <label className="block text-xs text-slate-400 mb-1">
+                  {t("bic_label")} <span className="text-red-400">*</span>{" "}
+                  <span className="text-slate-600">({t("bic_sublabel")})</span>
+                </label>
                 <input
                   type="text"
                   value={bic}
                   onChange={(e) => setBic(e.target.value.replace(/\s+/g, "").toUpperCase())}
                   placeholder="DEUTDEDBXXX"
                   maxLength={11}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm font-mono"
+                  className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors ${
+                    bic.trim() ? "border-emerald-500" : "border-amber-500/60 focus:border-emerald-500"
+                  }`}
                 />
                 <p className="text-xs text-slate-600 mt-1">{t("bic_hint")}</p>
+              </div>
+            )}
+
+            {/* CPF / CNPJ — required for Brazil (PIX) */}
+            {country === "BR" && (
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">
+                  {t("cpf_label")} <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={cpf}
+                  onChange={(e) => setCpf(e.target.value)}
+                  placeholder={t("cpf_placeholder")}
+                  maxLength={18}
+                  className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors ${
+                    cpf.trim() ? "border-emerald-500" : "border-amber-500/60 focus:border-emerald-500"
+                  }`}
+                />
+                <p className="text-xs text-slate-600 mt-1">ℹ️ {t("cpf_hint")}</p>
               </div>
             )}
 

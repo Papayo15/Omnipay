@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "OmniPay 固定费用",
     "fee_total_sender": "汇款人共支付",
     "fee_fx_rate": "1 {currency} = {rate} USD · 实时汇率",
-    "error_invalid_iban": "无效的IBAN。",
+    "error_invalid_iban": "IBAN无效。以2位国家字母开头",
     "error_invalid_uk": "格式错误：Sort Code / 账户",
     "error_invalid_us": "格式错误：Routing / 账户",
     "error_invalid_pix": "无效的PIX密钥。",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / 账户",
     "us_label": "Routing / 账户",
     "co_label": "Bre-B 账号",
-    "account_label": "账户号码"
+    "account_label": "账户号码",
+    "cpf_label": "CPF或CNPJ（巴西证件号）",
+    "cpf_placeholder": "000.000.000-00 或 00.000.000/0001-00",
+    "cpf_hint": "Bridge要求巴西用户提供",
+    "error_invalid_sort_code": "Sort Code必须为6位数字",
+    "error_invalid_routing": "Routing number必须为9位数字",
+    "error_invalid_account_uk": "英国账户号码必须为8位数字",
+    "bic_required": "BIC / SWIFT（必填）"
   },
   "pagar_bridge": {
     "submit": "发送汇款 →",

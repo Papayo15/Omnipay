@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "OmniPay 고정 수수료",
     "fee_total_sender": "발송인 총 지불액",
     "fee_fx_rate": "1 {currency} = {rate} USD · 실시간 환율",
-    "error_invalid_iban": "유효하지 않은 IBAN.",
+    "error_invalid_iban": "IBAN 형식이 잘못되었습니다. 국가 코드 2글자로 시작합니다",
     "error_invalid_uk": "잘못된 형식: Sort Code / 계좌번호",
     "error_invalid_us": "잘못된 형식: Routing / 계좌번호",
     "error_invalid_pix": "유효하지 않은 PIX 키.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / 계좌번호",
     "us_label": "Routing / 계좌번호",
     "co_label": "Bre-B 계좌번호",
-    "account_label": "계좌번호"
+    "account_label": "계좌번호",
+    "cpf_label": "CPF 또는 CNPJ (브라질 ID)",
+    "cpf_placeholder": "000.000.000-00 또는 00.000.000/0001-00",
+    "cpf_hint": "Bridge는 브라질에 CPF를 요구합니다",
+    "error_invalid_sort_code": "Sort Code는 6자리여야 합니다",
+    "error_invalid_routing": "Routing number는 9자리여야 합니다",
+    "error_invalid_account_uk": "영국 계좌번호는 8자리여야 합니다",
+    "bic_required": "BIC / SWIFT (필수)"
   },
   "pagar_bridge": {
     "submit": "송금하기 →",

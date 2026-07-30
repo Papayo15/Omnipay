@@ -32,10 +32,11 @@ interface CheckoutBody {
   routing_number?:  string;
   account_number?:  string;
   sort_code?:       string;
-  bank_name?:       string;  // ACH: bank name if Bridge can't resolve from routing number
-  bank_code?:       string;  // Colombia Bre-B
-  amount_target:    number;
-  recipient_phone?: string;
+  bank_name?:        string;  // ACH: bank name if Bridge can't resolve from routing number
+  bank_code?:        string;  // Colombia Bre-B
+  document_number?:  string;  // Brazil: CPF (11 digits) or CNPJ (14 digits) for PIX
+  amount_target:     number;
+  recipient_phone?:  string;
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   const {
     nombre, email, country, receive_method,
     clabe, iban, bic, pix_key, routing_number, account_number,
-    sort_code, bank_name, bank_code,
+    sort_code, bank_name, bank_code, document_number,
     amount_target, recipient_phone,
   } = body;
 
@@ -127,6 +128,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       clabe, iban, bic, pixKey: pix_key,
       routingNumber: routing_number, accountNumber: account_number,
       bankName: bank_name, sortCode: sort_code, bankCode: bank_code,
+      documentNumber: document_number,
     };
 
     // Sandbox endorsement flow:

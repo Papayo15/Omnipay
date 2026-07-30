@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "Фиксированная комиссия OmniPay",
     "fee_total_sender": "Отправитель платит итого",
     "fee_fx_rate": "1 {currency} = {rate} USD · Курс в реальном времени",
-    "error_invalid_iban": "Неверный IBAN.",
+    "error_invalid_iban": "Неверный IBAN. Начинается с 2 букв страны",
     "error_invalid_uk": "Неверный формат: Sort Code / Счёт",
     "error_invalid_us": "Неверный формат: Routing / Счёт",
     "error_invalid_pix": "Неверный ключ PIX.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / Счёт",
     "us_label": "Routing / Счёт",
     "co_label": "Номер счёта Bre-B",
-    "account_label": "Номер счёта"
+    "account_label": "Номер счёта",
+    "cpf_label": "CPF или CNPJ (бразильский ID)",
+    "cpf_placeholder": "000.000.000-00 или 00.000.000/0001-00",
+    "cpf_hint": "Требуется Bridge для Бразилии",
+    "error_invalid_sort_code": "Sort Code должен содержать 6 цифр",
+    "error_invalid_routing": "Routing number должен содержать 9 цифр",
+    "error_invalid_account_uk": "Номер счёта UK должен содержать 8 цифр",
+    "bic_required": "BIC / SWIFT (обязательно)"
   },
   "pagar_bridge": {
     "submit": "Отправить деньги →",

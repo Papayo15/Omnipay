@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "رسوم OmniPay الثابتة",
     "fee_total_sender": "المرسل يدفع إجمالاً",
     "fee_fx_rate": "1 {currency} = {rate} USD · سعر الصرف المباشر",
-    "error_invalid_iban": "IBAN غير صالح.",
+    "error_invalid_iban": "IBAN غير صالح. يبدأ بحرفين للدولة",
     "error_invalid_uk": "تنسيق خاطئ: Sort Code / الحساب",
     "error_invalid_us": "تنسيق خاطئ: Routing / الحساب",
     "error_invalid_pix": "مفتاح PIX غير صالح.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / الحساب",
     "us_label": "Routing / الحساب",
     "co_label": "رقم حساب Bre-B",
-    "account_label": "رقم الحساب"
+    "account_label": "رقم الحساب",
+    "cpf_label": "CPF أو CNPJ (الهوية البرازيلية)",
+    "cpf_placeholder": "000.000.000-00 أو 00.000.000/0001-00",
+    "cpf_hint": "مطلوب من Bridge للبرازيل",
+    "error_invalid_sort_code": "Sort Code يجب أن يحتوي على 6 أرقام",
+    "error_invalid_routing": "Routing number يجب أن يحتوي على 9 أرقام",
+    "error_invalid_account_uk": "رقم الحساب البريطاني يجب أن يحتوي على 8 أرقام",
+    "bic_required": "BIC / SWIFT (مطلوب)"
   },
   "pagar_bridge": {
     "submit": "إرسال التحويل →",

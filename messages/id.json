@@ -406,7 +406,7 @@
     "fee_omnipay_flat": "Tarif tetap OmniPay",
     "fee_total_sender": "Pengirim membayar total",
     "fee_fx_rate": "1 {currency} = {rate} USD · Kurs langsung",
-    "error_invalid_iban": "IBAN tidak valid.",
+    "error_invalid_iban": "IBAN tidak valid. Diawali 2 huruf negara",
     "error_invalid_uk": "Format salah: Sort Code / Rekening",
     "error_invalid_us": "Format salah: Routing / Rekening",
     "error_invalid_pix": "Kunci PIX tidak valid.",
@@ -423,7 +423,14 @@
     "uk_label": "Sort Code / Rekening",
     "us_label": "Routing / Rekening",
     "co_label": "Nomor rekening Bre-B",
-    "account_label": "Nomor rekening"
+    "account_label": "Nomor rekening",
+    "cpf_label": "CPF atau CNPJ (ID Brasil)",
+    "cpf_placeholder": "000.000.000-00 atau 00.000.000/0001-00",
+    "cpf_hint": "Diperlukan oleh Bridge untuk Brasil",
+    "error_invalid_sort_code": "Sort Code harus 6 digit",
+    "error_invalid_routing": "Routing number harus 9 digit",
+    "error_invalid_account_uk": "Nomor rekening UK harus 8 digit",
+    "bic_required": "BIC / SWIFT (wajib)"
   },
   "pagar_bridge": {
     "submit": "Kirim uang →",
