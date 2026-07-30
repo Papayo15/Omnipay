@@ -246,7 +246,7 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
   // iban.country must be ISO2 (2-letter: "ES", "DE", etc.) — NOT ISO3
   // bic omitted when not provided (undefined values stripped by JSON.stringify)
   if (native.rail === "sepa") {
-    const ibanBody: Record<string, string> = { account_number: params.iban!, country };
+    const ibanBody: Record<string, string> = { account_number: params.iban!.replace(/\s+/g, ""), country };
     if (params.bic) ibanBody.bic = params.bic;
     return {
       ...base,
