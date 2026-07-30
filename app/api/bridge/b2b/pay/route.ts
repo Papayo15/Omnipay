@@ -100,7 +100,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     try { await patchCustomerAddress(senderCustomer.id, "US", isSandbox); } catch { /* best-effort */ }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
 
     if (isSandbox) {
       try { await ensureEndorsements(senderCustomer.id, ["base", "sepa"]); } catch { /* best-effort */ }

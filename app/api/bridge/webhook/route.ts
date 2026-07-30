@@ -144,7 +144,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       if (order && order.status === "PENDING_PAYIN") {
         updateOrder(reference, { status: "LIQUIDATING_FIAT" });
         if (order.senderEmail) {
-          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
           const eT = emailStrings(order.senderLocale);
           await sendEmailNotification(
             order.senderEmail,
@@ -209,7 +209,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 export async function handleCompletion(orderId: string, data: Record<string, unknown>) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
   const secret = process.env.LINK_SECRET ?? "";
   // getOrderAsync falls back to Redis — works across Vercel instances
   const order  = await getOrderAsync(orderId);

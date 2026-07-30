@@ -62,7 +62,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     );
   }
 
-  const appUrl        = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+  const appUrl        = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
   const country_upper = country.toUpperCase();
 
   try {

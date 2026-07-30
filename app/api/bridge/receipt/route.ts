@@ -27,7 +27,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   const order = getOrder(orderId);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
-  const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.ca";
+  const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
   const trackUrl = `${appUrl}/api/bridge/track?order_id=${orderId}`;
 
   // Try to get live transfer details from Bridge (amount received in local currency)

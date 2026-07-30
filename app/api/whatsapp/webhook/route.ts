@@ -19,7 +19,7 @@ import { createHash }                from "crypto";
 
 export const runtime = "nodejs";
 
-const APP_URL  = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay-jade.vercel.app";
+const APP_URL  = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
 const TOKEN_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
 const TOKEN_AT = process.env.WHATSAPP_ACCESS_TOKEN;
 
