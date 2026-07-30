@@ -95,5 +95,11 @@ export async function sendAdminWhatsApp(message: string): Promise<void> {
   // CallMeBot requires phone without + (e.g. 5215512345678, not +5215512345678)
   const phoneClean = phone.replace(/^\+/, "");
   const url = `https://api.callmebot.com/whatsapp.php?phone=${phoneClean}&text=${encodeURIComponent(message)}&apikey=${apiKey}`;
-  await fetch(url).catch(() => { /* non-critical */ });
+  try {
+    const res = await fetch(url);
+    const body = await res.text();
+    console.log(`[callmebot] status=${res.status} phone=${phoneClean} body=${body.slice(0, 200)}`);
+  } catch (e) {
+    console.error("[callmebot] fetch error:", e);
+  }
 }
