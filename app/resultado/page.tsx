@@ -114,10 +114,20 @@ function ResultadoContent() {
               </div>
             )}
 
-            {/* Nota ETA Wise (solo remesa verificada) */}
-            {isRemesa && verified && (
+            {/* Nota ETA según tipo de transferencia */}
+            {verified && receiptData?.tt === "remesa" && (
               <div className="w-full bg-indigo-900/20 border border-indigo-700/30 rounded-2xl px-4 py-3 text-indigo-300 text-sm text-center">
                 {t("wise_eta_note")}
+              </div>
+            )}
+            {verified && receiptData?.tt === "bridge" && (
+              <div className="w-full bg-emerald-900/20 border border-emerald-700/30 rounded-2xl px-4 py-3 text-emerald-300 text-sm text-center">
+                ⚡ Transferencia inmediata vía Bridge · El receptor ya recibió su dinero
+              </div>
+            )}
+            {verified && receiptData?.tt === "bridge-b2b" && (
+              <div className="w-full bg-blue-900/20 border border-blue-700/30 rounded-2xl px-4 py-3 text-blue-300 text-sm text-center">
+                🏢 Transferencia B2B vía Bridge · Llega en 3–4 días hábiles
               </div>
             )}
 

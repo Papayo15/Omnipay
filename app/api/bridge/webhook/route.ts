@@ -224,7 +224,7 @@ export async function handleCompletion(orderId: string, data: Record<string, unk
         c:   String(data.currency ?? "USD").toUpperCase(),
         n:   order?.recipientName ?? "OmniPay Transfer",
         ts:  Date.now(),
-        tt:  "bridge",
+        tt:  order?.orderType === "b2b-bridge" ? "bridge-b2b" : "bridge",
       },
       appUrl,
       secret,
