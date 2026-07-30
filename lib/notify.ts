@@ -92,6 +92,8 @@ export async function sendAdminWhatsApp(message: string): Promise<void> {
   const apiKey = process.env.CALLMEBOT_API_KEY;
   if (!phone || !apiKey) return;
 
-  const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(message)}&apikey=${apiKey}`;
+  // CallMeBot requires phone without + (e.g. 5215512345678, not +5215512345678)
+  const phoneClean = phone.replace(/^\+/, "");
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${phoneClean}&text=${encodeURIComponent(message)}&apikey=${apiKey}`;
   await fetch(url).catch(() => { /* non-critical */ });
 }
