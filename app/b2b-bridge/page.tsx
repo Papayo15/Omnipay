@@ -50,11 +50,12 @@ interface B2BPayResponse {
 // Bitso Canal 4 enabled when env var is set — MXN via SPEI to Bitso CLABE
 const BITSO_ENABLED = process.env.NEXT_PUBLIC_BITSO_ENABLED === "true";
 
+// MXN always shown — routes to Bitso when enabled, Bridge otherwise.
 const CURRENCIES = [
   { code: "usd", flag: "🇺🇸", label: "USD — US Dollar" },
   { code: "eur", flag: "🇪🇺", label: "EUR — Euro" },
   { code: "gbp", flag: "🇬🇧", label: "GBP — British Pound" },
-  ...(BITSO_ENABLED ? [{ code: "mxn", flag: "🇲🇽", label: "MXN — Peso Mexicano (SPEI)" }] : []),
+  { code: "mxn", flag: "🇲🇽", label: "MXN — Peso Mexicano" },
   { code: "brl", flag: "🇧🇷", label: "BRL — Real Brasileiro" },
 ];
 

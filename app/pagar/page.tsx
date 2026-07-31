@@ -63,12 +63,12 @@ interface RatePreview {
 // Bitso MXN (Canal 4) enabled when env var is set. Shows MXN via SPEI deposit to Bitso CLABE.
 const BITSO_ENABLED = process.env.NEXT_PUBLIC_BITSO_ENABLED === "true";
 
-// Source currencies for Bridge VA. MXN is handled by Bitso when enabled, so excluded from Bridge list.
+// MXN always shown — routes to Bitso when enabled, Bridge otherwise.
 const CURRENCIES = [
   { code: "usd", flag: "🇺🇸" },
   { code: "eur", flag: "🇪🇺" },
   { code: "gbp", flag: "🇬🇧" },
-  ...(BITSO_ENABLED ? [{ code: "mxn", flag: "🇲🇽" }] : []),
+  { code: "mxn", flag: "🇲🇽" },
   { code: "brl", flag: "🇧🇷" },
 ];
 
