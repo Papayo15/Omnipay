@@ -17,9 +17,11 @@ import { sendAdminWhatsApp }         from "@/lib/notify";
 export const runtime = "edge";
 
 export async function GET(req: NextRequest): Promise<Response> {
-  // Protect with ADMIN_SECRET for direct calls (Vercel Cron bypasses this via internal header)
-  const adminKey = req.headers.get("x-admin-secret") ?? req.nextUrl.searchParams.get("key");
-  if (adminKey !== process.env.ADMIN_SECRET && !req.headers.get("x-vercel-cron")) {
+  // Protect: valid ADMIN_SECRET header OR Vercel Cron bearer token (CRON_SECRET)
+  const adminKey  = req.headers.get("x-admin-secret") ?? req.nextUrl.searchParams.get("key");
+  const cronToken = process.env.CRON_SECRET;
+  const isCron    = !!cronToken && req.headers.get("authorization") === `Bearer ${cronToken}`;
+  if (!isCron && adminKey !== process.env.ADMIN_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -50,10 +52,9 @@ export async function GET(req: NextRequest): Promise<Response> {
   const allOk = checks.every((c) => c.status === "ok");
 
   return NextResponse.json({
-    healthy:    allOk,
+    healthy:   allOk,
     timestamp,
-    mode:       isSandbox ? "sandbox" : "production",
-    api_base:   process.env.BRIDGE_API_BASE ?? "https://api.sandbox.bridge.xyz/v0",
+    mode:      isSandbox ? "sandbox" : "production",
     checks,
     // OmniPay fee summary (for ops visibility)
     fee_structure: {

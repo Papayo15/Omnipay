@@ -23,9 +23,8 @@ export async function GET(req: NextRequest): Promise<Response> {
     const full = await bridgeRequest<Record<string, unknown>>("GET", `/customers/${customer.id}`);
 
     return NextResponse.json({
-      isSandbox:       (process.env.BRIDGE_API_BASE ?? "").includes("sandbox"),
-      bridge_api_base: process.env.BRIDGE_API_BASE ?? "NOT SET",
-      customer:        full,
+      is_sandbox: (process.env.BRIDGE_API_BASE ?? "").includes("sandbox"),
+      customer:   full,
     });
   } catch (e) {
     const err = e as Error;
@@ -46,6 +45,10 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (!customer) return NextResponse.json({ error: "customer not found" }, { status: 404 });
 
     if (action === "simulate_kyc") {
+      const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
+      if (!isSandbox) {
+        return NextResponse.json({ error: "simulate_kyc is sandbox-only — not available in production" }, { status: 403 });
+      }
       const result = await bridgeRequest<unknown>(
         "POST",
         `/customers/${customer.id}/simulate_kyc_approval`,

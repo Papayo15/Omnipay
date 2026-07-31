@@ -310,7 +310,6 @@ export async function POST(req: NextRequest): Promise<Response> {
       kyc_url:    null,
       is_sandbox: isSandbox,
       track_url:  `${appUrl}/api/bridge/track?order_id=${orderId}`,
-      sender_phone: sender_phone ?? null,
     });
   } catch (e) {
     const err = e as Error & { type?: string; status?: number; details?: unknown };
@@ -333,10 +332,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       }, { status: 422 });
     }
 
-    return NextResponse.json({
-      error:          err.message,
-      bridge_type:    err.type ?? null,
-      bridge_details: err.details ?? null,
-    }, { status: err.status ?? 500 });
+    console.error("[bridge/pay] unhandled:", err.message, err.type, JSON.stringify(err.details));
+    return NextResponse.json({ error: err.message }, { status: err.status ?? 500 });
   }
 }

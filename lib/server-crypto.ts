@@ -26,8 +26,9 @@ export interface P2PToken {
  * Cifrado con AES-256-GCM usando LINK_SECRET (primeros 32 chars).
  */
 export async function decryptCheckoutToken(token: string): Promise<P2PToken> {
-  const secret = process.env.LINK_SECRET ?? "dev-secret";
-  const key    = secret.slice(0, 32).padEnd(32, "0");
+  const secret = process.env.LINK_SECRET;
+  if (!secret) throw new Error("LINK_SECRET env var is not set");
+  const key = secret.slice(0, 32).padEnd(32, "0");
 
   const keyMaterial = await crypto.subtle.importKey(
     "raw",

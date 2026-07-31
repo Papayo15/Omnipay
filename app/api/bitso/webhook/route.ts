@@ -36,7 +36,12 @@ interface BitsoDepositEvent {
 
 function verifySignature(rawBody: string, sigHeader: string | null): boolean {
   const secret = process.env.BITSO_WEBHOOK_SECRET ?? "";
-  if (!secret || !sigHeader) return !secret; // allow through if secret not configured (dev only)
+  if (!secret) {
+    // In production BITSO_WEBHOOK_SECRET must be set — reject everything without it.
+    if (process.env.NODE_ENV === "production") return false;
+    return true; // dev-only bypass
+  }
+  if (!sigHeader) return false;
   const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
   return sigHeader === expected || sigHeader === `sha256=${expected}`;
 }
@@ -60,7 +65,8 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   const { clabe, amount, status, clave_de_rastreo, sender_name } = payload;
-  console.log(`[bitso/webhook] deposit clabe=${clabe} amount=${amount} status=${status}`);
+  const clabeMasked = clabe ? `${clabe.slice(0, 6)}****${clabe.slice(-4)}` : "?";
+  console.log(`[bitso/webhook] deposit clabe=${clabeMasked} amount=${amount} status=${status}`);
 
   if (status !== "complete") {
     return NextResponse.json({ ok: true, status: "waiting_for_complete" });
@@ -76,7 +82,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   if (!orderId) {
-    console.warn(`[bitso/webhook] No order found for clabe=${clabe}`);
+    console.warn(`[bitso/webhook] No order found for clabe=${clabeMasked}`);
     await sendAdminWhatsApp(
       `⚠️ OmniPay Bitso — depósito sin orden\nCLABE: ${clabe}\nMonto: MXN $${amount}\nEmisor: ${sender_name ?? "?"}`
     );

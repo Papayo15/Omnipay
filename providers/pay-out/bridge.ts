@@ -57,19 +57,7 @@ export const bridgeProvider: IPayOutProvider = {
 
   async executeTransfer(params: PayOutParams): Promise<PayOutResult> {
     const apiKey = process.env.BRIDGE_API_KEY ?? "";
-
-    // ── MOCK: bloque activo hasta tener credenciales ──────────────────────────
-    if (!apiKey) {
-      console.log(`[Bridge MOCK] executeTransfer → orderId=${params.orderId} country=${params.targetCountry} usdc=${params.usdcNetAmount}`);
-      return {
-        transferId:       `bridge_mock_${params.orderId}`,
-        status:           "SUBMITTED",
-        estimatedArrival: params.targetCountry === "MX" ? "minutes" : "1-2 days",
-        provider:         "bridge",
-        localCurrency:    params.targetCurrency,
-      };
-    }
-    // ── Implementación real ───────────────────────────────────────────────────
+    if (!apiKey) throw new Error("BRIDGE_API_KEY is not configured. Add it to your Vercel environment variables.");
 
     const headers = { ...bridgeHeaders(apiKey), "Idempotency-Key": params.orderId };
 
@@ -126,27 +114,8 @@ export const bridgeProvider: IPayOutProvider = {
 
   async createVirtualAccount(params: VirtualAccountParams): Promise<VirtualAccount> {
     const apiKey = process.env.BRIDGE_API_KEY ?? "";
+    if (!apiKey) throw new Error("BRIDGE_API_KEY is not configured. Add it to your Vercel environment variables.");
 
-    // ── MOCK ──────────────────────────────────────────────────────────────────
-    if (!apiKey) {
-      console.log(`[Bridge MOCK] createVirtualAccount → orderId=${params.orderId} country=${params.targetCountry}`);
-      const isMx = params.targetCountry === "MX";
-      return {
-        accountId:    `bridge_va_${params.orderId}`,
-        provider:     "bridge",
-        bankName:     isMx ? "STP (Bridge Virtual)" : "Cross River Bank (Bridge)",
-        clabe:        isMx ? "646180528000000001" : undefined,
-        accountNumber: isMx ? undefined : "123456789",
-        routingNumber: isMx ? undefined : "021000021",
-        currency:     params.targetCurrency,
-        country:      params.targetCountry,
-        expiresAt:    Date.now() + 24 * 60 * 60 * 1000, // 24h
-        instructions: isMx
-          ? "Transfiere a esta CLABE. El dinero llega en minutos vía SPEI."
-          : "Wire to this US account. Funds settle in 1-2 business days.",
-      };
-    }
-    // ── Real: POST /v0/customers/{id}/external_accounts ───────────────────────
     const headers = { ...bridgeHeaders(apiKey), "Idempotency-Key": `va-${params.orderId}` };
     const res = await fetch(`${BRIDGE_BASE}/virtual_accounts`, {
       method: "POST",

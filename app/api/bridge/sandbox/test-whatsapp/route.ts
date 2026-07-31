@@ -4,9 +4,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-export async function GET(_req: NextRequest): Promise<Response> {
+export async function GET(req: NextRequest): Promise<Response> {
   const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
-  if (!isSandbox) return NextResponse.json({ error: "Sandbox only" }, { status: 403 });
+  const isNotProd = process.env.NODE_ENV !== "production";
+  if (!isSandbox || !isNotProd) return NextResponse.json({ error: "Sandbox only" }, { status: 403 });
+  const adminKey = req.headers.get("x-admin-secret") ?? req.nextUrl.searchParams.get("key");
+  if (!process.env.ADMIN_SECRET || adminKey !== process.env.ADMIN_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const phone  = process.env.ADMIN_WHATSAPP_PHONE ?? "";
   const apiKey = process.env.CALLMEBOT_API_KEY    ?? "";

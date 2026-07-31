@@ -15,7 +15,7 @@ import { NextRequest, NextResponse }            from "next/server";
 import { getRedis }                             from "@/lib/redis";
 import { verifyBridgeWebhook, parseWebhookEvent } from "@/providers/bridge/webhooks";
 import { mapTransferStatus }                    from "@/providers/bridge/transfers";
-import { updateOrder, getOrder, getOrderAsync, createOrder } from "@/lib/order-state";
+import { updateOrder, getOrderAsync, createOrder } from "@/lib/order-state";
 import { sendAdminWhatsApp, sendEmailNotification } from "@/lib/notify";
 import { buildReceiptURL }                      from "@/lib/link";
 import { emailStrings }                         from "@/lib/email-i18n";
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const orderId    = reference.startsWith("OP-") ? reference : null;
 
     if (orderId) {
-      const order = getOrder(orderId);
+      const order = await getOrderAsync(orderId);
       if (order) {
         const bridgeStatus = String(data.status ?? "") as Parameters<typeof mapTransferStatus>[0];
         const mapped = mapTransferStatus(bridgeStatus);
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // Case 1: active OP- order exists → first-time deposit, advance state + email sender
     if (reference.startsWith("OP-")) {
-      const order = getOrder(reference);
+      const order = await getOrderAsync(reference);
       if (order && order.status === "PENDING_PAYIN") {
         updateOrder(reference, { status: "LIQUIDATING_FIAT" });
         if (order.senderEmail) {

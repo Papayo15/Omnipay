@@ -1,7 +1,13 @@
 // Base HTTP client for Bridge.xyz API
 // Reads BRIDGE_API_BASE (default: sandbox) and BRIDGE_API_KEY from env.
 
-const BASE = process.env.BRIDGE_API_BASE ?? "https://api.sandbox.bridge.xyz/v0";
+const BASE = (() => {
+  const b = process.env.BRIDGE_API_BASE;
+  if (!b && process.env.NODE_ENV === "production") {
+    throw new Error("BRIDGE_API_BASE must be set in production. Add it to your Vercel environment variables.");
+  }
+  return b ?? "https://api.sandbox.bridge.xyz/v0";
+})();
 
 export class BridgeError extends Error {
   constructor(

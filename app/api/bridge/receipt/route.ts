@@ -14,17 +14,17 @@
 //   - WhatsApp and Telegram share links
 
 import { NextRequest, NextResponse }    from "next/server";
-import { getOrder }                     from "@/lib/order-state";
+import { getOrderAsync }                from "@/lib/order-state";
 import { buildWhatsAppLink, buildTelegramLink, buildOmniPayMessage } from "@/lib/messaging";
 import { getTransfer }                  from "@/providers/bridge/transfers";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function GET(req: NextRequest): Promise<Response> {
   const orderId = req.nextUrl.searchParams.get("order_id");
   if (!orderId) return NextResponse.json({ error: "order_id is required" }, { status: 400 });
 
-  const order = getOrder(orderId);
+  const order = await getOrderAsync(orderId);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
   const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
