@@ -326,9 +326,20 @@ export async function ensureExternalAccount(params: CreateLiquidationParams): Pr
     if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
     return extAcct.id;
   } catch (e) {
-    const bridgeErr = e as Error & { type?: string; details?: Record<string, unknown> };
+    const bridgeErr = e as Error & { type?: string; message?: string; details?: Record<string, unknown> };
     if (bridgeErr.type === "duplicate_external_account" && bridgeErr.details?.id) {
       return bridgeErr.details.id as string;
+    }
+    // Idempotency deadline (>24h): external account already exists — list and find it
+    const isIdempDeadline = bridgeErr.type?.includes("idempotency")
+      || bridgeErr.message?.toLowerCase().includes("idempotency")
+      || bridgeErr.message?.toLowerCase().includes("24 hours");
+    if (isIdempDeadline) {
+      const list = await bridgeRequest<{ data: Array<{ id: string }> }>(
+        "GET", `/customers/${params.customerId}/external_accounts`,
+      );
+      const first = list.data?.[0];
+      if (first?.id) return first.id;
     }
     throw e;
   }
@@ -359,11 +370,23 @@ export async function createLiquidationAddress(
     if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
     extAcctId = extAcct.id;
   } catch (e) {
-    const bridgeErr = e as Error & { type?: string; details?: Record<string, unknown> };
+    const bridgeErr = e as Error & { type?: string; message?: string; details?: Record<string, unknown> };
     if (bridgeErr.type === "duplicate_external_account" && bridgeErr.details?.id) {
       extAcctId = bridgeErr.details.id as string;
     } else {
-      throw e;
+      const isIdempDeadline = bridgeErr.type?.includes("idempotency")
+        || bridgeErr.message?.toLowerCase().includes("idempotency")
+        || bridgeErr.message?.toLowerCase().includes("24 hours");
+      if (isIdempDeadline) {
+        const list = await bridgeRequest<{ data: Array<{ id: string }> }>(
+          "GET", `/customers/${params.customerId}/external_accounts`,
+        );
+        const first = list.data?.[0];
+        if (first?.id) { extAcctId = first.id; }
+        else throw e;
+      } else {
+        throw e;
+      }
     }
   }
 
@@ -391,10 +414,16 @@ export async function createLiquidationAddress(
     );
   } catch (e) {
     const bridgeErr = e as Error & { type?: string; message?: string; details?: Record<string, unknown> };
+    const isIdempDeadline = bridgeErr.type?.includes("idempotency")
+      || bridgeErr.message?.toLowerCase().includes("idempotency")
+      || bridgeErr.message?.toLowerCase().includes("24 hours");
     const isDuplicate = bridgeErr.type?.includes("duplicate")
-      || bridgeErr.message?.toLowerCase().includes("already exists");
+      || bridgeErr.message?.toLowerCase().includes("already exists")
+      || isIdempDeadline;
     if (isDuplicate) {
-      // Fetch the existing liquidation address for this customer and return it
+      // Fetch the existing liquidation address for this customer and return it.
+      // This also handles the >24h idempotency deadline: the liq addr already exists,
+      // we just need to find it via GET.
       const list = await bridgeRequest<{ data: LiquidationAddress[] }>(
         "GET",
         `/customers/${params.customerId}/liquidation_addresses`,

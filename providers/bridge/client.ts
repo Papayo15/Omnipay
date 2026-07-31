@@ -38,15 +38,19 @@ export async function bridgeRequest<T>(
   const data = await res.json() as Record<string, unknown>;
 
   if (!res.ok) {
-    const msg  = (data?.error as Record<string,string>)?.message
+    const errField = data?.error;
+    const msg  = (errField as Record<string,string>)?.message
                ?? (data?.message as string)
+               ?? (typeof errField === "string" ? errField : undefined)
                ?? JSON.stringify(data)
                ?? `Bridge ${res.status}`;
-    const type = (data?.error as Record<string,string>)?.type
+    const type = (errField as Record<string,string>)?.type
                ?? (data?.code as string)
-               ?? "unknown";
+               // Bridge sometimes sends error as a plain string — normalise to snake_case for catch blocks
+               ?? (typeof errField === "string"
+                   ? (errField as string).toLowerCase().replace(/\s+/g, "_")
+                   : "unknown");
     const err  = new BridgeError(msg, type, res.status);
-    // Attach full response for debugging
     (err as BridgeError & { details: unknown }).details = data;
     throw err;
   }

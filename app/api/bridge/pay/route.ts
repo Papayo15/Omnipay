@@ -12,7 +12,7 @@
 
 import { NextRequest, NextResponse }              from "next/server";
 import { getOrCreateCustomer, getCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink } from "@/providers/bridge/customers";
-import { createVirtualAccount }                   from "@/providers/bridge/virtual-accounts";
+import { createVirtualAccount, getVirtualAccount } from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
 import { buildDynamicQuote }                      from "@/lib/bridge-fees";
 import { createOrder }                            from "@/lib/order-state";
@@ -180,18 +180,42 @@ export async function POST(req: NextRequest): Promise<Response> {
     // "Efecto Memoria": VA is STATIC — same sender+recipient always gets the same VA
     // (same routing number + account number). Sender saves details once in their bank app
     // and all future transfers arrive automatically without visiting OmniPay again.
-    const network = NETWORK_BY_CURRENCY[source_currency] ?? "polygon";
-    const va = await createVirtualAccount({
-      customerId:          senderCustomer.id,
-      sourceCurrency:      source_currency,
-      destinationAddress:  meta.liq_addr_address,
-      destinationNetwork:  network,
-      developerFeePercent: "0.50",  // OmniPay's 0.50% collected automatically by Bridge
-      // Stable reference — uses liq_addr_id so same VA is returned on repeat sends
-      // (idempotency key: va-{customerId}-{liqAddrId})
-      reference:           meta.liq_addr_id,
-      developerReference:  `liq-${meta.liq_addr_id}`,  // appears in deposit_received webhook
-    });
+    const network  = NETWORK_BY_CURRENCY[source_currency] ?? "polygon";
+    const vaRedisKey = `va-${senderCustomer.id}-${source_currency}-${meta.liq_addr_id}`;
+
+    // "Efecto Memoria": check Redis for an existing VA before calling Bridge.
+    // Bridge rejects stable idempotency keys that were used >24h ago, so we cache
+    // the VA ID ourselves and fetch it directly on repeat sends.
+    let va: Awaited<ReturnType<typeof createVirtualAccount>>;
+    try {
+      const redis    = await getRedis();
+      const cachedId = await redis.get(vaRedisKey);
+      if (cachedId) {
+        va = await getVirtualAccount(senderCustomer.id, cachedId);
+      } else {
+        va = await createVirtualAccount({
+          customerId:          senderCustomer.id,
+          sourceCurrency:      source_currency,
+          destinationAddress:  meta.liq_addr_address,
+          destinationNetwork:  network,
+          developerFeePercent: "0.50",
+          reference:           meta.liq_addr_id,
+          developerReference:  `liq-${meta.liq_addr_id}`,
+        });
+        await redis.set(vaRedisKey, va.id, { EX: 365 * 24 * 3600 }); // 1 year TTL
+      }
+    } catch {
+      // Redis unavailable — fall through to Bridge directly (no idempotency key to avoid 24h error)
+      va = await createVirtualAccount({
+        customerId:          senderCustomer.id,
+        sourceCurrency:      source_currency,
+        destinationAddress:  meta.liq_addr_address,
+        destinationNetwork:  network,
+        developerFeePercent: "0.50",
+        reference:           meta.liq_addr_id,
+        developerReference:  `liq-${meta.liq_addr_id}`,
+      });
+    }
 
     // Sender's locale from cookie (for email i18n)
     const senderLocale = req.cookies.get("OMNIPAY_LOCALE")?.value ?? "es";
