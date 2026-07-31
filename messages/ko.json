@@ -503,7 +503,9 @@
     "va_save_body": "다음번에는 은행 앱에서 이 계좌로 직접 이체하세요. OmniPay에 다시 들어갈 필요 없이 자동으로 수취인에게 전달됩니다.",
     "tos_required_title": "⚠️ Bridge 이용약관 동의",
     "tos_required_body": "계속하려면 Bridge 이용약관에 동의해야 합니다. 클릭, 동의, 이 페이지로 돌아오세요.",
-    "tos_accept_button": "Bridge 이용약관 동의 →"
+    "tos_accept_button": "Bridge 이용약관 동의 →",
+    "bitso_clabe_title": "일회용 CLABE",
+    "bitso_clabe_body": "이 CLABE는 이번 이체에만 사용됩니다. 새 이체를 위해서는 수취인에게 새 결제 링크를 생성해 달라고 요청하세요."
   },
   "seguimiento": {
     "page_title": "이체 상태",

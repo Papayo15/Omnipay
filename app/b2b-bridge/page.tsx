@@ -47,11 +47,14 @@ interface B2BPayResponse {
   error?:               string;
 }
 
+// Bitso Canal 4 enabled when env var is set — MXN via SPEI to Bitso CLABE
+const BITSO_ENABLED = process.env.NEXT_PUBLIC_BITSO_ENABLED === "true";
+
 const CURRENCIES = [
   { code: "usd", flag: "🇺🇸", label: "USD — US Dollar" },
   { code: "eur", flag: "🇪🇺", label: "EUR — Euro" },
   { code: "gbp", flag: "🇬🇧", label: "GBP — British Pound" },
-  { code: "mxn", flag: "🇲🇽", label: "MXN — Peso Mexicano" },
+  ...(BITSO_ENABLED ? [{ code: "mxn", flag: "🇲🇽", label: "MXN — Peso Mexicano (SPEI)" }] : []),
   { code: "brl", flag: "🇧🇷", label: "BRL — Real Brasileiro" },
 ];
 
@@ -104,15 +107,16 @@ export default function B2BBridgePage() {
     if (!token || !businessName.trim() || !email.includes("@")) return;
     setStep("loading");
     try {
-      const res = await fetch("/api/bridge/b2b/pay", {
+      const isBitsoMxn = currency === "mxn" && BITSO_ENABLED;
+      const endpoint   = isBitsoMxn ? "/api/bitso/checkout" : "/api/bridge/b2b/pay";
+      const reqBody    = isBitsoMxn
+        ? { token, sender_name: businessName.trim(), sender_email: email.toLowerCase().trim() }
+        : { token, business_name: businessName.trim(), sender_email: email.toLowerCase().trim(), source_currency: currency };
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token,
-          business_name:   businessName.trim(),
-          sender_email:    email.toLowerCase().trim(),
-          source_currency: currency,
-        }),
+        body: JSON.stringify(reqBody),
       });
       const data = await res.json() as B2BPayResponse;
       if (res.status === 202) {
@@ -297,15 +301,22 @@ export default function B2BBridgePage() {
           </div>
         </div>
 
-        {/* Estimated timeline */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 mb-4">
-          <p className="text-white text-xs font-semibold mb-2">Tiempo estimado de entrega</p>
-          <div className="flex items-center gap-2 text-slate-400 text-xs">
-            <span className="text-[#00C9C8]">⚡</span>
-            <span>1-2 días hábiles vía Bridge</span>
+        {/* Single-use CLABE notice (Bitso) vs Bridge timeline */}
+        {di.beneficiary_name === "OmniPay / Bitso" ? (
+          <div className="bg-amber-900/20 border border-amber-500/30 rounded-xl px-4 py-3 mb-4">
+            <p className="text-amber-400 text-xs font-semibold mb-1">CLABE de un solo uso</p>
+            <p className="text-slate-400 text-xs leading-relaxed">Esta CLABE es exclusiva para esta transferencia. Para un nuevo envío, genera un nuevo link de pago.</p>
           </div>
-          <p className="text-slate-600 text-[10px] mt-2">vs. 4-5 días con Stripe + Wise · Sin cargo de tarjeta</p>
-        </div>
+        ) : (
+          <div className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 mb-4">
+            <p className="text-white text-xs font-semibold mb-2">Tiempo estimado de entrega</p>
+            <div className="flex items-center gap-2 text-slate-400 text-xs">
+              <span className="text-[#00C9C8]">⚡</span>
+              <span>1-2 días hábiles vía Bridge</span>
+            </div>
+            <p className="text-slate-600 text-[10px] mt-2">vs. 4-5 días con Stripe + Wise · Sin cargo de tarjeta</p>
+          </div>
+        )}
 
         <button
           onClick={() => router.push(`/seguimiento?order_id=${result.order_id}`)}

@@ -503,7 +503,9 @@
     "va_save_body": "Next time, just transfer directly from your banking app to this account. Your money arrives automatically — no need to visit OmniPay again.",
     "tos_required_title": "⚠️ Accept Bridge Terms",
     "tos_required_body": "You must accept Bridge's terms before continuing. Click, accept, and return to this page.",
-    "tos_accept_button": "Accept Bridge Terms →"
+    "tos_accept_button": "Accept Bridge Terms →",
+    "bitso_clabe_title": "Single-use CLABE",
+    "bitso_clabe_body": "This CLABE is exclusive to this transfer. For a new transfer, ask the recipient to generate a new payment link."
   },
   "seguimiento": {
     "page_title": "Transfer status",

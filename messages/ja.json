@@ -503,7 +503,9 @@
     "va_save_body": "次回は銀行アプリから直接このアカウントに送金するだけ。OmniPayに戻らなくても、自動的に受取人に届きます。",
     "tos_required_title": "⚠️ Bridgeの利用規約に同意",
     "tos_required_body": "続行する前にBridgeの利用規約に同意してください。クリック、同意、このページに戻ってください。",
-    "tos_accept_button": "Bridgeの規約に同意 →"
+    "tos_accept_button": "Bridgeの規約に同意 →",
+    "bitso_clabe_title": "1回限りのCLABE",
+    "bitso_clabe_body": "このCLABEはこの送金専用です。新しい送金のためには、受取人に新しい支払いリンクを生成してもらってください。"
   },
   "seguimiento": {
     "page_title": "送金状況",

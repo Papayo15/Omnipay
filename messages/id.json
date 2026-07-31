@@ -503,7 +503,9 @@
     "va_save_body": "Lain kali, transfer langsung dari aplikasi bank Anda ke akun ini. Uang akan tiba secara otomatis tanpa perlu membuka OmniPay lagi.",
     "tos_required_title": "⚠️ Setujui Syarat Bridge",
     "tos_required_body": "Anda harus menyetujui syarat Bridge sebelum melanjutkan. Klik, setujui, dan kembali ke halaman ini.",
-    "tos_accept_button": "Setujui Syarat Bridge →"
+    "tos_accept_button": "Setujui Syarat Bridge →",
+    "bitso_clabe_title": "CLABE sekali pakai",
+    "bitso_clabe_body": "CLABE ini eksklusif untuk transfer ini. Untuk pengiriman baru, minta penerima membuat tautan pembayaran baru."
   },
   "seguimiento": {
     "page_title": "Status transfer",

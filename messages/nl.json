@@ -503,7 +503,9 @@
     "va_save_body": "De volgende keer, stuur gewoon geld via uw bank naar dit account. Het geld arriveert automatisch bij de ontvanger — zonder OmniPay opnieuw te bezoeken.",
     "tos_required_title": "⚠️ Accepteer de Bridge-voorwaarden",
     "tos_required_body": "U moet de Bridge-voorwaarden accepteren voordat u doorgaat. Klik, accepteer, en keer terug naar deze pagina.",
-    "tos_accept_button": "Bridge-voorwaarden accepteren →"
+    "tos_accept_button": "Bridge-voorwaarden accepteren →",
+    "bitso_clabe_title": "Eenmalige CLABE",
+    "bitso_clabe_body": "Deze CLABE is exclusief voor deze overboeking. Voor een nieuwe overboeking vraagt u de ontvanger een nieuwe betaallink te genereren."
   },
   "seguimiento": {
     "page_title": "Overboekingsstatus",

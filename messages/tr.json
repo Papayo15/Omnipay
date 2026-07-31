@@ -503,7 +503,9 @@
     "va_save_body": "Bir dahaki seferinde, doğrudan bankandan bu hesaba transfer yap. Para, OmniPay'e tekrar girmeden otomatik olarak alıcıya ulaşır.",
     "tos_required_title": "⚠️ Bridge Şartlarını Kabul Et",
     "tos_required_body": "Devam etmeden önce Bridge şartlarını kabul etmelisiniz. Tıkla, kabul et ve bu sayfaya geri dön.",
-    "tos_accept_button": "Bridge Şartlarını Kabul Et →"
+    "tos_accept_button": "Bridge Şartlarını Kabul Et →",
+    "bitso_clabe_title": "Tek kullanımlık CLABE",
+    "bitso_clabe_body": "Bu CLABE yalnızca bu transfer için geçerlidir. Yeni bir transfer için alıcıdan yeni bir ödeme bağlantısı oluşturmasını isteyin."
   },
   "seguimiento": {
     "page_title": "Transfer durumu",

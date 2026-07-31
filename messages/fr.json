@@ -503,7 +503,9 @@
     "va_save_body": "La prochaine fois, transférez directement depuis votre banque vers ce compte. L'argent arrive automatiquement chez le destinataire — sans retourner sur OmniPay.",
     "tos_required_title": "⚠️ Accepter les conditions de Bridge",
     "tos_required_body": "Vous devez accepter les conditions de Bridge avant de continuer. Cliquez, acceptez, et revenez sur cette page.",
-    "tos_accept_button": "Accepter les conditions →"
+    "tos_accept_button": "Accepter les conditions →",
+    "bitso_clabe_title": "CLABE à usage unique",
+    "bitso_clabe_body": "Ce CLABE est exclusif à ce virement. Pour un nouvel envoi, demandez au destinataire de générer un nouveau lien de paiement."
   },
   "seguimiento": {
     "page_title": "Statut du virement",

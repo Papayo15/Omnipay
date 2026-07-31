@@ -503,7 +503,9 @@
     "va_save_body": "Beim nächsten Mal überweisen Sie direkt von Ihrer Bank an dieses Konto. Das Geld kommt automatisch beim Empfänger an — ohne OmniPay zu besuchen.",
     "tos_required_title": "⚠️ Bridge-Bedingungen akzeptieren",
     "tos_required_body": "Sie müssen die Bridge-Bedingungen akzeptieren, bevor Sie fortfahren. Klicken Sie, akzeptieren Sie und kehren Sie zu dieser Seite zurück.",
-    "tos_accept_button": "Bridge-Bedingungen akzeptieren →"
+    "tos_accept_button": "Bridge-Bedingungen akzeptieren →",
+    "bitso_clabe_title": "Einmalige CLABE",
+    "bitso_clabe_body": "Diese CLABE gilt nur für diese Überweisung. Für eine neue Überweisung bitte den Empfänger, einen neuen Zahlungslink zu erstellen."
   },
   "seguimiento": {
     "page_title": "Überweisungsstatus",

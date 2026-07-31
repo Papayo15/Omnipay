@@ -503,7 +503,9 @@
     "va_save_body": "La prossima volta, trasferisci direttamente dalla tua banca a questo conto. Il denaro arriva automaticamente al destinatario — senza tornare su OmniPay.",
     "tos_required_title": "⚠️ Accetta i Termini di Bridge",
     "tos_required_body": "Devi accettare i termini di Bridge prima di continuare. Clicca, accetta e torna su questa pagina.",
-    "tos_accept_button": "Accetta i Termini →"
+    "tos_accept_button": "Accetta i Termini →",
+    "bitso_clabe_title": "CLABE monouso",
+    "bitso_clabe_body": "Questo CLABE è esclusivo per questo trasferimento. Per un nuovo invio, chiedi al destinatario di generare un nuovo link di pagamento."
   },
   "seguimiento": {
     "page_title": "Stato del trasferimento",

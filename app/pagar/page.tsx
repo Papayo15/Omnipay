@@ -60,13 +60,15 @@ interface RatePreview {
   rate:            number | null;
 }
 
-// All Bridge Virtual Account source currencies. Labels resolved via t(`currency_${code}`).
-// USD always available. EUR/GBP/MXN/BRL require Bridge account enablement (requested via support).
+// Bitso MXN (Canal 4) enabled when env var is set. Shows MXN via SPEI deposit to Bitso CLABE.
+const BITSO_ENABLED = process.env.NEXT_PUBLIC_BITSO_ENABLED === "true";
+
+// Source currencies for Bridge VA. MXN is handled by Bitso when enabled, so excluded from Bridge list.
 const CURRENCIES = [
   { code: "usd", flag: "🇺🇸" },
   { code: "eur", flag: "🇪🇺" },
   { code: "gbp", flag: "🇬🇧" },
-  { code: "mxn", flag: "🇲🇽" },
+  ...(BITSO_ENABLED ? [{ code: "mxn", flag: "🇲🇽" }] : []),
   { code: "brl", flag: "🇧🇷" },
 ];
 
@@ -175,16 +177,16 @@ export default function PagarPage() {
 
     setStep("loading");
     try {
-      const res = await fetch("/api/bridge/pay", {
+      const isBitsoMxn = currency === "mxn" && BITSO_ENABLED;
+      const endpoint   = isBitsoMxn ? "/api/bitso/checkout" : "/api/bridge/pay";
+      const reqBody    = isBitsoMxn
+        ? { token, sender_name: name.trim(), sender_email: email.toLowerCase().trim(), sender_phone: phone.trim() || undefined }
+        : { token, sender_name: name.trim(), sender_email: email.toLowerCase().trim(), source_currency: currency, sender_phone: phone.trim() || undefined };
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token,
-          sender_name:     name.trim(),
-          sender_email:    email.toLowerCase().trim(),
-          source_currency: currency,
-          sender_phone:    phone.trim() || undefined,
-        }),
+        body: JSON.stringify(reqBody),
       });
       const data = await res.json() as PayResponse;
       // 202 = KYC or ToS required before VA can be created
@@ -338,11 +340,18 @@ export default function PagarPage() {
           {di.sort_code           && <CopyField label="Sort code"                value={di.sort_code} />}
         </div>
 
-        {/* Efecto Memoria — tell the user to save these bank details for recurring transfers */}
-        <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-xl px-4 py-3 mb-4">
-          <p className="text-emerald-400 text-xs font-semibold mb-1">{t("va_save_title")}</p>
-          <p className="text-slate-400 text-xs leading-relaxed">{t("va_save_body")}</p>
-        </div>
+        {/* Efecto Memoria (Bridge VA) vs single-use CLABE notice (Bitso) */}
+        {di.beneficiary_name === "OmniPay / Bitso" ? (
+          <div className="bg-amber-900/20 border border-amber-500/30 rounded-xl px-4 py-3 mb-4">
+            <p className="text-amber-400 text-xs font-semibold mb-1">{t("bitso_clabe_title")}</p>
+            <p className="text-slate-400 text-xs leading-relaxed">{t("bitso_clabe_body")}</p>
+          </div>
+        ) : (
+          <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-xl px-4 py-3 mb-4">
+            <p className="text-emerald-400 text-xs font-semibold mb-1">{t("va_save_title")}</p>
+            <p className="text-slate-400 text-xs leading-relaxed">{t("va_save_body")}</p>
+          </div>
+        )}
 
         {/* Fee breakdown */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mb-4 text-xs space-y-1.5">

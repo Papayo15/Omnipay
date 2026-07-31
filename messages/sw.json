@@ -503,7 +503,9 @@
     "va_save_body": "Mara ijayo, hamisha moja kwa moja kutoka benki yako kwenye akaunti hii. Pesa itafika kwa mpokeaji kiotomatiki bila kutembelea OmniPay tena.",
     "tos_required_title": "⚠️ Kubali Masharti ya Bridge",
     "tos_required_body": "Lazima ukubali masharti ya Bridge kabla ya kuendelea. Bonyeza, kubali, na urudi ukurasa huu.",
-    "tos_accept_button": "Kubali Masharti →"
+    "tos_accept_button": "Kubali Masharti →",
+    "bitso_clabe_title": "CLABE ya matumizi moja",
+    "bitso_clabe_body": "CLABE hii ni ya kipekee kwa uhamisho huu. Kwa uhamisho mpya, mwambie mpokeaji aunde kiungo kipya cha malipo."
   },
   "seguimiento": {
     "page_title": "Hali ya uhamisho",
