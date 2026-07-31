@@ -16,21 +16,28 @@
 
 import type { IPayOutProvider, PayOutParams, PayOutResult, PayOutProviderName } from "./interface";
 import { bridgeProvider } from "./bridge";
+import { bitsoProvider }  from "./bitso";
 
 export type { IPayOutProvider, PayOutParams, PayOutResult, VirtualAccount, VirtualAccountParams, PayOutFeeInfo, PayOutProviderName } from "./interface";
 
 /**
- * Bridge is now the sole pay-out provider for all countries.
+ * Returns the pay-out provider for Mexico.
+ * Set PAYOUT_PROVIDER_MX=bitso-direct in Vercel to route MX payouts through Bitso.
+ * Defaults to Bridge when the env var is absent or unrecognized.
  */
-export function getMxPayOutProvider(): IPayOutProvider  { return bridgeProvider; }
+export function getMxPayOutProvider(): IPayOutProvider {
+  return process.env.PAYOUT_PROVIDER_MX === "bitso-direct" ? bitsoProvider : bridgeProvider;
+}
+
 export function getGlobalPayOutProvider(): IPayOutProvider { return bridgeProvider; }
 
 /**
  * Selecciona automáticamente el proveedor correcto según el país destino.
  * Esta es la función que usan los webhooks — no necesitan saber qué proveedor corre.
  */
-export function selectPayOutProvider(_targetCountry: string): IPayOutProvider {
-  return bridgeProvider;
+export function selectPayOutProvider(targetCountry: string): IPayOutProvider {
+  if (targetCountry.toUpperCase() === "MX") return getMxPayOutProvider();
+  return getGlobalPayOutProvider();
 }
 
 /**
@@ -83,5 +90,5 @@ export async function executeWithFallback(params: PayOutParams): Promise<PayOutR
 }
 
 export function getAllPayOutProviders(): IPayOutProvider[] {
-  return [bridgeProvider];
+  return [bridgeProvider, bitsoProvider];
 }

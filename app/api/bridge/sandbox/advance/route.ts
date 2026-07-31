@@ -19,7 +19,8 @@ export const runtime = "nodejs";
 
 export async function GET(req: NextRequest): Promise<Response> {
   const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
-  if (!isSandbox) {
+  const isNotProd = process.env.NODE_ENV !== "production";
+  if (!isSandbox || !isNotProd) {
     return NextResponse.json({ error: "This endpoint is sandbox-only." }, { status: 403 });
   }
 
