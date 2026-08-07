@@ -201,6 +201,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             full_name:    nombre,
             email:        email.toLowerCase(),
             type:         "individual",
+            endorsements,   // include rail-specific endorsements so one KYC approves all
             redirect_uri: kycRedirectUri,
           });
           kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
