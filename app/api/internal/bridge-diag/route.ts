@@ -68,7 +68,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             redirect_uri: `${appUrl}/p2p?kyc_done=1`,
           });
           result.kyc_link_ok  = true;
-          result.kyc_link_url = (kycLink as Record<string, unknown>).kyc_link ?? kycLink.url ?? "(see full_response)";
+          result.kyc_link_url = (kycLink as unknown as Record<string, unknown>).kyc_link ?? kycLink.url ?? "(see full_response)";
           result.kyc_link_raw = kycLink;
         } catch (kycErr) {
           const e = kycErr as Error & { type?: string };
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             redirect_uri: `${appUrl}/p2p?kyc_done=1`,
           });
           result.kyc_link_ok  = true;
-          result.kyc_link_url = (kycLink as Record<string, unknown>).kyc_link ?? kycLink.url;
+          result.kyc_link_url = (kycLink as unknown as Record<string, unknown>).kyc_link ?? kycLink.url;
           result.kyc_link_raw = kycLink;
         } catch (createErr) {
           result.create_error = (createErr as Error).message;
