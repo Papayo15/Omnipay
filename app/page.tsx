@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Zap } from "lucide-react";
 import { TrustBanner } from "@/components/TrustBanner";
+import { FaqAccordion } from "@/components/FaqAccordion";
 
 export default function Home() {
   const tl = useTranslations("landing");
@@ -82,6 +83,10 @@ export default function Home() {
 
       <div className="w-full max-w-md mt-8">
         <TrustBanner variant="footer" />
+      </div>
+
+      <div className="w-full max-w-md mt-8">
+        <FaqAccordion />
       </div>
     </main>
   );
