@@ -234,7 +234,8 @@ export async function POST(req: NextRequest): Promise<Response> {
       // Redirect the customer to complete KYC for the missing endorsement.
       const e2 = liqErr as Error & { message?: string };
       const isNotActive = e2.message?.toLowerCase().includes("not active")
-        || e2.message?.toLowerCase().includes("account_not_active");
+        || e2.message?.toLowerCase().includes("account_not_active")
+        || e2.message?.toLowerCase().includes("endorsement");
       if (isNotActive && !isSandbox) {
         const kycRedirectUri2 = `${appUrl}/p2p?kyc_done=1`;
         let kycUrl: string | null = getKycUrlFromCustomer(customer);
