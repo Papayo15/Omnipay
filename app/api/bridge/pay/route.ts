@@ -118,7 +118,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       email:       sender_email.toLowerCase(),
       first_name:  sender_name.split(" ")[0],
       last_name:   sender_name.split(" ").slice(1).join(" ") || "-",
-      endorsements: ["base", "sepa"],
+      endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"],
     });
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
@@ -146,9 +146,9 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
 
     if (isSandbox) {
-      try { await ensureEndorsements(senderCustomer.id, ["base", "sepa"]); } catch { /* best-effort */ }
+      try { await ensureEndorsements(senderCustomer.id, ["base", "sepa", "spei", "pix", "faster_payments", "cop"]); } catch { /* best-effort */ }
       try {
-        await createKycLink({ full_name: sender_name, email: sender_email.toLowerCase(), type: "individual", endorsements: ["base", "sepa"] });
+        await createKycLink({ full_name: sender_name, email: sender_email.toLowerCase(), type: "individual", endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"] });
       } catch { /* duplicate_record = already pending, fine */ }
       try { await simulateKycApproval(senderCustomer.id); } catch (simErr) {
         console.warn(`[bridge/pay] simulateKycApproval: ${(simErr as Error).message}`);
@@ -182,7 +182,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             full_name:    sender_name,
             email:        sender_email.toLowerCase(),
             type:         "individual",
-            endorsements: ["base", "sepa"],
+            endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"],
             redirect_uri: kycRedirectUri,
           });
           kycUrl = kycLink.url ?? kycLink.kyc_link ?? null;

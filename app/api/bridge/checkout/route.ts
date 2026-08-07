@@ -91,12 +91,9 @@ export async function POST(req: NextRequest): Promise<Response> {
     const country_iso3 = ISO3[country_upper] ?? "USA";
 
     // Calculate endorsements — always include base + sepa minimum.
-    // Bridge auto-approves sepa for all customers, and sepa approval is what
-    // activates payout_fiat. Without payout_fiat:active, createExternalAccount
-    // fails even when base is approved (observed for ACH/US in sandbox).
-    const railForCountry   = NATIVE_RAILS[country_upper]?.rail ?? "ach";
-    const railEndorse      = RAIL_ENDORSEMENT[railForCountry] ?? "base";
-    const endorsements     = ["base", "sepa", ...(railEndorse !== "base" && railEndorse !== "sepa" ? [railEndorse] : [])];
+    // Request all rail endorsements at once — user does KYC one time for all countries.
+    // sepa also activates payout_fiat (required even for non-SEPA rails like ACH/SPEI).
+    const endorsements = ["base", "sepa", "spei", "pix", "faster_payments", "cop"];
 
     // 1. Get or create Bridge customer (KYC)
     const { customer, needsKyc, isNew } = await getOrCreateCustomer({
