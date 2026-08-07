@@ -198,7 +198,7 @@ export async function getOrCreateCustomer(params: {
 }): Promise<{ customer: BridgeCustomer; isNew: boolean; needsKyc: boolean }> {
   const existing = await findCustomerByEmail(params.email);
 
-  if (existing) {
+  if (existing && existing.type === params.type) {
     const kycApproved = params.type === "business"
       ? existing.kyb_status === "approved"
       : existing.status === "active" || existing.kyc_status === "approved";
