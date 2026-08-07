@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { getFXRate } from "@/lib/fx";
 import { validateClabe, detectBank, type BankInfo } from "@/lib/clabe";
 import { TrustBanner } from "@/components/TrustBanner";
-import { FaqAccordion } from "@/components/FaqAccordion";
 
 type Step = "form" | "generating" | "kyc_info" | "kyc_polling" | "share" | "error";
 
@@ -501,9 +500,6 @@ export default function P2PPage() {
             className="text-slate-500 hover:text-slate-300 text-xs transition-colors">
             + {t("new_transfer")}
           </button>
-          <div className="w-full mt-6">
-            <FaqAccordion />
-          </div>
         </div>
       </main>
     );

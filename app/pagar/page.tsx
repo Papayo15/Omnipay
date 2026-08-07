@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Zap, ArrowLeft, CheckCircle2, Copy, Check, AlertCircle } from "lucide-react";
 import { TrustBanner } from "@/components/TrustBanner";
-import { FaqAccordion } from "@/components/FaqAccordion";
 
 type Step = "form" | "loading" | "kyc_info" | "kyc_polling" | "instructions" | "error";
 
@@ -548,9 +547,6 @@ export default function PagarPage() {
           {t("footer_ref").replace("{order_id}", result.order_id)}
         </p>
 
-        <div className="mt-4 pb-4">
-          <FaqAccordion />
-        </div>
       </main>
     );
   }
