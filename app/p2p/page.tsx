@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Copy, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getFXRate } from "@/lib/fx";
 import { validateClabe, detectBank, type BankInfo } from "@/lib/clabe";
+import { TrustBanner } from "@/components/TrustBanner";
+import { FaqAccordion } from "@/components/FaqAccordion";
 
-type Step = "form" | "generating" | "share" | "error";
+type Step = "form" | "generating" | "kyc_info" | "kyc_polling" | "share" | "error";
 
 // All 41 countries with native Bridge bank rail (SPEI/ACH/PIX/FPS/Bre-B/SEPA)
 const BANK_RAIL_COUNTRIES = new Set([
@@ -137,20 +139,43 @@ export default function P2PPage() {
   const [fxRate,          setFxRate]          = useState<number | null>(null);
   const [kycUrl,          setKycUrl]          = useState<string | null>(null);
   const [realSenderTotal, setRealSenderTotal] = useState<string | null>(null);
+  const [pendingKycRetry, setPendingKycRetry] = useState(false);
+  const [kycStillPending, setKycStillPending] = useState(false);
+  // Ref always fresh in callbacks — tracks whether current generateLink call is a KYC retry
+  const kycAutoRetryRef = useRef(false);
 
   const selectedCountry = COUNTRY_OPTIONS.find((c) => c.code === country) ?? COUNTRY_OPTIONS[0];
   const currency        = selectedCountry.currency;
 
   const rail = BANK_RAIL_COUNTRIES.has(country) ? "bridge" : "unavailable";
 
-  // Pre-populate from URL query params (uses window to avoid useSearchParams reload)
+  // Pre-populate from URL query params — also detects post-KYC return
   useEffect(() => {
-    const p   = new URLSearchParams(window.location.search);
-    const amt = p.get("amount");
-    const cty = p.get("country");
+    const p       = new URLSearchParams(window.location.search);
+    const amt     = p.get("amount");
+    const cty     = p.get("country");
+    const kycDone = p.get("kyc_done") === "1";
     if (amt && !isNaN(parseFloat(amt))) setAmountLocal(amt);
     if (cty && COUNTRY_OPTIONS.some(c => c.code === cty.toUpperCase())) {
       setCountry(cty.toUpperCase());
+    }
+    if (kycDone) {
+      try {
+        const saved = sessionStorage.getItem("omnipay_p2p_form");
+        if (saved) {
+          const form = JSON.parse(saved) as Record<string, string>;
+          if (form.nombre)         setNombre(form.nombre);
+          if (form.email)          setEmail(form.email);
+          if (form.country)        setCountry(form.country);
+          if (form.account)        setAccount(form.account);
+          if (form.bic)            setBic(form.bic);
+          if (form.cpf)            setCpf(form.cpf);
+          if (form.amountLocal)    setAmountLocal(form.amountLocal);
+          if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
+          setStep("kyc_polling");
+          setPendingKycRetry(true);
+        }
+      } catch { /* ignore */ }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -185,6 +210,17 @@ export default function P2PPage() {
     if (rail !== "bridge") return;
     getFXRate(currency, "USD").then(r => { if (r) setFxRate(r); }).catch(() => {});
   }, [currency, country, rail]);
+
+  // Auto-retry after returning from KYC — waits for React to apply all setState calls
+  useEffect(() => {
+    if (!pendingKycRetry) return;
+    if (!nombre || !email || !account || !amountLocal) return;
+    setPendingKycRetry(false);
+    kycAutoRetryRef.current = true;
+    generateLink();
+  // generateLink is stable (useCallback) — safe to include
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingKycRetry, nombre, email, account, amountLocal]);
 
   // Bridge link generation — gets real fees from Bridge at submit time
   const generateLink = useCallback(async () => {
@@ -291,10 +327,24 @@ export default function P2PPage() {
       if (res.status !== 202 && (!res.ok || data.error)) throw new Error(data.error ?? "Error");
       if (data.needs_kyc || res.status === 202) {
         if (data.kyc_url) setKycUrl(data.kyc_url);
-        setStep("share"); // share step shows KYC banner when kycUrl is set and pay_link is empty
+        if (kycAutoRetryRef.current) {
+          // Auto-retry after KYC still returns needs_kyc — KYC processing async on Bridge's side
+          kycAutoRetryRef.current = false;
+          setKycStillPending(true);
+          setStep("kyc_polling");
+        } else {
+          // First time needs_kyc — save form + show pre-KYC explanation
+          try {
+            sessionStorage.setItem("omnipay_p2p_form", JSON.stringify({
+              nombre, email, country, account, bic, cpf, amountLocal, recipientPhone,
+            }));
+          } catch { /* ignore */ }
+          setStep("kyc_info");
+        }
       } else {
+        kycAutoRetryRef.current = false;
         setShareLink(data.pay_link);
-        if (data.kyc_url) setKycUrl(data.kyc_url);
+        setKycStillPending(false);
         setStep("share");
       }
     } catch (err) {
@@ -329,6 +379,76 @@ export default function P2PPage() {
   const cpfRequired  = country === "BR" && !cpf.trim();
   const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && amtUSDLocal >= 20 && rail === "bridge" && !bicRequired && !cpfRequired;
 
+  // ── KYC Info — pre-verification explanation ──────────────────────────────────
+  if (step === "kyc_info") {
+    return (
+      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center px-5 pt-10 pb-16 max-w-sm mx-auto w-full">
+        <div className="w-full mb-8">
+          <button onClick={() => setStep("form")} className="flex items-center gap-1 text-slate-400 hover:text-white text-sm transition-colors">
+            <ArrowLeft className="w-4 h-4" /> {t("kyc_intro_back")}
+          </button>
+        </div>
+        <div className="w-full flex flex-col gap-5">
+          <h2 className="text-white font-bold text-xl">{t("kyc_intro_title")}</h2>
+          <p className="text-slate-400 text-sm leading-relaxed">{t("kyc_intro_why")}</p>
+          <ul className="space-y-3">
+            {(["li1","li2","li3","li4"] as const).map((k) => (
+              <li key={k} className="flex items-start gap-3">
+                <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
+                <span className="text-slate-300 text-sm">{t(`kyc_intro_${k}`)}</span>
+              </li>
+            ))}
+          </ul>
+          {kycUrl ? (
+            <button
+              onClick={() => { window.location.href = kycUrl; }}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all text-white font-bold py-4 rounded-2xl text-sm mt-2"
+            >
+              {t("kyc_intro_cta")}
+            </button>
+          ) : (
+            <p className="text-slate-500 text-sm text-center">Cargando link de verificación…</p>
+          )}
+          <div className="mt-4">
+            <TrustBanner variant="checkout" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // ── KYC Polling — after returning from Bridge verification ───────────────────
+  if (step === "kyc_polling") {
+    return (
+      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-5 gap-5 max-w-sm mx-auto w-full">
+        {!kycStillPending ? (
+          <>
+            <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <div className="text-center space-y-2">
+              <p className="text-white font-semibold text-base">{t("kyc_polling_title")}</p>
+              <p className="text-slate-400 text-sm">{t("kyc_polling_body")}</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="text-4xl">⏳</div>
+            <div className="text-center space-y-2">
+              <p className="text-white font-semibold text-base">{t("kyc_polling_title")}</p>
+              <p className="text-slate-400 text-sm leading-relaxed">{t("kyc_polling_wait")}</p>
+            </div>
+            <button
+              onClick={() => { setPendingKycRetry(false); setKycStillPending(false); generateLink(); }}
+              className="mt-2 text-emerald-400 text-sm underline"
+            >
+              Intentar de nuevo
+            </button>
+          </>
+        )}
+        <p className="text-slate-600 text-xs text-center max-w-xs">{t("kyc_polling_wait")}</p>
+      </main>
+    );
+  }
+
   // ── Generating ──────────────────────────────────────────────────────────────
   if (step === "generating") {
     return (
@@ -355,17 +475,6 @@ export default function P2PPage() {
             <h2 className="text-white font-bold text-xl mb-1">{t("share_title")}</h2>
             <p className="text-slate-400 text-sm">{t("share_hint")}</p>
           </div>
-          {kycUrl && (
-            <div className="w-full bg-amber-900/30 border border-amber-500/40 rounded-2xl p-4 text-left">
-              <p className="text-amber-400 text-xs font-semibold mb-1">⚠️ {t("kyc_pending_title")}</p>
-              <p className="text-slate-400 text-xs mb-2">{t("kyc_pending_body")}</p>
-              <a href={kycUrl} target="_blank" rel="noopener noreferrer"
-                className="inline-block mt-1 w-full bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold py-2 px-4 rounded-lg text-center transition-colors">
-                {t("kyc_complete_link")} →
-              </a>
-              <p className="text-slate-500 text-[10px] mt-2">Después de completar la verificación, vuelve aquí y genera el link de pago de nuevo.</p>
-            </div>
-          )}
           {shareLink && (
             <div className="w-full bg-slate-800/60 border border-slate-700 rounded-2xl p-4 text-center">
               <p className="text-slate-400 text-xs mb-1">{nombre}</p>
@@ -388,10 +497,13 @@ export default function P2PPage() {
               {copied ? "✓" : t("share_copy")}
             </button>
           </div>}
-          <button onClick={() => { setStep("form"); setNombre(""); setEmail(""); setAccount(""); setAmountLocal(""); setRecipientPhone(""); setRealSenderTotal(null); setKycUrl(null); }}
+          <button onClick={() => { setStep("form"); setNombre(""); setEmail(""); setAccount(""); setAmountLocal(""); setRecipientPhone(""); setRealSenderTotal(null); setKycUrl(null); setKycStillPending(false); }}
             className="text-slate-500 hover:text-slate-300 text-xs transition-colors">
             + {t("new_transfer")}
           </button>
+          <div className="w-full mt-6">
+            <FaqAccordion />
+          </div>
         </div>
       </main>
     );
@@ -637,6 +749,9 @@ export default function P2PPage() {
               className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
               {submitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}
             </button>
+            <div className="mt-3">
+              <TrustBanner variant="checkout" />
+            </div>
           </>
         )}
 

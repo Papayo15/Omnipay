@@ -227,6 +227,7 @@ export async function createKycLink(params: {
   email:         string;
   type:          "individual" | "business";
   endorsements?: string[];  // e.g. ["base", "sepa"] — Bridge requires array
+  redirect_uri?: string;    // URL Bridge redirects the user to after KYC is complete
 }): Promise<BridgeKycLink> {
   const endStr   = (params.endorsements ?? ["base"]).join("-");
   const idempKey = `kyc-link-${params.email.toLowerCase()}-${endStr}-${Math.floor(Date.now() / 3_600_000)}`;

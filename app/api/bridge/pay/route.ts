@@ -156,10 +156,18 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Must run AFTER sandbox simulate so sandbox flow is never blocked here
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyc && !skipKyc && !isSandbox) {
+      // Include the token in the redirect so /pagar can auto-retry without re-filling the form
+      const kycRedirectUri = `${appUrl}/pagar?t=${token}&kyc_done=1`;
       let kycUrl: string | null = getKycUrlFromCustomer(senderCustomer);
       if (!kycUrl) {
         try {
-          const kycLink = await getKycLink(senderCustomer.id);
+          const kycLink = await createKycLink({
+            full_name:    sender_name,
+            email:        sender_email.toLowerCase(),
+            type:         "individual",
+            endorsements: ["base", "sepa"],
+            redirect_uri: kycRedirectUri,
+          });
           kycUrl = kycLink.url ?? kycLink.kyc_link ?? null;
         } catch { /* best-effort */ }
       }

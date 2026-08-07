@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Zap, ArrowLeft, CheckCircle2, Copy, Check, AlertCircle } from "lucide-react";
+import { TrustBanner } from "@/components/TrustBanner";
+import { FaqAccordion } from "@/components/FaqAccordion";
 
-type Step = "form" | "loading" | "instructions" | "error";
+type Step = "form" | "loading" | "kyc_info" | "kyc_polling" | "instructions" | "error";
 
 interface DepositInstructions {
   rail:                string;
@@ -119,17 +121,36 @@ export default function PagarPage() {
   const [ratePreview, setRatePreview] = useState<RatePreview | null>(null);
   const [rateLoading, setRateLoading] = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
+  const [kycUrl,           setKycUrl]           = useState<string | null>(null);
+  const [pendingKycRetry,  setPendingKycRetry]  = useState(false);
+  const [kycStillPending,  setKycStillPending]  = useState(false);
+  const kycAutoRetryRef = useRef(false);
   const router = useRouter();
 
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const t = p.get("t");
-    const type = p.get("type");
-    if (!t || type !== "p2p") {
+    const p       = new URLSearchParams(window.location.search);
+    const tok     = p.get("t");
+    const type    = p.get("type");
+    const kycDone = p.get("kyc_done") === "1";
+    if (!tok || type !== "p2p") {
       window.location.href = "/";
       return;
     }
-    setToken(t);
+    setToken(tok);
+    if (kycDone) {
+      try {
+        const saved = sessionStorage.getItem("omnipay_pagar_form");
+        if (saved) {
+          const form = JSON.parse(saved) as Record<string, string>;
+          if (form.name)     setName(form.name);
+          if (form.email)    setEmail(form.email);
+          if (form.currency) setCurrency(form.currency);
+          if (form.phone)    setPhone(form.phone);
+          setStep("kyc_polling");
+          setPendingKycRetry(true);
+        }
+      } catch { /* ignore */ }
+    }
   }, []);
 
   // Fetch rate preview whenever token + currency changes
@@ -144,6 +165,16 @@ export default function PagarPage() {
       .finally(() => { if (!cancelled) setRateLoading(false); });
     return () => { cancelled = true; };
   }, [token, currency]);
+
+  // Auto-retry after returning from Bridge KYC
+  useEffect(() => {
+    if (!pendingKycRetry) return;
+    if (!token || !name || !email) return;
+    setPendingKycRetry(false);
+    kycAutoRetryRef.current = true;
+    handleSubmit();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingKycRetry, token, name, email]);
 
   const handleSandboxAdvance = useCallback(async () => {
     if (!result?.order_id) return;
@@ -191,8 +222,26 @@ export default function PagarPage() {
       const data = await res.json() as PayResponse;
       // 202 = KYC or ToS required before VA can be created
       if (res.status === 202) {
-        setResult(data);
-        setStep("instructions"); // instructions screen shows KYC/ToS banner
+        if (data.needs_kyc && data.kyc_url) {
+          setKycUrl(data.kyc_url);
+          if (kycAutoRetryRef.current) {
+            // Auto-retry after KYC still pending — KYC being processed async on Bridge's side
+            kycAutoRetryRef.current = false;
+            setKycStillPending(true);
+            setStep("kyc_polling");
+          } else {
+            // First time — save form + show pre-KYC explanation
+            try {
+              sessionStorage.setItem("omnipay_pagar_form", JSON.stringify({
+                name: name.trim(), email: email.toLowerCase().trim(), currency, phone: phone.trim(),
+              }));
+            } catch { /* ignore */ }
+            setStep("kyc_info");
+          }
+        } else {
+          setResult(data);
+          setStep("instructions"); // ToS banner shown in instructions
+        }
         return;
       }
       if (!res.ok || data.error) {
@@ -261,6 +310,76 @@ export default function PagarPage() {
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center gap-4">
         <div className="w-10 h-10 border-2 border-[#00C9C8] border-t-transparent rounded-full animate-spin" />
         <p className="text-slate-400 text-sm">{t("loading")}</p>
+      </main>
+    );
+  }
+
+  // ── KYC INFO — pre-verification explanation ────────────────────────────────
+  if (step === "kyc_info") {
+    return (
+      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center px-5 pt-10 pb-16 max-w-sm mx-auto w-full">
+        <div className="w-full mb-8">
+          <button onClick={() => setStep("form")} className="flex items-center gap-1 text-slate-400 hover:text-white text-sm transition-colors">
+            <ArrowLeft className="w-4 h-4" /> {t("kyc_intro_back")}
+          </button>
+        </div>
+        <div className="w-full flex flex-col gap-5">
+          <h2 className="text-white font-bold text-xl">{t("kyc_intro_title")}</h2>
+          <p className="text-slate-400 text-sm leading-relaxed">{t("kyc_intro_why")}</p>
+          <ul className="space-y-3">
+            {(["li1","li2","li3","li4"] as const).map((k) => (
+              <li key={k} className="flex items-start gap-3">
+                <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
+                <span className="text-slate-300 text-sm">{t(`kyc_intro_${k}`)}</span>
+              </li>
+            ))}
+          </ul>
+          {kycUrl ? (
+            <button
+              onClick={() => { window.location.href = kycUrl; }}
+              className="w-full bg-[#00C9C8] hover:bg-[#00b3b2] active:scale-95 transition-all text-black font-bold py-4 rounded-2xl text-sm mt-2"
+            >
+              {t("kyc_intro_cta")}
+            </button>
+          ) : (
+            <p className="text-slate-500 text-sm text-center">Cargando link de verificación…</p>
+          )}
+          <div className="mt-4">
+            <TrustBanner variant="checkout" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // ── KYC POLLING — waiting for Bridge to confirm verification ────────────────
+  if (step === "kyc_polling") {
+    return (
+      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-5 gap-5 max-w-sm mx-auto w-full">
+        {!kycStillPending ? (
+          <>
+            <div className="w-10 h-10 border-2 border-[#00C9C8] border-t-transparent rounded-full animate-spin" />
+            <div className="text-center space-y-2">
+              <p className="text-white font-semibold text-base">{t("kyc_polling_title")}</p>
+              <p className="text-slate-400 text-sm">{t("kyc_polling_body")}</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="text-4xl">⏳</div>
+            <div className="text-center space-y-2">
+              <p className="text-white font-semibold text-base">{t("kyc_polling_title")}</p>
+              <p className="text-slate-400 text-sm leading-relaxed">{t("kyc_polling_wait")}</p>
+            </div>
+            <button
+              onClick={() => { setPendingKycRetry(false); setKycStillPending(false); handleSubmit(); }}
+              className="mt-2 text-[#00C9C8] text-sm underline"
+            >
+              Intentar de nuevo
+            </button>
+          </>
+        )}
+        <p className="text-slate-600 text-xs text-center max-w-xs">{t("kyc_polling_wait")}</p>
       </main>
     );
   }
@@ -428,6 +547,10 @@ export default function PagarPage() {
         <p className="text-slate-600 text-[10px] text-center pb-2">
           {t("footer_ref").replace("{order_id}", result.order_id)}
         </p>
+
+        <div className="mt-4 pb-4">
+          <FaqAccordion />
+        </div>
       </main>
     );
   }
@@ -510,9 +633,9 @@ export default function PagarPage() {
           {t("submit")}
         </button>
 
-        <p className="text-center text-xs text-slate-600 pb-4">
-          {t("form_trust")}
-        </p>
+        <div className="mt-1">
+          <TrustBanner variant="checkout" />
+        </div>
       </div>
     </main>
   );

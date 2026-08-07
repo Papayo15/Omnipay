@@ -193,13 +193,15 @@ export async function POST(req: NextRequest): Promise<Response> {
     // 2. KYC gate (production only — sandbox uses simulate_kyc_approval above)
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyc && !skipKyc && !isSandbox) {
+      const kycRedirectUri = `${appUrl}/p2p?kyc_done=1`;
       let kycUrl: string | null = getKycUrlFromCustomer(customer);
       if (!kycUrl) {
         try {
           const kycLink = await createKycLink({
-            full_name: nombre,
-            email:     email.toLowerCase(),
-            type:      "individual",
+            full_name:    nombre,
+            email:        email.toLowerCase(),
+            type:         "individual",
+            redirect_uri: kycRedirectUri,
           });
           kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
         } catch (e1) {
@@ -232,12 +234,13 @@ export async function POST(req: NextRequest): Promise<Response> {
       const isNotActive = e2.message?.toLowerCase().includes("not active")
         || e2.message?.toLowerCase().includes("account_not_active");
       if (isNotActive && !isSandbox) {
+        const kycRedirectUri2 = `${appUrl}/p2p?kyc_done=1`;
         let kycUrl: string | null = getKycUrlFromCustomer(customer);
         if (!kycUrl) {
           try {
             const kycLink = await createKycLink({
               full_name: nombre, email: email.toLowerCase(),
-              type: "individual", endorsements,
+              type: "individual", endorsements, redirect_uri: kycRedirectUri2,
             });
             kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
           } catch (e3) {
