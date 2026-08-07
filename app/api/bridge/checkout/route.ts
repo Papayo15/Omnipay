@@ -164,9 +164,10 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (!isSandbox && isNew) {
       try {
         const tosLink = await createTosLink({
-          full_name: nombre,
-          email:     email.toLowerCase(),
-          type:      "individual",
+          full_name:    nombre,
+          email:        email.toLowerCase(),
+          type:         "individual",
+          redirect_uri: `${appUrl}/p2p?tos_done=1`,
         });
         return NextResponse.json({
           needs_tos: true,

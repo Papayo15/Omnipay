@@ -254,17 +254,25 @@ export function getKycUrlFromCustomer(customer: BridgeCustomer): string | null {
 // In sandbox, `signed_agreement_id: crypto.randomUUID()` is used instead.
 // Production: call this, get { id, url }, redirect user to url, then retry checkout.
 export async function createTosLink(params: {
-  full_name: string;
-  email:     string;
-  type:      "individual" | "business";
+  full_name:    string;
+  email:        string;
+  type:         "individual" | "business";
+  redirect_uri?: string;
 }): Promise<{ id: string; url: string }> {
+  const { redirect_uri, ...body } = params;
   const day = Math.floor(Date.now() / 86_400_000);
-  return bridgeRequest<{ id: string; url: string }>(
+  const res = await bridgeRequest<{ id: string; url: string }>(
     "POST",
-    "/tos_links",
-    params,
+    "/customers/tos_links",
+    body,
     `tos-${params.email.toLowerCase()}-${day}`,
   );
+  // redirect_uri goes as query param on the URL Bridge returns, not in the API body
+  if (redirect_uri && res.url) {
+    const sep = res.url.includes("?") ? "&" : "?";
+    res.url = `${res.url}${sep}redirect_uri=${encodeURIComponent(redirect_uri)}`;
+  }
+  return res;
 }
 
 export { BridgeError };

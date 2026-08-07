@@ -113,7 +113,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     });
 
     // 3. Get or create Bridge customer for the SENDER (KYC)
-    const { customer: senderCustomer, needsKyc } = await getOrCreateCustomer({
+    const { customer: senderCustomer, needsKyc, isNew: isSenderNew } = await getOrCreateCustomer({
       type:        "individual",
       email:       sender_email.toLowerCase(),
       first_name:  sender_name.split(" ")[0],
@@ -127,6 +127,23 @@ export async function POST(req: NextRequest): Promise<Response> {
     try { await patchCustomerAddress(senderCustomer.id, "US", true); } catch { /* best-effort */ }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
+
+    // ToS gate for new sender in production
+    if (!isSandbox && isSenderNew) {
+      try {
+        const tosLink = await createTosLink({
+          full_name:    sender_name,
+          email:        sender_email.toLowerCase(),
+          type:         "individual",
+          redirect_uri: `${appUrl}/pagar?t=${token}&tos_done=1`,
+        });
+        return NextResponse.json({
+          needs_tos: true,
+          tos_url:   tosLink.url,
+          message:   "El emisor debe aceptar los Términos de Bridge antes de continuar.",
+        }, { status: 202 });
+      } catch { /* proceed if ToS link fails */ }
+    }
 
     if (isSandbox) {
       try { await ensureEndorsements(senderCustomer.id, ["base", "sepa"]); } catch { /* best-effort */ }
