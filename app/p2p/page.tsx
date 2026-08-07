@@ -140,6 +140,7 @@ export default function P2PPage() {
   const [realSenderTotal, setRealSenderTotal] = useState<string | null>(null);
   const [pendingKycRetry, setPendingKycRetry] = useState(false);
   const [kycStillPending, setKycStillPending] = useState(false);
+  const [savedKycForm,    setSavedKycForm]    = useState(false);
   // Ref always fresh in callbacks — tracks whether current generateLink call is a KYC retry
   const kycAutoRetryRef = useRef(false);
 
@@ -158,11 +159,12 @@ export default function P2PPage() {
     if (cty && COUNTRY_OPTIONS.some(c => c.code === cty.toUpperCase())) {
       setCountry(cty.toUpperCase());
     }
-    if (kycDone) {
-      try {
-        const saved = sessionStorage.getItem("omnipay_p2p_form");
-        if (saved) {
-          const form = JSON.parse(saved) as Record<string, string>;
+    try {
+      const saved = sessionStorage.getItem("omnipay_p2p_form");
+      if (saved) {
+        const form = JSON.parse(saved) as Record<string, string>;
+        if (kycDone) {
+          // Auto-retry: Bridge redirected back with ?kyc_done=1
           if (form.nombre)         setNombre(form.nombre);
           if (form.email)          setEmail(form.email);
           if (form.country)        setCountry(form.country);
@@ -173,9 +175,12 @@ export default function P2PPage() {
           if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
           setStep("kyc_polling");
           setPendingKycRetry(true);
+        } else {
+          // User returned manually — show banner so they can continue
+          setSavedKycForm(true);
         }
-      } catch { /* ignore */ }
-    }
+      }
+    } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -344,6 +349,8 @@ export default function P2PPage() {
         kycAutoRetryRef.current = false;
         setShareLink(data.pay_link);
         setKycStillPending(false);
+        setSavedKycForm(false);
+        try { sessionStorage.removeItem("omnipay_p2p_form"); } catch { /* ignore */ }
         setStep("share");
       }
     } catch (err) {
@@ -353,6 +360,24 @@ export default function P2PPage() {
       setSubmitting(false);
     }
   }, [nombre, email, country, account, bic, cpf, amountLocal, recipientPhone, fxRate, t]);
+
+  const handleKycReturn = useCallback(() => {
+    try {
+      const saved = sessionStorage.getItem("omnipay_p2p_form");
+      if (!saved) return;
+      const form = JSON.parse(saved) as Record<string, string>;
+      if (form.nombre)         setNombre(form.nombre);
+      if (form.email)          setEmail(form.email);
+      if (form.country)        setCountry(form.country);
+      if (form.account)        setAccount(form.account);
+      if (form.bic)            setBic(form.bic);
+      if (form.cpf)            setCpf(form.cpf);
+      if (form.amountLocal)    setAmountLocal(form.amountLocal);
+      if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
+      setSavedKycForm(false);
+      setPendingKycRetry(true);
+    } catch { /* ignore */ }
+  }, []);
 
   const copyLink = useCallback(async () => {
     await navigator.clipboard.writeText(shareLink);
@@ -535,6 +560,19 @@ export default function P2PPage() {
 
       {/* Form */}
       <div id="p2p-form" className="space-y-4 flex-1 max-w-sm mx-auto w-full px-5">
+
+        {/* Banner post-KYC manual return */}
+        {savedKycForm && (
+          <div className="bg-emerald-900/30 border border-emerald-500/40 rounded-2xl p-4 flex items-center justify-between gap-3">
+            <p className="text-emerald-300 text-sm leading-snug">¿Ya completaste tu verificación de identidad?</p>
+            <button
+              onClick={handleKycReturn}
+              className="flex-shrink-0 bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all text-white font-semibold text-sm px-4 py-2 rounded-xl"
+            >
+              Continuar →
+            </button>
+          </div>
+        )}
 
         {/* Nombre receptor */}
         <div>

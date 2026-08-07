@@ -123,6 +123,7 @@ export default function PagarPage() {
   const [kycUrl,           setKycUrl]           = useState<string | null>(null);
   const [pendingKycRetry,  setPendingKycRetry]  = useState(false);
   const [kycStillPending,  setKycStillPending]  = useState(false);
+  const [savedKycForm,     setSavedKycForm]     = useState(false);
   const kycAutoRetryRef = useRef(false);
   const router = useRouter();
 
@@ -136,20 +137,24 @@ export default function PagarPage() {
       return;
     }
     setToken(tok);
-    if (kycDone) {
-      try {
-        const saved = sessionStorage.getItem("omnipay_pagar_form");
-        if (saved) {
-          const form = JSON.parse(saved) as Record<string, string>;
+    try {
+      const saved = sessionStorage.getItem("omnipay_pagar_form");
+      if (saved) {
+        const form = JSON.parse(saved) as Record<string, string>;
+        if (kycDone) {
+          // Auto-retry: Bridge redirected back with ?kyc_done=1
           if (form.name)     setName(form.name);
           if (form.email)    setEmail(form.email);
           if (form.currency) setCurrency(form.currency);
           if (form.phone)    setPhone(form.phone);
           setStep("kyc_polling");
           setPendingKycRetry(true);
+        } else {
+          // User returned manually — show banner so they can continue
+          setSavedKycForm(true);
         }
-      } catch { /* ignore */ }
-    }
+      }
+    } catch { /* ignore */ }
   }, []);
 
   // Fetch rate preview whenever token + currency changes
@@ -253,12 +258,28 @@ export default function PagarPage() {
         return;
       }
       setResult(data);
+      setSavedKycForm(false);
+      try { sessionStorage.removeItem("omnipay_pagar_form"); } catch { /* ignore */ }
       setStep("instructions");
     } catch {
       setErrorMsg(t("error_connection"));
       setStep("error");
     }
   }, [token, name, email, currency, phone, ratePreview]);
+
+  const handleKycReturn = useCallback(() => {
+    try {
+      const saved = sessionStorage.getItem("omnipay_pagar_form");
+      if (!saved) return;
+      const form = JSON.parse(saved) as Record<string, string>;
+      if (form.name)     setName(form.name);
+      if (form.email)    setEmail(form.email);
+      if (form.currency) setCurrency(form.currency);
+      if (form.phone)    setPhone(form.phone);
+      setSavedKycForm(false);
+      setPendingKycRetry(true);
+    } catch { /* ignore */ }
+  }, []);
 
   function copyAll() {
     if (!result) return;
@@ -568,6 +589,20 @@ export default function PagarPage() {
       </div>
 
       <div className="space-y-4 flex-1">
+
+        {/* Banner post-KYC manual return */}
+        {savedKycForm && (
+          <div className="bg-emerald-900/30 border border-emerald-500/40 rounded-2xl p-4 flex items-center justify-between gap-3">
+            <p className="text-emerald-300 text-sm leading-snug">¿Ya completaste tu verificación de identidad?</p>
+            <button
+              onClick={handleKycReturn}
+              className="flex-shrink-0 bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all text-white font-semibold text-sm px-4 py-2 rounded-xl"
+            >
+              Continuar →
+            </button>
+          </div>
+        )}
+
         <div>
           <label className="block text-xs text-slate-400 mb-1">{t("form_name_label")}</label>
           <input value={name} onChange={(e) => setName(e.target.value)}
