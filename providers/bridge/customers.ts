@@ -199,6 +199,11 @@ export async function getOrCreateCustomer(params: {
   const existing = await findCustomerByEmail(params.email);
 
   if (existing && existing.type === params.type) {
+    // Ensure all rail endorsements are requested — idempotent, Bridge ignores already-approved ones.
+    // Prevents the case where a customer has base+sepa but is blocked on spei/pix/fps/cop.
+    if (existing.type === "individual") {
+      try { await ensureEndorsements(existing.id, ["base","sepa","spei","pix","faster_payments","cop"]); } catch { /* best-effort */ }
+    }
     const kycApproved = params.type === "business"
       ? existing.kyb_status === "approved"
       : existing.status === "active" || existing.kyc_status === "approved";
