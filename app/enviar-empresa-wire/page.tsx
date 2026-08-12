@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Zap, ArrowLeft, Building2, Copy, Check, AlertCircle, Clock, CheckCircle2, RefreshCw } from "lucide-react";
 import { SEPA_COUNTRIES } from "@/lib/wise-accounts";
 
@@ -25,6 +25,21 @@ const BRIDGE_COUNTRIES = [
 ];
 
 type Step = "form" | "submitting" | "kyb" | "wire" | "tracking" | "done" | "error";
+
+interface FormSnapshot {
+  senderBusinessName: string;
+  senderEmail:        string;
+  senderCurrency:     string;
+  recipientBusinessName: string;
+  recipientCountry:   string;
+  accountField:       string;
+  bicField:           string;
+  amount:             string;
+}
+
+type AutoRetry =
+  | { type: "checkout" }
+  | { type: "pay"; token: string; snap: FormSnapshot };
 
 interface DepositInstructions {
   routing_number?:      string;
@@ -53,7 +68,8 @@ interface TrackStatus {
 export default function EnviarEmpresaWirePage() {
   const t  = useTranslations("enviar_empresa_wire");
   const tF = useTranslations("p2p");
-  const router = useRouter();
+  const router      = useRouter();
+  const searchParams = useSearchParams();
 
   const [step, setStep] = useState<Step>("form");
   const [error, setError] = useState("");
@@ -64,6 +80,7 @@ export default function EnviarEmpresaWirePage() {
   const [va, setVa] = useState<DepositInstructions>({});
   const [amountTarget, setAmountTarget] = useState(0);
   const [track, setTrack] = useState<TrackStatus | null>(null);
+  const [autoRetry, setAutoRetry] = useState<AutoRetry | null>(null);
 
   // Form
   const [senderBusinessName, setSenderBusinessName] = useState("");
@@ -74,6 +91,46 @@ export default function EnviarEmpresaWirePage() {
   const [accountField, setAccountField] = useState("");
   const [bicField, setBicField] = useState("");
   const [amount, setAmount] = useState("");
+
+  // Detect return from Bridge KYB — restore form + auto-retry
+  useEffect(() => {
+    if (searchParams.get("kyb_done") !== "1") return;
+    const savedRaw = sessionStorage.getItem("b2b_wire_form");
+    if (!savedRaw) return;
+    const snap = JSON.parse(savedRaw) as FormSnapshot & { checkoutToken?: string };
+    setSenderBusinessName(snap.senderBusinessName);
+    setSenderEmail(snap.senderEmail);
+    setSenderCurrency(snap.senderCurrency ?? "usd");
+    setRecipientBusinessName(snap.recipientBusinessName);
+    setRecipientCountry(snap.recipientCountry ?? "MX");
+    setAccountField(snap.accountField);
+    setBicField(snap.bicField ?? "");
+    setAmount(snap.amount);
+    sessionStorage.removeItem("b2b_wire_form");
+    const retryStep = searchParams.get("step");
+    const urlToken  = searchParams.get("token");
+    const payToken  = urlToken ?? snap.checkoutToken ?? null;
+    if (retryStep === "pay" && payToken) {
+      setAutoRetry({ type: "pay", token: payToken, snap });
+    } else {
+      setAutoRetry({ type: "checkout" });
+    }
+    window.history.replaceState({}, "", "/enviar-empresa-wire");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fire auto-retry after state is populated (runs after re-render with restored form)
+  useEffect(() => {
+    if (!autoRetry) return;
+    setAutoRetry(null);
+    if (autoRetry.type === "pay") {
+      setStep("submitting");
+      createVA(autoRetry.token, autoRetry.snap).catch(e => { setError((e as Error).message); setStep("error"); });
+    } else {
+      handleSubmit();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRetry]);
 
   const isSepa = SEPA_COUNTRIES.has(recipientCountry);
 
@@ -90,58 +147,15 @@ export default function EnviarEmpresaWirePage() {
   const currency = recipientCountry === "MX" ? "MXN" : recipientCountry === "GB" ? "GBP"
     : recipientCountry === "CO" ? "COP" : recipientCountry === "US" ? "USD" : "EUR";
 
-  const handleSubmit = useCallback(async () => {
-    setStep("submitting");
-    setError("");
-    try {
-      // 1. Create B2B checkout (recipient business gets liq address)
-      const checkoutRes = await fetch("/api/bridge/b2b/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          business_name:  recipientBusinessName.trim(),
-          email:          senderEmail.trim().toLowerCase(),
-          country:        recipientCountry,
-          receive_method: "bank",
-          ...(recipientCountry === "MX"  ? { clabe:          accountField.trim() } : {}),
-          ...(recipientCountry === "GB"  ? { sort_code:      accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() } : {}),
-          ...(isSepa                     ? { iban:           accountField.trim(), bic: bicField.trim() } : {}),
-          ...(recipientCountry === "US"  ? { routing_number: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() } : {}),
-          ...(recipientCountry === "CO"  ? { account_number: accountField.trim() } : {}),
-          amount_target: parseFloat(amount),
-        }),
-      });
-      const checkoutData = await checkoutRes.json() as {
-        needs_kyb?: boolean; kyb_url?: string; customer_id?: string;
-        pay_link?: string; token?: string; error?: string;
-      };
-
-      if (checkoutData.needs_kyb) {
-        setKybUrl(checkoutData.kyb_url ?? "");
-        setCustomerId(checkoutData.customer_id ?? "");
-        setStep("kyb");
-        return;
-      }
-      if (!checkoutRes.ok || checkoutData.error) throw new Error(checkoutData.error ?? "Error creando checkout");
-
-      // 2. Now create Virtual Account for the sender (emission side)
-      if (!checkoutData.token) throw new Error("No payment token");
-      await createVA(checkoutData.token);
-    } catch (e) {
-      setError((e as Error).message);
-      setStep("error");
-    }
-  }, [recipientBusinessName, senderEmail, recipientCountry, accountField, bicField, isSepa, amount]);
-
-  const createVA = useCallback(async (token: string) => {
+  const createVA = useCallback(async (token: string, snap: FormSnapshot) => {
     const payRes = await fetch("/api/bridge/b2b/pay", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         token,
-        business_name:   senderBusinessName.trim(),
-        sender_email:    senderEmail.trim().toLowerCase(),
-        source_currency: senderCurrency,
+        business_name:   snap.senderBusinessName.trim(),
+        sender_email:    snap.senderEmail.trim().toLowerCase(),
+        source_currency: snap.senderCurrency,
       }),
     });
     const payData = await payRes.json() as {
@@ -151,6 +165,7 @@ export default function EnviarEmpresaWirePage() {
     };
 
     if (payData.needs_kyb) {
+      sessionStorage.setItem("b2b_wire_form", JSON.stringify({ ...snap, checkoutToken: token }));
       setKybUrl(payData.kyb_url ?? "");
       setCustomerId(payData.customer_id ?? "");
       setStep("kyb");
@@ -160,9 +175,56 @@ export default function EnviarEmpresaWirePage() {
 
     setVa(payData.deposit_instructions ?? {});
     setOrderId(payData.order_id ?? "");
-    setAmountTarget(parseFloat(amount));
+    setAmountTarget(parseFloat(snap.amount));
     setStep("wire");
-  }, [senderBusinessName, senderEmail, senderCurrency, amount]);
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    setStep("submitting");
+    setError("");
+    const snap: FormSnapshot = {
+      senderBusinessName, senderEmail, senderCurrency,
+      recipientBusinessName, recipientCountry, accountField, bicField, amount,
+    };
+    try {
+      const sepa = SEPA_COUNTRIES.has(recipientCountry);
+      const checkoutRes = await fetch("/api/bridge/b2b/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          business_name:  recipientBusinessName.trim(),
+          email:          senderEmail.trim().toLowerCase(),
+          country:        recipientCountry,
+          receive_method: "bank",
+          ...(recipientCountry === "MX" ? { clabe:          accountField.trim() } : {}),
+          ...(recipientCountry === "GB" ? { sort_code:      accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() } : {}),
+          ...(sepa                      ? { iban:           accountField.trim(), bic: bicField.trim() } : {}),
+          ...(recipientCountry === "US" ? { routing_number: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() } : {}),
+          ...(recipientCountry === "CO" ? { account_number: accountField.trim() } : {}),
+          amount_target: parseFloat(amount),
+        }),
+      });
+      const checkoutData = await checkoutRes.json() as {
+        needs_kyb?: boolean; kyb_url?: string; customer_id?: string;
+        pay_link?: string; token?: string; error?: string;
+      };
+
+      if (checkoutData.needs_kyb) {
+        sessionStorage.setItem("b2b_wire_form", JSON.stringify(snap));
+        setKybUrl(checkoutData.kyb_url ?? "");
+        setCustomerId(checkoutData.customer_id ?? "");
+        setStep("kyb");
+        return;
+      }
+      if (!checkoutRes.ok || checkoutData.error) throw new Error(checkoutData.error ?? "Error creando checkout");
+
+      if (!checkoutData.token) throw new Error("No payment token");
+      await createVA(checkoutData.token, snap);
+    } catch (e) {
+      setError((e as Error).message);
+      setStep("error");
+    }
+  }, [senderBusinessName, senderEmail, senderCurrency, recipientBusinessName, recipientCountry, accountField, bicField, amount, createVA]);
 
   const pollStatus = useCallback(async () => {
     if (!orderId) return;

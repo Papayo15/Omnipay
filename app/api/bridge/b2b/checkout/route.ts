@@ -164,6 +164,11 @@ export async function POST(req: NextRequest): Promise<Response> {
           }
         }
       }
+      if (kybUrl) {
+        const redirectUri = `${appUrl}/enviar-empresa-wire?kyb_done=1&step=checkout`;
+        const sep = kybUrl.includes("?") ? "&" : "?";
+        kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirectUri)}`;
+      }
       return NextResponse.json({
         needs_kyb:   true,
         kyb_url:     kybUrl,
@@ -196,6 +201,11 @@ export async function POST(req: NextRequest): Promise<Response> {
             const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", endorsements });
             kybUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
           } catch { /* best-effort */ }
+        }
+        if (kybUrl) {
+          const redirectUri = `${appUrl}/enviar-empresa-wire?kyb_done=1&step=checkout`;
+          const sep = kybUrl.includes("?") ? "&" : "?";
+          kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirectUri)}`;
         }
         return NextResponse.json({
           needs_kyb:   true,

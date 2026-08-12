@@ -163,6 +163,11 @@ export async function POST(req: NextRequest): Promise<Response> {
           kybUrl = kycLink.url ?? kycLink.kyc_link ?? null;
         } catch { /* best-effort */ }
       }
+      if (kybUrl) {
+        const redirectUri = `${appUrl}/enviar-empresa-wire?kyb_done=1&step=pay&token=${encodeURIComponent(token)}`;
+        const sep = kybUrl.includes("?") ? "&" : "?";
+        kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirectUri)}`;
+      }
       return NextResponse.json({
         needs_kyb:   true,
         kyb_url:     kybUrl,
