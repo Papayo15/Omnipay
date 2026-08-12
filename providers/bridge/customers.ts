@@ -132,7 +132,9 @@ export async function createCustomer(params: {
     "POST",
     "/customers",
     body,
-    `customer-${params.email.toLowerCase()}-${day}`,
+    // Include type so individual and business customers with the same email
+    // never share an idempotency key (different bodies → Bridge rejects)
+    `customer-${params.type}-${params.email.toLowerCase()}-${day}`,
   );
 }
 
@@ -235,7 +237,8 @@ export async function createKycLink(params: {
   redirect_uri?: string;    // URL Bridge redirects the user to after KYC is complete
 }): Promise<BridgeKycLink> {
   const endStr   = (params.endorsements ?? ["base"]).join("-");
-  const idempKey = `kyc-link-${params.email.toLowerCase()}-${endStr}-${Math.floor(Date.now() / 3_600_000)}`;
+  // Include type: individual vs business KYC links have different bodies
+  const idempKey = `kyc-link-${params.type}-${params.email.toLowerCase()}-${endStr}-${Math.floor(Date.now() / 3_600_000)}`;
   return bridgeRequest<BridgeKycLink>("POST", "/kyc_links", params, idempKey);
 }
 
