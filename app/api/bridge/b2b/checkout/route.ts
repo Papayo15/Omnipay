@@ -120,16 +120,6 @@ export async function POST(req: NextRequest): Promise<Response> {
         }, { status: 422 });
       }
 
-      // Log the full customer object so we can see what address fields Bridge has stored
-      try {
-        const raw = await fetch(
-          `${process.env.BRIDGE_API_BASE ?? "https://api.sandbox.bridge.xyz/v0"}/customers/${customer.id}`,
-          { headers: { "Api-Key": process.env.BRIDGE_API_KEY ?? "", "Content-Type": "application/json" } }
-        );
-        const rawJson = await raw.json();
-        console.log("[bridge/b2b/checkout] customer object from Bridge:", JSON.stringify(rawJson));
-      } catch { /* debug only */ }
-
       // Set address AFTER KYB simulation — sandbox simulate_kyc_approval may clear address fields.
       // Retry with multiple field names since Bridge business address field name varies by API version.
       try {
