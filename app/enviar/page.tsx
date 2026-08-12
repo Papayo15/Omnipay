@@ -380,22 +380,18 @@ export default function EnviarPage() {
               {/* Moneda de origen — en qué moneda depositará el emisor */}
               <div>
                 <p className="text-slate-500 text-[10px] px-1 mb-1">{t("sender_currency_label")}</p>
-                <div className="flex gap-2">
-                  {(["USD","EUR","GBP"] as const).map(c => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setSenderCurrency(c)}
-                      className={`flex-1 py-2 rounded-xl text-sm font-mono font-semibold border transition-all ${
-                        senderCurrency === c
-                          ? "bg-emerald-600 border-emerald-500 text-white"
-                          : "bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-500"
-                      }`}
-                    >
-                      {c === "USD" ? "🇺🇸 USD" : c === "EUR" ? "🇪🇺 EUR" : "🇬🇧 GBP"}
-                    </button>
-                  ))}
-                </div>
+                <select
+                  value={senderCurrency}
+                  onChange={e => setSenderCurrency(e.target.value)}
+                  className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/60"
+                >
+                  <option value="USD">🇺🇸 USD — ACH / Wire</option>
+                  <option value="EUR">🇪🇺 EUR — SEPA</option>
+                  <option value="GBP">🇬🇧 GBP — Faster Payments</option>
+                  <option value="MXN">🇲🇽 MXN — SPEI</option>
+                  <option value="COP">🇨🇴 COP — Bre-B</option>
+                  <option value="BRL" disabled>🇧🇷 BRL — PIX (próximamente)</option>
+                </select>
               </div>
             </div>
 

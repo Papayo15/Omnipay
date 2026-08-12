@@ -48,7 +48,7 @@ export interface VirtualAccount {
 
 export interface CreateVirtualAccountParams {
   customerId:           string;
-  sourceCurrency:       "usd" | "eur" | "gbp" | "mxn" | "brl";
+  sourceCurrency:       "usd" | "eur" | "gbp" | "mxn" | "brl" | "cop";
   // Bridge liquidation address on Polygon (usdc)
   destinationAddress:   string;
   destinationNetwork:   "polygon" | "ethereum" | "solana";

@@ -55,7 +55,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   const amountTarget   = p.amount_target   as number;
   const recipientPhone = p.recipient_phone as string;
 
-  const senderCurrency = (((p.sender_currency as string | undefined) ?? "usd").toLowerCase()) as "usd" | "eur" | "gbp" | "mxn" | "brl";
+  const senderCurrency = (((p.sender_currency as string | undefined) ?? "usd").toLowerCase()) as "usd" | "eur" | "gbp" | "mxn" | "brl" | "cop";
   const clabe          = p.clabe          as string | undefined;
   const iban           = p.iban           as string | undefined;
   const bic            = p.bic            as string | undefined;
