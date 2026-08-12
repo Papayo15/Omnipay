@@ -86,8 +86,10 @@ export default function EnviarPage() {
   const [sandboxSimulated, setSandboxSimulated]   = useState(false);
   const [showSandboxBtn, setShowSandboxBtn]       = useState(false); // hidden until confirmed sandbox
 
-  const pollRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pollCounter, setPollCounter] = useState(0);
+  const pollRef        = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sandboxChecked = useRef(false);
+  const pollRetries    = useRef(0);
 
   const isSepa   = SEPA_COUNTRIES.has(recipientCountry);
   const needsBic = isSepa;
@@ -148,7 +150,7 @@ export default function EnviarPage() {
       try {
         const res  = await fetch(`/api/bridge/invite/status?i=${encodeURIComponent(inviteToken)}`);
         const data = await res.json() as {
-          ready?: boolean; reason?: string; kyc_url?: string;
+          ready?: boolean; reason?: string; kyc_url?: string; error?: string;
           va?: VaInfo; amount_target?: number; order_id?: string;
           token?: string;
         };
@@ -168,19 +170,39 @@ export default function EnviarPage() {
           setStep("sender_kyc");
           return;
         }
-      } catch { /* network error — retry */ }
+
+        // Surface real errors after a couple retries (avoid false alarms on first check)
+        if (data.reason === "error" && data.error) {
+          pollRetries.current += 1;
+          if (pollRetries.current >= 2) {
+            setError(`Error preparando instrucciones: ${data.error}`);
+            setStep("error");
+            return;
+          }
+        }
+
+        // Hard stop after 40 retries (~5 min) — avoid infinite loop
+        if (pollRetries.current >= 40) {
+          setError("La verificación está tardando demasiado. Recarga la página e intenta de nuevo.");
+          setStep("error");
+          return;
+        }
+        pollRetries.current += 1;
+      } catch { /* network error — retry silently */ }
 
       if (!cancelled) {
         pollRef.current = setTimeout(doPoll, 8000);
       }
     };
 
-    pollRef.current = setTimeout(doPoll, 3000); // first check after 3s
+    // Use shorter delay when triggered by the sandbox simulate button
+    const initialDelay = pollCounter > 0 ? 1500 : 3000;
+    pollRef.current = setTimeout(doPoll, initialDelay);
     return () => {
       cancelled = true;
       if (pollRef.current) clearTimeout(pollRef.current);
     };
-  }, [step, inviteToken, amountTarget]);
+  }, [step, inviteToken, amountTarget, pollCounter]);
 
   const handleSubmit = useCallback(async () => {
     setError("");
@@ -238,7 +260,8 @@ export default function EnviarPage() {
       const data = await res.json() as { ok?: boolean; error?: string };
       if (data.ok) {
         setSandboxSimulated(true);
-        // polling will auto-advance within 8s — no manual trigger needed
+        pollRetries.current = 0; // reset counter for fresh start
+        setPollCounter(c => c + 1); // triggers immediate re-poll (1.5s delay)
       } else {
         setError(data.error ?? "Error simulando receptor");
       }
