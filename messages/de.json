@@ -711,7 +711,9 @@
     "receipt_copy": "Beleg kopieren",
     "whatsapp_hint_optional": "Optional · Mit Ländervorwahl (z.B. +49 151 12345678)",
     "share_any_channel": "Kopieren Sie den Link und teilen Sie ihn per SMS, E-Mail, Telegram oder einem anderen Kanal",
-    "share_invite": "Bestätigungslink teilen"
+    "share_invite": "Bestätigungslink teilen",
+    "sandbox_simulate_recipient": "⚡ Empfänger-KYC simulieren (Sandbox)",
+    "sandbox_recipient_simulated": "✓ Empfänger-KYC simuliert · die Prüfung wird die Änderung erkennen"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",

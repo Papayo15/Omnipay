@@ -711,7 +711,9 @@
     "receipt_copy": "Copia ricevuta",
     "whatsapp_hint_optional": "Opzionale · Con prefisso internazionale (es: +39 320 123 4567)",
     "share_any_channel": "Copia il link e condividilo via SMS, email, Telegram o qualsiasi canale",
-    "share_invite": "Condividi link di verifica"
+    "share_invite": "Condividi link di verifica",
+    "sandbox_simulate_recipient": "⚡ Simula KYC destinatario (sandbox)",
+    "sandbox_recipient_simulated": "✓ KYC destinatario simulato · la verifica rileverà il cambiamento"
   },
   "recibir": {
     "loading": "Verifica del tuo invito...",

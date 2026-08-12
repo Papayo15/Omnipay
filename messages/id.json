@@ -711,7 +711,9 @@
     "receipt_copy": "Salin bukti",
     "whatsapp_hint_optional": "Opsional · Dengan kode negara (misal: +62 812 3456 7890)",
     "share_any_channel": "Salin tautan dan bagikan melalui SMS, email, Telegram, atau saluran apa pun",
-    "share_invite": "Bagikan tautan verifikasi"
+    "share_invite": "Bagikan tautan verifikasi",
+    "sandbox_simulate_recipient": "⚡ Simulasikan KYC penerima (sandbox)",
+    "sandbox_recipient_simulated": "✓ KYC penerima disimulasikan · polling akan mendeteksi perubahan"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",

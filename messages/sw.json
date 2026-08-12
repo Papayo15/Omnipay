@@ -711,7 +711,9 @@
     "receipt_copy": "Nakili risiti",
     "whatsapp_hint_optional": "Hiari · Na msimbo wa nchi (mfano: +254 712 345 678)",
     "share_any_channel": "Nakili kiungo na ushiriki kupitia SMS, barua pepe, Telegram, au njia yoyote",
-    "share_invite": "Shiriki kiungo cha uthibitishaji"
+    "share_invite": "Shiriki kiungo cha uthibitishaji",
+    "sandbox_simulate_recipient": "⚡ Simula KYC ya mpokeaji (sandbox)",
+    "sandbox_recipient_simulated": "✓ KYC ya mpokeaji imesimuliwa · uchunguzi utaona mabadiliko"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",

@@ -711,7 +711,9 @@
     "receipt_copy": "領収書をコピー",
     "whatsapp_hint_optional": "任意 · 国番号を含めてください（例：+81 90 1234 5678）",
     "share_any_channel": "リンクをコピーして、SMS・メール・Telegram・その他どんな手段でも共有できます",
-    "share_invite": "確認リンクを共有"
+    "share_invite": "確認リンクを共有",
+    "sandbox_simulate_recipient": "⚡ 受取人 KYC をシミュレート（サンドボックス）",
+    "sandbox_recipient_simulated": "✓ 受取人 KYC シミュレート完了 · ポーリングが変化を検出します"
   },
   "recibir": {
     "loading": "招待を確認中...",

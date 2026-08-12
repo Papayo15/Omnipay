@@ -711,7 +711,9 @@
     "receipt_copy": "Sao chép biên lai",
     "whatsapp_hint_optional": "Tùy chọn · Kèm mã quốc gia (vd: +84 98 765 4321)",
     "share_any_channel": "Sao chép liên kết và chia sẻ qua SMS, email, Telegram hoặc bất kỳ kênh nào",
-    "share_invite": "Chia sẻ liên kết xác minh"
+    "share_invite": "Chia sẻ liên kết xác minh",
+    "sandbox_simulate_recipient": "⚡ Mô phỏng KYC người nhận (sandbox)",
+    "sandbox_recipient_simulated": "✓ KYC người nhận đã mô phỏng · việc thăm dò sẽ phát hiện thay đổi"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",

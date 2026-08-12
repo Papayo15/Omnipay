@@ -76,8 +76,11 @@ export default function EnviarPage() {
   const [orderId, setOrderId]               = useState("");
   const [payToken, setPayToken]             = useState("");
   const [confirmedAmount, setConfirmedAmount] = useState(0);
-  const [sandboxDone, setSandboxDone]       = useState(false);
-  const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
+  const [sandboxDone, setSandboxDone]             = useState(false);
+  const [sandboxAdvancing, setSandboxAdvancing]   = useState(false);
+  const [sandboxSimulating, setSandboxSimulating] = useState(false);
+  const [sandboxSimulated, setSandboxSimulated]   = useState(false);
+  const [showSandboxBtn, setShowSandboxBtn]       = useState(true);
 
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -211,6 +214,26 @@ export default function EnviarPage() {
       setTimeout(() => setCopied(null), 2000);
     });
   }, []);
+
+  const simulateRecipient = useCallback(async () => {
+    if (!inviteToken) return;
+    setSandboxSimulating(true);
+    try {
+      const res  = await fetch(`/api/bridge/sandbox/simulate-recipient?i=${encodeURIComponent(inviteToken)}`);
+      if (res.status === 403) { setShowSandboxBtn(false); return; } // production — hide button
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (data.ok) {
+        setSandboxSimulated(true);
+        // polling will auto-advance within 8s — no manual trigger needed
+      } else {
+        setError(data.error ?? "Error simulando receptor");
+      }
+    } catch {
+      setError("Error de conexión al simular");
+    } finally {
+      setSandboxSimulating(false);
+    }
+  }, [inviteToken]);
 
   const advanceSandbox = useCallback(async () => {
     if (!orderId) return;
@@ -440,6 +463,25 @@ export default function EnviarPage() {
                   {copied === "invite" ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                   {copied === "invite" ? t("copied") : t("copy_link")}
                 </button>
+              </div>
+            )}
+
+            {/* Sandbox: simular KYC del receptor sin abrir otra pestaña */}
+            {showSandboxBtn && !sandboxSimulated && (
+              <button
+                onClick={simulateRecipient}
+                disabled={sandboxSimulating}
+                className="w-full bg-purple-900/40 hover:bg-purple-800/60 border border-purple-500/30 disabled:opacity-50 text-purple-300 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+              >
+                {sandboxSimulating
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <Zap className="w-4 h-4" />}
+                {t("sandbox_simulate_recipient")}
+              </button>
+            )}
+            {sandboxSimulated && (
+              <div className="text-center text-purple-400 text-xs py-1">
+                ✓ {t("sandbox_recipient_simulated")}
               </div>
             )}
 

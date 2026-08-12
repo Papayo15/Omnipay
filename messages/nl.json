@@ -711,7 +711,9 @@
     "receipt_copy": "Bewijs kopiëren",
     "whatsapp_hint_optional": "Optioneel · Met landcode (bijv. +31 6 12345678)",
     "share_any_channel": "Kopieer de link en deel hem via SMS, e-mail, Telegram of een ander kanaal",
-    "share_invite": "Verificatielink delen"
+    "share_invite": "Verificatielink delen",
+    "sandbox_simulate_recipient": "⚡ KYC ontvanger simuleren (sandbox)",
+    "sandbox_recipient_simulated": "✓ KYC ontvanger gesimuleerd · de verificatie detecteert de wijziging"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",

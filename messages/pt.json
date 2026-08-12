@@ -711,7 +711,9 @@
     "receipt_copy": "Copiar comprovante",
     "whatsapp_hint_optional": "Opcional · Com código do país (ex: +55 11 91234-5678)",
     "share_any_channel": "Copie o link e compartilhe por SMS, e-mail, Telegram ou qualquer canal",
-    "share_invite": "Compartilhar link de verificação"
+    "share_invite": "Compartilhar link de verificação",
+    "sandbox_simulate_recipient": "⚡ Simular KYC do destinatário (sandbox)",
+    "sandbox_recipient_simulated": "✓ KYC do destinatário simulado · a verificação detectará a alteração"
   },
   "recibir": {
     "loading": "Verificando seu convite...",

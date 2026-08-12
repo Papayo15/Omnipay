@@ -711,7 +711,9 @@
     "receipt_copy": "Copy receipt",
     "whatsapp_hint_optional": "Optional · With country code (e.g. +1 555 123 4567)",
     "share_any_channel": "Copy the link and share it via SMS, email, Telegram, or any channel",
-    "share_invite": "Share verification link"
+    "share_invite": "Share verification link",
+    "sandbox_simulate_recipient": "⚡ Simulate recipient KYC (sandbox)",
+    "sandbox_recipient_simulated": "✓ Recipient KYC simulated · polling will detect the change"
   },
   "recibir": {
     "loading": "Verifying your invitation...",

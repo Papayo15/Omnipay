@@ -711,7 +711,9 @@
     "receipt_copy": "Makbuzu kopyala",
     "whatsapp_hint_optional": "İsteğe bağlı · Ülke koduyla (örn: +90 532 123 45 67)",
     "share_any_channel": "Bağlantıyı kopyalayın ve SMS, e-posta, Telegram veya istediğiniz bir kanal aracılığıyla paylaşın",
-    "share_invite": "Doğrulama bağlantısını paylaş"
+    "share_invite": "Doğrulama bağlantısını paylaş",
+    "sandbox_simulate_recipient": "⚡ Alıcı KYC'yi simüle et (sandbox)",
+    "sandbox_recipient_simulated": "✓ Alıcı KYC simüle edildi · anket değişikliği algılayacak"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",
