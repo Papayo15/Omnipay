@@ -702,110 +702,81 @@ export default function EnviarPage() {
         {/* INSTRUCTIONS — VA bancario listo para depositar */}
         {step === "instructions" && vaInfo && (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-white mb-1">{t("instructions_title")}</h1>
-              <p className="text-slate-400 text-sm">{t("instructions_body", { name: recipientName })}</p>
-            </div>
 
-            {/* Tarjeta VA */}
-            <div className="bg-slate-800/60 border border-emerald-500/20 rounded-2xl p-5 space-y-0">
-              {vaInfo.bank_name && (
-                <VaRow label={t("va_bank")} value={vaInfo.bank_name} copyId="bank" />
-              )}
-              {vaInfo.beneficiary && (
-                <VaRow label={t("va_beneficiary")} value={vaInfo.beneficiary} copyId="bene" />
-              )}
-              {vaInfo.routing_number && (
-                <VaRow label={t("va_routing")} value={vaInfo.routing_number} copyId="routing" />
-              )}
-              {vaInfo.account_number && (
-                <VaRow label={t("va_account")} value={vaInfo.account_number} copyId="account" />
-              )}
-              {vaInfo.iban && (
-                <VaRow label={t("va_iban")} value={vaInfo.iban} copyId="iban" />
-              )}
-              {vaInfo.bic && (
-                <VaRow label="BIC / SWIFT" value={vaInfo.bic} copyId="bic" />
-              )}
-              {vaInfo.sort_code && (
-                <VaRow label="Sort Code" value={vaInfo.sort_code} copyId="sort" />
-              )}
-              {vaInfo.clabe && (
-                <VaRow label="CLABE" value={vaInfo.clabe} copyId="clabe" />
-              )}
-              {vaInfo.pix && (
-                <VaRow label="PIX" value={vaInfo.pix} copyId="pix" />
-              )}
+            {/* Instrucciones de depósito — se ocultan cuando ya se completó */}
+            {!sandboxDone && (
+              <>
+                <div>
+                  <h1 className="text-2xl font-bold text-white mb-1">{t("instructions_title")}</h1>
+                  <p className="text-slate-400 text-sm">{t("instructions_body", { name: recipientName })}</p>
+                </div>
 
-              {/* Monto */}
-              <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2">
-                {/* Monto que recibirá el receptor */}
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-xs">{t("va_recipient_gets")}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-400 font-bold text-lg font-mono">
-                      {confirmedAmount.toLocaleString()} {targetCurrency.toUpperCase()}
-                    </span>
-                    <CopyButton text={String(confirmedAmount)} id="amount" label={t("copy")} />
+                <div className="bg-slate-800/60 border border-emerald-500/20 rounded-2xl p-5 space-y-0">
+                  {vaInfo.bank_name && (
+                    <VaRow label={t("va_bank")} value={vaInfo.bank_name} copyId="bank" />
+                  )}
+                  {vaInfo.beneficiary && (
+                    <VaRow label={t("va_beneficiary")} value={vaInfo.beneficiary} copyId="bene" />
+                  )}
+                  {vaInfo.routing_number && (
+                    <VaRow label={t("va_routing")} value={vaInfo.routing_number} copyId="routing" />
+                  )}
+                  {vaInfo.account_number && (
+                    <VaRow label={t("va_account")} value={vaInfo.account_number} copyId="account" />
+                  )}
+                  {vaInfo.iban && (
+                    <VaRow label={t("va_iban")} value={vaInfo.iban} copyId="iban" />
+                  )}
+                  {vaInfo.bic && (
+                    <VaRow label="BIC / SWIFT" value={vaInfo.bic} copyId="bic" />
+                  )}
+                  {vaInfo.sort_code && (
+                    <VaRow label="Sort Code" value={vaInfo.sort_code} copyId="sort" />
+                  )}
+                  {vaInfo.clabe && (
+                    <VaRow label="CLABE" value={vaInfo.clabe} copyId="clabe" />
+                  )}
+                  {vaInfo.pix && (
+                    <VaRow label="PIX" value={vaInfo.pix} copyId="pix" />
+                  )}
+                  <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400 text-xs">{t("va_recipient_gets")}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-400 font-bold text-lg font-mono">
+                          {confirmedAmount.toLocaleString()} {targetCurrency.toUpperCase()}
+                        </span>
+                        <CopyButton text={String(confirmedAmount)} id="amount" label={t("copy")} />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400 text-xs">{t("va_deposit_currency")}</span>
+                      <span className="text-slate-300 text-sm font-mono">
+                        {(vaInfo.currency ?? "USD").toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                {/* Moneda de depósito del emisor */}
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-xs">{t("va_deposit_currency")}</span>
-                  <span className="text-slate-300 text-sm font-mono">
-                    {(vaInfo.currency ?? "USD").toUpperCase()}
-                  </span>
-                </div>
-              </div>
-            </div>
 
-            <p className="text-slate-500 text-xs text-center leading-relaxed px-2">
-              {t("instructions_note")}
-            </p>
+                <p className="text-slate-500 text-xs text-center leading-relaxed px-2">
+                  {t("instructions_note")}
+                </p>
 
-            {/* Progress tracker — shown while transfer is pending */}
-            {orderId && !sandboxDone && (() => {
-              const steps = [t("track_step1"), t("track_step2"), t("track_step3"), t("track_step4")];
-              return (
-                <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 space-y-2.5">
-                  <p className="text-slate-400 text-[10px] font-medium uppercase tracking-widest mb-1">{t("track_title")}</p>
-                  {steps.map((label, i) => {
-                    const s = i + 1;
-                    const done    = trackStep > s;
-                    const active  = trackStep === s;
-                    return (
-                      <div key={s} className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${done ? "bg-emerald-500" : active ? "bg-[#00C9C8]" : "bg-slate-700"}`}>
-                          {done ? (
-                            <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                              <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          ) : (
-                            <span className="text-[8px] font-bold text-white">{s}</span>
-                          )}
-                        </div>
-                        <span className={`text-xs transition-colors duration-300 ${done ? "text-emerald-400" : active ? "text-white font-medium" : "text-slate-500"}`}>
-                          {label}
-                          {active && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-[#00C9C8] animate-pulse align-middle" />}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
-
-            {/* Sandbox: botón para simular el pago */}
-            {showSandboxBtn && orderId && !sandboxDone && (
-              <button
-                onClick={advanceSandbox}
-                disabled={sandboxAdvancing}
-                className="w-full bg-purple-800 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
-              >
-                {sandboxAdvancing && <Loader2 className="w-4 h-4 animate-spin" />}
-                {t("sandbox_advance")}
-              </button>
+                {/* Sandbox: botón para simular el pago */}
+                {showSandboxBtn && orderId && (
+                  <button
+                    onClick={advanceSandbox}
+                    disabled={sandboxAdvancing}
+                    className="w-full bg-purple-800 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+                  >
+                    {sandboxAdvancing && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {t("sandbox_advance")}
+                  </button>
+                )}
+              </>
             )}
+
+            {/* Comprobante — solo después de completarse */}
             {sandboxDone && (
               <div className="space-y-4">
                 {/* Comprobante estilo bancario */}
