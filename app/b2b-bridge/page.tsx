@@ -52,11 +52,12 @@ const BITSO_ENABLED = process.env.NEXT_PUBLIC_BITSO_ENABLED === "true";
 
 // MXN always shown — routes to Bitso when enabled, Bridge otherwise.
 const CURRENCIES = [
-  { code: "usd", flag: "🇺🇸", label: "USD — US Dollar" },
-  { code: "eur", flag: "🇪🇺", label: "EUR — Euro" },
-  { code: "gbp", flag: "🇬🇧", label: "GBP — British Pound" },
-  { code: "mxn", flag: "🇲🇽", label: "MXN — Peso Mexicano" },
-  { code: "brl", flag: "🇧🇷", label: "BRL — Real Brasileiro" },
+  { code: "usd", flag: "🇺🇸", label: "USD — ACH / Wire",      active: true  },
+  { code: "eur", flag: "🇪🇺", label: "EUR — SEPA",             active: true  },
+  { code: "gbp", flag: "🇬🇧", label: "GBP — Faster Payments",  active: true  },
+  { code: "mxn", flag: "🇲🇽", label: "MXN — SPEI",             active: true  },
+  { code: "cop", flag: "🇨🇴", label: "COP — Bre-B",            active: true  },
+  { code: "brl", flag: "🇧🇷", label: "BRL — PIX (próximamente)", active: false },
 ];
 
 // isSandbox is now read from the API response (result.is_sandbox) — not a client env var
@@ -385,7 +386,7 @@ export default function B2BBridgePage() {
           <select value={currency} onChange={(e) => setCurrency(e.target.value)}
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00C9C8] text-sm">
             {CURRENCIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.flag} {c.label}</option>
+              <option key={c.code} value={c.code} disabled={!c.active}>{c.flag} {c.label}</option>
             ))}
           </select>
         </div>

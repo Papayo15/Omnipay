@@ -23,7 +23,7 @@ interface B2BPayBody {
   token:            string;
   business_name:    string;
   sender_email:     string;
-  source_currency:  "usd" | "eur" | "gbp" | "mxn" | "brl";
+  source_currency:  "usd" | "eur" | "gbp" | "mxn" | "brl" | "cop";
   sender_phone?:    string;
 }
 
@@ -182,6 +182,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const railLabel = source_currency === "eur" ? "SEPA"
       : source_currency === "mxn" ? "SPEI"
       : source_currency === "brl" ? "PIX"
+      : source_currency === "cop" ? "Bre-B"
       : source_currency === "gbp" ? "Faster Payments"
       : "ACH / Wire";
 
