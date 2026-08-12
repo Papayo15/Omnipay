@@ -65,9 +65,15 @@ export async function GET(req: NextRequest): Promise<Response> {
   const sort_code      = p.sort_code      as string | undefined;
   const bank_code      = p.bank_code      as string | undefined;
   const document_number = p.document_number as string | undefined;
+  // Pre-built liq addr from invite/route.ts "ready" path — skip creation when present
+  const prebuiltLiqId      = p.liq_addr_id      as string | undefined;
+  const prebuiltLiqAddress = p.liq_addr_address as string | undefined;
+  const prebuiltRecipientId = p.recipient_id    as string | undefined;
 
-  // 1. Check recipient KYC status
-  const recipient = await findCustomerByEmail(recipientEmail).catch(() => null);
+  // 1. Check recipient KYC status (skip Bridge lookup if we already have their ID)
+  const recipient = prebuiltRecipientId
+    ? { id: prebuiltRecipientId, status: "active", kyc_status: "approved" } as { id: string; status: string; kyc_status: string }
+    : await findCustomerByEmail(recipientEmail).catch(() => null);
   const recipientActive = recipient && (recipient.status === "active" || recipient.kyc_status === "approved");
 
   if (!recipientActive) {
@@ -102,31 +108,38 @@ export async function GET(req: NextRequest): Promise<Response> {
     (e as Error)?.message?.toLowerCase().includes("endorsement");
 
   try {
-    // 2. Ensure recipient has the required endorsement for the target rail, then create liq address
-    const railEndorsement = RAIL_ENDORSEMENT[country];
-    const recipientEndorsements = railEndorsement
-      ? ["base", railEndorsement, ...endorsements]
-      : endorsements;
-    try { await ensureEndorsements(recipient.id, recipientEndorsements); } catch { /* best-effort */ }
+    // 2. Get or create liq address
+    let liqAddr: { id: string; address: string };
 
-    const liqParams: CreateLiquidationParams = {
-      customerId: recipient.id, country, receiveMethod: "bank",
-      ownerName: recipientName, ownerType: "individual",
-      clabe, iban, bic, pixKey: pix_key,
-      routingNumber: routing_number, accountNumber: account_number,
-      sortCode: sort_code, bankCode: bank_code, documentNumber: document_number,
-    };
-    try { await ensureExternalAccount(liqParams); } catch { /* best-effort */ }
+    if (prebuiltLiqId && prebuiltLiqAddress) {
+      // Liq addr was already created in invite/route.ts — reuse it directly
+      liqAddr = { id: prebuiltLiqId, address: prebuiltLiqAddress };
+    } else {
+      // Fresh flow: ensure endorsements then create liq address
+      const railEndorsement = RAIL_ENDORSEMENT[country];
+      const recipientEndorsements = railEndorsement
+        ? ["base", railEndorsement, ...endorsements]
+        : endorsements;
+      try { await ensureEndorsements(recipient.id, recipientEndorsements); } catch { /* best-effort */ }
 
-    let liqAddr;
-    try {
-      liqAddr = await createLiquidationAddress(liqParams);
-    } catch (e1) {
-      if (!isEndorsementErr(e1)) throw e1;
-      // Endorsement not yet propagated — wait 2s and retry once
-      await new Promise(r => setTimeout(r, 2000));
-      try { await ensureEndorsements(recipient.id, recipientEndorsements); } catch { /* ignore */ }
-      liqAddr = await createLiquidationAddress(liqParams);
+      const liqParams: CreateLiquidationParams = {
+        customerId: recipient.id, country, receiveMethod: "bank",
+        ownerName: recipientName, ownerType: "individual",
+        clabe, iban, bic, pixKey: pix_key,
+        routingNumber: routing_number, accountNumber: account_number,
+        sortCode: sort_code, bankCode: bank_code, documentNumber: document_number,
+      };
+      try { await ensureExternalAccount(liqParams); } catch { /* best-effort */ }
+
+      try {
+        liqAddr = await createLiquidationAddress(liqParams);
+      } catch (e1) {
+        if (!isEndorsementErr(e1)) throw e1;
+        // Endorsement not yet propagated — wait 2s and retry once
+        await new Promise(r => setTimeout(r, 2000));
+        try { await ensureEndorsements(recipient.id, recipientEndorsements); } catch { /* ignore */ }
+        liqAddr = await createLiquidationAddress(liqParams);
+      }
     }
 
     // 3. Create / KYC emisor

@@ -148,13 +148,17 @@ export async function POST(req: NextRequest): Promise<Response> {
         waLinkReady = `https://wa.me/${waPhone}?text=${waText}`;
       }
 
-      // Generate invite token so /enviar can poll invite/status to build VA immediately.
-      // invite/status finds recipient active on first call → skips KYC wait → creates VA.
+      // Generate invite token so /enviar can poll invite/status to build the sender VA.
+      // Embed the already-created liq addr so invite/status skips re-creation (avoids Bridge
+      // duplicate validation error and cuts latency by 2-3 API calls).
       const exp = Date.now() + 72 * 60 * 60 * 1000;
       const invitePayload: Record<string, unknown> = {
         exp,
         recipient_name, recipient_email: recipient_email.toLowerCase(),
         recipient_country: country,
+        recipient_id:  existing.id,
+        liq_addr_id:   liqAddr.id,
+        liq_addr_address: liqAddr.address,
         sender_name, sender_email: sender_email.toLowerCase(),
         sender_currency,
         amount_target,
