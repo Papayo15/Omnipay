@@ -90,8 +90,25 @@ export async function GET(req: NextRequest): Promise<Response> {
 
   const endorsements = ["base","sepa","spei","pix","faster_payments","cop"];
 
+  // Rail endorsement required per country
+  const RAIL_ENDORSEMENT: Record<string, string> = {
+    MX:"spei", US:"ach", BR:"pix", CO:"cop", GB:"faster_payments",
+    DE:"sepa",FR:"sepa",ES:"sepa",IT:"sepa",NL:"sepa",PT:"sepa",
+    BE:"sepa",AT:"sepa",IE:"sepa",FI:"sepa",GR:"sepa",SE:"sepa",
+    DK:"sepa",NO:"sepa",PL:"sepa",CZ:"sepa",HU:"sepa",RO:"sepa",
+  };
+
+  const isEndorsementErr = (e: unknown) =>
+    (e as Error)?.message?.toLowerCase().includes("endorsement");
+
   try {
-    // 2. Create liq address for recipient
+    // 2. Ensure recipient has the required endorsement for the target rail, then create liq address
+    const railEndorsement = RAIL_ENDORSEMENT[country];
+    const recipientEndorsements = railEndorsement
+      ? ["base", railEndorsement, ...endorsements]
+      : endorsements;
+    try { await ensureEndorsements(recipient.id, recipientEndorsements); } catch { /* best-effort */ }
+
     const liqParams: CreateLiquidationParams = {
       customerId: recipient.id, country, receiveMethod: "bank",
       ownerName: recipientName, ownerType: "individual",
@@ -100,7 +117,17 @@ export async function GET(req: NextRequest): Promise<Response> {
       sortCode: sort_code, bankCode: bank_code, documentNumber: document_number,
     };
     try { await ensureExternalAccount(liqParams); } catch { /* best-effort */ }
-    const liqAddr = await createLiquidationAddress(liqParams);
+
+    let liqAddr;
+    try {
+      liqAddr = await createLiquidationAddress(liqParams);
+    } catch (e1) {
+      if (!isEndorsementErr(e1)) throw e1;
+      // Endorsement not yet propagated — wait 2s and retry once
+      await new Promise(r => setTimeout(r, 2000));
+      try { await ensureEndorsements(recipient.id, recipientEndorsements); } catch { /* ignore */ }
+      liqAddr = await createLiquidationAddress(liqParams);
+    }
 
     // 3. Create / KYC emisor
     const { customer: senderCustomer, needsKyc: senderNeedsKyc } = await getOrCreateCustomer({
@@ -141,17 +168,33 @@ export async function GET(req: NextRequest): Promise<Response> {
       return NextResponse.json({ ready: false, reason: "sender_needs_kyc", kyc_url: kycUrl });
     }
 
-    // 4. Create VA for emisor (source: USD by default)
+    // 4. Create VA for emisor — retry once on endorsement error
     const targetCurrency = getTargetCurrency(country);
-    const va = await createVirtualAccount({
-      customerId:          senderCustomer.id,
-      destinationAddress:  liqAddr.address,
-      destinationNetwork:  "polygon",
-      sourceCurrency:      senderCurrency,
-      developerFeePercent: "0.5",
-      reference:           liqAddr.id,
-      developerReference:  `liq-${liqAddr.id}`,
-    });
+    let va;
+    try {
+      va = await createVirtualAccount({
+        customerId:          senderCustomer.id,
+        destinationAddress:  liqAddr.address,
+        destinationNetwork:  "polygon",
+        sourceCurrency:      senderCurrency,
+        developerFeePercent: "0.5",
+        reference:           liqAddr.id,
+        developerReference:  `liq-${liqAddr.id}`,
+      });
+    } catch (e2) {
+      if (!isEndorsementErr(e2)) throw e2;
+      await new Promise(r => setTimeout(r, 2000));
+      try { await ensureEndorsements(senderCustomer.id, endorsements); } catch { /* ignore */ }
+      va = await createVirtualAccount({
+        customerId:          senderCustomer.id,
+        destinationAddress:  liqAddr.address,
+        destinationNetwork:  "polygon",
+        sourceCurrency:      senderCurrency,
+        developerFeePercent: "0.5",
+        reference:           liqAddr.id,
+        developerReference:  `liq-${liqAddr.id}`,
+      });
+    }
 
     // 5. Create order for tracking
     const orderId = `OP-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
