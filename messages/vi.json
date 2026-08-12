@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 ngày làm việc",
     "speed_fps": "⚡ Thường trong 2 giờ",
     "rate_preview": "Tỷ giá ước tính: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Người nhận nhận được ~{amount} {currency} nhiều hơn với tỷ giá thực",
     "amount_preview": "Bạn trả ~{amount} {src} · Người nhận nhận {target}",
     "confirm_sent": "Tôi đã chuyển tiền — Xem trạng thái →",
     "error_title": "Đã xảy ra lỗi",

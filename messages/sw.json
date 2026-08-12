@@ -498,6 +498,7 @@
     "speed_ach": "🕐 Siku 2–3 za kazi",
     "speed_fps": "⚡ Kawaida ndani ya masaa 2",
     "rate_preview": "Kiwango cha makadirio: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Mpokeaji wako angepata ~{amount} {currency} kidogo zaidi na huduma za ada zilizofichwa",
     "amount_preview": "Unalipa ~{amount} {src} · Mpokeaji anapata {target}",
     "confirm_sent": "Nimetuma fedha — Angalia hali →",
     "error_title": "Hitilafu imetokea",

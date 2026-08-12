@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 Werktage",
     "speed_fps": "⚡ Normalerweise in 2 Stunden",
     "rate_preview": "Ungefährer Kurs: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Ihr Empfänger bekäme ~{amount} {currency} weniger bei Diensten mit versteckten Gebühren",
     "amount_preview": "Sie zahlen ~{amount} {src} · Empfänger erhält {target}",
     "confirm_sent": "Überweisung durchgeführt — Status anzeigen →",
     "error_title": "Ein Fehler ist aufgetreten",

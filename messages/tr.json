@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 iş günü",
     "speed_fps": "⚡ Genellikle 2 saat içinde",
     "rate_preview": "Tahmini kur: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Alıcınız gizli ücretli hizmetlerle ~{amount} {currency} daha az alırdı",
     "amount_preview": "~{amount} {src} ödeyeceksiniz · Alıcı {target} alır",
     "confirm_sent": "Transferi yaptım — Durumu görüntüle →",
     "error_title": "Bir hata oluştu",

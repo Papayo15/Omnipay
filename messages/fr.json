@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 jours ouvrables",
     "speed_fps": "⚡ Généralement en 2 heures",
     "rate_preview": "Taux approx. : 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Votre destinataire recevrait ~{amount} {currency} de moins avec des frais cachés",
     "amount_preview": "Vous payez ~{amount} {src} · Le bénéficiaire reçoit {target}",
     "confirm_sent": "J'ai effectué le virement — Voir le suivi →",
     "error_title": "Une erreur est survenue",

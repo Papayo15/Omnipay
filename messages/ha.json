@@ -498,6 +498,7 @@
     "speed_ach": "🕐 Kwana 2–3 na aiki",
     "speed_fps": "⚡ Yawanci cikin awowi 2",
     "rate_preview": "Ƙididdiga ta musayar: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Mai karɓar ku zai samu ~{amount} {currency} ƙasa da ayyukan da ke ɓoye kuɗin",
     "amount_preview": "Za ka biya ~{amount} {src} · Mai karɓa yana karɓar {target}",
     "confirm_sent": "Na aika kuɗin — Duba yanayin →",
     "error_title": "Wani kuskure ya faru",

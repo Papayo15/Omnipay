@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 giorni lavorativi",
     "speed_fps": "⚡ Di solito in 2 ore",
     "rate_preview": "Tasso approssimativo: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Il destinatario riceverebbe ~{amount} {currency} in meno con commissioni nascoste",
     "amount_preview": "Paghi ~{amount} {src} · Il destinatario riceve {target}",
     "confirm_sent": "Ho effettuato il bonifico — Vedi stato →",
     "error_title": "Si è verificato un errore",

@@ -769,6 +769,14 @@ export default function PagarPage() {
                   .replace("{src}", ratePreview.source_currency)
                   .replace("{target}", `${ratePreview.recipient_gets.toLocaleString()} ${ratePreview.target_currency}`)}
               </p>
+              {/* Felix comparison — only when recipient currency is not USD/EUR/GBP */}
+              {ratePreview.target_currency && !["USD","EUR","GBP"].includes(ratePreview.target_currency) && (
+                <p className="text-emerald-400 text-[10px] mt-1">
+                  {t("rate_felix_saving")
+                    .replace("{amount}", Math.round(ratePreview.recipient_gets * 0.012).toLocaleString())
+                    .replace("{currency}", ratePreview.target_currency)}
+                </p>
+              )}
             </div>
           )}
           {rateLoading && (

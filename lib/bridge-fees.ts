@@ -33,10 +33,16 @@ export const STRIPE_PCT  = 0.029;  // 2.9%
 export const STRIPE_FLAT = 0.30;   // $0.30 fixed
 
 // OmniPay margin
-export const OMNIPAY_SERVICE_PCT = 0.0035; // 0.35% OmniPay net revenue — beats Felix Pago at $300+
-export const OMNIPAY_FLAT_P2P    = 0.00;   // no flat — simpler and cheaper for sender
+export const OMNIPAY_SERVICE_PCT = 0.0035; // 0.35% OmniPay net revenue
+export const OMNIPAY_FLAT_P2P    = 0.00;   // no flat — simpler pricing
 export const OMNIPAY_FLAT_B2B    = 1.99;   // covers Bridge VA $2/month in B2B
-export const OMNIPAY_MIN_FEE     = 0.75;   // minimum $0.75 OmniPay per transaction
+
+// Tiered minimum — beats Felix Pago at every amount range while always earning something
+export function omniPayMinFee(amount: number): number {
+  if (amount <= 150) return 0.40; // $100: OmniPay $100.40 vs Felix $101.20 ✅
+  if (amount <= 250) return 0.60; // $200: OmniPay $200.70 vs Felix $202.40 ✅
+  return 0.75;                    // $300+: OmniPay $303.30 vs Felix $303.60 ✅
+}
 
 // KYC/KYB both absorbed as acquisition cost — zero friction for first-time users
 export const KYC_FEE_P2P = 0.00;
@@ -143,7 +149,7 @@ function _buildQuote(
   }
 
   const omnipayService = parseFloat(
-    Math.max(amount * OMNIPAY_SERVICE_PCT, OMNIPAY_MIN_FEE).toFixed(2)
+    Math.max(amount * OMNIPAY_SERVICE_PCT, omniPayMinFee(amount)).toFixed(2)
   );
   const omnipayRev = parseFloat((omnipayService + flat).toFixed(2));
   const total      = parseFloat((amount + providerCostTotal + omnipayRev + kyc).toFixed(2));

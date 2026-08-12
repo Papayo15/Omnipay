@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 dias úteis",
     "speed_fps": "⚡ Normalmente em 2 horas",
     "rate_preview": "Taxa aprox.: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Seu destinatário receberia ~{amount} {currency} a menos com serviços de taxa oculta",
     "amount_preview": "Você paga ~{amount} {src} · Destinatário recebe {target}",
     "confirm_sent": "Fiz a transferência — Ver status →",
     "error_title": "Algo deu errado",

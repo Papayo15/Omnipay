@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 أيام عمل",
     "speed_fps": "⚡ عادةً خلال ساعتين",
     "rate_preview": "سعر تقريبي: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 مستلمك سيحصل على ~{amount} {currency} أقل مع الخدمات ذات الرسوم المخفية",
     "amount_preview": "ستدفع ~{amount} {src} · المستلم يحصل على {target}",
     "confirm_sent": "أجريت التحويل — عرض الحالة ←",
     "error_title": "حدث خطأ",

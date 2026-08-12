@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 werkdagen",
     "speed_fps": "⚡ Normaal binnen 2 uur",
     "rate_preview": "Ong. koers: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Ontvanger krijgt ~{amount} {currency} minder bij diensten met verborgen kosten",
     "amount_preview": "U betaalt ~{amount} {src} · Ontvanger krijgt {target}",
     "confirm_sent": "Overboeking uitgevoerd — Status bekijken →",
     "error_title": "Er is iets misgegaan",

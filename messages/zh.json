@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3个工作日",
     "speed_fps": "⚡ 通常2小时内",
     "rate_preview": "参考汇率：1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 通过隐性收费服务，收款人将少收到 ~{amount} {currency}",
     "amount_preview": "您支付 ~{amount} {src} · 收款人收到 {target}",
     "confirm_sent": "我已完成转账 — 查看状态 →",
     "error_title": "出现错误",

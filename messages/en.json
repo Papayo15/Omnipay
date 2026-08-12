@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 business days",
     "speed_fps": "⚡ Normally within 2 hours",
     "rate_preview": "Approx. rate: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Your recipient gets ~{amount} {currency} more with OmniPay vs hidden-fee services",
     "amount_preview": "You pay ~{amount} {src} · Recipient gets {target}",
     "confirm_sent": "I've made the transfer — Check status →",
     "error_title": "Something went wrong",

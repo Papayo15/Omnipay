@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2〜3営業日",
     "speed_fps": "⚡ 通常2時間以内",
     "rate_preview": "概算レート: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 手数料非公開サービスでは受取人が~{amount} {currency}少なく受け取ります",
     "amount_preview": "支払い ~{amount} {src} · 受取人は{target}を受け取ります",
     "confirm_sent": "振込しました — 状況を確認 →",
     "error_title": "エラーが発生しました",

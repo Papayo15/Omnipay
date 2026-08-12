@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 영업일",
     "speed_fps": "⚡ 보통 2시간 이내",
     "rate_preview": "대략적인 환율: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 숨겨진 수수료 서비스보다 수취인이 ~{amount} {currency} 더 받습니다",
     "amount_preview": "지불 ~{amount} {src} · 수취인은 {target}을 받습니다",
     "confirm_sent": "이체했습니다 — 상태 확인 →",
     "error_title": "오류가 발생했습니다",

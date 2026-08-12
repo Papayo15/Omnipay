@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 рабочих дня",
     "speed_fps": "⚡ Обычно в течение 2 часов",
     "rate_preview": "Примерный курс: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Получатель получил бы ~{amount} {currency} меньше у сервисов со скрытой комиссией",
     "amount_preview": "Вы платите ~{amount} {src} · Получатель получает {target}",
     "confirm_sent": "Перевод выполнен — Смотреть статус →",
     "error_title": "Произошла ошибка",

@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 hari kerja",
     "speed_fps": "⚡ Biasanya dalam 2 jam",
     "rate_preview": "Nilai tukar perkiraan: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 Penerima mendapat ~{amount} {currency} lebih sedikit dengan layanan berbiaya tersembunyi",
     "amount_preview": "Anda membayar ~{amount} {src} · Penerima mendapat {target}",
     "confirm_sent": "Saya sudah transfer — Cek status →",
     "error_title": "Terjadi kesalahan",

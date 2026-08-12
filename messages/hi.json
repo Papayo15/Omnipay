@@ -498,6 +498,7 @@
     "speed_ach": "🕐 2–3 व्यावसायिक दिन",
     "speed_fps": "⚡ आमतौर पर 2 घंटों में",
     "rate_preview": "अनुमानित दर: 1 {src} = {rate} {tgt}",
+    "rate_felix_saving": "🟢 छुपे शुल्क वाली सेवाओं की तुलना में प्राप्तकर्ता को ~{amount} {currency} अधिक मिलता है",
     "amount_preview": "आप भुगतान करेंगे ~{amount} {src} · प्राप्तकर्ता को मिलेगा {target}",
     "confirm_sent": "मैंने ट्रांसफर कर दिया — स्थिति देखें →",
     "error_title": "कुछ गलत हुआ",
