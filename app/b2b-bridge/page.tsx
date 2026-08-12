@@ -27,6 +27,8 @@ interface DepositInstructions {
 
 interface FeeBreakdown {
   amount_principal: number;
+  bridge_onramp?:   number;
+  bridge_offramp?:  number;
   omnipay_service:  number;
   omnipay_flat:     number;
   kyb_surcharge:    number;
@@ -334,20 +336,32 @@ export default function B2BBridgePage() {
             <span>{t("fee_principal")}</span>
             <span className="font-mono">${fee.amount_principal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-slate-400">
-            <span>{t("fee_service")}</span>
-            <span className="font-mono">+ ${fee.omnipay_service.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-slate-400">
-            <span>{t("fee_flat")}</span>
-            <span className="font-mono">+ ${fee.omnipay_flat.toFixed(2)}</span>
-          </div>
-          {fee.kyb_surcharge > 0 && (
+          {((fee.bridge_onramp ?? 0) + (fee.bridge_offramp ?? 0)) > 0 && (
             <div className="flex justify-between text-slate-400">
-              <span>{t("fee_kyb_label")}</span>
-              <span className="font-mono">+ ${fee.kyb_surcharge.toFixed(2)}</span>
+              <span>{t("fee_onramp")}</span>
+              <span className="font-mono">+ ${((fee.bridge_onramp ?? 0) + (fee.bridge_offramp ?? 0)).toFixed(2)}</span>
             </div>
           )}
+          <div className="flex justify-between text-slate-400">
+            <span>{t("fee_service")}</span>
+            <span className="font-mono">+ ${(fee.omnipay_service + (fee.omnipay_flat ?? 0)).toFixed(2)}</span>
+          </div>
+          {(() => {
+            const recipientParts = fee.recipient_gets.split(" ");
+            const recipientAmt = parseFloat(recipientParts[0]?.replace(/,/g, "") ?? "0");
+            const recipientCcy = recipientParts[1] ?? "";
+            const srcCcy = di.currency.toUpperCase();
+            if (recipientAmt > 0 && fee.amount_principal > 0 && recipientCcy && recipientCcy !== srcCcy) {
+              const approxRate = (recipientAmt / fee.amount_principal).toFixed(2);
+              return (
+                <div className="flex justify-between text-slate-500 text-[10px]">
+                  <span>{t("fee_exchange_approx")}</span>
+                  <span className="font-mono">1 {srcCcy} ≈ {approxRate} {recipientCcy}</span>
+                </div>
+              );
+            }
+            return null;
+          })()}
           <div className="border-t border-slate-700 pt-1.5 flex justify-between font-semibold text-white">
             <span>{t("fee_total")}</span>
             <span className="font-mono text-[#00C9C8]">${fee.total_to_send.toFixed(2)} {di.currency.toUpperCase()}</span>

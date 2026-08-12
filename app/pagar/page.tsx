@@ -535,15 +535,22 @@ export default function PagarPage() {
         {/* Fee breakdown */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mb-4 text-xs space-y-1.5">
           <p className="text-slate-500 uppercase tracking-wide text-[10px] mb-2">{t("fee_title")}</p>
-          <div className="flex justify-between text-slate-300"><span>{t("fee_principal")}</span><span className="font-mono">${fee.amount_principal.toFixed(2)}</span></div>
-          <div className="flex justify-between text-slate-400"><span>{t("fee_onramp")}</span><span className="font-mono">+ ${fee.bridge_onramp.toFixed(2)}</span></div>
-          <div className="flex justify-between text-slate-400"><span>{t("fee_offramp")}</span><span className="font-mono">+ ${fee.bridge_offramp.toFixed(2)}</span></div>
-          <div className="flex justify-between text-slate-400"><span>{t("fee_service")}</span><span className="font-mono">+ ${fee.omnipay_service.toFixed(2)}</span></div>
-          <div className="flex justify-between text-slate-400"><span>{t("fee_flat")}</span><span className="font-mono">+ ${fee.omnipay_flat.toFixed(2)}</span></div>
-          {fee.kyc_surcharge > 0 && (
-            <div className="flex justify-between text-slate-400">
-              <span>{t("fee_kyc")}</span>
-              <span className="font-mono">+ ${fee.kyc_surcharge.toFixed(2)}</span>
+          <div className="flex justify-between text-slate-300">
+            <span>{t("fee_principal")}</span>
+            <span className="font-mono">${fee.amount_principal.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-slate-400">
+            <span>{t("fee_onramp")}</span>
+            <span className="font-mono">+ ${((fee.bridge_onramp ?? 0) + (fee.bridge_offramp ?? 0)).toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-slate-400">
+            <span>{t("fee_service")}</span>
+            <span className="font-mono">+ ${fee.omnipay_service.toFixed(2)}</span>
+          </div>
+          {ratePreview?.rate && ratePreview.target_currency && ratePreview.target_currency !== ratePreview.source_currency && (
+            <div className="flex justify-between text-slate-500 text-[10px]">
+              <span>{t("fee_exchange_approx")}</span>
+              <span className="font-mono">1 {ratePreview.source_currency} ≈ {ratePreview.rate.toFixed(2)} {ratePreview.target_currency}</span>
             </div>
           )}
           <div className="border-t border-slate-700 pt-1.5 flex justify-between font-semibold text-white">

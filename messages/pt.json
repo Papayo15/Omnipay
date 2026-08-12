@@ -516,7 +516,7 @@
     "amount_note": "Envie exatamente este valor",
     "fee_title": "Detalhamento das taxas",
     "fee_principal": "Principal",
-    "fee_onramp": "Bridge on-ramp (0.50%)",
+    "fee_onramp": "Bridge (rede · 0.75%)",
     "fee_offramp": "Bridge off-ramp (0.25%)",
     "fee_service": "Serviço OmniPay",
     "fee_flat": "Taxa fixa OmniPay",

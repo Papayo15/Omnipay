@@ -516,7 +516,7 @@
     "amount_note": "Aika wannan adadin daidai",
     "fee_title": "Cikakkun bayanan kuɗi",
     "fee_principal": "Babban adadi",
-    "fee_onramp": "Bridge on-ramp (0.50%)",
+    "fee_onramp": "Bridge (cibiyar · 0.75%)",
     "fee_offramp": "Bridge off-ramp (0.25%)",
     "fee_service": "Sabis na OmniPay",
     "fee_flat": "Flat na OmniPay",
