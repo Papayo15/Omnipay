@@ -26,15 +26,23 @@ const BRIDGE_COUNTRIES = [
 
 type Step = "form" | "submitting" | "kyb" | "wire" | "tracking" | "done" | "error";
 
-interface VirtualAccount {
-  routing_number?: string;
-  account_number?: string;
-  iban?:           string;
-  bank_name?:      string;
-  swift_bic?:      string;
-  beneficiary?:    string;
-  reference?:      string;
-  currency?:       string;
+interface DepositInstructions {
+  routing_number?:      string;
+  account_number?:      string;
+  iban?:                string;
+  bic?:                 string;
+  bank_name?:           string;
+  bank_address?:        string;
+  beneficiary_name?:    string;
+  beneficiary_address?: string;
+  account_holder?:      string;
+  clabe?:               string;
+  sort_code?:           string;
+  br_code?:             string;
+  currency?:            string;
+  rail?:                string;
+  amount_to_deposit?:   string;
+  instructions?:        string;
 }
 
 interface TrackStatus {
@@ -53,13 +61,14 @@ export default function EnviarEmpresaWirePage() {
   const [kybUrl, setKybUrl] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [orderId, setOrderId] = useState("");
-  const [va, setVa] = useState<VirtualAccount>({});
+  const [va, setVa] = useState<DepositInstructions>({});
   const [amountTarget, setAmountTarget] = useState(0);
   const [track, setTrack] = useState<TrackStatus | null>(null);
 
   // Form
   const [senderBusinessName, setSenderBusinessName] = useState("");
-  const [senderEmail, setSenderEmail] = useState("");
+  const [senderEmail, setSenderEmail]               = useState("");
+  const [senderCurrency, setSenderCurrency]         = useState("usd");
   const [recipientBusinessName, setRecipientBusinessName] = useState("");
   const [recipientCountry, setRecipientCountry] = useState("MX");
   const [accountField, setAccountField] = useState("");
@@ -131,12 +140,12 @@ export default function EnviarEmpresaWirePage() {
       body: JSON.stringify({
         token,
         business_name:   senderBusinessName.trim(),
-        email:           senderEmail.trim().toLowerCase(),
-        source_currency: "USD",
+        sender_email:    senderEmail.trim().toLowerCase(),
+        source_currency: senderCurrency,
       }),
     });
     const payData = await payRes.json() as {
-      virtual_account?: VirtualAccount; order_id?: string;
+      deposit_instructions?: DepositInstructions; order_id?: string;
       needs_kyb?: boolean; kyb_url?: string; customer_id?: string;
       error?: string;
     };
@@ -149,11 +158,11 @@ export default function EnviarEmpresaWirePage() {
     }
     if (!payRes.ok || payData.error) throw new Error(payData.error ?? "Error creando cuenta virtual");
 
-    setVa(payData.virtual_account ?? {});
+    setVa(payData.deposit_instructions ?? {});
     setOrderId(payData.order_id ?? "");
     setAmountTarget(parseFloat(amount));
     setStep("wire");
-  }, [senderBusinessName, senderEmail, amount]);
+  }, [senderBusinessName, senderEmail, senderCurrency, amount]);
 
   const pollStatus = useCallback(async () => {
     if (!orderId) return;
@@ -203,6 +212,14 @@ export default function EnviarEmpresaWirePage() {
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500/60" />
               <input type="email" placeholder={t("sender_email")} value={senderEmail} onChange={e => setSenderEmail(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500/60" />
+              <select value={senderCurrency} onChange={e => setSenderCurrency(e.target.value)}
+                className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/60">
+                <option value="usd">🇺🇸 USD — ACH / Wire</option>
+                <option value="eur">🇪🇺 EUR — SEPA</option>
+                <option value="gbp">🇬🇧 GBP — Faster Payments</option>
+                <option value="mxn">🇲🇽 MXN — SPEI</option>
+                <option value="cop">🇨🇴 COP — Bre-B</option>
+              </select>
             </div>
 
             {/* Recipient */}
@@ -285,14 +302,16 @@ export default function EnviarEmpresaWirePage() {
 
             <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 space-y-3">
               {[
-                { label: t("wire_bank"), value: va.bank_name },
-                { label: t("wire_routing"), value: va.routing_number },
-                { label: t("wire_account"), value: va.account_number },
-                { label: t("wire_iban"), value: va.iban },
-                { label: t("wire_swift"), value: va.swift_bic },
-                { label: t("wire_beneficiary"), value: va.beneficiary },
-                { label: t("wire_reference"), value: va.reference },
-                { label: t("wire_currency"), value: va.currency ?? "USD" },
+                { label: t("wire_bank"),        value: va.bank_name },
+                { label: t("wire_routing"),     value: va.routing_number },
+                { label: t("wire_account"),     value: va.account_number },
+                { label: t("wire_sort_code"),   value: va.sort_code },
+                { label: t("wire_clabe"),       value: va.clabe },
+                { label: t("wire_iban"),        value: va.iban },
+                { label: t("wire_swift"),       value: va.bic },
+                { label: t("wire_beneficiary"), value: va.beneficiary_name ?? va.account_holder },
+                { label: t("wire_currency"),    value: va.currency ?? senderCurrency.toUpperCase() },
+                { label: t("wire_rail"),        value: va.rail },
               ].filter(f => f.value).map(field => (
                 <div key={field.label} className="flex items-center justify-between gap-2">
                   <div>
