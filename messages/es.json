@@ -705,7 +705,12 @@
     "sender_currency_label": "¿En qué moneda depositará el emisor?",
     "receipt_emails_sent": "Correos de confirmación enviados a emisor y receptor",
     "receipt_view": "Ver comprobante completo",
-    "receipt_share": "Compartir comprobante"
+    "receipt_share": "Compartir comprobante",
+    "track_title": "Estado del envío",
+    "track_step1": "Esperando depósito",
+    "track_step2": "Procesando",
+    "track_step3": "Enviando al receptor",
+    "track_step4": "Completado"
   },
   "recibir": {
     "loading": "Verificando tu invitación...",

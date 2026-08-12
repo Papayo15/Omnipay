@@ -727,7 +727,12 @@
     "sender_currency_label": "Gönderen hangi para biriminde yatıracak?",
     "receipt_emails_sent": "Gönderici ve alıcıya onay e-postaları gönderildi",
     "receipt_view": "Makbuzu görüntüle",
-    "receipt_share": "Makbuzu paylaş"
+    "receipt_share": "Makbuzu paylaş",
+    "track_title": "Transfer durumu",
+    "track_step1": "Depozito bekleniyor",
+    "track_step2": "İşleniyor",
+    "track_step3": "Alıcıya gönderiliyor",
+    "track_step4": "Tamamlandı"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",

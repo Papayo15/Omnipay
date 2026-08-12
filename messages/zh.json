@@ -727,7 +727,12 @@
     "sender_currency_label": "汇款人以哪种货币存款？",
     "receipt_emails_sent": "确认邮件已发送给发送方和接收方",
     "receipt_view": "查看完整收据",
-    "receipt_share": "分享收据"
+    "receipt_share": "分享收据",
+    "track_title": "转账状态",
+    "track_step1": "等待存款",
+    "track_step2": "处理中",
+    "track_step3": "发送给收款人",
+    "track_step4": "已完成"
   },
   "recibir": {
     "loading": "正在验证邀请...",

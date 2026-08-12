@@ -727,7 +727,12 @@
     "sender_currency_label": "ላኪው በምን ምንዛሬ ያስቀምጣል?",
     "receipt_emails_sent": "የማረጋገጫ ኢሜሎች ለላኪ እና ለተቀባዩ ተልከዋል",
     "receipt_view": "ሙሉ ደረሰኝ ይመልከቱ",
-    "receipt_share": "ደረሰኝ ያጋሩ"
+    "receipt_share": "ደረሰኝ ያጋሩ",
+    "track_title": "የዝውውር ሁኔታ",
+    "track_step1": "ተቀማጭ ገንዘብ ይጠበቃል",
+    "track_step2": "በሂደት ላይ",
+    "track_step3": "ለተቀባዩ እየተላከ",
+    "track_step4": "ተጠናቋል"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",

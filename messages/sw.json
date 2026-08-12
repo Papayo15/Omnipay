@@ -727,7 +727,12 @@
     "sender_currency_label": "Mtumiaji ataingiza kwa sarafu gani?",
     "receipt_emails_sent": "Barua pepe za uthibitisho zimetumwa kwa mtumaji na mpokeaji",
     "receipt_view": "Tazama risiti kamili",
-    "receipt_share": "Shiriki risiti"
+    "receipt_share": "Shiriki risiti",
+    "track_title": "Hali ya uhamishaji",
+    "track_step1": "Kusubiri amana",
+    "track_step2": "Inachakatwa",
+    "track_step3": "Inatumwa kwa mpokeaji",
+    "track_step4": "Imekamilika"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",

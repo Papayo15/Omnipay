@@ -727,7 +727,12 @@
     "sender_currency_label": "Dans quelle devise l'expéditeur déposera-t-il ?",
     "receipt_emails_sent": "Emails de confirmation envoyés à l'expéditeur et au destinataire",
     "receipt_view": "Voir le reçu complet",
-    "receipt_share": "Partager le reçu"
+    "receipt_share": "Partager le reçu",
+    "track_title": "Statut du virement",
+    "track_step1": "En attente de dépôt",
+    "track_step2": "Traitement",
+    "track_step3": "Envoi au destinataire",
+    "track_step4": "Complété"
   },
   "recibir": {
     "loading": "Vérification de votre invitation...",

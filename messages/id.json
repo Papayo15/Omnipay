@@ -727,7 +727,12 @@
     "sender_currency_label": "Dalam mata uang apa pengirim akan menyetor?",
     "receipt_emails_sent": "Email konfirmasi dikirim ke pengirim dan penerima",
     "receipt_view": "Lihat tanda terima lengkap",
-    "receipt_share": "Bagikan tanda terima"
+    "receipt_share": "Bagikan tanda terima",
+    "track_title": "Status transfer",
+    "track_step1": "Menunggu setoran",
+    "track_step2": "Memproses",
+    "track_step3": "Mengirim ke penerima",
+    "track_step4": "Selesai"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",

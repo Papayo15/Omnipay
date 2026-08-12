@@ -727,7 +727,12 @@
     "sender_currency_label": "Em qual moeda o remetente depositará?",
     "receipt_emails_sent": "E-mails de confirmação enviados ao remetente e destinatário",
     "receipt_view": "Ver comprovante completo",
-    "receipt_share": "Compartilhar comprovante"
+    "receipt_share": "Compartilhar comprovante",
+    "track_title": "Status da transferência",
+    "track_step1": "Aguardando depósito",
+    "track_step2": "Processando",
+    "track_step3": "Enviando ao destinatário",
+    "track_step4": "Concluído"
   },
   "recibir": {
     "loading": "Verificando seu convite...",

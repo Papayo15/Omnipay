@@ -727,7 +727,12 @@
     "sender_currency_label": "بأي عملة سيودع المُرسِل؟",
     "receipt_emails_sent": "تم إرسال رسائل تأكيد بالبريد الإلكتروني إلى المرسل والمستفيد",
     "receipt_view": "عرض الإيصال الكامل",
-    "receipt_share": "مشاركة الإيصال"
+    "receipt_share": "مشاركة الإيصال",
+    "track_title": "حالة التحويل",
+    "track_step1": "في انتظار الإيداع",
+    "track_step2": "قيد المعالجة",
+    "track_step3": "إرسال إلى المستلم",
+    "track_step4": "مكتمل"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",

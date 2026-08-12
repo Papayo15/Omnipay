@@ -727,7 +727,12 @@
     "sender_currency_label": "送金者はどの通貨で入金しますか？",
     "receipt_emails_sent": "送信者と受取人に確認メールを送信しました",
     "receipt_view": "全体の領収書を表示",
-    "receipt_share": "領収書を共有"
+    "receipt_share": "領収書を共有",
+    "track_title": "送金ステータス",
+    "track_step1": "入金待ち",
+    "track_step2": "処理中",
+    "track_step3": "受取人へ送金中",
+    "track_step4": "完了"
   },
   "recibir": {
     "loading": "招待を確認中...",

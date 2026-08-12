@@ -727,7 +727,12 @@
     "sender_currency_label": "In welke valuta zal de afzender storten?",
     "receipt_emails_sent": "Bevestigingsmails verzonden naar afzender en ontvanger",
     "receipt_view": "Volledig ontvangstbewijs bekijken",
-    "receipt_share": "Ontvangstbewijs delen"
+    "receipt_share": "Ontvangstbewijs delen",
+    "track_title": "Overboekingsstatus",
+    "track_step1": "Wachten op storting",
+    "track_step2": "Verwerking",
+    "track_step3": "Verzenden naar ontvanger",
+    "track_step4": "Voltooid"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",

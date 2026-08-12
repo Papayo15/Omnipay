@@ -727,7 +727,12 @@
     "sender_currency_label": "In quale valuta depositerà il mittente?",
     "receipt_emails_sent": "Email di conferma inviate a mittente e destinatario",
     "receipt_view": "Visualizza ricevuta completa",
-    "receipt_share": "Condividi ricevuta"
+    "receipt_share": "Condividi ricevuta",
+    "track_title": "Stato del bonifico",
+    "track_step1": "In attesa di deposito",
+    "track_step2": "Elaborazione",
+    "track_step3": "Invio al destinatario",
+    "track_step4": "Completato"
   },
   "recibir": {
     "loading": "Verifica del tuo invito...",

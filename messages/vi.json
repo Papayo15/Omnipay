@@ -727,7 +727,12 @@
     "sender_currency_label": "Người gửi sẽ nạp bằng loại tiền nào?",
     "receipt_emails_sent": "Email xác nhận đã gửi đến người gửi và người nhận",
     "receipt_view": "Xem biên lai đầy đủ",
-    "receipt_share": "Chia sẻ biên lai"
+    "receipt_share": "Chia sẻ biên lai",
+    "track_title": "Trạng thái chuyển tiền",
+    "track_step1": "Đang chờ tiền gửi",
+    "track_step2": "Đang xử lý",
+    "track_step3": "Đang gửi cho người nhận",
+    "track_step4": "Hoàn thành"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",

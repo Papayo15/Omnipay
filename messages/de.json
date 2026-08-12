@@ -727,7 +727,12 @@
     "sender_currency_label": "In welcher Währung zahlt der Absender ein?",
     "receipt_emails_sent": "Bestätigungs-E-Mails an Absender und Empfänger gesendet",
     "receipt_view": "Vollständigen Beleg anzeigen",
-    "receipt_share": "Beleg teilen"
+    "receipt_share": "Beleg teilen",
+    "track_title": "Überweisungsstatus",
+    "track_step1": "Einzahlung ausstehend",
+    "track_step2": "Verarbeitung",
+    "track_step3": "Senden an Empfänger",
+    "track_step4": "Abgeschlossen"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",

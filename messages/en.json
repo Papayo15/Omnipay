@@ -727,7 +727,12 @@
     "sender_currency_label": "Which currency will the sender deposit?",
     "receipt_emails_sent": "Confirmation emails sent to sender and recipient",
     "receipt_view": "View full receipt",
-    "receipt_share": "Share receipt"
+    "receipt_share": "Share receipt",
+    "track_title": "Transfer status",
+    "track_step1": "Awaiting deposit",
+    "track_step2": "Processing",
+    "track_step3": "Sending to recipient",
+    "track_step4": "Completed"
   },
   "recibir": {
     "loading": "Verifying your invitation...",

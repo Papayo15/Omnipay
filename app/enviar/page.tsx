@@ -91,6 +91,7 @@ export default function EnviarPage() {
   const [sandboxSimulating, setSandboxSimulating] = useState(false);
   const [sandboxSimulated, setSandboxSimulated]   = useState(false);
   const [showSandboxBtn, setShowSandboxBtn]       = useState(false); // hidden until confirmed sandbox
+  const [trackStep, setTrackStep]                 = useState(1);     // 1–4 from /api/bridge/track
 
   const [pollCounter, setPollCounter] = useState(0);
   const pollRef        = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -161,6 +162,29 @@ export default function EnviarPage() {
       .then(r => { if (r.status !== 403) setShowSandboxBtn(true); })
       .catch(() => { /* network error — keep hidden */ });
   }, [step]);
+
+  // Track: poll order status every 10s while instructions step is open
+  useEffect(() => {
+    if (step !== "instructions" || !orderId || sandboxDone) return;
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const poll = async () => {
+      if (!active) return;
+      try {
+        const res = await fetch(`/api/bridge/track?order_id=${encodeURIComponent(orderId)}`);
+        if (!res.ok || !active) return;
+        const d = await res.json() as { step?: number; status?: string };
+        if (!active) return;
+        if (typeof d.step === "number" && d.step > 0) setTrackStep(d.step);
+        if (d.status === "COMPLETED") { setSandboxDone(true); return; }
+      } catch { /* silent — retry next tick */ }
+      if (active) timer = setTimeout(poll, 10_000);
+    };
+
+    poll();
+    return () => { active = false; if (timer) clearTimeout(timer); };
+  }, [step, orderId, sandboxDone]);
 
   // Polling: llama al status endpoint hasta que el receptor complete KYC
   useEffect(() => {
@@ -705,6 +729,38 @@ export default function EnviarPage() {
               {t("instructions_note")}
             </p>
 
+            {/* Progress tracker — shown while transfer is pending */}
+            {orderId && !sandboxDone && (() => {
+              const steps = [t("track_step1"), t("track_step2"), t("track_step3"), t("track_step4")];
+              return (
+                <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 space-y-2.5">
+                  <p className="text-slate-400 text-[10px] font-medium uppercase tracking-widest mb-1">{t("track_title")}</p>
+                  {steps.map((label, i) => {
+                    const s = i + 1;
+                    const done    = trackStep > s;
+                    const active  = trackStep === s;
+                    return (
+                      <div key={s} className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${done ? "bg-emerald-500" : active ? "bg-[#00C9C8]" : "bg-slate-700"}`}>
+                          {done ? (
+                            <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+                              <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          ) : (
+                            <span className="text-[8px] font-bold text-white">{s}</span>
+                          )}
+                        </div>
+                        <span className={`text-xs transition-colors duration-300 ${done ? "text-emerald-400" : active ? "text-white font-medium" : "text-slate-500"}`}>
+                          {label}
+                          {active && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-[#00C9C8] animate-pulse align-middle" />}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
             {/* Sandbox: botón para simular el pago */}
             {showSandboxBtn && orderId && !sandboxDone && (
               <button
@@ -753,13 +809,6 @@ export default function EnviarPage() {
                 <p className="text-slate-500 text-[10px] text-center">
                   ✉️ {t("receipt_emails_sent")}
                 </p>
-                <a
-                  href={`/seguimiento?order_id=${orderId}`}
-                  className="flex items-center justify-center gap-2 w-full bg-emerald-700 hover:bg-emerald-600 text-white font-semibold py-3 rounded-xl transition-all text-sm"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  {t("receipt_view")}
-                </a>
                 <button
                   onClick={async () => {
                     const receiptUrl = `${window.location.origin}/seguimiento?order_id=${orderId}`;

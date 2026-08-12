@@ -727,7 +727,12 @@
     "sender_currency_label": "송금자는 어떤 통화로 입금하나요?",
     "receipt_emails_sent": "발신자 및 수신자에게 확인 이메일이 전송되었습니다",
     "receipt_view": "전체 영수증 보기",
-    "receipt_share": "영수증 공유"
+    "receipt_share": "영수증 공유",
+    "track_title": "이체 상태",
+    "track_step1": "입금 대기 중",
+    "track_step2": "처리 중",
+    "track_step3": "수취인에게 전송 중",
+    "track_step4": "완료"
   },
   "recibir": {
     "loading": "초대장 확인 중...",

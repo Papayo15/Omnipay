@@ -727,7 +727,12 @@
     "sender_currency_label": "Da wane kuɗin mai aiko zai saka?",
     "receipt_emails_sent": "An aika imeloci na tabbatarwa ga mai aika da mai karɓa",
     "receipt_view": "Duba takardar karɓar cikakke",
-    "receipt_share": "Raba takardar karɓar"
+    "receipt_share": "Raba takardar karɓar",
+    "track_title": "Yanayin canja wuri",
+    "track_step1": "Jiran ajiya",
+    "track_step2": "Ana sarrafa",
+    "track_step3": "Ana aika wa mai karba",
+    "track_step4": "An kammala"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",
