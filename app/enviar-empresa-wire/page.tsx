@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Zap, ArrowLeft, Building2, Copy, Check, AlertCircle, Clock, CheckCircle2, RefreshCw } from "lucide-react";
+import { Zap, ArrowLeft, Building2, Copy, Check, AlertCircle, Share2 } from "lucide-react";
 import { SEPA_COUNTRIES } from "@/lib/wise-accounts";
 
 const BRIDGE_COUNTRIES = [
@@ -24,113 +24,37 @@ const BRIDGE_COUNTRIES = [
   { code: "SE", flag: "🇸🇪", rail: "SEPA" },
 ];
 
-type Step = "form" | "submitting" | "kyb" | "wire" | "tracking" | "done" | "error";
+type Step = "form" | "submitting" | "kyb" | "link_ready" | "error";
 
 interface FormSnapshot {
-  senderBusinessName: string;
-  senderEmail:        string;
-  senderCurrency:     string;
   recipientBusinessName: string;
-  recipientCountry:   string;
-  accountField:       string;
-  bicField:           string;
-  amount:             string;
-}
-
-type AutoRetry =
-  | { type: "checkout" }
-  | { type: "pay"; token: string; snap: FormSnapshot };
-
-interface DepositInstructions {
-  routing_number?:      string;
-  account_number?:      string;
-  iban?:                string;
-  bic?:                 string;
-  bank_name?:           string;
-  bank_address?:        string;
-  beneficiary_name?:    string;
-  beneficiary_address?: string;
-  account_holder?:      string;
-  clabe?:               string;
-  sort_code?:           string;
-  br_code?:             string;
-  currency?:            string;
-  rail?:                string;
-  amount_to_deposit?:   string;
-  instructions?:        string;
-}
-
-interface TrackStatus {
-  state:   string;
-  updated: string;
+  recipientEmail:        string;
+  recipientCountry:      string;
+  accountField:          string;
+  bicField:              string;
+  amount:                string;
 }
 
 export default function EnviarEmpresaWirePage() {
   const t  = useTranslations("enviar_empresa_wire");
   const tF = useTranslations("p2p");
-  const router      = useRouter();
+  const router       = useRouter();
   const searchParams = useSearchParams();
 
-  const [step, setStep] = useState<Step>("form");
+  const [step, setStep]   = useState<Step>("form");
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState<string | null>(null);
-  const [kybUrl, setKybUrl] = useState("");
-  const [customerId, setCustomerId] = useState("");
-  const [orderId, setOrderId] = useState("");
-  const [va, setVa] = useState<DepositInstructions>({});
-  const [amountTarget, setAmountTarget] = useState(0);
-  const [track, setTrack] = useState<TrackStatus | null>(null);
-  const [autoRetry, setAutoRetry] = useState<AutoRetry | null>(null);
+  const [copied, setCopied]   = useState(false);
+  const [kybUrl, setKybUrl]   = useState("");
+  const [payLink, setPayLink] = useState("");
+  const [autoRetry, setAutoRetry] = useState(false);
 
-  // Form
-  const [senderBusinessName, setSenderBusinessName] = useState("");
-  const [senderEmail, setSenderEmail]               = useState("");
-  const [senderCurrency, setSenderCurrency]         = useState("usd");
+  // Recipient form fields
   const [recipientBusinessName, setRecipientBusinessName] = useState("");
-  const [recipientCountry, setRecipientCountry] = useState("MX");
+  const [recipientEmail, setRecipientEmail]               = useState("");
+  const [recipientCountry, setRecipientCountry]           = useState("MX");
   const [accountField, setAccountField] = useState("");
-  const [bicField, setBicField] = useState("");
-  const [amount, setAmount] = useState("");
-
-  // Detect return from Bridge KYB — restore form + auto-retry
-  useEffect(() => {
-    if (searchParams.get("kyb_done") !== "1") return;
-    const savedRaw = sessionStorage.getItem("b2b_wire_form");
-    if (!savedRaw) return;
-    const snap = JSON.parse(savedRaw) as FormSnapshot & { checkoutToken?: string };
-    setSenderBusinessName(snap.senderBusinessName);
-    setSenderEmail(snap.senderEmail);
-    setSenderCurrency(snap.senderCurrency ?? "usd");
-    setRecipientBusinessName(snap.recipientBusinessName);
-    setRecipientCountry(snap.recipientCountry ?? "MX");
-    setAccountField(snap.accountField);
-    setBicField(snap.bicField ?? "");
-    setAmount(snap.amount);
-    sessionStorage.removeItem("b2b_wire_form");
-    const retryStep = searchParams.get("step");
-    const urlToken  = searchParams.get("token");
-    const payToken  = urlToken ?? snap.checkoutToken ?? null;
-    if (retryStep === "pay" && payToken) {
-      setAutoRetry({ type: "pay", token: payToken, snap });
-    } else {
-      setAutoRetry({ type: "checkout" });
-    }
-    window.history.replaceState({}, "", "/enviar-empresa-wire");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Fire auto-retry after state is populated (runs after re-render with restored form)
-  useEffect(() => {
-    if (!autoRetry) return;
-    setAutoRetry(null);
-    if (autoRetry.type === "pay") {
-      setStep("submitting");
-      createVA(autoRetry.token, autoRetry.snap).catch(e => { setError((e as Error).message); setStep("error"); });
-    } else {
-      handleSubmit();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoRetry]);
+  const [bicField, setBicField]         = useState("");
+  const [amount, setAmount]             = useState("");
 
   const isSepa = SEPA_COUNTRIES.has(recipientCountry);
 
@@ -144,58 +68,55 @@ export default function EnviarEmpresaWirePage() {
     : recipientCountry === "GB" ? tF("hint_uk")
     : recipientCountry === "US" ? tF("hint_us")
     : null;
+
   const currency = recipientCountry === "MX" ? "MXN" : recipientCountry === "GB" ? "GBP"
     : recipientCountry === "CO" ? "COP" : recipientCountry === "US" ? "USD" : "EUR";
 
-  const createVA = useCallback(async (token: string, snap: FormSnapshot) => {
-    const payRes = await fetch("/api/bridge/b2b/pay", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        token,
-        business_name:   snap.senderBusinessName.trim(),
-        sender_email:    snap.senderEmail.trim().toLowerCase(),
-        source_currency: snap.senderCurrency,
-      }),
-    });
-    const payData = await payRes.json() as {
-      deposit_instructions?: DepositInstructions; order_id?: string;
-      needs_kyb?: boolean; kyb_url?: string; customer_id?: string;
-      error?: string;
-    };
-
-    if (payData.needs_kyb) {
-      sessionStorage.setItem("b2b_wire_form", JSON.stringify({ ...snap, checkoutToken: token }));
-      setKybUrl(payData.kyb_url ?? "");
-      setCustomerId(payData.customer_id ?? "");
-      setStep("kyb");
-      return;
-    }
-    if (!payRes.ok || payData.error) throw new Error(payData.error ?? "Error creando cuenta virtual");
-
-    setVa(payData.deposit_instructions ?? {});
-    setOrderId(payData.order_id ?? "");
-    setAmountTarget(parseFloat(snap.amount));
-    setStep("wire");
+  // Detect return from Bridge KYB — restore form + auto-retry
+  useEffect(() => {
+    if (searchParams.get("kyb_done") !== "1") return;
+    const savedRaw = sessionStorage.getItem("b2b_checkout_form");
+    if (!savedRaw) return;
+    const snap = JSON.parse(savedRaw) as FormSnapshot;
+    setRecipientBusinessName(snap.recipientBusinessName);
+    setRecipientEmail(snap.recipientEmail);
+    setRecipientCountry(snap.recipientCountry ?? "MX");
+    setAccountField(snap.accountField);
+    setBicField(snap.bicField ?? "");
+    setAmount(snap.amount);
+    sessionStorage.removeItem("b2b_checkout_form");
+    setAutoRetry(true);
+    window.history.replaceState({}, "", "/enviar-empresa-wire");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fire auto-retry after state is populated
+  useEffect(() => {
+    if (!autoRetry) return;
+    setAutoRetry(false);
+    handleSubmit();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRetry]);
 
   const handleSubmit = useCallback(async () => {
     setStep("submitting");
     setError("");
     const snap: FormSnapshot = {
-      senderBusinessName, senderEmail, senderCurrency,
-      recipientBusinessName, recipientCountry, accountField, bicField, amount,
+      recipientBusinessName, recipientEmail, recipientCountry, accountField, bicField, amount,
     };
+    const sepa = SEPA_COUNTRIES.has(recipientCountry);
+    const appUrl = window.location.origin;
+    const redirectUri = `${appUrl}/enviar-empresa-wire?kyb_done=1`;
     try {
-      const sepa = SEPA_COUNTRIES.has(recipientCountry);
-      const checkoutRes = await fetch("/api/bridge/b2b/checkout", {
+      const res = await fetch("/api/bridge/b2b/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           business_name:  recipientBusinessName.trim(),
-          email:          senderEmail.trim().toLowerCase(),
+          email:          recipientEmail.trim().toLowerCase(),
           country:        recipientCountry,
           receive_method: "bank",
+          redirect_uri:   redirectUri,
           ...(recipientCountry === "MX" ? { clabe:          accountField.trim() } : {}),
           ...(recipientCountry === "GB" ? { sort_code:      accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() } : {}),
           ...(sepa                      ? { iban:           accountField.trim(), bic: bicField.trim() } : {}),
@@ -204,46 +125,45 @@ export default function EnviarEmpresaWirePage() {
           amount_target: parseFloat(amount),
         }),
       });
-      const checkoutData = await checkoutRes.json() as {
+      const data = await res.json() as {
         needs_kyb?: boolean; kyb_url?: string; customer_id?: string;
         pay_link?: string; token?: string; error?: string;
       };
 
-      if (checkoutData.needs_kyb) {
-        sessionStorage.setItem("b2b_wire_form", JSON.stringify(snap));
-        setKybUrl(checkoutData.kyb_url ?? "");
-        setCustomerId(checkoutData.customer_id ?? "");
+      if (data.needs_kyb) {
+        sessionStorage.setItem("b2b_checkout_form", JSON.stringify(snap));
+        setKybUrl(data.kyb_url ?? "");
         setStep("kyb");
         return;
       }
-      if (!checkoutRes.ok || checkoutData.error) throw new Error(checkoutData.error ?? "Error creando checkout");
+      if (!res.ok || data.error) throw new Error(data.error ?? "Error creando checkout");
 
-      if (!checkoutData.token) throw new Error("No payment token");
-      await createVA(checkoutData.token, snap);
+      setPayLink(data.pay_link ?? "");
+      setStep("link_ready");
     } catch (e) {
       setError((e as Error).message);
       setStep("error");
     }
-  }, [senderBusinessName, senderEmail, senderCurrency, recipientBusinessName, recipientCountry, accountField, bicField, amount, createVA]);
+  }, [recipientBusinessName, recipientEmail, recipientCountry, accountField, bicField, amount]);
 
-  const pollStatus = useCallback(async () => {
-    if (!orderId) return;
-    try {
-      const res = await fetch(`/api/bridge/track?order_id=${encodeURIComponent(orderId)}`);
-      const data = await res.json() as { state?: string; updated_at?: string };
-      setTrack({ state: data.state ?? "pending", updated: data.updated_at ?? new Date().toISOString() });
-      if (data.state === "completed") setStep("done");
-    } catch { /* best-effort */ }
-  }, [orderId]);
-
-  const copy = useCallback((value: string, key: string) => {
-    navigator.clipboard.writeText(value).then(() => {
-      setCopied(key);
-      setTimeout(() => setCopied(null), 2000);
+  const copyLink = useCallback(() => {
+    navigator.clipboard.writeText(payLink).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     });
-  }, []);
+  }, [payLink]);
 
-  const isValid = senderBusinessName && senderEmail && recipientBusinessName && accountField && amount && parseFloat(amount) >= 100;
+  const shareLink = useCallback(async () => {
+    if (!payLink) return;
+    const shareData = { title: "OmniPay B2B — Link de pago", text: `Realiza el pago empresarial a través de este link: ${payLink}`, url: payLink };
+    if (typeof navigator !== "undefined" && "share" in navigator && navigator.canShare?.(shareData)) {
+      try { await navigator.share(shareData); } catch { /* cancelled */ }
+    } else {
+      copyLink();
+    }
+  }, [payLink, copyLink]);
+
+  const isValid = recipientBusinessName && recipientEmail.includes("@") && accountField && amount && parseFloat(amount) >= 100;
 
   return (
     <main className="min-h-screen bg-[#0f172a] flex flex-col items-center px-5 pt-8 pb-16">
@@ -267,27 +187,12 @@ export default function EnviarEmpresaWirePage() {
               <p className="text-slate-400 text-sm">{t("subtitle")}</p>
             </div>
 
-            {/* Sender */}
-            <div className="space-y-3">
-              <p className="text-slate-400 text-xs uppercase tracking-widest">{t("section_sender")}</p>
-              <input type="text" placeholder={t("sender_business")} value={senderBusinessName} onChange={e => setSenderBusinessName(e.target.value)}
-                className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500/60" />
-              <input type="email" placeholder={t("sender_email")} value={senderEmail} onChange={e => setSenderEmail(e.target.value)}
-                className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500/60" />
-              <select value={senderCurrency} onChange={e => setSenderCurrency(e.target.value)}
-                className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/60">
-                <option value="usd">🇺🇸 USD — ACH / Wire</option>
-                <option value="eur">🇪🇺 EUR — SEPA</option>
-                <option value="gbp">🇬🇧 GBP — Faster Payments</option>
-                <option value="mxn">🇲🇽 MXN — SPEI</option>
-                <option value="cop">🇨🇴 COP — Bre-B</option>
-              </select>
-            </div>
-
             {/* Recipient */}
             <div className="space-y-3">
               <p className="text-slate-400 text-xs uppercase tracking-widest">{t("section_recipient")}</p>
               <input type="text" placeholder={t("recipient_business")} value={recipientBusinessName} onChange={e => setRecipientBusinessName(e.target.value)}
+                className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60" />
+              <input type="email" placeholder={t("recipient_email")} value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60" />
 
               <select value={recipientCountry} onChange={e => { setRecipientCountry(e.target.value); setAccountField(""); setBicField(""); }}
@@ -354,88 +259,43 @@ export default function EnviarEmpresaWirePage() {
           </div>
         )}
 
-        {/* WIRE INSTRUCTIONS */}
-        {step === "wire" && (
-          <div className="space-y-5">
-            <div>
-              <h1 className="text-xl font-bold text-white mb-1">{t("wire_title")}</h1>
-              <p className="text-slate-400 text-sm">{t("wire_subtitle")}</p>
-            </div>
-
-            <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 space-y-3">
-              {[
-                { label: t("wire_bank"),        value: va.bank_name },
-                { label: t("wire_routing"),     value: va.routing_number },
-                { label: t("wire_account"),     value: va.account_number },
-                { label: t("wire_sort_code"),   value: va.sort_code },
-                { label: t("wire_clabe"),       value: va.clabe },
-                { label: t("wire_iban"),        value: va.iban },
-                { label: t("wire_swift"),       value: va.bic },
-                { label: t("wire_beneficiary"), value: va.beneficiary_name ?? va.account_holder },
-                { label: t("wire_currency"),    value: va.currency ?? senderCurrency.toUpperCase() },
-                { label: t("wire_rail"),        value: va.rail },
-              ].filter(f => f.value).map(field => (
-                <div key={field.label} className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-slate-500 text-[10px] uppercase tracking-wide">{field.label}</p>
-                    <p className="text-white text-sm font-mono mt-0.5">{field.value}</p>
-                  </div>
-                  <button onClick={() => copy(field.value!, field.label)}
-                    className="text-slate-500 hover:text-[#00C9C8] transition-colors flex-shrink-0">
-                    {copied === field.label ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-[#00C9C8]/10 border border-[#00C9C8]/20 rounded-xl p-4">
-              <p className="text-[#00C9C8] text-xs font-semibold mb-1">{t("wire_amount_label")}</p>
-              <p className="text-white font-mono font-bold text-lg">{amountTarget.toLocaleString()} {currency}</p>
-            </div>
-
-            <button onClick={() => { setStep("tracking"); pollStatus(); }}
-              className="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
-              <RefreshCw className="w-4 h-4" />
-              {t("check_status")}
-            </button>
-
-            <p className="text-slate-500 text-xs text-center leading-relaxed">{t("wire_note")}</p>
-          </div>
-        )}
-
-        {/* TRACKING */}
-        {step === "tracking" && (
+        {/* LINK READY — share with sender */}
+        {step === "link_ready" && (
           <div className="space-y-6">
-            <div className="flex flex-col items-center gap-4">
-              <Clock className="w-10 h-10 text-[#00C9C8] animate-spin" style={{ animationDuration: "3s" }} />
+            <div className="flex flex-col items-center gap-3 pt-4">
+              <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Building2 className="w-7 h-7 text-emerald-400" />
+              </div>
               <div className="text-center">
-                <p className="text-white font-semibold">{t("tracking_title")}</p>
-                {track && <p className="text-slate-400 text-sm mt-1">{t("tracking_state")}: {track.state}</p>}
+                <h1 className="text-xl font-bold text-white mb-1">{t("link_ready_title")}</h1>
+                <p className="text-slate-400 text-sm">{t("link_ready_subtitle")}</p>
               </div>
             </div>
-            <button onClick={pollStatus}
-              className="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
-              <RefreshCw className="w-4 h-4" />
-              {t("refresh")}
-            </button>
-            <button onClick={() => setStep("wire")} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
-              ← {t("back_to_wire")}
-            </button>
-          </div>
-        )}
 
-        {/* DONE */}
-        {step === "done" && (
-          <div className="space-y-6 pt-8">
-            <div className="flex flex-col items-center gap-4">
-              <CheckCircle2 className="w-16 h-16 text-emerald-400" />
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-white mb-2">{t("done_title")}</h1>
-                <p className="text-slate-400 text-sm leading-relaxed">{t("done_body")}</p>
-              </div>
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+              <p className="text-slate-500 text-[10px] uppercase tracking-wide mb-2">{t("link_label")}</p>
+              <p className="text-[#00C9C8] text-xs font-mono break-all leading-relaxed">{payLink}</p>
             </div>
-            <button onClick={() => router.push("/")} className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-3 rounded-xl transition-all text-sm">
-              {t("go_home")}
+
+            <button onClick={shareLink}
+              className="w-full bg-[#00C9C8] hover:bg-[#00b8b7] text-[#0f172a] font-bold py-4 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+              <Share2 className="w-4 h-4" />
+              {t("share_link")}
+            </button>
+
+            <button onClick={copyLink}
+              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
+              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              {copied ? t("copied") : t("copy_link")}
+            </button>
+
+            <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 space-y-2">
+              <p className="text-slate-400 text-xs font-semibold">{t("link_instructions_title")}</p>
+              <p className="text-slate-500 text-xs leading-relaxed">{t("link_instructions_body")}</p>
+            </div>
+
+            <button onClick={() => setStep("form")} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
+              {t("new_link")}
             </button>
           </div>
         )}

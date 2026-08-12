@@ -25,6 +25,7 @@ interface B2BPayBody {
   sender_email:     string;
   source_currency:  "usd" | "eur" | "gbp" | "mxn" | "brl" | "cop";
   sender_phone?:    string;
+  redirect_uri?:    string;
 }
 
 const NETWORK_BY_CURRENCY: Record<string, "polygon" | "ethereum" | "solana"> = {
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   try { body = await req.json() as B2BPayBody; }
   catch { return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 }); }
 
-  const { token, business_name, sender_email, source_currency, sender_phone } = body;
+  const { token, business_name, sender_email, source_currency, sender_phone, redirect_uri } = body;
 
   if (!token || !business_name || !sender_email || !source_currency) {
     return NextResponse.json(
@@ -163,10 +164,9 @@ export async function POST(req: NextRequest): Promise<Response> {
           kybUrl = kycLink.url ?? kycLink.kyc_link ?? null;
         } catch { /* best-effort */ }
       }
-      if (kybUrl) {
-        const redirectUri = `${appUrl}/enviar-empresa-wire?kyb_done=1&step=pay&token=${encodeURIComponent(token)}`;
+      if (kybUrl && redirect_uri) {
         const sep = kybUrl.includes("?") ? "&" : "?";
-        kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirectUri)}`;
+        kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirect_uri)}`;
       }
       return NextResponse.json({
         needs_kyb:   true,

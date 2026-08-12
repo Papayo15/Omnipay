@@ -100,22 +100,36 @@ export default function B2BBridgePage() {
     const p    = new URLSearchParams(window.location.search);
     const tok  = p.get("t");
     const type = p.get("type");
-    if (!tok || type !== "b2b") {
-      window.location.href = "/b2b";
-      return;
-    }
+    const kybDone = p.get("kyb_done") === "1";
+
+    if (!tok) { window.location.href = "/b2b"; return; }
+    if (type !== "b2b" && !kybDone) { window.location.href = "/b2b"; return; }
     setToken(tok);
+
+    // Restore form state after KYB redirect
+    if (kybDone) {
+      const savedRaw = sessionStorage.getItem("b2b_bridge_form");
+      if (savedRaw) {
+        const snap = JSON.parse(savedRaw) as { businessName: string; email: string; currency: string };
+        setBusinessName(snap.businessName ?? "");
+        setEmail(snap.email ?? "");
+        setCurrency(snap.currency ?? "usd");
+        sessionStorage.removeItem("b2b_bridge_form");
+      }
+      window.history.replaceState({}, "", `/b2b-bridge?t=${tok}&type=b2b`);
+    }
   }, []);
 
   const handleSubmit = useCallback(async () => {
     if (!token || !businessName.trim() || !email.includes("@")) return;
     setStep("loading");
+    const redirectUri = `${window.location.origin}/b2b-bridge?t=${encodeURIComponent(token)}&type=b2b&kyb_done=1`;
     try {
       const isBitsoMxn = currency === "mxn" && BITSO_ENABLED;
       const endpoint   = isBitsoMxn ? "/api/bitso/checkout" : "/api/bridge/b2b/pay";
       const reqBody    = isBitsoMxn
         ? { token, sender_name: businessName.trim(), sender_email: email.toLowerCase().trim() }
-        : { token, business_name: businessName.trim(), sender_email: email.toLowerCase().trim(), source_currency: currency };
+        : { token, business_name: businessName.trim(), sender_email: email.toLowerCase().trim(), source_currency: currency, redirect_uri: redirectUri };
 
       const res  = await fetch(endpoint, {
         method: "POST",
@@ -123,6 +137,13 @@ export default function B2BBridgePage() {
         body: JSON.stringify(reqBody),
       });
       const data = await res.json() as B2BPayResponse;
+
+      if (data.needs_kyb && data.kyb_url) {
+        sessionStorage.setItem("b2b_bridge_form", JSON.stringify({ businessName: businessName.trim(), email: email.toLowerCase().trim(), currency }));
+        window.location.href = data.kyb_url;
+        return;
+      }
+      if (data.needs_tos && data.tos_url) { setResult(data); setStep("instructions"); return; }
       if (res.status === 202) { setResult(data); setStep("instructions"); return; }
       if (!res.ok || data.error) {
         setErrorMsg(data.error ?? "Error procesando el pago");

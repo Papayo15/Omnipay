@@ -899,7 +899,16 @@
     "tos_cta": "Terima Syarat →",
     "kyb_verify_cta": "Verifikasi bisnis →",
     "error_back": "Kembali ke formulir",
-    "brl_coming_soon": "segera hadir"
+    "brl_coming_soon": "segera hadir",
+    "recipient_email": "Correo de tu empresa (receptora)",
+    "link_ready_title": "¡Link de pago listo!",
+    "link_ready_subtitle": "Comparte este link con la empresa que te enviará el dinero",
+    "link_label": "Link de pago",
+    "share_link": "Compartir link",
+    "copy_link": "Copiar link",
+    "new_link": "+ Generar otro link",
+    "link_instructions_title": "¿Qué sigue?",
+    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles."
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

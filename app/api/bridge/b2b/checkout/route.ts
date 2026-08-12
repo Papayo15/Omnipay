@@ -35,6 +35,7 @@ interface B2BCheckoutBody {
   bank_name?:      string;
   bank_code?:      string;
   amount_target:   number;
+  redirect_uri?:   string;
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     business_name, email, country, receive_method,
     clabe, iban, bic, pix_key, routing_number, account_number,
     sort_code, bank_name, bank_code,
-    amount_target,
+    amount_target, redirect_uri,
   } = body;
 
   if (!business_name || !email || !country || !receive_method || !amount_target) {
@@ -164,10 +165,9 @@ export async function POST(req: NextRequest): Promise<Response> {
           }
         }
       }
-      if (kybUrl) {
-        const redirectUri = `${appUrl}/enviar-empresa-wire?kyb_done=1&step=checkout`;
+      if (kybUrl && redirect_uri) {
         const sep = kybUrl.includes("?") ? "&" : "?";
-        kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirectUri)}`;
+        kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirect_uri)}`;
       }
       return NextResponse.json({
         needs_kyb:   true,
