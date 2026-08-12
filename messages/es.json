@@ -261,7 +261,9 @@
     "b2b_time_label": "Tiempo de entrega",
     "b2b_method_label": "Procesador",
     "b2b_days": "días hábiles",
-    "b2b_time_instant": "Minutos – horas"
+    "b2b_time_instant": "Minutos – horas",
+    "p2p_eyebrow": "Persona a persona",
+    "b2b_eyebrow": "Empresa a empresa"
   },
   "p2p": {
     "page_title": "Envíos",
@@ -688,7 +690,13 @@
     "done_what_next_body": "{sender} recibirá el link de pago. Cuando complete la transferencia, el dinero llegará a tu cuenta en minutos.",
     "done_amount_label": "Monto acordado:",
     "go_home": "Ir al inicio",
-    "error_title": "Algo salió mal"
+    "error_title": "Algo salió mal",
+    "completing_title": "Preparando tu link de pago...",
+    "completing_body": "Estamos configurando tu cuenta para recibir el dinero. Solo toma unos segundos.",
+    "done_send_whatsapp": "Enviar link de pago a {sender} por WhatsApp",
+    "done_link_label": "Link de pago para el emisor",
+    "done_copy": "Copiar",
+    "done_copied": "Copiado"
   },
   "enviar_empresa": {
     "title": "Pago Empresarial",

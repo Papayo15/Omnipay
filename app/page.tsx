@@ -43,37 +43,44 @@ export default function Home() {
         <span className="text-xl font-bold text-white tracking-tight">OmniPay</span>
       </div>
 
-      {/* What is OmniPay */}
-      <div className="w-full max-w-md mb-8">
-        <h1 className="text-2xl font-bold text-white mb-3">{tl("about_title")}</h1>
-        <p className="text-slate-400 text-sm leading-relaxed">{tl("about_body")}</p>
-      </div>
-
       {/* 2 cards — emisor siempre inicia */}
-      <div className="w-full max-w-md space-y-3 mb-4">
+      <div className="w-full max-w-md space-y-4 mb-4">
 
         {/* Card 1: P2P personal */}
-        <button
-          onClick={() => router.push("/enviar")}
-          className="group relative w-full bg-emerald-950/40 hover:bg-emerald-950/60 border border-emerald-700/50 hover:border-emerald-500/70 rounded-2xl p-5 text-left transition-all duration-200 active:scale-[0.98]"
-        >
-          <span className="absolute top-3 right-3 bg-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
-            {tl("badge_recommended")}
-          </span>
-          <div className="text-2xl mb-2">💸</div>
-          <h2 className="text-white font-bold text-sm mb-1">{tl("send_p2p_title")}</h2>
-          <p className="text-slate-400 text-xs leading-relaxed mb-1">{tl("send_p2p_sub")}</p>
-          <p className="text-slate-500 text-[10px] leading-relaxed mb-3">{tl("send_p2p_desc")}</p>
-          <p className="text-emerald-400 text-xs font-semibold group-hover:translate-x-1 transition-transform">
-            {tl("send_p2p_cta")}
-          </p>
-        </button>
+        <div className="w-full bg-gradient-to-br from-emerald-950/60 to-slate-900/80 border border-emerald-700/50 rounded-2xl overflow-hidden">
+          <div className="p-5">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-emerald-400 text-[10px] font-bold uppercase tracking-widest mb-1">{tl("p2p_eyebrow")}</p>
+                <h2 className="text-white font-bold text-xl leading-tight">{tl("send_p2p_title")}</h2>
+              </div>
+              <span className="text-3xl">👤→👤</span>
+            </div>
+            <p className="text-slate-400 text-sm leading-relaxed mb-1">{tl("send_p2p_sub")}</p>
+            <p className="text-slate-500 text-xs leading-relaxed">{tl("send_p2p_desc")}</p>
+          </div>
+          <div className="px-5 pb-5">
+            <button
+              onClick={() => router.push("/enviar")}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-[#0f172a] font-bold py-3.5 rounded-xl text-sm transition-all duration-200 active:scale-[0.98]"
+            >
+              {tl("send_p2p_cta")} →
+            </button>
+          </div>
+        </div>
 
         {/* Card 2: B2B con toggle Tarjeta | Wire */}
-        <div className="w-full bg-slate-800/60 border border-slate-700 rounded-2xl p-5">
-          <div className="text-2xl mb-2">🏢</div>
-          <h2 className="text-white font-bold text-sm mb-1">{tl("send_b2b_title")}</h2>
-          <p className="text-slate-400 text-xs leading-relaxed mb-4">{tl("send_b2b_sub")}</p>
+        <div className="w-full bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-[#00C9C8]/30 rounded-2xl overflow-hidden">
+          <div className="p-5 pb-4">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-[#00C9C8] text-[10px] font-bold uppercase tracking-widest mb-1">{tl("b2b_eyebrow")}</p>
+                <h2 className="text-white font-bold text-xl leading-tight">{tl("send_b2b_title")}</h2>
+              </div>
+              <span className="text-3xl">🏢→🏢</span>
+            </div>
+            <p className="text-slate-400 text-sm leading-relaxed">{tl("send_b2b_sub")}</p>
+          </div>
 
           {/* Toggle */}
           <div className="flex bg-slate-900/60 rounded-xl p-1 mb-4">
@@ -132,12 +139,14 @@ export default function Home() {
             </div>
           )}
 
-          <button
-            onClick={() => router.push(b2bMode === "card" ? "/enviar-empresa" : "/enviar-empresa-wire")}
-            className="w-full bg-[#00C9C8] hover:bg-[#00b8b7] text-[#0f172a] font-bold py-3 rounded-xl text-sm transition-all duration-200 active:scale-[0.98]"
-          >
-            {tl("send_b2b_cta")} →
-          </button>
+          <div className="px-5 pb-5">
+            <button
+              onClick={() => router.push(b2bMode === "card" ? "/enviar-empresa" : "/enviar-empresa-wire")}
+              className="w-full bg-[#00C9C8] hover:bg-[#00b8b7] text-[#0f172a] font-bold py-3.5 rounded-xl text-sm transition-all duration-200 active:scale-[0.98]"
+            >
+              {tl("send_b2b_cta")} →
+            </button>
+          </div>
         </div>
       </div>
 

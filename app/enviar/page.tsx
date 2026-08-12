@@ -302,7 +302,7 @@ export default function EnviarPage() {
             )}
 
             <p className="text-slate-500 text-xs text-center leading-relaxed">
-              {t("invite_next")}
+              {t("invite_next", { name: recipientName })}
             </p>
 
             <button onClick={() => setStep("form")} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">

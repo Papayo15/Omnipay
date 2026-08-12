@@ -261,7 +261,9 @@
     "b2b_time_label": "Delivery time",
     "b2b_method_label": "Processor",
     "b2b_days": "business days",
-    "b2b_time_instant": "Minutes – hours"
+    "b2b_time_instant": "Minutes – hours",
+    "p2p_eyebrow": "Person to person",
+    "b2b_eyebrow": "Business to business"
   },
   "p2p": {
     "page_title": "रेमिटेंस",
@@ -710,7 +712,13 @@
     "done_what_next_body": "{sender} को भुगतान लिंक मिलेगा। जब वे ट्रांसफर पूरा करेंगे, पैसे कुछ ही मिनटों में आपके खाते में पहुंचेंगे।",
     "done_amount_label": "सहमत राशि:",
     "go_home": "होम पर जाएं",
-    "error_title": "कुछ गलत हो गया"
+    "error_title": "कुछ गलत हो गया",
+    "completing_title": "Preparing your payment link...",
+    "completing_body": "We're setting up your account to receive the money. Just a few seconds.",
+    "done_send_whatsapp": "Send payment link to {sender} via WhatsApp",
+    "done_link_label": "Payment link for the sender",
+    "done_copy": "Copy",
+    "done_copied": "Copied"
   },
   "enviar_empresa": {
     "title": "Business Payment",

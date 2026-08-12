@@ -261,7 +261,9 @@
     "b2b_time_label": "Delivery time",
     "b2b_method_label": "Processor",
     "b2b_days": "business days",
-    "b2b_time_instant": "Minutes – hours"
+    "b2b_time_instant": "Minutes – hours",
+    "p2p_eyebrow": "Person to person",
+    "b2b_eyebrow": "Business to business"
   },
   "p2p": {
     "page_title": "송금",
@@ -710,7 +712,13 @@
     "done_what_next_body": "{sender}이(가) 결제 링크를 받습니다. 이체를 완료하면 몇 분 안에 계좌에 돈이 입금됩니다.",
     "done_amount_label": "합의 금액:",
     "go_home": "홈으로",
-    "error_title": "문제가 발생했습니다"
+    "error_title": "문제가 발생했습니다",
+    "completing_title": "Preparing your payment link...",
+    "completing_body": "We're setting up your account to receive the money. Just a few seconds.",
+    "done_send_whatsapp": "Send payment link to {sender} via WhatsApp",
+    "done_link_label": "Payment link for the sender",
+    "done_copy": "Copy",
+    "done_copied": "Copied"
   },
   "enviar_empresa": {
     "title": "Business Payment",
