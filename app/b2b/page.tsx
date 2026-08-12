@@ -402,35 +402,24 @@ export default function B2BPage() {
         <CheckCircle2 className="w-16 h-16 text-emerald-400" />
         <h2 className="text-2xl font-bold text-white">{t("done_title")}</h2>
 
-        {/* Status timeline — visual 4-step bar */}
+        {/* Status — honest info only */}
         <div className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-4 text-left space-y-3">
-          <p className="text-slate-400 text-[10px] font-medium uppercase tracking-widest">{t("done_timeline_title")}</p>
-          {[
-            { label: t("done_stripe_confirmed"), sub: t("done_stripe_sub"),         state: "done"    },
-            { label: t("done_wise_processing"),  sub: t("done_wise_sub"),            state: "active"  },
-            { label: t("done_bank_sending"),     sub: "",                            state: "pending" },
-            { label: t("done_delivery_note"),    sub: t("done_delivery_date", { date: eta }), state: "pending" },
-          ].map(({ label, sub, state }, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${state === "done" ? "bg-emerald-500" : state === "active" ? "bg-amber-500" : "bg-slate-700"}`}>
-                {state === "done" ? (
-                  <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ) : state === "active" ? (
-                  <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                ) : (
-                  <span className="text-[8px] font-bold text-slate-500">{i + 1}</span>
-                )}
-              </div>
-              <div>
-                <p className={`text-sm font-medium ${state === "pending" ? "text-slate-500" : "text-white"}`}>{label}</p>
-                {sub && <p className="text-slate-400 text-xs mt-0.5">{sub}</p>}
-              </div>
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-white text-sm font-medium">{t("done_stripe_confirmed")}</p>
+              <p className="text-slate-400 text-xs">{t("done_stripe_sub")}</p>
             </div>
-          ))}
+          </div>
+          <div className="flex items-start gap-3">
+            <Clock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-white text-sm font-medium">{t("done_delivery_note")}</p>
+              <p className="text-slate-400 text-xs">{t("done_delivery_date", { date: eta })}</p>
+            </div>
+          </div>
           {senderEmail && (
-            <div className="flex items-start gap-3 pt-1 border-t border-slate-700/50">
+            <div className="flex items-start gap-3">
               <span className="text-[#00C9C8] text-sm flex-shrink-0 mt-0.5">✉</span>
               <p className="text-slate-400 text-xs">{t("done_email_note")}</p>
             </div>
