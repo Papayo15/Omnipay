@@ -43,41 +43,83 @@ export default function Home() {
       </div>
 
       {/* What is OmniPay */}
-      <div className="w-full max-w-md mb-10">
+      <div className="w-full max-w-md mb-8">
         <h1 className="text-2xl font-bold text-white mb-3">{tl("about_title")}</h1>
         <p className="text-slate-400 text-sm leading-relaxed">{tl("about_body")}</p>
       </div>
 
-      {/* Two action buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
-        <button
-          onClick={() => router.push("/b2b")}
-          className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-[#00C9C8]/60 rounded-2xl p-5 text-left transition-all duration-200 active:scale-[0.98]"
-        >
-          <div className="text-2xl mb-2">🏢</div>
-          <h2 className="text-white font-bold text-sm mb-1">{tl("b2b_title")}</h2>
-          <p className="text-slate-400 text-xs leading-relaxed mb-1">{tl("b2b_sub")}</p>
-          <p className="text-slate-500 text-[10px] leading-relaxed mb-3">{tl("b2b_cta_desc")}</p>
-          <p className="text-[#00C9C8] text-xs font-semibold group-hover:translate-x-1 transition-transform">
-            {tl("b2b_cta")}
-          </p>
-        </button>
+      {/* PRIMARY: Enviar dinero — emisor inicia */}
+      <div className="w-full max-w-md mb-3">
+        <p className="text-slate-500 text-[10px] uppercase tracking-widest mb-2 px-1">{tl("section_send")}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-        <button
-          onClick={() => router.push("/p2p")}
-          className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/60 rounded-2xl p-5 text-left transition-all duration-200 active:scale-[0.98]"
-        >
-          <div className="text-2xl mb-2">👤</div>
-          <h2 className="text-white font-bold text-sm mb-1">{tl("p2p_title")}</h2>
-          <p className="text-slate-400 text-xs leading-relaxed mb-1">{tl("p2p_sub")}</p>
-          <p className="text-slate-500 text-[10px] leading-relaxed mb-3">{tl("p2p_cta_desc")}</p>
-          <p className="text-emerald-400 text-xs font-semibold group-hover:translate-x-1 transition-transform">
-            {tl("p2p_cta")}
-          </p>
-        </button>
+          {/* Enviar como persona — RECOMENDADO */}
+          <button
+            onClick={() => router.push("/enviar")}
+            className="group relative bg-emerald-950/40 hover:bg-emerald-950/60 border border-emerald-700/50 hover:border-emerald-500/70 rounded-2xl p-5 text-left transition-all duration-200 active:scale-[0.98]"
+          >
+            <span className="absolute top-3 right-3 bg-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+              {tl("badge_recommended")}
+            </span>
+            <div className="text-2xl mb-2">💸</div>
+            <h2 className="text-white font-bold text-sm mb-1">{tl("send_p2p_title")}</h2>
+            <p className="text-slate-400 text-xs leading-relaxed mb-1">{tl("send_p2p_sub")}</p>
+            <p className="text-slate-500 text-[10px] leading-relaxed mb-3">{tl("send_p2p_desc")}</p>
+            <p className="text-emerald-400 text-xs font-semibold group-hover:translate-x-1 transition-transform">
+              {tl("send_p2p_cta")}
+            </p>
+          </button>
+
+          {/* Pago empresarial con tarjeta */}
+          <button
+            onClick={() => router.push("/enviar-empresa")}
+            className="group bg-slate-800/60 hover:bg-slate-800 border border-slate-700 hover:border-[#00C9C8]/60 rounded-2xl p-5 text-left transition-all duration-200 active:scale-[0.98]"
+          >
+            <div className="text-2xl mb-2">🏢</div>
+            <h2 className="text-white font-bold text-sm mb-1">{tl("send_b2b_title")}</h2>
+            <p className="text-slate-400 text-xs leading-relaxed mb-1">{tl("send_b2b_sub")}</p>
+            <p className="text-slate-500 text-[10px] leading-relaxed mb-3">{tl("send_b2b_desc")}</p>
+            <p className="text-[#00C9C8] text-xs font-semibold group-hover:translate-x-1 transition-transform">
+              {tl("send_b2b_cta")}
+            </p>
+          </button>
+        </div>
       </div>
 
-      <p className="text-slate-500 text-[11px] text-center mt-6 max-w-md">
+      {/* SECONDARY: Generar link de cobro — receptor inicia */}
+      <div className="w-full max-w-md mb-3">
+        <p className="text-slate-500 text-[10px] uppercase tracking-widest mb-2 px-1">{tl("section_receive")}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+          {/* Generar link personal */}
+          <button
+            onClick={() => router.push("/p2p")}
+            className="group bg-slate-800/40 hover:bg-slate-800/60 border border-slate-700/60 hover:border-slate-600 rounded-2xl p-4 text-left transition-all duration-200 active:scale-[0.98]"
+          >
+            <div className="text-xl mb-2">📥</div>
+            <h2 className="text-white font-semibold text-xs mb-1">{tl("receive_p2p_title")}</h2>
+            <p className="text-slate-500 text-[10px] leading-relaxed mb-2">{tl("receive_p2p_sub")}</p>
+            <p className="text-slate-400 text-[10px] font-medium group-hover:translate-x-1 transition-transform">
+              {tl("receive_p2p_cta")}
+            </p>
+          </button>
+
+          {/* Wire empresarial */}
+          <button
+            onClick={() => router.push("/enviar-empresa-wire")}
+            className="group bg-slate-800/40 hover:bg-slate-800/60 border border-slate-700/60 hover:border-slate-600 rounded-2xl p-4 text-left transition-all duration-200 active:scale-[0.98]"
+          >
+            <div className="text-xl mb-2">🏦</div>
+            <h2 className="text-white font-semibold text-xs mb-1">{tl("receive_b2b_title")}</h2>
+            <p className="text-slate-500 text-[10px] leading-relaxed mb-2">{tl("receive_b2b_sub")}</p>
+            <p className="text-slate-400 text-[10px] font-medium group-hover:translate-x-1 transition-transform">
+              {tl("receive_b2b_cta")}
+            </p>
+          </button>
+        </div>
+      </div>
+
+      <p className="text-slate-500 text-[11px] text-center mt-4 max-w-md">
         {tl("landing_subtitle")}
       </p>
 
