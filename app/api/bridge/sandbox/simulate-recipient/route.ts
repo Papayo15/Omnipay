@@ -71,8 +71,8 @@ export async function GET(req: NextRequest): Promise<Response> {
     try { await createKycLink({ full_name: nombre, email, type: "individual", endorsements }); } catch { /* dup ok */ }
     try { await simulateKycApproval(customer.id); } catch { /* already approved ok */ }
 
-    // small delay so Bridge propagates the status change before polling hits
-    await new Promise(r => setTimeout(r, 1500));
+    // wait for Bridge to propagate the status change — needs ~3s in practice
+    await new Promise(r => setTimeout(r, 3500));
 
     return NextResponse.json({ ok: true, customer_id: customer.id, email });
   } catch (e) {

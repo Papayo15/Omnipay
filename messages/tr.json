@@ -475,7 +475,8 @@
     "kyc_polling_title": "Kimliğiniz doğrulanıyor...",
     "kyc_polling_body": "Doğrulamanızı kontrol ediyoruz. Bu biraz zaman alabilir.",
     "kyc_polling_wait": "2 dakikadan fazla sürerse bu pencereyi kapatın ve aynı bağlantıyla geri dönün.",
-    "kyc_polling_approved": "✓ Kimlik doğrulandı — Ödeme bağlantınız oluşturuluyor..."
+    "kyc_polling_approved": "✓ Kimlik doğrulandı — Ödeme bağlantınız oluşturuluyor...",
+    "share_invite": "Paylaş"
   },
   "pagar_bridge": {
     "submit": "Para gönder →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay (hizmet)",
     "fee_sender_deposits": "Gönderen yaklaşık yatırır",
     "fee_note": "Tahmin · Kur, yatırım tespitinde onaylanır",
-    "sender_currency_label": "Gönderen hangi para biriminde yatıracak?"
+    "sender_currency_label": "Gönderen hangi para biriminde yatıracak?",
+    "receipt_emails_sent": "Gönderici ve alıcıya onay e-postaları gönderildi",
+    "receipt_view": "Makbuzu görüntüle",
+    "receipt_share": "Makbuzu paylaş"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",

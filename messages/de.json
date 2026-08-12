@@ -475,7 +475,8 @@
     "kyc_polling_title": "Identität wird verifiziert...",
     "kyc_polling_body": "Wir prüfen Ihre Verifizierung. Das kann einen Moment dauern.",
     "kyc_polling_wait": "Wenn es mehr als 2 Minuten dauert, schließen Sie dieses Fenster und kehren Sie mit demselben Link zurück.",
-    "kyc_polling_approved": "✓ Identität verifiziert — Ihr Zahlungslink wird generiert..."
+    "kyc_polling_approved": "✓ Identität verifiziert — Ihr Zahlungslink wird generiert...",
+    "share_invite": "Teilen"
   },
   "pagar_bridge": {
     "submit": "Überweisung senden →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay (Service)",
     "fee_sender_deposits": "Absender zahlt ca.",
     "fee_note": "Schätzung · Kurs wird bei Einzahlungserkennung bestätigt",
-    "sender_currency_label": "In welcher Währung zahlt der Absender ein?"
+    "sender_currency_label": "In welcher Währung zahlt der Absender ein?",
+    "receipt_emails_sent": "Bestätigungs-E-Mails an Absender und Empfänger gesendet",
+    "receipt_view": "Vollständigen Beleg anzeigen",
+    "receipt_share": "Beleg teilen"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",

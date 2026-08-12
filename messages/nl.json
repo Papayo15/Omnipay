@@ -475,7 +475,8 @@
     "kyc_polling_title": "Uw identiteit wordt geverifieerd...",
     "kyc_polling_body": "We controleren uw verificatie. Dit kan even duren.",
     "kyc_polling_wait": "Als het langer dan 2 minuten duurt, sluit dit venster en keer terug met dezelfde link.",
-    "kyc_polling_approved": "✓ Identiteit geverifieerd — Uw betaallink wordt gegenereerd..."
+    "kyc_polling_approved": "✓ Identiteit geverifieerd — Uw betaallink wordt gegenereerd...",
+    "share_invite": "Delen"
   },
   "pagar_bridge": {
     "submit": "Verzending uitvoeren →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay (service)",
     "fee_sender_deposits": "Afzender stort ca.",
     "fee_note": "Schatting · Koers bevestigd bij stortingsdetectie",
-    "sender_currency_label": "In welke valuta zal de afzender storten?"
+    "sender_currency_label": "In welke valuta zal de afzender storten?",
+    "receipt_emails_sent": "Bevestigingsmails verzonden naar afzender en ontvanger",
+    "receipt_view": "Volledig ontvangstbewijs bekijken",
+    "receipt_share": "Ontvangstbewijs delen"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",

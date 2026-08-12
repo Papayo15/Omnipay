@@ -475,7 +475,8 @@
     "kyc_polling_title": "신원 확인 중...",
     "kyc_polling_body": "확인을 검토하고 있습니다. 잠시 기다려 주세요.",
     "kyc_polling_wait": "2분 이상 걸리면 이 창을 닫고 같은 링크로 돌아오세요.",
-    "kyc_polling_approved": "✓ 신원 확인 완료 — 결제 링크 생성 중..."
+    "kyc_polling_approved": "✓ 신원 확인 완료 — 결제 링크 생성 중...",
+    "share_invite": "공유"
   },
   "pagar_bridge": {
     "submit": "송금하기 →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay (서비스)",
     "fee_sender_deposits": "송금자 입금 예상액",
     "fee_note": "예상치 · 입금 감지 시 환율 확정",
-    "sender_currency_label": "송금자는 어떤 통화로 입금하나요?"
+    "sender_currency_label": "송금자는 어떤 통화로 입금하나요?",
+    "receipt_emails_sent": "발신자 및 수신자에게 확인 이메일이 전송되었습니다",
+    "receipt_view": "전체 영수증 보기",
+    "receipt_share": "영수증 공유"
   },
   "recibir": {
     "loading": "초대장 확인 중...",

@@ -475,7 +475,8 @@
     "kyc_polling_title": "ማንነትዎ እየተረጋገጠ ነው...",
     "kyc_polling_body": "ማረጋገጫዎን እያረጋገጥን ነው። ጥቂት ደቂቃዎች ሊወስድ ይችላል።",
     "kyc_polling_wait": "ከ2 ደቂቃ በላይ ከወሰደ፣ ይህን መስኮት ዝጉ እና በተመሳሳይ ሊንክ ይመለሱ።",
-    "kyc_polling_approved": "✓ ማንነት ተረጋግጧል — የክፍያ ሊንክዎ እየተፈጠረ ነው..."
+    "kyc_polling_approved": "✓ ማንነት ተረጋግጧል — የክፍያ ሊንክዎ እየተፈጠረ ነው...",
+    "share_invite": "አጋራ"
   },
   "pagar_bridge": {
     "submit": "ገንዘብ ላክ →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay (አገልግሎት)",
     "fee_sender_deposits": "ላኪው ያስቀምጣል (ግምታዊ)",
     "fee_note": "ግምታዊ · ተመኑ ገቢ ሲታወቅ ይረጋገጣል",
-    "sender_currency_label": "ላኪው በምን ምንዛሬ ያስቀምጣል?"
+    "sender_currency_label": "ላኪው በምን ምንዛሬ ያስቀምጣል?",
+    "receipt_emails_sent": "የማረጋገጫ ኢሜሎች ለላኪ እና ለተቀባዩ ተልከዋል",
+    "receipt_view": "ሙሉ ደረሰኝ ይመልከቱ",
+    "receipt_share": "ደረሰኝ ያጋሩ"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",

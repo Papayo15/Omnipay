@@ -475,7 +475,8 @@
     "kyc_polling_title": "Đang xác minh danh tính của bạn...",
     "kyc_polling_body": "Chúng tôi đang kiểm tra xác minh của bạn. Có thể mất một chút thời gian.",
     "kyc_polling_wait": "Nếu mất hơn 2 phút, hãy đóng cửa sổ này và quay lại bằng cùng liên kết.",
-    "kyc_polling_approved": "✓ Danh tính đã xác minh — Đang tạo liên kết thanh toán..."
+    "kyc_polling_approved": "✓ Danh tính đã xác minh — Đang tạo liên kết thanh toán...",
+    "share_invite": "Chia sẻ"
   },
   "pagar_bridge": {
     "submit": "Gửi tiền →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay (dịch vụ)",
     "fee_sender_deposits": "Người gửi nạp khoảng",
     "fee_note": "Ước tính · Tỷ giá xác nhận khi phát hiện tiền nạp",
-    "sender_currency_label": "Người gửi sẽ nạp bằng loại tiền nào?"
+    "sender_currency_label": "Người gửi sẽ nạp bằng loại tiền nào?",
+    "receipt_emails_sent": "Email xác nhận đã gửi đến người gửi và người nhận",
+    "receipt_view": "Xem biên lai đầy đủ",
+    "receipt_share": "Chia sẻ biên lai"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",

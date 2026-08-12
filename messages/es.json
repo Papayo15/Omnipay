@@ -453,7 +453,8 @@
     "error_invalid_sort_code": "Sort Code debe tener 6 dígitos (ej. 20-00-00)",
     "error_invalid_routing": "Routing number debe tener 9 dígitos (ej. 021000021)",
     "error_invalid_account_uk": "Número de cuenta UK debe tener 8 dígitos",
-    "bic_required": "BIC / SWIFT (requerido)"
+    "bic_required": "BIC / SWIFT (requerido)",
+    "share_invite": "Compartir"
   },
   "pagar_bridge": {
     "submit": "Realizar envío →",
@@ -701,7 +702,10 @@
     "fee_omnipay": "OmniPay (servicio)",
     "fee_sender_deposits": "El emisor deposita aprox.",
     "fee_note": "Estimado · La tasa se confirma al detectar el depósito",
-    "sender_currency_label": "¿En qué moneda depositará el emisor?"
+    "sender_currency_label": "¿En qué moneda depositará el emisor?",
+    "receipt_emails_sent": "Correos de confirmación enviados a emisor y receptor",
+    "receipt_view": "Ver comprobante completo",
+    "receipt_share": "Compartir comprobante"
   },
   "recibir": {
     "loading": "Verificando tu invitación...",

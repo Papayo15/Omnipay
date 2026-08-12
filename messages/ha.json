@@ -475,7 +475,8 @@
     "kyc_polling_title": "Ana tabbatar da asalinka...",
     "kyc_polling_body": "Muna duba tabbatarwa. Wannan na iya ɗaukar ɗan lokaci.",
     "kyc_polling_wait": "Idan ya ɗauki fiye da minti 2, rufe wannan taga kuma koma ta hanyar haɗi ɗaya.",
-    "kyc_polling_approved": "✓ An tabbatar da asali — Ana ƙirƙirar hanyar haɗin biyan kuɗinka..."
+    "kyc_polling_approved": "✓ An tabbatar da asali — Ana ƙirƙirar hanyar haɗin biyan kuɗinka...",
+    "share_invite": "Raba"
   },
   "pagar_bridge": {
     "submit": "Aika kuɗi →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay (hidima)",
     "fee_sender_deposits": "Mai aiko yana saka kusan",
     "fee_note": "Kimarwa · Ana tabbatar da farashin lokacin da ake ganin ajiya",
-    "sender_currency_label": "Da wane kuɗin mai aiko zai saka?"
+    "sender_currency_label": "Da wane kuɗin mai aiko zai saka?",
+    "receipt_emails_sent": "An aika imeloci na tabbatarwa ga mai aika da mai karɓa",
+    "receipt_view": "Duba takardar karɓar cikakke",
+    "receipt_share": "Raba takardar karɓar"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",

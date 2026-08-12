@@ -475,7 +475,8 @@
     "kyc_polling_title": "本人確認中...",
     "kyc_polling_body": "確認を検証しています。少々お待ちください。",
     "kyc_polling_wait": "2分以上かかる場合は、このウィンドウを閉じて同じリンクから戻ってください。",
-    "kyc_polling_approved": "✓ 本人確認完了 — 支払いリンクを生成中..."
+    "kyc_polling_approved": "✓ 本人確認完了 — 支払いリンクを生成中...",
+    "share_invite": "共有"
   },
   "pagar_bridge": {
     "submit": "送金する →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay（サービス）",
     "fee_sender_deposits": "送金者の入金額（概算）",
     "fee_note": "概算 · レートは入金検出時に確定",
-    "sender_currency_label": "送金者はどの通貨で入金しますか？"
+    "sender_currency_label": "送金者はどの通貨で入金しますか？",
+    "receipt_emails_sent": "送信者と受取人に確認メールを送信しました",
+    "receipt_view": "全体の領収書を表示",
+    "receipt_share": "領収書を共有"
   },
   "recibir": {
     "loading": "招待を確認中...",

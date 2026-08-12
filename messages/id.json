@@ -475,7 +475,8 @@
     "kyc_polling_title": "Memverifikasi identitas Anda...",
     "kyc_polling_body": "Kami sedang memeriksa verifikasi Anda. Ini mungkin membutuhkan waktu sebentar.",
     "kyc_polling_wait": "Jika membutuhkan lebih dari 2 menit, tutup jendela ini dan kembali dengan tautan yang sama.",
-    "kyc_polling_approved": "✓ Identitas terverifikasi — Membuat tautan pembayaran Anda..."
+    "kyc_polling_approved": "✓ Identitas terverifikasi — Membuat tautan pembayaran Anda...",
+    "share_invite": "Bagikan"
   },
   "pagar_bridge": {
     "submit": "Kirim uang →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay (layanan)",
     "fee_sender_deposits": "Pengirim menyetor kira-kira",
     "fee_note": "Perkiraan · Kurs dikonfirmasi saat deposit terdeteksi",
-    "sender_currency_label": "Dalam mata uang apa pengirim akan menyetor?"
+    "sender_currency_label": "Dalam mata uang apa pengirim akan menyetor?",
+    "receipt_emails_sent": "Email konfirmasi dikirim ke pengirim dan penerima",
+    "receipt_view": "Lihat tanda terima lengkap",
+    "receipt_share": "Bagikan tanda terima"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",

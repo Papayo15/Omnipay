@@ -475,7 +475,8 @@
     "kyc_polling_title": "Verifica della tua identità in corso...",
     "kyc_polling_body": "Stiamo verificando il tuo documento. Potrebbe richiedere un momento.",
     "kyc_polling_wait": "Se ci vuole più di 2 minuti, chiudi questa finestra e torna con lo stesso link.",
-    "kyc_polling_approved": "✓ Identità verificata — Generazione del tuo link di pagamento..."
+    "kyc_polling_approved": "✓ Identità verificata — Generazione del tuo link di pagamento...",
+    "share_invite": "Condividi"
   },
   "pagar_bridge": {
     "submit": "Effettua invio →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay (servizio)",
     "fee_sender_deposits": "Il mittente deposita ca.",
     "fee_note": "Stima · Il tasso viene confermato al rilevamento del deposito",
-    "sender_currency_label": "In quale valuta depositerà il mittente?"
+    "sender_currency_label": "In quale valuta depositerà il mittente?",
+    "receipt_emails_sent": "Email di conferma inviate a mittente e destinatario",
+    "receipt_view": "Visualizza ricevuta completa",
+    "receipt_share": "Condividi ricevuta"
   },
   "recibir": {
     "loading": "Verifica del tuo invito...",

@@ -475,7 +475,8 @@
     "kyc_polling_title": "Kuthibitisha utambulisho wako...",
     "kyc_polling_body": "Tunakagua uthibitisho wako. Inaweza kuchukua muda kidogo.",
     "kyc_polling_wait": "Ikiwa inachukua zaidi ya dakika 2, funga dirisha hili na urudi ukitumia kiungo sawa.",
-    "kyc_polling_approved": "✓ Utambulisho umethibitishwa — Kuunda kiungo chako cha malipo..."
+    "kyc_polling_approved": "✓ Utambulisho umethibitishwa — Kuunda kiungo chako cha malipo...",
+    "share_invite": "Shiriki"
   },
   "pagar_bridge": {
     "submit": "Tuma pesa →",
@@ -723,7 +724,10 @@
     "fee_omnipay": "OmniPay (huduma)",
     "fee_sender_deposits": "Mtumaji anaweka takriban",
     "fee_note": "Makadirio · Kiwango kinathibitishwa amana inapotambuliwa",
-    "sender_currency_label": "Mtumiaji ataingiza kwa sarafu gani?"
+    "sender_currency_label": "Mtumiaji ataingiza kwa sarafu gani?",
+    "receipt_emails_sent": "Barua pepe za uthibitisho zimetumwa kwa mtumaji na mpokeaji",
+    "receipt_view": "Tazama risiti kamili",
+    "receipt_share": "Shiriki risiti"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",

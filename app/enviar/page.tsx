@@ -79,7 +79,7 @@ export default function EnviarPage() {
   const [senderKycUrl, setSenderKycUrl]     = useState("");
   const [vaInfo, setVaInfo]                 = useState<VaInfo | null>(null);
   const [orderId, setOrderId]               = useState("");
-  const [payToken, setPayToken]             = useState("");
+  const [, setPayToken]                     = useState("");
   const [confirmedAmount, setConfirmedAmount] = useState(0);
   const [targetCurrency, setTargetCurrency]   = useState("MXN"); // moneda que recibe el receptor
   // Fee quote (shown below amount field)
@@ -104,11 +104,6 @@ export default function EnviarPage() {
 
   const isSepa   = SEPA_COUNTRIES.has(recipientCountry);
   const needsBic = isSepa;
-  const isSandbox = typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" ||
-      document.cookie.includes("__sandbox") ||
-      (process.env.NEXT_PUBLIC_BRIDGE_API_BASE ?? "").includes("sandbox"));
-
   const accountLabel = recipientCountry === "MX" ? tF("clabe_label")
     : isSepa             ? tF("iban_label")
     : recipientCountry === "GB" ? tF("uk_label")
@@ -228,8 +223,8 @@ export default function EnviarPage() {
       }
     };
 
-    // Use shorter delay when triggered by the sandbox simulate button
-    const initialDelay = pollCounter > 0 ? 1500 : 3000;
+    // After simulate: give Bridge 4s to propagate before first poll
+    const initialDelay = pollCounter > 0 ? 4000 : 3000;
     pollRef.current = setTimeout(doPoll, initialDelay);
     return () => {
       cancelled = true;
@@ -294,13 +289,15 @@ export default function EnviarPage() {
       const data = await res.json() as { ok?: boolean; error?: string };
       if (data.ok) {
         setSandboxSimulated(true);
-        pollRetries.current = 0; // reset counter for fresh start
-        setPollCounter(c => c + 1); // triggers immediate re-poll (1.5s delay)
+        pollRetries.current = 0;
+        setPollCounter(c => c + 1);
       } else {
-        setError(data.error ?? "Error simulando receptor");
+        setError(data.error ?? "Error simulando receptor en sandbox");
+        setStep("error");
       }
     } catch {
-      setError("Error de conexión al simular");
+      setError("Error de conexión al simular KYC");
+      setStep("error");
     } finally {
       setSandboxSimulating(false);
     }
@@ -549,45 +546,44 @@ export default function EnviarPage() {
               )}
             </div>
 
-            {/* Compartir el link con el receptor */}
+            {/* Compartir el link con el receptor — siempre todas las opciones */}
             {inviteUrl && (
               <div className="space-y-2">
-                {/* Botón principal: WhatsApp directo si hay teléfono, Web Share si no */}
-                {waLink && recipientPhone ? (
-                  <a
-                    href={waLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#20ba58] text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
-                  >
-                    {WA_SVG}
-                    {t("send_whatsapp")}
-                  </a>
-                ) : (
-                  <button
-                    onClick={async () => {
-                      const shareData = {
-                        title: "OmniPay — Verificación de identidad",
-                        text: `Hola ${recipientName} 👋, necesitas verificar tu identidad para recibir tu dinero (2 min):`,
-                        url: inviteUrl,
-                      };
-                      if (typeof navigator !== "undefined" && "share" in navigator && navigator.canShare?.(shareData)) {
-                        try { await navigator.share(shareData); } catch { /* user cancelled */ }
-                      } else {
-                        copyText(inviteUrl, "invite");
-                      }
-                    }}
-                    className="flex items-center justify-center gap-2 w-full bg-[#00C9C8] hover:bg-[#00b5b4] text-slate-900 font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                    </svg>
-                    {t("share_invite")}
-                  </button>
-                )}
+                {/* Nativo (iOS/Android share sheet) si disponible */}
+                <button
+                  onClick={async () => {
+                    const shareData = {
+                      title: "OmniPay — Verificación de identidad",
+                      text: `Hola ${recipientName} 👋, necesitas verificar tu identidad para recibir tu dinero (2 min):`,
+                      url: inviteUrl,
+                    };
+                    if (typeof navigator !== "undefined" && "share" in navigator && navigator.canShare?.(shareData)) {
+                      try { await navigator.share(shareData); } catch { /* cancelado */ }
+                    } else {
+                      copyText(inviteUrl, "invite");
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 w-full bg-[#00C9C8] hover:bg-[#00b5b4] text-slate-900 font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                  {t("share_invite")}
+                </button>
 
-                {/* Siempre: también opción de copiar el link */}
+                {/* WhatsApp — siempre visible, con o sin teléfono */}
+                <a
+                  href={waLink || `https://wa.me/?text=${encodeURIComponent(`Hola ${recipientName} 👋, necesitas verificar tu identidad para recibir tu dinero (2 min): ${inviteUrl}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#20ba58] text-white font-semibold py-3 rounded-xl transition-all duration-200 active:scale-[0.98] text-sm"
+                >
+                  {WA_SVG}
+                  {t("send_whatsapp")}
+                </a>
+
+                {/* Copiar link */}
                 <button
                   onClick={() => copyText(inviteUrl, "invite")}
                   className="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-3 rounded-xl transition-all text-sm"
@@ -726,7 +722,7 @@ export default function EnviarPage() {
             </p>
 
             {/* Sandbox: botón para simular el pago */}
-            {isSandbox && orderId && !sandboxDone && (
+            {showSandboxBtn && orderId && !sandboxDone && (
               <button
                 onClick={advanceSandbox}
                 disabled={sandboxAdvancing}
@@ -770,12 +766,30 @@ export default function EnviarPage() {
                     </div>
                   </div>
                 </div>
+                <p className="text-slate-500 text-[10px] text-center">
+                  ✉️ {t("receipt_emails_sent")}
+                </p>
+                <a
+                  href={`/seguimiento?order_id=${orderId}`}
+                  className="flex items-center justify-center gap-2 w-full bg-emerald-700 hover:bg-emerald-600 text-white font-semibold py-3 rounded-xl transition-all text-sm"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {t("receipt_view")}
+                </a>
                 <button
-                  onClick={() => copyText(JSON.stringify({ orderId, recipient: recipientName, amount: confirmedAmount, currency: vaInfo?.currency }), "receipt")}
-                  className="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2.5 rounded-xl transition-all text-xs"
+                  onClick={async () => {
+                    const receiptUrl = `${window.location.origin}/seguimiento?order_id=${orderId}`;
+                    const shareData = { title: "Comprobante OmniPay", text: `Comprobante de envío a ${recipientName} — ${confirmedAmount.toLocaleString()} ${targetCurrency}`, url: receiptUrl };
+                    if (typeof navigator !== "undefined" && "share" in navigator && navigator.canShare?.(shareData)) {
+                      try { await navigator.share(shareData); } catch { /* cancelado */ }
+                    } else {
+                      copyText(`${window.location.origin}/seguimiento?order_id=${orderId}`, "receipt");
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2.5 rounded-xl transition-all text-sm"
                 >
                   {copied === "receipt" ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                  {t("receipt_copy")}
+                  {t("receipt_share")}
                 </button>
               </div>
             )}
