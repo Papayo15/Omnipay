@@ -9,13 +9,17 @@ import { SEPA_COUNTRIES } from "@/lib/wise-accounts";
 type Step = "form" | "sending" | "waiting" | "sender_kyc" | "instructions" | "error";
 
 interface VaInfo {
-  routing_number?: string;
-  account_number?: string;
-  iban?:           string;
-  bank_name?:      string;
-  beneficiary?:    string;
-  reference?:      string;
-  currency?:       string;
+  bank_name?:      string | null;
+  beneficiary?:    string | null;
+  routing_number?: string | null;
+  account_number?: string | null;
+  iban?:           string | null;
+  bic?:            string | null;
+  sort_code?:      string | null;
+  clabe?:          string | null;
+  pix?:            string | null;
+  currency?:       string | null;
+  payment_rail?:   string | null;
 }
 
 const BRIDGE_COUNTRIES = [
@@ -564,8 +568,17 @@ export default function EnviarPage() {
               {vaInfo.iban && (
                 <VaRow label={t("va_iban")} value={vaInfo.iban} copyId="iban" />
               )}
-              {vaInfo.reference && (
-                <VaRow label={t("va_reference")} value={vaInfo.reference} copyId="ref" />
+              {vaInfo.bic && (
+                <VaRow label="BIC / SWIFT" value={vaInfo.bic} copyId="bic" />
+              )}
+              {vaInfo.sort_code && (
+                <VaRow label="Sort Code" value={vaInfo.sort_code} copyId="sort" />
+              )}
+              {vaInfo.clabe && (
+                <VaRow label="CLABE" value={vaInfo.clabe} copyId="clabe" />
+              )}
+              {vaInfo.pix && (
+                <VaRow label="PIX" value={vaInfo.pix} copyId="pix" />
               )}
 
               {/* Monto */}

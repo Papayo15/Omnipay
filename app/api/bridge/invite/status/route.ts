@@ -174,18 +174,23 @@ export async function GET(req: NextRequest): Promise<Response> {
     });
     const metaToken = await encryptPayload({ account: meta, receiveMode: "bank", recipientPhone, senderEmail });
 
+    const di = va.source_deposit_instructions;
     return NextResponse.json({
       ready:    true,
       order_id: orderId,
       token:    metaToken,
       va: {
-        routing_number: (va as unknown as Record<string,unknown>).routing_number ?? va.id,
-        account_number: (va as unknown as Record<string,unknown>).account_number,
-        iban:           (va as unknown as Record<string,unknown>).iban,
-        bank_name:      (va as unknown as Record<string,unknown>).bank_name,
-        beneficiary:    (va as unknown as Record<string,unknown>).beneficiary ?? senderName,
-        reference:      (va as unknown as Record<string,unknown>).reference ?? liqAddr.id,
-        currency:       "USD",
+        bank_name:      di.bank_name                                        ?? null,
+        beneficiary:    di.bank_beneficiary_name ?? di.account_holder_name  ?? senderName,
+        routing_number: di.bank_routing_number                              ?? null,
+        account_number: di.bank_account_number ?? di.account_number         ?? null,
+        iban:           di.iban                                             ?? null,
+        bic:            di.bic                                              ?? null,
+        sort_code:      di.sort_code                                        ?? null,
+        clabe:          di.clabe                                            ?? null,
+        pix:            di.br_code                                          ?? null,
+        currency:       di.currency ?? "USD",
+        payment_rail:   di.payment_rail ?? di.payment_rails?.[0]           ?? null,
       },
       amount_target:   amountTarget,
       target_currency: targetCurrency,
