@@ -38,7 +38,7 @@ interface InviteBody {
   // Datos del receptor
   recipient_name:    string;
   recipient_email:   string;
-  recipient_phone:   string;   // WhatsApp E.164 del receptor
+  recipient_phone?:  string;   // WhatsApp E.164 del receptor (opcional)
   recipient_country: string;   // alpha-2
   clabe?:            string;
   iban?:             string;
@@ -68,9 +68,9 @@ export async function POST(req: NextRequest): Promise<Response> {
     sender_name, sender_email, amount_target,
   } = body;
 
-  if (!recipient_name || !recipient_email || !recipient_phone || !recipient_country || !amount_target) {
+  if (!recipient_name || !recipient_email || !recipient_country || !amount_target) {
     return NextResponse.json(
-      { error: "recipient_name, recipient_email, recipient_phone, recipient_country, amount_target son requeridos" },
+      { error: "recipient_name, recipient_email, recipient_country, amount_target son requeridos" },
       { status: 400 },
     );
   }
@@ -140,12 +140,16 @@ export async function POST(req: NextRequest): Promise<Response> {
         `Tu identidad ya está verificada. Comparte este link con ${sender_name} para que complete el envío: ${payLink}`
       );
       // Normalize MX legacy format: 5219XXXXXXXXXX → 529XXXXXXXXXX (Mexico dropped the "1" in Oct 2020)
-  let waPhone = recipient_phone.replace(/\D/g, "");
-  if (/^521\d{10}$/.test(waPhone)) waPhone = "52" + waPhone.slice(3);
+      let waLinkReady: string | null = null;
+      if (recipient_phone) {
+        let waPhone = recipient_phone.replace(/\D/g, "");
+        if (/^521\d{10}$/.test(waPhone)) waPhone = "52" + waPhone.slice(3);
+        waLinkReady = `https://wa.me/${waPhone}?text=${waText}`;
+      }
       return NextResponse.json({
         status:       "ready",
         pay_link:     payLink,
-        wa_link:      `https://wa.me/${waPhone}?text=${waText}`,
+        wa_link:      waLinkReady,
         customer_id:  existing.id,
         liq_addr_id:  liqAddr.id,
       });
@@ -213,15 +217,19 @@ export async function POST(req: NextRequest): Promise<Response> {
     `Entra aquí: ${tosUrl ?? kycUrl ?? recibir}`
   );
   // Normalize MX legacy format: 5219XXXXXXXXXX → 529XXXXXXXXXX (Mexico dropped the "1" in Oct 2020)
-  let waPhone = recipient_phone.replace(/\D/g, "");
-  if (/^521\d{10}$/.test(waPhone)) waPhone = "52" + waPhone.slice(3);
+  let waLink: string | null = null;
+  if (recipient_phone) {
+    let waPhone = recipient_phone.replace(/\D/g, "");
+    if (/^521\d{10}$/.test(waPhone)) waPhone = "52" + waPhone.slice(3);
+    waLink = `https://wa.me/${waPhone}?text=${waText}`;
+  }
 
   return NextResponse.json({
     status:       "invite_sent",
     invite_url:   recibir,
     tos_url:      tosUrl,
     kyc_url:      kycUrl,
-    wa_link:      `https://wa.me/${waPhone}?text=${waText}`,
+    wa_link:      waLink,
     expires_at:   new Date(exp).toISOString(),
   });
 }
