@@ -447,7 +447,8 @@ export default function EnviarPage() {
                   <option value="USD">🇺🇸 USD — ACH / Wire</option>
                   <option value="EUR">🇪🇺 EUR — SEPA</option>
                   <option value="GBP">🇬🇧 GBP — Faster Payments</option>
-                  <option value="MXN" disabled>🇲🇽 MXN — SPEI (próximamente)</option>
+                  <option value="MXN">🇲🇽 MXN — SPEI</option>
+                  <option value="COP">🇨🇴 COP — Bre-B</option>
                   <option value="BRL" disabled>🇧🇷 BRL — PIX (próximamente)</option>
                 </select>
               </div>
