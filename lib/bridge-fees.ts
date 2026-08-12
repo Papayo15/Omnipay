@@ -4,12 +4,12 @@
 //   bridge → 41 corridors (MX/US/BR/GB/CO/SEPA) — native bank rails via Bridge.xyz
 //   b2b    → Stripe capture + Wise payout
 //
-// OmniPay charges: 0.50% + flat on all channels (min $0.99)
+// OmniPay charges: 0.35% (min $0.75) on all channels — no flat fee
 // ALL provider costs shown in total_sender_pays — the sender sees one final number.
 // KYC (P2P) and KYB (B2B) both absorbed as acquisition cost.
 //
 // Competitive position on $300 USD (Bridge channel):
-//   Wise ~$2.81 · Felix Pago ~$3.60 hidden in FX · OmniPay: $4.24 ← transparent & fair
+//   Wise ~$2.81 (owns rails) · Felix Pago ~$3.60 hidden in FX · OmniPay: $3.30 ✅ cheapest visible
 //
 // B2B example $1,000 CAD → MXN via Stripe + Wise:
 //   Stripe card acceptance: $29.30 (2.9%+$0.30)
@@ -33,10 +33,10 @@ export const STRIPE_PCT  = 0.029;  // 2.9%
 export const STRIPE_FLAT = 0.30;   // $0.30 fixed
 
 // OmniPay margin
-export const OMNIPAY_SERVICE_PCT = 0.005;  // 0.50% OmniPay net revenue
-export const OMNIPAY_FLAT_P2P    = 0.49;   // was 0.99 — lower entry cost
-export const OMNIPAY_FLAT_B2B    = 1.99;  // covers Bridge VA $2/month in B2B
-export const OMNIPAY_MIN_FEE     = 0.99;   // was 1.99 — 0.50% activates from $200
+export const OMNIPAY_SERVICE_PCT = 0.0035; // 0.35% OmniPay net revenue — beats Felix Pago at $300+
+export const OMNIPAY_FLAT_P2P    = 0.00;   // no flat — simpler and cheaper for sender
+export const OMNIPAY_FLAT_B2B    = 1.99;   // covers Bridge VA $2/month in B2B
+export const OMNIPAY_MIN_FEE     = 0.75;   // minimum $0.75 OmniPay per transaction
 
 // KYC/KYB both absorbed as acquisition cost — zero friction for first-time users
 export const KYC_FEE_P2P = 0.00;
