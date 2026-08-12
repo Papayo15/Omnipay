@@ -80,9 +80,10 @@ export default function EnviarPage() {
   const [sandboxAdvancing, setSandboxAdvancing]   = useState(false);
   const [sandboxSimulating, setSandboxSimulating] = useState(false);
   const [sandboxSimulated, setSandboxSimulated]   = useState(false);
-  const [showSandboxBtn, setShowSandboxBtn]       = useState(true);
+  const [showSandboxBtn, setShowSandboxBtn]       = useState(false); // hidden until confirmed sandbox
 
-  const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sandboxChecked = useRef(false);
 
   const isSepa   = SEPA_COUNTRIES.has(recipientCountry);
   const needsBic = isSepa;
@@ -123,6 +124,15 @@ export default function EnviarPage() {
     if (isSepa) return { ...base, iban: accountField.trim(), bic: bicField.trim() };
     return { ...base, routing_number: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
   }, [senderName, senderEmail, recipientName, recipientEmail, recipientPhone, recipientCountry, accountField, bicField, amountTarget, isSepa]);
+
+  // Detect sandbox once when entering waiting step (ping sandbox advance; 403 = production)
+  useEffect(() => {
+    if (step !== "waiting" || sandboxChecked.current) return;
+    sandboxChecked.current = true;
+    fetch("/api/bridge/sandbox/advance?order_id=OP-PING")
+      .then(r => { if (r.status !== 403) setShowSandboxBtn(true); })
+      .catch(() => { /* network error — keep hidden */ });
+  }, [step]);
 
   // Polling: llama al status endpoint hasta que el receptor complete KYC
   useEffect(() => {
