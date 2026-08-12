@@ -364,19 +364,21 @@ export async function createLiquidationAddress(
   const extAcctBody = buildExternalAccountBody(params);
   let extAcctId: string;
   const day = Math.floor(Date.now() / 86_400_000);
-  try {
-    const extAcct = await createExternalAccount(
-      params.customerId,
-      extAcctBody,
-      `ext-${params.customerId}-${country}-${identKey}-${day}`,
-    );
-    if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
-    extAcctId = extAcct.id;
-  } catch (e) {
-    const bridgeErr = e as Error & { type?: string; message?: string; details?: Record<string, unknown> };
-    if (bridgeErr.type === "duplicate_external_account" && bridgeErr.details?.id) {
-      extAcctId = bridgeErr.details.id as string;
-    } else {
+
+  async function tryCreateExternalAccount(idempKeySuffix: string): Promise<string> {
+    try {
+      const extAcct = await createExternalAccount(
+        params.customerId,
+        extAcctBody,
+        `ext-${params.customerId}-${country}-${identKey}-${day}${idempKeySuffix}`,
+      );
+      if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
+      return extAcct.id;
+    } catch (e) {
+      const bridgeErr = e as Error & { type?: string; message?: string; details?: Record<string, unknown> };
+      if (bridgeErr.type === "duplicate_external_account" && bridgeErr.details?.id) {
+        return bridgeErr.details.id as string;
+      }
       const isIdempDeadline = bridgeErr.type?.includes("idempotency")
         || bridgeErr.message?.toLowerCase().includes("idempotency")
         || bridgeErr.message?.toLowerCase().includes("24 hours");
@@ -385,11 +387,24 @@ export async function createLiquidationAddress(
           "GET", `/customers/${params.customerId}/external_accounts`,
         );
         const first = list.data?.[0];
-        if (first?.id) { extAcctId = first.id; }
-        else throw e;
-      } else {
-        throw e;
+        if (first?.id) return first.id;
       }
+      throw e;
+    }
+  }
+
+  try {
+    extAcctId = await tryCreateExternalAccount("");
+  } catch (e) {
+    const bridgeErr = e as Error & { type?: string; message?: string };
+    // Bridge requires customer address before external account creation.
+    // If the address was cleared by sandbox simulate_kyc_approval, retry after a brief pause.
+    if (bridgeErr.message?.includes("missing") && bridgeErr.message?.includes("address")) {
+      await new Promise(r => setTimeout(r, 500));
+      // Rotate the idempotency key suffix so Bridge doesn't reject as duplicate
+      extAcctId = await tryCreateExternalAccount("-r2");
+    } else {
+      throw e;
     }
   }
 

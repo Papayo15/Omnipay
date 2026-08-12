@@ -82,12 +82,6 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
-    try {
-      await patchCustomerAddress(customer.id, country_upper, false, "business");
-    } catch (addrErr) {
-      console.warn("[bridge/b2b/checkout] patchCustomerAddress:", (addrErr as Error).message);
-    }
-
     const liqParams: CreateLiquidationParams = {
       customerId:    customer.id,
       country:       country_upper,
@@ -124,6 +118,21 @@ export async function POST(req: NextRequest): Promise<Response> {
           error: "La empresa receptora no pudo activarse en Bridge sandbox.",
           bridge_type: "kyb_not_active",
         }, { status: 422 });
+      }
+
+      // Set address AFTER KYB simulation — sandbox simulate_kyc_approval may clear address fields.
+      // Retry with multiple field names since Bridge business address field name varies by API version.
+      try {
+        await patchCustomerAddress(customer.id, country_upper, false, "business");
+      } catch (addrErr) {
+        console.warn("[bridge/b2b/checkout] patchCustomerAddress post-kyb:", (addrErr as Error).message);
+      }
+    } else {
+      // Production: set address before external account creation
+      try {
+        await patchCustomerAddress(customer.id, country_upper, false, "business");
+      } catch (addrErr) {
+        console.warn("[bridge/b2b/checkout] patchCustomerAddress:", (addrErr as Error).message);
       }
     }
 

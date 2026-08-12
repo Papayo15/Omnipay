@@ -98,12 +98,6 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
-    try {
-      await patchCustomerAddress(senderCustomer.id, "US", false, "business");
-    } catch (addrErr) {
-      console.warn("[bridge/b2b/pay] patchCustomerAddress:", (addrErr as Error).message);
-    }
-
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
 
     if (isSandbox) {
@@ -131,6 +125,19 @@ export async function POST(req: NextRequest): Promise<Response> {
           error: "La empresa emisora no pudo activarse en Bridge sandbox.",
           bridge_type: "kyb_not_active",
         }, { status: 422 });
+      }
+
+      // Set address AFTER KYB simulation — sandbox simulate may clear address fields.
+      try {
+        await patchCustomerAddress(senderCustomer.id, "US", false, "business");
+      } catch (addrErr) {
+        console.warn("[bridge/b2b/pay] patchCustomerAddress post-kyb:", (addrErr as Error).message);
+      }
+    } else {
+      try {
+        await patchCustomerAddress(senderCustomer.id, "US", false, "business");
+      } catch (addrErr) {
+        console.warn("[bridge/b2b/pay] patchCustomerAddress:", (addrErr as Error).message);
       }
     }
 
