@@ -713,7 +713,9 @@
     "share_any_channel": "انسخ الرابط وأرسله عبر الرسائل القصيرة أو البريد الإلكتروني أو تيليغرام أو أي قناة أخرى",
     "share_invite": "مشاركة رابط التحقق",
     "sandbox_simulate_recipient": "⚡ محاكاة KYC المستلم (بيئة اختبار)",
-    "sandbox_recipient_simulated": "✓ تمت محاكاة KYC المستلم · سيكتشف نظام الفحص التغيير"
+    "sandbox_recipient_simulated": "✓ تمت محاكاة KYC المستلم · سيكتشف نظام الفحص التغيير",
+    "va_recipient_gets": "يستلم المستفيد",
+    "va_deposit_currency": "عملة الإيداع"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",

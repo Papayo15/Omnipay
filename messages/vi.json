@@ -713,7 +713,9 @@
     "share_any_channel": "Sao chép liên kết và chia sẻ qua SMS, email, Telegram hoặc bất kỳ kênh nào",
     "share_invite": "Chia sẻ liên kết xác minh",
     "sandbox_simulate_recipient": "⚡ Mô phỏng KYC người nhận (sandbox)",
-    "sandbox_recipient_simulated": "✓ KYC người nhận đã mô phỏng · việc thăm dò sẽ phát hiện thay đổi"
+    "sandbox_recipient_simulated": "✓ KYC người nhận đã mô phỏng · việc thăm dò sẽ phát hiện thay đổi",
+    "va_recipient_gets": "Người nhận nhận được",
+    "va_deposit_currency": "Tiền tệ nạp"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",

@@ -713,7 +713,9 @@
     "share_any_channel": "링크를 복사하여 SMS, 이메일, Telegram 또는 원하는 채널로 공유하세요",
     "share_invite": "확인 링크 공유",
     "sandbox_simulate_recipient": "⚡ 수신자 KYC 시뮬레이션 (샌드박스)",
-    "sandbox_recipient_simulated": "✓ 수신자 KYC 시뮬레이션 완료 · 폴링이 변경 사항을 감지합니다"
+    "sandbox_recipient_simulated": "✓ 수신자 KYC 시뮬레이션 완료 · 폴링이 변경 사항을 감지합니다",
+    "va_recipient_gets": "수신자 수령액",
+    "va_deposit_currency": "입금 통화"
   },
   "recibir": {
     "loading": "초대장 확인 중...",

@@ -713,7 +713,9 @@
     "share_any_channel": "Bağlantıyı kopyalayın ve SMS, e-posta, Telegram veya istediğiniz bir kanal aracılığıyla paylaşın",
     "share_invite": "Doğrulama bağlantısını paylaş",
     "sandbox_simulate_recipient": "⚡ Alıcı KYC'yi simüle et (sandbox)",
-    "sandbox_recipient_simulated": "✓ Alıcı KYC simüle edildi · anket değişikliği algılayacak"
+    "sandbox_recipient_simulated": "✓ Alıcı KYC simüle edildi · anket değişikliği algılayacak",
+    "va_recipient_gets": "Alıcı alır",
+    "va_deposit_currency": "Yatırım para birimi"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",

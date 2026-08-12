@@ -713,7 +713,9 @@
     "share_any_channel": "Kopieren Sie den Link und teilen Sie ihn per SMS, E-Mail, Telegram oder einem anderen Kanal",
     "share_invite": "Bestätigungslink teilen",
     "sandbox_simulate_recipient": "⚡ Empfänger-KYC simulieren (Sandbox)",
-    "sandbox_recipient_simulated": "✓ Empfänger-KYC simuliert · die Prüfung wird die Änderung erkennen"
+    "sandbox_recipient_simulated": "✓ Empfänger-KYC simuliert · die Prüfung wird die Änderung erkennen",
+    "va_recipient_gets": "Empfänger erhält",
+    "va_deposit_currency": "Einzahlungswährung"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",

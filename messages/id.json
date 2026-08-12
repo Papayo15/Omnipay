@@ -713,7 +713,9 @@
     "share_any_channel": "Salin tautan dan bagikan melalui SMS, email, Telegram, atau saluran apa pun",
     "share_invite": "Bagikan tautan verifikasi",
     "sandbox_simulate_recipient": "⚡ Simulasikan KYC penerima (sandbox)",
-    "sandbox_recipient_simulated": "✓ KYC penerima disimulasikan · polling akan mendeteksi perubahan"
+    "sandbox_recipient_simulated": "✓ KYC penerima disimulasikan · polling akan mendeteksi perubahan",
+    "va_recipient_gets": "Penerima menerima",
+    "va_deposit_currency": "Mata uang setoran"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",

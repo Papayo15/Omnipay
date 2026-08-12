@@ -713,7 +713,9 @@
     "share_any_channel": "ሊንኩን ቅዳ እና በSMS፣ ኢሜይል፣ Telegram ወይም ሌላ ማናቸውም ቻናል አጋራ",
     "share_invite": "የማረጋገጫ ሊንኩን አጋራ",
     "sandbox_simulate_recipient": "⚡ ተቀባዩ KYC ምሳሌ አሳይ (sandbox)",
-    "sandbox_recipient_simulated": "✓ ተቀባዩ KYC ምሳሌ ተሠርቷል · ፖሊንግ ለውጡን ያገኛል"
+    "sandbox_recipient_simulated": "✓ ተቀባዩ KYC ምሳሌ ተሠርቷል · ፖሊንግ ለውጡን ያገኛል",
+    "va_recipient_gets": "ተቀባዩ ይቀበላል",
+    "va_deposit_currency": "የሂሳብ ምንዛሬ"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",

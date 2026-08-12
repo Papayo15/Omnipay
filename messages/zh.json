@@ -713,7 +713,9 @@
     "share_any_channel": "复制链接，通过短信、电子邮件、Telegram 或任何渠道分享",
     "share_invite": "分享验证链接",
     "sandbox_simulate_recipient": "⚡ 模拟收款方 KYC（沙盒）",
-    "sandbox_recipient_simulated": "✓ 收款方 KYC 已模拟 · 轮询将检测到变化"
+    "sandbox_recipient_simulated": "✓ 收款方 KYC 已模拟 · 轮询将检测到变化",
+    "va_recipient_gets": "收款方收到",
+    "va_deposit_currency": "存款货币"
   },
   "recibir": {
     "loading": "正在验证邀请...",

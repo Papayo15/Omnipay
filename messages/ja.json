@@ -713,7 +713,9 @@
     "share_any_channel": "リンクをコピーして、SMS・メール・Telegram・その他どんな手段でも共有できます",
     "share_invite": "確認リンクを共有",
     "sandbox_simulate_recipient": "⚡ 受取人 KYC をシミュレート（サンドボックス）",
-    "sandbox_recipient_simulated": "✓ 受取人 KYC シミュレート完了 · ポーリングが変化を検出します"
+    "sandbox_recipient_simulated": "✓ 受取人 KYC シミュレート完了 · ポーリングが変化を検出します",
+    "va_recipient_gets": "受取人が受け取る金額",
+    "va_deposit_currency": "入金通貨"
   },
   "recibir": {
     "loading": "招待を確認中...",

@@ -713,7 +713,9 @@
     "share_any_channel": "Kopieer de link en deel hem via SMS, e-mail, Telegram of een ander kanaal",
     "share_invite": "Verificatielink delen",
     "sandbox_simulate_recipient": "⚡ KYC ontvanger simuleren (sandbox)",
-    "sandbox_recipient_simulated": "✓ KYC ontvanger gesimuleerd · de verificatie detecteert de wijziging"
+    "sandbox_recipient_simulated": "✓ KYC ontvanger gesimuleerd · de verificatie detecteert de wijziging",
+    "va_recipient_gets": "Ontvanger ontvangt",
+    "va_deposit_currency": "Stortingsvaluta"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",

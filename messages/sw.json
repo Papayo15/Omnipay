@@ -713,7 +713,9 @@
     "share_any_channel": "Nakili kiungo na ushiriki kupitia SMS, barua pepe, Telegram, au njia yoyote",
     "share_invite": "Shiriki kiungo cha uthibitishaji",
     "sandbox_simulate_recipient": "⚡ Simula KYC ya mpokeaji (sandbox)",
-    "sandbox_recipient_simulated": "✓ KYC ya mpokeaji imesimuliwa · uchunguzi utaona mabadiliko"
+    "sandbox_recipient_simulated": "✓ KYC ya mpokeaji imesimuliwa · uchunguzi utaona mabadiliko",
+    "va_recipient_gets": "Mpokeaji anapokea",
+    "va_deposit_currency": "Sarafu ya amana"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",

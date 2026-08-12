@@ -713,7 +713,9 @@
     "share_any_channel": "लिंक कॉपी करें और SMS, ईमेल, टेलीग्राम या किसी भी चैनल से साझा करें",
     "share_invite": "सत्यापन लिंक साझा करें",
     "sandbox_simulate_recipient": "⚡ प्राप्तकर्ता KYC सिम्युलेट करें (sandbox)",
-    "sandbox_recipient_simulated": "✓ प्राप्तकर्ता KYC सिम्युलेट हुआ · पोलिंग बदलाव का पता लगाएगा"
+    "sandbox_recipient_simulated": "✓ प्राप्तकर्ता KYC सिम्युलेट हुआ · पोलिंग बदलाव का पता लगाएगा",
+    "va_recipient_gets": "प्राप्तकर्ता को मिलेगा",
+    "va_deposit_currency": "जमा मुद्रा"
   },
   "recibir": {
     "loading": "आपका आमंत्रण सत्यापित हो रहा है...",

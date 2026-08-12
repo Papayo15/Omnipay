@@ -691,7 +691,9 @@
     "share_any_channel": "Copia el link y compártelo por SMS, correo, Telegram o como prefieras",
     "share_invite": "Compartir link de verificación",
     "sandbox_simulate_recipient": "⚡ Simular KYC del receptor (sandbox)",
-    "sandbox_recipient_simulated": "✓ KYC del receptor simulado · el polling detectará el cambio"
+    "sandbox_recipient_simulated": "✓ KYC del receptor simulado · el polling detectará el cambio",
+    "va_recipient_gets": "El receptor recibe",
+    "va_deposit_currency": "Moneda de depósito"
   },
   "recibir": {
     "loading": "Verificando tu invitación...",

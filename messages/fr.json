@@ -713,7 +713,9 @@
     "share_any_channel": "Copiez le lien et partagez-le par SMS, e-mail, Telegram ou autre",
     "share_invite": "Partager le lien de vérification",
     "sandbox_simulate_recipient": "⚡ Simuler la vérification du destinataire (sandbox)",
-    "sandbox_recipient_simulated": "✓ Vérification du destinataire simulée · la vérification détectera le changement"
+    "sandbox_recipient_simulated": "✓ Vérification du destinataire simulée · la vérification détectera le changement",
+    "va_recipient_gets": "Le destinataire reçoit",
+    "va_deposit_currency": "Devise de dépôt"
   },
   "recibir": {
     "loading": "Vérification de votre invitation...",

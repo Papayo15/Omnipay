@@ -80,6 +80,7 @@ export default function EnviarPage() {
   const [orderId, setOrderId]               = useState("");
   const [payToken, setPayToken]             = useState("");
   const [confirmedAmount, setConfirmedAmount] = useState(0);
+  const [targetCurrency, setTargetCurrency]   = useState("MXN"); // moneda que recibe el receptor
   const [sandboxDone, setSandboxDone]             = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing]   = useState(false);
   const [sandboxSimulating, setSandboxSimulating] = useState(false);
@@ -159,6 +160,7 @@ export default function EnviarPage() {
         if (data.ready && data.va) {
           setVaInfo(data.va);
           setConfirmedAmount(data.amount_target ?? parseFloat(amountTarget));
+          setTargetCurrency((data as Record<string, unknown>).target_currency as string ?? "MXN");
           setOrderId(data.order_id ?? "");
           setPayToken(data.token ?? "");
           setStep("instructions");
@@ -224,6 +226,7 @@ export default function EnviarPage() {
         // Receptor ya verificado: mostrar instrucciones directamente
         setVaInfo(data.va);
         setConfirmedAmount(data.amount_target ?? parseFloat(amountTarget));
+        setTargetCurrency((data as Record<string, unknown>).target_currency as string ?? "MXN");
         setOrderId(data.order_id ?? "");
         setPayToken(data.token ?? "");
         setStep("instructions");
@@ -605,15 +608,23 @@ export default function EnviarPage() {
               )}
 
               {/* Monto */}
-              <div className="mt-3 pt-3 border-t border-slate-700/50">
+              <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2">
+                {/* Monto que recibirá el receptor */}
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-xs">{t("va_amount")}</span>
+                  <span className="text-slate-400 text-xs">{t("va_recipient_gets")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-emerald-400 font-bold text-lg font-mono">
-                      {confirmedAmount.toLocaleString()} {vaInfo.currency ?? "USD"}
+                      {confirmedAmount.toLocaleString()} {targetCurrency.toUpperCase()}
                     </span>
                     <CopyButton text={String(confirmedAmount)} id="amount" label={t("copy")} />
                   </div>
+                </div>
+                {/* Moneda de depósito del emisor */}
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 text-xs">{t("va_deposit_currency")}</span>
+                  <span className="text-slate-300 text-sm font-mono">
+                    {(vaInfo.currency ?? "USD").toUpperCase()}
+                  </span>
                 </div>
               </div>
             </div>
@@ -652,7 +663,7 @@ export default function EnviarPage() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-400">{t("receipt_amount")}</span>
-                      <span className="text-white font-mono font-bold">{confirmedAmount.toLocaleString()} {vaInfo?.currency ?? "USD"}</span>
+                      <span className="text-white font-mono font-bold">{confirmedAmount.toLocaleString()} {targetCurrency.toUpperCase()}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-400">{t("receipt_ref")}</span>

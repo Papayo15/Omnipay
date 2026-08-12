@@ -713,7 +713,9 @@
     "share_any_channel": "Kwafi hanyar haɗi kuma raba ta SMS, imel, Telegram, ko kowane tashar",
     "share_invite": "Raba hanyar haɗin tabbatarwa",
     "sandbox_simulate_recipient": "⚡ Kwaikwayon KYC mai karɓa (sandbox)",
-    "sandbox_recipient_simulated": "✓ An kwaikwayi KYC mai karɓa · binciken zai gano canje-canje"
+    "sandbox_recipient_simulated": "✓ An kwaikwayi KYC mai karɓa · binciken zai gano canje-canje",
+    "va_recipient_gets": "Mai karɓa yana karɓa",
+    "va_deposit_currency": "Kuɗin ajiya"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",
