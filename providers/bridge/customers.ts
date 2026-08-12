@@ -28,7 +28,7 @@ export interface BridgeKycLink {
   expires_at?: string;
 }
 
-const ALPHA2_TO_ALPHA3: Record<string, string> = {
+export const ALPHA2_TO_ALPHA3: Record<string, string> = {
   MX:"MEX", US:"USA", BR:"BRA", CO:"COL", GB:"GBR", CA:"CAN",
   DE:"DEU", FR:"FRA", ES:"ESP", IT:"ITA", NL:"NLD", PT:"PRT",
   BE:"BEL", AT:"AUT", IE:"IRL", FI:"FIN", GR:"GRC", CY:"CYP",
@@ -53,9 +53,11 @@ export async function patchCustomerAddress(
   const iso3      = ALPHA2_TO_ALPHA3[country] ?? "USA";
   const addr      = ADDRESS_DEFAULTS[iso3] ?? ADDRESS_DEFAULTS["USA"];
 
-  // Bridge uses `residential_address` for individual, `primary_address` for business
-  const addrField = customerType === "business" ? "primary_address" : "residential_address";
-  const update: Record<string, unknown> = { [addrField]: addr };
+  // Bridge field name for address differs by customer type.
+  // Send all plausible variants so at least one is accepted regardless of API version.
+  const update: Record<string, unknown> = customerType === "business"
+    ? { primary_address: addr, residential_address: addr }  // business: both field names
+    : { residential_address: addr };
 
   if (isSandbox && includeComplianceFields && customerType === "individual") {
     // Individual compliance fields — Bridge rejects these for business customers.
@@ -91,9 +93,13 @@ export async function createCustomer(params: {
   const { country: _c, endorsements: _e, ...rest } = params;
   const body: Record<string, unknown> = { ...rest };
 
-  // Bridge uses `residential_address` for individual, `primary_address` for business
-  const addrField = params.type === "business" ? "primary_address" : "residential_address";
-  body[addrField] = ADDRESS_DEFAULTS[params.country ?? "USA"] ?? ADDRESS_DEFAULTS["USA"];
+  const addr = ADDRESS_DEFAULTS[params.country ?? "USA"] ?? ADDRESS_DEFAULTS["USA"];
+  if (params.type === "business") {
+    body.primary_address     = addr;
+    body.residential_address = addr;  // Bridge may use either field for business customers
+  } else {
+    body.residential_address = addr;
+  }
 
   // Request specific endorsements — puts them in "pending" state so
   // simulate_kyc_approval (sandbox) or real KYC can approve them.

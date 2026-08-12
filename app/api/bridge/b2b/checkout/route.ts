@@ -12,7 +12,7 @@
 //   5. Returns shareable payment link: ${APP_URL}/b2b-bridge?t={token}&type=b2b
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, RAIL_ENDORSEMENT, ALPHA2_TO_ALPHA3 as ISO3_FROM_ALPHA2 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -71,16 +71,22 @@ export async function POST(req: NextRequest): Promise<Response> {
     const endorsements   = ["base", "sepa", ...(railEndorse !== "base" && railEndorse !== "sepa" ? [railEndorse] : [])];
 
     // Get or create Bridge BUSINESS customer (KYB)
+    // Pass country so the initial address matches the recipient's actual country
     const { customer, needsKyc: needsKyb, isNew } = await getOrCreateCustomer({
       type:          "business",
       email:         email.toLowerCase(),
       business_name,
+      country:       ISO3_FROM_ALPHA2[country_upper] ?? "USA",
       endorsements,
     });
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
-    try { await patchCustomerAddress(customer.id, country_upper, false, "business"); } catch { /* best-effort */ }
+    try {
+      await patchCustomerAddress(customer.id, country_upper, false, "business");
+    } catch (addrErr) {
+      console.warn("[bridge/b2b/checkout] patchCustomerAddress:", (addrErr as Error).message);
+    }
 
     const liqParams: CreateLiquidationParams = {
       customerId:    customer.id,

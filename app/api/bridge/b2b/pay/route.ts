@@ -98,7 +98,11 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
-    try { await patchCustomerAddress(senderCustomer.id, "US", false, "business"); } catch { /* best-effort */ }
+    try {
+      await patchCustomerAddress(senderCustomer.id, "US", false, "business");
+    } catch (addrErr) {
+      console.warn("[bridge/b2b/pay] patchCustomerAddress:", (addrErr as Error).message);
+    }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
 
