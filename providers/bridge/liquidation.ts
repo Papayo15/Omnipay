@@ -16,6 +16,7 @@
 
 import { bridgeRequest } from "./client";
 import { createExternalAccount } from "./external-accounts";
+import { patchCustomerAddress } from "./customers";
 
 // Countries with native payment rails on Bridge.
 // All other countries → not supported on this platform.
@@ -331,7 +332,7 @@ export async function ensureExternalAccount(params: CreateLiquidationParams): Pr
     if (!extAcct?.id) throw new Error(`Bridge returned external account without id: ${JSON.stringify(extAcct)}`);
     return extAcct.id;
   } catch (e) {
-    const bridgeErr = e as Error & { type?: string; message?: string; details?: Record<string, unknown> };
+    const bridgeErr = e as Error & { type?: string; message?: string; code?: string; details?: Record<string, unknown> };
     if (bridgeErr.type === "duplicate_external_account" && bridgeErr.details?.id) {
       return bridgeErr.details.id as string;
     }
@@ -345,6 +346,23 @@ export async function ensureExternalAccount(params: CreateLiquidationParams): Pr
       );
       const first = list.data?.[0];
       if (first?.id) return first.id;
+    }
+    // Re-patch address and retry once if Bridge says address is missing
+    const isMissingAddr = bridgeErr.code === "missing_address_data"
+      || bridgeErr.message?.includes("missing_address_data")
+      || (bridgeErr.message?.toLowerCase().includes("missing") && bridgeErr.message?.toLowerCase().includes("address"));
+    if (isMissingAddr) {
+      try {
+        await patchCustomerAddress(params.customerId, params.country, false, params.ownerType ?? "individual");
+      } catch { /* best-effort */ }
+      await new Promise(r => setTimeout(r, 1500));
+      const retryAcct = await createExternalAccount(
+        params.customerId,
+        extAcctBody,
+        `pre-ext-${params.customerId}-${country}-${identKey}-${day}-r2`,
+      );
+      if (!retryAcct?.id) throw new Error(`Bridge retry returned external account without id`);
+      return retryAcct.id;
     }
     throw e;
   }
@@ -398,12 +416,22 @@ export async function createLiquidationAddress(
   try {
     extAcctId = await tryCreateExternalAccount("");
   } catch (e) {
-    const bridgeErr = e as Error & { type?: string; message?: string };
-    // Bridge requires customer address before external account creation.
-    // If the address was cleared by sandbox simulate_kyc_approval, retry after a brief pause.
-    if (bridgeErr.message?.includes("missing") && bridgeErr.message?.includes("address")) {
-      await new Promise(r => setTimeout(r, 500));
-      // Rotate the idempotency key suffix so Bridge doesn't reject as duplicate
+    const bridgeErr = e as Error & { type?: string; message?: string; code?: string };
+    const isMissingAddr = bridgeErr.code === "missing_address_data"
+      || bridgeErr.message?.includes("missing_address_data")
+      || (bridgeErr.message?.toLowerCase().includes("missing") && bridgeErr.message?.toLowerCase().includes("address"));
+    if (isMissingAddr) {
+      // Re-patch the customer address — Bridge's simulate_kyc_approval may have cleared it.
+      // Then rotate the idempotency key and retry.
+      try {
+        await patchCustomerAddress(
+          params.customerId,
+          params.country,
+          false,
+          params.ownerType ?? "individual",
+        );
+      } catch { /* best-effort — proceed to retry regardless */ }
+      await new Promise(r => setTimeout(r, 1500));
       extAcctId = await tryCreateExternalAccount("-r2");
     } else {
       throw e;
