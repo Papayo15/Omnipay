@@ -252,7 +252,11 @@
     "receive_p2p_cta": "Generar link →",
     "receive_b2b_title": "Wire Empresarial",
     "receive_b2b_sub": "ACH · SEPA · Wire · 1-2 días hábiles",
-    "receive_b2b_cta": "Wire empresarial →"
+    "receive_b2b_cta": "Wire empresarial →",
+    "b2b_mode_card": "Tarjeta",
+    "b2b_mode_wire": "Wire",
+    "send_b2b_card_desc": "Paga con tarjeta de crédito o débito · Stripe + Wise · 4-5 días hábiles",
+    "send_b2b_wire_desc": "Deposita vía wire transfer · Bridge · 1-2 días hábiles"
   },
   "p2p": {
     "page_title": "Envíos",

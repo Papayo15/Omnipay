@@ -252,7 +252,11 @@
     "receive_p2p_cta": "إنشاء رابط →",
     "receive_b2b_title": "تحويل تجاري",
     "receive_b2b_sub": "ACH · SEPA · Wire · 1-2 يوم عمل",
-    "receive_b2b_cta": "تحويل تجاري →"
+    "receive_b2b_cta": "تحويل تجاري →",
+    "b2b_mode_card": "Card",
+    "b2b_mode_wire": "Wire",
+    "send_b2b_card_desc": "Pay by credit or debit card · Stripe + Wise · 4-5 business days",
+    "send_b2b_wire_desc": "Deposit via wire transfer · Bridge · 1-2 business days"
   },
   "p2p": {
     "page_title": "تحويلات",
