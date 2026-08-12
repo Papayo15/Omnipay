@@ -59,6 +59,8 @@ interface RatePreview {
   recipient_gets:  number;
   amount_to_pay:   number;
   rate:            number | null;
+  sender_name?:    string | null;
+  sender_email?:   string | null;
 }
 
 // Bitso MXN (Canal 4) enabled when env var is set. Shows MXN via SPEI deposit to Bitso CLABE.
@@ -164,7 +166,14 @@ export default function PagarPage() {
     setRateLoading(true);
     fetch(`/api/bridge/rate?token=${encodeURIComponent(token)}&currency=${currency}`)
       .then((r) => r.json())
-      .then((d: RatePreview) => { if (!cancelled) setRatePreview(d); })
+      .then((d: RatePreview) => {
+        if (!cancelled) {
+          setRatePreview(d);
+          // Pre-fill sender data if token came from invite/complete flow
+          if (d.sender_name  && !name)  setName(d.sender_name);
+          if (d.sender_email && !email) setEmail(d.sender_email);
+        }
+      })
       .catch(() => {})
       .finally(() => { if (!cancelled) setRateLoading(false); });
     return () => { cancelled = true; };

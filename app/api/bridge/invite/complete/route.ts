@@ -130,7 +130,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       customer_id:      customer.id,
       nombre, email, country, target_currency: targetCurrency,
       amount_target, receive_method: "bank",
-      recipient_phone,
+      recipient_phone, sender_name, sender_email,
     });
     const metaToken = await encryptPayload({
       account: meta, receiveMode: "bank",

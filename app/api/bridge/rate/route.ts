@@ -21,7 +21,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   if (!token)                        return NextResponse.json({ error: "token required" }, { status: 400 });
   if (!SUPPORTED.includes(currency)) return NextResponse.json({ error: "currency must be usd|eur|gbp|mxn|brl" }, { status: 400 });
 
-  let meta: { amount_target: number; target_currency: string; country: string };
+  let meta: { amount_target: number; target_currency: string; country: string; sender_name?: string; sender_email?: string };
   try {
     const decrypted = await decryptPayload(token);
     meta = JSON.parse(decrypted.account);
@@ -71,6 +71,8 @@ export async function GET(req: NextRequest): Promise<Response> {
     recipient_gets:  meta.amount_target,
     amount_to_pay:   amountToPayInSrc,
     rate,
+    sender_name:     meta.sender_name  ?? null,
+    sender_email:    meta.sender_email ?? null,
     note: "Preview rate — final amount confirmed at payment time using same formula",
   });
 }
