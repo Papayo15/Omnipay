@@ -231,17 +231,23 @@ export const RAIL_ENDORSEMENT: Record<string, string> = {
 // Create KYC link with endorsements — Bridge API uses `endorsements` (array).
 // Must be called BEFORE simulate_kyc_approval for sandbox endorsements to work.
 // Always include "base"; add rail-specific endorsement alongside it.
+// For business customers Bridge expects `business_name` not `full_name`.
 export async function createKycLink(params: {
-  full_name:     string;
-  email:         string;
-  type:          "individual" | "business";
-  endorsements?: string[];  // e.g. ["base", "sepa"] — Bridge requires array
-  redirect_uri?: string;    // URL Bridge redirects the user to after KYC is complete
+  full_name:      string;
+  email:          string;
+  type:           "individual" | "business";
+  endorsements?:  string[];  // e.g. ["base", "sepa"] — Bridge requires array
+  redirect_uri?:  string;    // URL Bridge redirects the user to after KYC is complete
 }): Promise<BridgeKycLink> {
   const endStr   = (params.endorsements ?? ["base"]).join("-");
   // Include type: individual vs business KYC links have different bodies
   const idempKey = `kyc-link-${params.type}-${params.email.toLowerCase()}-${endStr}-${Math.floor(Date.now() / 3_600_000)}`;
-  return bridgeRequest<BridgeKycLink>("POST", "/kyc_links", params, idempKey);
+  // Bridge business KYC links use business_name, individual links use full_name
+  const { full_name, ...rest } = params;
+  const body = params.type === "business"
+    ? { ...rest, business_name: full_name }
+    : { ...rest, full_name };
+  return bridgeRequest<BridgeKycLink>("POST", "/kyc_links", body, idempKey);
 }
 
 // Get existing KYC link for an already-created customer

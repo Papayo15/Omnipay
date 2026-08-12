@@ -109,9 +109,20 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch { /* duplicate_record = already pending */ }
       try { await simulateKycApproval(senderCustomer.id); } catch { /* may already be approved */ }
 
-      const verified = await getCustomer(senderCustomer.id);
-      const isActive = verified.status === "active" || verified.kyb_status === "approved";
-      if (!isActive) {
+      // Poll up to 6 s — Bridge may take a moment to mark the business customer active
+      let kybActive = false;
+      for (let i = 0; i < 6; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        try {
+          const verified = await getCustomer(senderCustomer.id);
+          kybActive = verified.status === "active" || verified.kyb_status === "approved";
+          if (kybActive) break;
+          if (i === 2) {
+            try { await simulateKycApproval(senderCustomer.id); } catch { /* retry */ }
+          }
+        } catch { break; }
+      }
+      if (!kybActive) {
         return NextResponse.json({
           error: "La empresa emisora no pudo activarse en Bridge sandbox.",
           bridge_type: "kyb_not_active",
