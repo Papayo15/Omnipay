@@ -158,7 +158,7 @@ export async function GET(req: NextRequest): Promise<Response> {
       try { await ensureEndorsements(senderCustomer.id, endorsements); } catch { /* ignore */ }
       try { await createKycLink({ full_name: senderName, email: senderEmail, type: "individual", endorsements }); } catch { /* dup ok */ }
       try { await simulateKycApproval(senderCustomer.id); } catch { /* already approved ok */ }
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 3000)); // Bridge sandbox needs ~3s to propagate KYC
     } else if (senderNeedsKyc) {
       // Production: sender needs KYC — return kyc_url so /enviar can show the link
       let kycUrl: string | null = getKycUrlFromCustomer(senderCustomer);
@@ -183,6 +183,12 @@ export async function GET(req: NextRequest): Promise<Response> {
 
     // 4. Create VA for emisor — retry once on endorsement error
     const targetCurrency = getTargetCurrency(country);
+    console.log("[invite/status] creating VA", {
+      customerId: senderCustomer.id,
+      destinationAddress: liqAddr.address,
+      sourceCurrency: senderCurrency,
+      liqAddrId: liqAddr.id,
+    });
     let va;
     try {
       va = await createVirtualAccount({
@@ -195,6 +201,8 @@ export async function GET(req: NextRequest): Promise<Response> {
         developerReference:  `liq-${liqAddr.id}`,
       });
     } catch (e2) {
+      const e2err = e2 as Error & { details?: unknown };
+      console.error("[invite/status] VA creation failed:", e2err.message, JSON.stringify(e2err.details ?? {}));
       if (!isEndorsementErr(e2)) throw e2;
       await new Promise(r => setTimeout(r, 2000));
       try { await ensureEndorsements(senderCustomer.id, endorsements); } catch { /* ignore */ }
@@ -254,8 +262,12 @@ export async function GET(req: NextRequest): Promise<Response> {
       recipient_name:  recipientName,
     });
   } catch (e) {
-    const err = e as Error & { status?: number };
-    console.error("[invite/status]", err.message);
-    return NextResponse.json({ ready: false, reason: "error", error: err.message }, { status: err.status ?? 500 });
+    const err = e as Error & { status?: number; details?: unknown };
+    const detail = err.details ? JSON.stringify(err.details) : "";
+    console.error("[invite/status] ERROR:", err.message, detail);
+    return NextResponse.json({
+      ready: false, reason: "error",
+      error: err.message + (detail ? ` — ${detail}` : ""),
+    }, { status: err.status ?? 500 });
   }
 }
