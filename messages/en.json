@@ -708,7 +708,10 @@
     "receipt_ref": "Reference",
     "receipt_date": "Date & time",
     "receipt_status_complete": "✓ Transfer completed",
-    "receipt_copy": "Copy receipt"
+    "receipt_copy": "Copy receipt",
+    "whatsapp_hint_optional": "Optional · With country code (e.g. +1 555 123 4567)",
+    "share_any_channel": "Copy the link and share it via SMS, email, Telegram, or any channel",
+    "share_invite": "Share verification link"
   },
   "recibir": {
     "loading": "Verifying your invitation...",

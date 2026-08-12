@@ -708,7 +708,10 @@
     "receipt_ref": "参照番号",
     "receipt_date": "日時",
     "receipt_status_complete": "✓ 送金完了",
-    "receipt_copy": "領収書をコピー"
+    "receipt_copy": "領収書をコピー",
+    "whatsapp_hint_optional": "任意 · 国番号を含めてください（例：+81 90 1234 5678）",
+    "share_any_channel": "リンクをコピーして、SMS・メール・Telegram・その他どんな手段でも共有できます",
+    "share_invite": "確認リンクを共有"
   },
   "recibir": {
     "loading": "招待を確認中...",

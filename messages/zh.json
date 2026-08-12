@@ -708,7 +708,10 @@
     "receipt_ref": "参考号",
     "receipt_date": "日期和时间",
     "receipt_status_complete": "✓ 转账完成",
-    "receipt_copy": "复制收据"
+    "receipt_copy": "复制收据",
+    "whatsapp_hint_optional": "可选 · 含国家代码（例：+86 138 1234 5678）",
+    "share_any_channel": "复制链接，通过短信、电子邮件、Telegram 或任何渠道分享",
+    "share_invite": "分享验证链接"
   },
   "recibir": {
     "loading": "正在验证邀请...",

@@ -686,7 +686,10 @@
     "receipt_ref": "Referencia",
     "receipt_date": "Fecha y hora",
     "receipt_status_complete": "✓ Transferencia completada",
-    "receipt_copy": "Copiar comprobante"
+    "receipt_copy": "Copiar comprobante",
+    "whatsapp_hint_optional": "Opcional · Con código de país (ej: +52 55 1234 5678)",
+    "share_any_channel": "Copia el link y compártelo por SMS, correo, Telegram o como prefieras",
+    "share_invite": "Compartir link de verificación"
   },
   "recibir": {
     "loading": "Verificando tu invitación...",

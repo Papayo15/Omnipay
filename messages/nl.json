@@ -708,7 +708,10 @@
     "receipt_ref": "Referentie",
     "receipt_date": "Datum en tijd",
     "receipt_status_complete": "✓ Overboeking voltooid",
-    "receipt_copy": "Bewijs kopiëren"
+    "receipt_copy": "Bewijs kopiëren",
+    "whatsapp_hint_optional": "Optioneel · Met landcode (bijv. +31 6 12345678)",
+    "share_any_channel": "Kopieer de link en deel hem via SMS, e-mail, Telegram of een ander kanaal",
+    "share_invite": "Verificatielink delen"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",

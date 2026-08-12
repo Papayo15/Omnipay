@@ -708,7 +708,10 @@
     "receipt_ref": "참조 번호",
     "receipt_date": "날짜 및 시간",
     "receipt_status_complete": "✓ 이체 완료",
-    "receipt_copy": "영수증 복사"
+    "receipt_copy": "영수증 복사",
+    "whatsapp_hint_optional": "선택 사항 · 국가 코드 포함 (예: +82 10 1234 5678)",
+    "share_any_channel": "링크를 복사하여 SMS, 이메일, Telegram 또는 원하는 채널로 공유하세요",
+    "share_invite": "확인 링크 공유"
   },
   "recibir": {
     "loading": "초대장 확인 중...",

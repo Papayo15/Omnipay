@@ -708,7 +708,10 @@
     "receipt_ref": "ማጣቀሻ",
     "receipt_date": "ቀን እና ሰዓት",
     "receipt_status_complete": "✓ ዝውውሩ ተጠናቅቋል",
-    "receipt_copy": "영수증 ቅዳ"
+    "receipt_copy": "영수증 ቅዳ",
+    "whatsapp_hint_optional": "አማራጭ · የሀገር ኮድ ጨምሮ (ምሳሌ: +251 91 234 5678)",
+    "share_any_channel": "ሊንኩን ቅዳ እና በSMS፣ ኢሜይል፣ Telegram ወይም ሌላ ማናቸውም ቻናል አጋራ",
+    "share_invite": "የማረጋገጫ ሊንኩን አጋራ"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",

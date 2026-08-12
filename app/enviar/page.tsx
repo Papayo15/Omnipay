@@ -310,7 +310,7 @@ export default function EnviarPage() {
                 onChange={e => setRecipientPhone(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60"
               />
-              <p className="text-slate-500 text-[10px] -mt-1 px-1">{t("whatsapp_hint")}</p>
+              <p className="text-slate-500 text-[10px] -mt-1 px-1">{t("whatsapp_hint_optional")}</p>
 
               <select
                 value={recipientCountry}
@@ -361,7 +361,7 @@ export default function EnviarPage() {
 
             <button
               onClick={handleSubmit}
-              disabled={!senderName || !senderEmail || !recipientName || !recipientEmail || !recipientPhone || !accountField || !amountTarget}
+              disabled={!senderName || !senderEmail || !recipientName || !recipientEmail || !accountField || !amountTarget}
               className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
             >
               <Send className="w-4 h-4" />
@@ -394,27 +394,53 @@ export default function EnviarPage() {
               )}
             </div>
 
-            {/* Botón WhatsApp al receptor */}
-            {waLink && (
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#20ba58] text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
-              >
-                {WA_SVG}
-                {t("send_whatsapp")}
-              </a>
-            )}
-
+            {/* Compartir el link con el receptor */}
             {inviteUrl && (
-              <button
-                onClick={() => copyText(inviteUrl, "invite")}
-                className="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-3 rounded-xl transition-all text-sm"
-              >
-                {copied === "invite" ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                {copied === "invite" ? t("copied") : t("copy_link")}
-              </button>
+              <div className="space-y-2">
+                {/* Botón principal: WhatsApp directo si hay teléfono, Web Share si no */}
+                {waLink && recipientPhone ? (
+                  <a
+                    href={waLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#20ba58] text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
+                  >
+                    {WA_SVG}
+                    {t("send_whatsapp")}
+                  </a>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      const shareData = {
+                        title: "OmniPay — Verificación de identidad",
+                        text: `Hola ${recipientName} 👋, necesitas verificar tu identidad para recibir tu dinero (2 min):`,
+                        url: inviteUrl,
+                      };
+                      if (typeof navigator !== "undefined" && "share" in navigator && navigator.canShare?.(shareData)) {
+                        try { await navigator.share(shareData); } catch { /* user cancelled */ }
+                      } else {
+                        copyText(inviteUrl, "invite");
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 w-full bg-[#00C9C8] hover:bg-[#00b5b4] text-slate-900 font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                    </svg>
+                    {t("share_invite")}
+                  </button>
+                )}
+
+                {/* Siempre: también opción de copiar el link */}
+                <button
+                  onClick={() => copyText(inviteUrl, "invite")}
+                  className="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-3 rounded-xl transition-all text-sm"
+                >
+                  {copied === "invite" ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  {copied === "invite" ? t("copied") : t("copy_link")}
+                </button>
+              </div>
             )}
 
             {/* Polling indicator */}

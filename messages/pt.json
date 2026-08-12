@@ -708,7 +708,10 @@
     "receipt_ref": "Referência",
     "receipt_date": "Data e hora",
     "receipt_status_complete": "✓ Transferência concluída",
-    "receipt_copy": "Copiar comprovante"
+    "receipt_copy": "Copiar comprovante",
+    "whatsapp_hint_optional": "Opcional · Com código do país (ex: +55 11 91234-5678)",
+    "share_any_channel": "Copie o link e compartilhe por SMS, e-mail, Telegram ou qualquer canal",
+    "share_invite": "Compartilhar link de verificação"
   },
   "recibir": {
     "loading": "Verificando seu convite...",

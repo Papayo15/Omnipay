@@ -708,7 +708,10 @@
     "receipt_ref": "संदर्भ",
     "receipt_date": "तारीख और समय",
     "receipt_status_complete": "✓ ट्रांसफर पूरा",
-    "receipt_copy": "रसीद कॉपी करें"
+    "receipt_copy": "रसीद कॉपी करें",
+    "whatsapp_hint_optional": "वैकल्पिक · देश कोड के साथ (जैसे: +91 98765 43210)",
+    "share_any_channel": "लिंक कॉपी करें और SMS, ईमेल, टेलीग्राम या किसी भी चैनल से साझा करें",
+    "share_invite": "सत्यापन लिंक साझा करें"
   },
   "recibir": {
     "loading": "आपका आमंत्रण सत्यापित हो रहा है...",

@@ -708,7 +708,10 @@
     "receipt_ref": "Referensi",
     "receipt_date": "Tanggal dan waktu",
     "receipt_status_complete": "✓ Transfer selesai",
-    "receipt_copy": "Salin bukti"
+    "receipt_copy": "Salin bukti",
+    "whatsapp_hint_optional": "Opsional · Dengan kode negara (misal: +62 812 3456 7890)",
+    "share_any_channel": "Salin tautan dan bagikan melalui SMS, email, Telegram, atau saluran apa pun",
+    "share_invite": "Bagikan tautan verifikasi"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",

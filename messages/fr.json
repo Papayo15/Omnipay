@@ -708,7 +708,10 @@
     "receipt_ref": "Référence",
     "receipt_date": "Date et heure",
     "receipt_status_complete": "✓ Virement effectué",
-    "receipt_copy": "Copier le reçu"
+    "receipt_copy": "Copier le reçu",
+    "whatsapp_hint_optional": "Optionnel · Avec indicatif pays (ex : +33 6 12 34 56 78)",
+    "share_any_channel": "Copiez le lien et partagez-le par SMS, e-mail, Telegram ou autre",
+    "share_invite": "Partager le lien de vérification"
   },
   "recibir": {
     "loading": "Vérification de votre invitation...",

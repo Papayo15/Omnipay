@@ -708,7 +708,10 @@
     "receipt_ref": "Kumbukumbu",
     "receipt_date": "Tarehe na wakati",
     "receipt_status_complete": "✓ Uhamisho umekamilika",
-    "receipt_copy": "Nakili risiti"
+    "receipt_copy": "Nakili risiti",
+    "whatsapp_hint_optional": "Hiari · Na msimbo wa nchi (mfano: +254 712 345 678)",
+    "share_any_channel": "Nakili kiungo na ushiriki kupitia SMS, barua pepe, Telegram, au njia yoyote",
+    "share_invite": "Shiriki kiungo cha uthibitishaji"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",

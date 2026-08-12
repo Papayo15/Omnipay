@@ -708,7 +708,10 @@
     "receipt_ref": "Referenz",
     "receipt_date": "Datum und Uhrzeit",
     "receipt_status_complete": "✓ Überweisung abgeschlossen",
-    "receipt_copy": "Beleg kopieren"
+    "receipt_copy": "Beleg kopieren",
+    "whatsapp_hint_optional": "Optional · Mit Ländervorwahl (z.B. +49 151 12345678)",
+    "share_any_channel": "Kopieren Sie den Link und teilen Sie ihn per SMS, E-Mail, Telegram oder einem anderen Kanal",
+    "share_invite": "Bestätigungslink teilen"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",

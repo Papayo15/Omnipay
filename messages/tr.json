@@ -708,7 +708,10 @@
     "receipt_ref": "Referans",
     "receipt_date": "Tarih ve saat",
     "receipt_status_complete": "✓ Transfer tamamlandı",
-    "receipt_copy": "Makbuzu kopyala"
+    "receipt_copy": "Makbuzu kopyala",
+    "whatsapp_hint_optional": "İsteğe bağlı · Ülke koduyla (örn: +90 532 123 45 67)",
+    "share_any_channel": "Bağlantıyı kopyalayın ve SMS, e-posta, Telegram veya istediğiniz bir kanal aracılığıyla paylaşın",
+    "share_invite": "Doğrulama bağlantısını paylaş"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",

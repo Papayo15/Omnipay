@@ -708,7 +708,10 @@
     "receipt_ref": "Tham chiếu",
     "receipt_date": "Ngày và giờ",
     "receipt_status_complete": "✓ Chuyển tiền hoàn tất",
-    "receipt_copy": "Sao chép biên lai"
+    "receipt_copy": "Sao chép biên lai",
+    "whatsapp_hint_optional": "Tùy chọn · Kèm mã quốc gia (vd: +84 98 765 4321)",
+    "share_any_channel": "Sao chép liên kết và chia sẻ qua SMS, email, Telegram hoặc bất kỳ kênh nào",
+    "share_invite": "Chia sẻ liên kết xác minh"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",

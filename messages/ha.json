@@ -708,7 +708,10 @@
     "receipt_ref": "Bayani",
     "receipt_date": "Kwanan wata da lokaci",
     "receipt_status_complete": "✓ An kammala canja",
-    "receipt_copy": "Kwafi rasit"
+    "receipt_copy": "Kwafi rasit",
+    "whatsapp_hint_optional": "Zaɓi · Tare da lambar ƙasa (misali: +234 801 234 5678)",
+    "share_any_channel": "Kwafi hanyar haɗi kuma raba ta SMS, imel, Telegram, ko kowane tashar",
+    "share_invite": "Raba hanyar haɗin tabbatarwa"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",

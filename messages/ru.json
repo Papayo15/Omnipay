@@ -708,7 +708,10 @@
     "receipt_ref": "Референс",
     "receipt_date": "Дата и время",
     "receipt_status_complete": "✓ Перевод выполнен",
-    "receipt_copy": "Копировать квитанцию"
+    "receipt_copy": "Копировать квитанцию",
+    "whatsapp_hint_optional": "Необязательно · С кодом страны (напр.: +7 900 123 45 67)",
+    "share_any_channel": "Скопируйте ссылку и поделитесь ею через SMS, email, Telegram или любой другой канал",
+    "share_invite": "Поделиться ссылкой для верификации"
   },
   "recibir": {
     "loading": "Проверка вашего приглашения...",
