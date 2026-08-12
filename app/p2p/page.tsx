@@ -91,6 +91,8 @@ interface CheckoutResponse {
   token:           string;
   needs_kyc:       boolean;
   kyc_url?:        string | null;
+  needs_tos?:      boolean;
+  tos_url?:        string | null;
   amount_target:   number;
   target_currency: string;
   country:         string;
@@ -154,7 +156,7 @@ export default function P2PPage() {
     const p       = new URLSearchParams(window.location.search);
     const amt     = p.get("amount");
     const cty     = p.get("country");
-    const kycDone = p.get("kyc_done") === "1";
+    const kycDone = p.get("kyc_done") === "1" || p.get("tos_done") === "1";
     if (amt && !isNaN(parseFloat(amt))) setAmountLocal(amt);
     if (cty && COUNTRY_OPTIONS.some(c => c.code === cty.toUpperCase())) {
       setCountry(cty.toUpperCase());
@@ -164,7 +166,7 @@ export default function P2PPage() {
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
         if (kycDone) {
-          // Auto-retry: Bridge redirected back with ?kyc_done=1
+          // Auto-retry: Bridge redirected back with ?kyc_done=1 or ?tos_done=1
           if (form.nombre)         setNombre(form.nombre);
           if (form.email)          setEmail(form.email);
           if (form.country)        setCountry(form.country);
@@ -329,8 +331,9 @@ export default function P2PPage() {
       });
       const data = await res.json() as CheckoutResponse & { error?: string; message?: string };
       if (res.status !== 202 && (!res.ok || data.error)) throw new Error(data.error ?? "Error");
-      if (data.needs_kyc || res.status === 202) {
-        if (data.kyc_url) setKycUrl(data.kyc_url);
+      if (data.needs_kyc || data.needs_tos || res.status === 202) {
+        if (data.kyc_url)  setKycUrl(data.kyc_url);
+        if (data.tos_url)  setKycUrl(data.tos_url); // reuse same button for ToS acceptance
         if (kycAutoRetryRef.current) {
           // Auto-retry after KYC still returns needs_kyc — KYC processing async on Bridge's side
           kycAutoRetryRef.current = false;

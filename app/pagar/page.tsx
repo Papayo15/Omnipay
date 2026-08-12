@@ -136,7 +136,7 @@ export default function PagarPage() {
     const p       = new URLSearchParams(window.location.search);
     const tok     = p.get("t");
     const type    = p.get("type");
-    const kycDone = p.get("kyc_done") === "1";
+    const kycDone = p.get("kyc_done") === "1" || p.get("tos_done") === "1";
     if (!tok || type !== "p2p") {
       window.location.href = "/";
       return;
@@ -147,7 +147,7 @@ export default function PagarPage() {
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
         if (kycDone) {
-          // Auto-retry: Bridge redirected back with ?kyc_done=1
+          // Auto-retry: Bridge redirected back with ?kyc_done=1 or ?tos_done=1
           if (form.name)     setName(form.name);
           if (form.email)    setEmail(form.email);
           if (form.currency) setCurrency(form.currency);
@@ -255,6 +255,12 @@ export default function PagarPage() {
             setStep("kyc_info");
           }
         } else {
+          // ToS required — save form so auto-retry works when user returns
+          try {
+            sessionStorage.setItem("omnipay_pagar_form", JSON.stringify({
+              name: name.trim(), email: email.toLowerCase().trim(), currency, phone: phone.trim(),
+            }));
+          } catch { /* ignore */ }
           setResult(data);
           setStep("instructions"); // ToS banner shown in instructions
         }

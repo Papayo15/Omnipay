@@ -135,7 +135,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           full_name:    sender_name,
           email:        sender_email.toLowerCase(),
           type:         "individual",
-          redirect_uri: `${appUrl}/pagar?t=${token}&tos_done=1`,
+          redirect_uri: `${appUrl}/pagar?t=${token}&type=p2p&tos_done=1`,
         });
         return NextResponse.json({
           needs_tos: true,
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyc && !skipKyc && !isSandbox) {
       // Include the token in the redirect so /pagar can auto-retry without re-filling the form
-      const kycRedirectUri = `${appUrl}/pagar?t=${token}&kyc_done=1`;
+      const kycRedirectUri = `${appUrl}/pagar?t=${token}&type=p2p&kyc_done=1`;
       let kycUrl: string | null = getKycUrlFromCustomer(senderCustomer);
       if (!kycUrl) {
         try {
