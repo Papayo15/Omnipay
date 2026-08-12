@@ -139,7 +139,9 @@ export async function POST(req: NextRequest): Promise<Response> {
         `Hola ${recipient_name}, ${sender_name} quiere enviarte dinero. ` +
         `Tu identidad ya está verificada. Comparte este link con ${sender_name} para que complete el envío: ${payLink}`
       );
-      const waPhone = recipient_phone.replace(/\D/g, "");
+      // Normalize MX legacy format: 5219XXXXXXXXXX → 529XXXXXXXXXX (Mexico dropped the "1" in Oct 2020)
+  let waPhone = recipient_phone.replace(/\D/g, "");
+  if (/^521\d{10}$/.test(waPhone)) waPhone = "52" + waPhone.slice(3);
       return NextResponse.json({
         status:       "ready",
         pay_link:     payLink,
@@ -210,7 +212,9 @@ export async function POST(req: NextRequest): Promise<Response> {
     `Solo necesitas verificar tu identidad una vez (2 min). ` +
     `Entra aquí: ${tosUrl ?? kycUrl ?? recibir}`
   );
-  const waPhone = recipient_phone.replace(/\D/g, "");
+  // Normalize MX legacy format: 5219XXXXXXXXXX → 529XXXXXXXXXX (Mexico dropped the "1" in Oct 2020)
+  let waPhone = recipient_phone.replace(/\D/g, "");
+  if (/^521\d{10}$/.test(waPhone)) waPhone = "52" + waPhone.slice(3);
 
   return NextResponse.json({
     status:       "invite_sent",
