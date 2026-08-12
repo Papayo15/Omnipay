@@ -99,9 +99,38 @@ export default function Home() {
             </button>
           </div>
 
-          <p className="text-slate-500 text-[10px] leading-relaxed mb-4">
-            {b2bMode === "card" ? tl("send_b2b_card_desc") : tl("send_b2b_wire_desc")}
-          </p>
+          {/* Fee + tiempo según modo */}
+          {b2bMode === "card" ? (
+            <div className="bg-slate-900/50 rounded-xl p-3 mb-4 space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 text-[10px]">{tl("b2b_fee_label")}</span>
+                <span className="text-slate-300 text-[10px] font-mono">~4.4%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 text-[10px]">{tl("b2b_time_label")}</span>
+                <span className="text-amber-400 text-[10px] font-semibold">4–5 {tl("b2b_days")}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 text-[10px]">{tl("b2b_method_label")}</span>
+                <span className="text-slate-400 text-[10px]">Stripe + Wise</span>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-slate-900/50 rounded-xl p-3 mb-4 space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 text-[10px]">{tl("b2b_fee_label")}</span>
+                <span className="text-slate-300 text-[10px] font-mono">~1.5%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 text-[10px]">{tl("b2b_time_label")}</span>
+                <span className="text-emerald-400 text-[10px] font-semibold">{tl("b2b_time_instant")}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 text-[10px]">{tl("b2b_method_label")}</span>
+                <span className="text-slate-400 text-[10px]">Bridge</span>
+              </div>
+            </div>
+          )}
 
           <button
             onClick={() => router.push(b2bMode === "card" ? "/enviar-empresa" : "/enviar-empresa-wire")}

@@ -256,7 +256,12 @@
     "b2b_mode_card": "Tarjeta",
     "b2b_mode_wire": "Wire",
     "send_b2b_card_desc": "Paga con tarjeta de crédito o débito · Stripe + Wise · 4-5 días hábiles",
-    "send_b2b_wire_desc": "Deposita vía wire transfer · Bridge · 1-2 días hábiles"
+    "send_b2b_wire_desc": "Deposita vía wire transfer · Bridge · 1-2 días hábiles",
+    "b2b_fee_label": "Comisión estimada",
+    "b2b_time_label": "Tiempo de entrega",
+    "b2b_method_label": "Procesador",
+    "b2b_days": "días hábiles",
+    "b2b_time_instant": "Minutos – horas"
   },
   "p2p": {
     "page_title": "Envíos",
