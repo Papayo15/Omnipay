@@ -206,16 +206,19 @@ function buildExternalAccountBody(params: CreateLiquidationParams): Record<strin
     postal_code:   addr.postal_code,
     country:       iso3,
   };
+  const ownerType = params.ownerType ?? "individual";
   const nameParts = params.ownerName.trim().split(" ");
   const firstName = nameParts[0];
   const lastName  = nameParts.slice(1).join(" ") || "-";
-  const base = {
+  // Bridge rejects first_name/last_name for business external accounts
+  const base: Record<string, unknown> = {
     account_owner_name: params.ownerName,
-    account_owner_type: params.ownerType ?? "individual",
+    account_owner_type: ownerType,
     account_name:       params.ownerName,
-    first_name:         firstName,
-    last_name:          lastName,
     address,
+    ...(ownerType === "individual"
+      ? { first_name: firstName, last_name: lastName }
+      : {}),
   };
 
   const native = NATIVE_RAILS[country];

@@ -39,19 +39,24 @@ const ALPHA2_TO_ALPHA3: Record<string, string> = {
 };
 
 // Update customer with address + compliance fields via PUT.
-// In sandbox: also includes all required KYC compliance fields so that
-// simulate_kyc_approval can approve endorsements for ALL rails (base, sepa, spei, pix, fps, cop).
+// In sandbox: also includes KYC compliance fields so simulate_kyc_approval works.
+// customerType: "individual" | "business" — business customers must NOT receive
+// individual-only fields (source_of_funds, employment_status, etc.) or Bridge rejects.
 // country param is alpha-2 (e.g. "MX" or "DE").
-export async function patchCustomerAddress(customerId: string, country: string, includeComplianceFields = false): Promise<void> {
+export async function patchCustomerAddress(
+  customerId: string,
+  country: string,
+  includeComplianceFields = false,
+  customerType: "individual" | "business" = "individual",
+): Promise<void> {
   const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
   const iso3      = ALPHA2_TO_ALPHA3[country] ?? "USA";
   const addr      = ADDRESS_DEFAULTS[iso3] ?? ADDRESS_DEFAULTS["USA"];
 
   const update: Record<string, unknown> = { residential_address: addr };
 
-  if (isSandbox && includeComplianceFields) {
-    // Compliance fields needed ONLY during initial customer setup so simulate_kyc_approval works.
-    // Do NOT include these when patching an already-created customer — Bridge rejects the PUT.
+  if (isSandbox && includeComplianceFields && customerType === "individual") {
+    // Individual compliance fields — Bridge rejects these for business customers.
     const FAKE_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII=";
     update.account_purpose               = "payments_to_friends_or_family_abroad";
     update.source_of_funds               = "salary";

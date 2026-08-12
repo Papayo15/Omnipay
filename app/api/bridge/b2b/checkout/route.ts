@@ -80,7 +80,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
-    try { await patchCustomerAddress(customer.id, country_upper, isSandbox); } catch { /* best-effort */ }
+    try { await patchCustomerAddress(customer.id, country_upper, false, "business"); } catch { /* best-effort */ }
 
     const liqParams: CreateLiquidationParams = {
       customerId:    customer.id,
