@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Apakah klien Anda bisa transfer bank?",
-    "b2b_bridge_banner_body": "Gunakan Bridge Wire — 60% lebih murah dan tiba dalam 1-2 hari bukan 4-5 hari."
+    "b2b_bridge_banner_body": "Gunakan Bridge Wire — 60% lebih murah dan tiba dalam 1-2 hari bukan 4-5 hari.",
+    "done_timeline_title": "Status pembayaran",
+    "done_wise_processing": "Diproses melalui Wise",
+    "done_wise_sub": "Wise mengonversi dan mengirim ke bank tujuan",
+    "done_bank_sending": "Mengirim ke bank penerima"
   },
   "mx": {
     "page_title": "Kirim dari Meksiko",

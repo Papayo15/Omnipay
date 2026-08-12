@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Shin abokin cinikin ka na iya yin canja kudi?",
-    "b2b_bridge_banner_body": "Yi amfani da Bridge Wire — kashi 60% arha kuma ya isa cikin kwana 1-2 maimakon 4-5."
+    "b2b_bridge_banner_body": "Yi amfani da Bridge Wire — kashi 60% arha kuma ya isa cikin kwana 1-2 maimakon 4-5.",
+    "done_timeline_title": "Matsayin biyan kuɗi",
+    "done_wise_processing": "Ana sarrafa ta Wise",
+    "done_wise_sub": "Wise yana canza kuma yana aika zuwa bankin kai",
+    "done_bank_sending": "Ana aika zuwa bankin mai karba"
   },
   "mx": {
     "page_title": "Aika Daga Mexico",

@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Il tuo cliente può fare un bonifico?",
-    "b2b_bridge_banner_body": "Usa Bridge Wire — 60% più economico e arriva in 1-2 giorni invece di 4-5."
+    "b2b_bridge_banner_body": "Usa Bridge Wire — 60% più economico e arriva in 1-2 giorni invece di 4-5.",
+    "done_timeline_title": "Stato del pagamento",
+    "done_wise_processing": "Elaborazione tramite Wise",
+    "done_wise_sub": "Wise sta convertendo e inviando alla banca di destinazione",
+    "done_bank_sending": "Invio alla banca del destinatario"
   },
   "mx": {
     "page_title": "Invia dal Messico",

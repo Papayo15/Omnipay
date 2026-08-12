@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Kan je klant een overboeking doen?",
-    "b2b_bridge_banner_body": "Gebruik Bridge Wire — 60% goedkoper en aankomt in 1-2 dagen in plaats van 4-5."
+    "b2b_bridge_banner_body": "Gebruik Bridge Wire — 60% goedkoper en aankomt in 1-2 dagen in plaats van 4-5.",
+    "done_timeline_title": "Betalingsstatus",
+    "done_wise_processing": "Verwerking via Wise",
+    "done_wise_sub": "Wise converteert en stuurt naar de doelbank",
+    "done_bank_sending": "Verzenden naar de bank van de ontvanger"
   },
   "mx": {
     "page_title": "Versturen vanuit Mexico",

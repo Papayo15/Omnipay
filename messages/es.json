@@ -580,7 +580,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ ¿Tu cliente puede hacer wire transfer?",
-    "b2b_bridge_banner_body": "Usa Bridge Wire — 60% más barato y llega en 1-2 días en lugar de 4-5."
+    "b2b_bridge_banner_body": "Usa Bridge Wire — 60% más barato y llega en 1-2 días en lugar de 4-5.",
+    "done_timeline_title": "Estado del pago",
+    "done_wise_processing": "Procesando vía Wise",
+    "done_wise_sub": "Wise está convirtiendo y enviando al banco destino",
+    "done_bank_sending": "Enviando al banco receptor"
   },
   "mx": {
     "page_title": "Enviar desde México",

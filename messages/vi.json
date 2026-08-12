@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Khách hàng của bạn có thể chuyển khoản không?",
-    "b2b_bridge_banner_body": "Dùng Bridge Wire — rẻ hơn 60% và đến trong 1-2 ngày thay vì 4-5 ngày."
+    "b2b_bridge_banner_body": "Dùng Bridge Wire — rẻ hơn 60% và đến trong 1-2 ngày thay vì 4-5 ngày.",
+    "done_timeline_title": "Trạng thái thanh toán",
+    "done_wise_processing": "Đang xử lý qua Wise",
+    "done_wise_sub": "Wise đang chuyển đổi và gửi đến ngân hàng đích",
+    "done_bank_sending": "Đang gửi đến ngân hàng người nhận"
   },
   "mx": {
     "page_title": "Gửi từ Mexico",

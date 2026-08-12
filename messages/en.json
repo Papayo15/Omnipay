@@ -602,7 +602,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Can your client wire transfer?",
-    "b2b_bridge_banner_body": "Use Bridge Wire — 60% cheaper and arrives in 1-2 days instead of 4-5."
+    "b2b_bridge_banner_body": "Use Bridge Wire — 60% cheaper and arrives in 1-2 days instead of 4-5.",
+    "done_timeline_title": "Payment status",
+    "done_wise_processing": "Processing via Wise",
+    "done_wise_sub": "Wise is converting and sending to the destination bank",
+    "done_bank_sending": "Sending to recipient's bank"
   },
   "mx": {
     "page_title": "Send from Mexico",

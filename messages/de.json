@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Kann dein Kunde eine Überweisung machen?",
-    "b2b_bridge_banner_body": "Nutze Bridge Wire — 60% günstiger und in 1-2 Tagen statt 4-5."
+    "b2b_bridge_banner_body": "Nutze Bridge Wire — 60% günstiger und in 1-2 Tagen statt 4-5.",
+    "done_timeline_title": "Zahlungsstatus",
+    "done_wise_processing": "Verarbeitung über Wise",
+    "done_wise_sub": "Wise konvertiert und sendet an die Zielbank",
+    "done_bank_sending": "Senden an die Bank des Empfängers"
   },
   "mx": {
     "page_title": "Aus Mexiko senden",

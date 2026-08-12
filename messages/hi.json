@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ क्या आपका क्लाइंट वायर ट्रांसफर कर सकता है?",
-    "b2b_bridge_banner_body": "Bridge Wire का उपयोग करें — 60% सस्ता और 4-5 के बजाय 1-2 दिनों में पहुंचता है।"
+    "b2b_bridge_banner_body": "Bridge Wire का उपयोग करें — 60% सस्ता और 4-5 के बजाय 1-2 दिनों में पहुंचता है।",
+    "done_timeline_title": "भुगतान स्थिति",
+    "done_wise_processing": "Wise के माध्यम से प्रक्रिया",
+    "done_wise_sub": "Wise रूपांतरित करके गंतव्य बैंक को भेज रहा है",
+    "done_bank_sending": "प्राप्तकर्ता के बैंक को भेजा जा रहा है"
   },
   "mx": {
     "page_title": "मेक्सिको से भेजें",

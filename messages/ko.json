@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ 고객이 전신 송금을 할 수 있나요?",
-    "b2b_bridge_banner_body": "Bridge Wire 사용 — 60% 저렴하고 4-5일 대신 1-2일 이내에 도착합니다."
+    "b2b_bridge_banner_body": "Bridge Wire 사용 — 60% 저렴하고 4-5일 대신 1-2일 이내에 도착합니다.",
+    "done_timeline_title": "결제 상태",
+    "done_wise_processing": "Wise를 통해 처리 중",
+    "done_wise_sub": "Wise가 환전 후 수신 은행으로 전송 중",
+    "done_bank_sending": "수취인 은행으로 전송 중"
   },
   "mx": {
     "page_title": "멕시코에서 송금",

@@ -109,7 +109,8 @@ function CopyField({ label, value }: { label: string; value: string }) {
 const MIN_AMOUNT_USD = 20;
 
 export default function PagarPage() {
-  const t = useTranslations("pagar_bridge");
+  const t  = useTranslations("pagar_bridge");
+  const tE = useTranslations("enviar");
   const [token, setToken]             = useState<string | null>(null);
   const [step,  setStep]              = useState<Step>("form");
   const [name,  setName]              = useState("");
@@ -122,6 +123,8 @@ export default function PagarPage() {
   const [ratePreview, setRatePreview] = useState<RatePreview | null>(null);
   const [rateLoading, setRateLoading] = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
+  const [sandboxDone,      setSandboxDone]      = useState(false);
+  const [trackStep,        setTrackStep]        = useState(1);
   const [kycUrl,           setKycUrl]           = useState<string | null>(null);
   const [pendingKycRetry,  setPendingKycRetry]  = useState(false);
   const [kycStillPending,  setKycStillPending]  = useState(false);
@@ -199,7 +202,7 @@ export default function PagarPage() {
         setErrorMsg(d.error ?? "Sandbox advance failed");
         setStep("error");
       } else {
-        router.push(`/seguimiento?order_id=${result.order_id}`);
+        setSandboxDone(true);
       }
     } catch {
       setErrorMsg("Error al avanzar la orden en sandbox");
@@ -207,7 +210,7 @@ export default function PagarPage() {
     } finally {
       setSandboxAdvancing(false);
     }
-  }, [result, router]);
+  }, [result]);
 
   const handleSubmit = useCallback(async () => {
     if (!token || !name.trim() || !email.includes("@")) return;
@@ -289,6 +292,28 @@ export default function PagarPage() {
       setPendingKycRetry(true);
     } catch { /* ignore */ }
   }, []);
+
+  // Track: poll Bridge order status every 10s while instructions are open
+  useEffect(() => {
+    const orderId = result?.order_id;
+    if (step !== "instructions" || !orderId || sandboxDone) return;
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const poll = async () => {
+      if (!active) return;
+      try {
+        const res = await fetch(`/api/bridge/track?order_id=${encodeURIComponent(orderId)}`);
+        if (!res.ok || !active) return;
+        const d = await res.json() as { step?: number; status?: string };
+        if (!active) return;
+        if (typeof d.step === "number" && d.step > 0) setTrackStep(d.step);
+        if (d.status === "COMPLETED") { setSandboxDone(true); return; }
+      } catch { /* silent */ }
+      if (active) timer = setTimeout(poll, 10_000);
+    };
+    poll();
+    return () => { active = false; if (timer) clearTimeout(timer); };
+  }, [step, result?.order_id, sandboxDone]);
 
   function copyAll() {
     if (!result) return;
@@ -553,17 +578,103 @@ export default function PagarPage() {
           </div>
         </div>
 
-        {/* "Ya realicé la transferencia" button */}
-        <button
-          onClick={() => router.push(`/seguimiento?order_id=${result.order_id}`)}
-          className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2 mb-4"
-        >
-          <CheckCircle2 className="w-5 h-5" />
-          {t("confirm_sent")}
-        </button>
+        {/* Progress tracker — shown while transfer is pending */}
+        {!sandboxDone && (() => {
+          const steps = [tE("track_step1"), tE("track_step2"), tE("track_step3"), tE("track_step4")];
+          return (
+            <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 space-y-2.5 mb-4">
+              <p className="text-slate-400 text-[10px] font-medium uppercase tracking-widest mb-1">{tE("track_title")}</p>
+              {steps.map((label, i) => {
+                const s = i + 1;
+                const done   = trackStep > s;
+                const active = trackStep === s;
+                return (
+                  <div key={s} className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${done ? "bg-emerald-500" : active ? "bg-[#00C9C8]" : "bg-slate-700"}`}>
+                      {done ? (
+                        <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      ) : (
+                        <span className="text-[8px] font-bold text-white">{s}</span>
+                      )}
+                    </div>
+                    <span className={`text-xs transition-colors duration-300 ${done ? "text-emerald-400" : active ? "text-white font-medium" : "text-slate-500"}`}>
+                      {label}
+                      {active && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-[#00C9C8] animate-pulse align-middle" />}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
-        {/* Sandbox-only: skip waiting for real webhooks. Uses is_sandbox from API response, not client env var */}
-        {result.is_sandbox && (
+        {/* Inline receipt — shown when COMPLETED (sandbox advance or real webhook) */}
+        {sandboxDone && (
+          <div className="space-y-3 mb-4">
+            <div className="bg-slate-800/80 border border-emerald-500/40 rounded-2xl overflow-hidden">
+              <div className="bg-emerald-600/20 px-5 py-3 border-b border-emerald-500/20 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-400 font-semibold text-sm">{tE("receipt_title")}</span>
+              </div>
+              <div className="px-5 py-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{tE("receipt_to")}</span>
+                  <span className="text-white font-medium">{result.recipient.name}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{tE("receipt_country")}</span>
+                  <span className="text-white">{result.recipient.country}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{tE("receipt_amount")}</span>
+                  <span className="text-white font-mono font-bold">{result.fee_breakdown.recipient_gets}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{tE("receipt_ref")}</span>
+                  <span className="text-white font-mono text-xs">{result.order_id}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{tE("receipt_date")}</span>
+                  <span className="text-white text-xs">{new Date().toLocaleString()}</span>
+                </div>
+                <div className="pt-2 border-t border-slate-700">
+                  <p className="text-emerald-400 text-xs text-center font-medium">{tE("receipt_status_complete")}</p>
+                </div>
+              </div>
+            </div>
+            <p className="text-slate-500 text-[10px] text-center">✉️ {tE("receipt_emails_sent")}</p>
+            <button
+              onClick={async () => {
+                const shareUrl = `${window.location.origin}/seguimiento?order_id=${result.order_id}`;
+                const shareData = { title: "Comprobante OmniPay", text: `Comprobante de envío — ${result.fee_breakdown.recipient_gets}`, url: shareUrl };
+                if (typeof navigator !== "undefined" && "share" in navigator && navigator.canShare?.(shareData)) {
+                  try { await navigator.share(shareData); } catch { /* cancelled */ }
+                } else {
+                  navigator.clipboard.writeText(shareUrl).catch(() => {});
+                }
+              }}
+              className="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2.5 rounded-xl transition-all text-sm"
+            >
+              <Copy className="w-3 h-3" />{tE("receipt_share")}
+            </button>
+          </div>
+        )}
+
+        {/* "Ya realicé la transferencia" button — only while pending */}
+        {!sandboxDone && (
+          <button
+            onClick={() => router.push(`/seguimiento?order_id=${result.order_id}`)}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2 mb-4"
+          >
+            <CheckCircle2 className="w-5 h-5" />
+            {t("confirm_sent")}
+          </button>
+        )}
+
+        {/* Sandbox-only: skip waiting for real webhooks */}
+        {result.is_sandbox && !sandboxDone && (
           <button
             onClick={handleSandboxAdvance}
             disabled={sandboxAdvancing}

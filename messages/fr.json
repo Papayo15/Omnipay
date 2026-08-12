@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Ton client peut faire un virement ?",
-    "b2b_bridge_banner_body": "Utilise Bridge Wire — 60 % moins cher et livré en 1-2 jours au lieu de 4-5."
+    "b2b_bridge_banner_body": "Utilise Bridge Wire — 60 % moins cher et livré en 1-2 jours au lieu de 4-5.",
+    "done_timeline_title": "Statut du paiement",
+    "done_wise_processing": "Traitement via Wise",
+    "done_wise_sub": "Wise convertit et envoie à la banque destinataire",
+    "done_bank_sending": "Envoi à la banque du destinataire"
   },
   "mx": {
     "page_title": "Envoyer depuis le Mexique",

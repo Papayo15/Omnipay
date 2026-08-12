@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ هل يمكن لعميلك إجراء تحويل بنكي؟",
-    "b2b_bridge_banner_body": "استخدم Bridge Wire — أرخص بنسبة 60% ويصل خلال 1-2 يوم بدلاً من 4-5."
+    "b2b_bridge_banner_body": "استخدم Bridge Wire — أرخص بنسبة 60% ويصل خلال 1-2 يوم بدلاً من 4-5.",
+    "done_timeline_title": "حالة الدفع",
+    "done_wise_processing": "المعالجة عبر Wise",
+    "done_wise_sub": "تقوم Wise بالتحويل والإرسال إلى البنك المستهدف",
+    "done_bank_sending": "الإرسال إلى بنك المستلم"
   },
   "mx": {
     "page_title": "الإرسال من المكسيك",

@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ 您的客户可以电汇吗？",
-    "b2b_bridge_banner_body": "使用 Bridge Wire — 便宜 60%，1-2 天到账，而不是 4-5 天。"
+    "b2b_bridge_banner_body": "使用 Bridge Wire — 便宜 60%，1-2 天到账，而不是 4-5 天。",
+    "done_timeline_title": "付款状态",
+    "done_wise_processing": "通过 Wise 处理中",
+    "done_wise_sub": "Wise 正在转换并发送至目标银行",
+    "done_bank_sending": "发送至收款人银行"
   },
   "mx": {
     "page_title": "从墨西哥汇款",

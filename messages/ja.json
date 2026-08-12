@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ クライアントは電信送金できますか？",
-    "b2b_bridge_banner_body": "Bridge Wireを使用 — 60%安く、4〜5日ではなく1〜2日で届きます。"
+    "b2b_bridge_banner_body": "Bridge Wireを使用 — 60%安く、4〜5日ではなく1〜2日で届きます。",
+    "done_timeline_title": "支払いステータス",
+    "done_wise_processing": "Wiseで処理中",
+    "done_wise_sub": "Wiseが変換して送金先銀行に送信中",
+    "done_bank_sending": "受取人の銀行へ送金中"
   },
   "mx": {
     "page_title": "メキシコから送金",

@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Müşteriniz havale yapabilir mi?",
-    "b2b_bridge_banner_body": "Bridge Wire kullanın — %60 daha ucuz ve 4-5 yerine 1-2 günde ulaşır."
+    "b2b_bridge_banner_body": "Bridge Wire kullanın — %60 daha ucuz ve 4-5 yerine 1-2 günde ulaşır.",
+    "done_timeline_title": "Ödeme durumu",
+    "done_wise_processing": "Wise üzerinden işleniyor",
+    "done_wise_sub": "Wise dönüştürüyor ve hedef bankaya gönderiyor",
+    "done_bank_sending": "Alıcının bankasına gönderiliyor"
   },
   "mx": {
     "page_title": "Meksika'dan Gönder",

@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Ваш клиент может сделать банковский перевод?",
-    "b2b_bridge_banner_body": "Используйте Bridge Wire — на 60% дешевле и доставляется за 1-2 дня вместо 4-5."
+    "b2b_bridge_banner_body": "Используйте Bridge Wire — на 60% дешевле и доставляется за 1-2 дня вместо 4-5.",
+    "done_timeline_title": "Статус платежа",
+    "done_wise_processing": "Обработка через Wise",
+    "done_wise_sub": "Wise конвертирует и отправляет в банк назначения",
+    "done_bank_sending": "Отправка в банк получателя"
   },
   "mx": {
     "page_title": "Отправить из Мексики",

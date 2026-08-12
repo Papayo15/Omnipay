@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ ደንበኛዎ ዋየር ማስተላለፍ ይችላሉ?",
-    "b2b_bridge_banner_body": "Bridge Wire ይጠቀሙ — 60% ርካሽ እና በ4-5 ቀን ፋንታ በ1-2 ቀን ይደርሳል።"
+    "b2b_bridge_banner_body": "Bridge Wire ይጠቀሙ — 60% ርካሽ እና በ4-5 ቀን ፋንታ በ1-2 ቀን ይደርሳል።",
+    "done_timeline_title": "የክፍያ ሁኔታ",
+    "done_wise_processing": "በWise እየተካሄደ ነው",
+    "done_wise_sub": "Wise እየቀየረ ወደ ተቀባይ ባንክ እየላከ ነው",
+    "done_bank_sending": "ወደ ተቀባዩ ባንክ እየተላከ"
   },
   "mx": {
     "page_title": "ከሜክሲኮ ላክ",

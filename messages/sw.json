@@ -587,7 +587,11 @@
   },
   "b2b": {
     "b2b_bridge_banner_title": "⚡ Je, mteja wako anaweza kutuma wire transfer?",
-    "b2b_bridge_banner_body": "Tumia Bridge Wire — nafuu zaidi kwa 60% na inafika siku 1-2 badala ya 4-5."
+    "b2b_bridge_banner_body": "Tumia Bridge Wire — nafuu zaidi kwa 60% na inafika siku 1-2 badala ya 4-5.",
+    "done_timeline_title": "Hali ya malipo",
+    "done_wise_processing": "Inachakatwa kupitia Wise",
+    "done_wise_sub": "Wise inabadilisha na kutuma kwa benki ya lengwa",
+    "done_bank_sending": "Inatumwa kwa benki ya mpokeaji"
   },
   "mx": {
     "page_title": "Tuma kutoka Mexico",
