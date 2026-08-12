@@ -736,7 +736,11 @@
     "track_step1": "Menunggu setoran",
     "track_step2": "Memproses",
     "track_step3": "Mengirim ke penerima",
-    "track_step4": "Selesai"
+    "track_step4": "Selesai",
+    "step_datos": "Data",
+    "step_verificacion": "Verifikasi",
+    "step_deposito": "Setorkan",
+    "step_listo": "Selesai"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",

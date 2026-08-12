@@ -736,7 +736,11 @@
     "track_step1": "入金待ち",
     "track_step2": "処理中",
     "track_step3": "受取人へ送金中",
-    "track_step4": "完了"
+    "track_step4": "完了",
+    "step_datos": "データ",
+    "step_verificacion": "確認",
+    "step_deposito": "入金",
+    "step_listo": "完了"
   },
   "recibir": {
     "loading": "招待を確認中...",

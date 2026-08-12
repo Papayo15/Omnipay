@@ -736,7 +736,11 @@
     "track_step1": "Depozito bekleniyor",
     "track_step2": "İşleniyor",
     "track_step3": "Alıcıya gönderiliyor",
-    "track_step4": "Tamamlandı"
+    "track_step4": "Tamamlandı",
+    "step_datos": "Veriler",
+    "step_verificacion": "Doğrula",
+    "step_deposito": "Yatır",
+    "step_listo": "Tamam"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",

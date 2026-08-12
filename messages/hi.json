@@ -736,7 +736,11 @@
     "track_step1": "जमा की प्रतीक्षा",
     "track_step2": "प्रक्रिया में",
     "track_step3": "प्राप्तकर्ता को भेज रहा है",
-    "track_step4": "पूर्ण"
+    "track_step4": "पूर्ण",
+    "step_datos": "डेटा",
+    "step_verificacion": "सत्यापन",
+    "step_deposito": "जमा",
+    "step_listo": "तैयार"
   },
   "recibir": {
     "loading": "आपका आमंत्रण सत्यापित हो रहा है...",

@@ -736,7 +736,11 @@
     "track_step1": "In attesa di deposito",
     "track_step2": "Elaborazione",
     "track_step3": "Invio al destinatario",
-    "track_step4": "Completato"
+    "track_step4": "Completato",
+    "step_datos": "Dati",
+    "step_verificacion": "Verifica",
+    "step_deposito": "Deposita",
+    "step_listo": "Pronto"
   },
   "recibir": {
     "loading": "Verifica del tuo invito...",

@@ -736,7 +736,11 @@
     "track_step1": "Aguardando depósito",
     "track_step2": "Processando",
     "track_step3": "Enviando ao destinatário",
-    "track_step4": "Concluído"
+    "track_step4": "Concluído",
+    "step_datos": "Dados",
+    "step_verificacion": "Verificar",
+    "step_deposito": "Depositar",
+    "step_listo": "Pronto"
   },
   "recibir": {
     "loading": "Verificando seu convite...",

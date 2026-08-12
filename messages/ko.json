@@ -736,7 +736,11 @@
     "track_step1": "입금 대기 중",
     "track_step2": "처리 중",
     "track_step3": "수취인에게 전송 중",
-    "track_step4": "완료"
+    "track_step4": "완료",
+    "step_datos": "데이터",
+    "step_verificacion": "확인",
+    "step_deposito": "입금",
+    "step_listo": "완료"
   },
   "recibir": {
     "loading": "초대장 확인 중...",

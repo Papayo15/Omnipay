@@ -736,7 +736,11 @@
     "track_step1": "ተቀማጭ ገንዘብ ይጠበቃል",
     "track_step2": "በሂደት ላይ",
     "track_step3": "ለተቀባዩ እየተላከ",
-    "track_step4": "ተጠናቋል"
+    "track_step4": "ተጠናቋል",
+    "step_datos": "ዳታ",
+    "step_verificacion": "አረጋግጥ",
+    "step_deposito": "አስቀምጥ",
+    "step_listo": "ተጠናቀቀ"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",

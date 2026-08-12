@@ -736,7 +736,11 @@
     "track_step1": "في انتظار الإيداع",
     "track_step2": "قيد المعالجة",
     "track_step3": "إرسال إلى المستلم",
-    "track_step4": "مكتمل"
+    "track_step4": "مكتمل",
+    "step_datos": "البيانات",
+    "step_verificacion": "التحقق",
+    "step_deposito": "الإيداع",
+    "step_listo": "تم"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",

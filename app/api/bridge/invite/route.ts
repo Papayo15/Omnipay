@@ -147,9 +147,27 @@ export async function POST(req: NextRequest): Promise<Response> {
         if (/^521\d{10}$/.test(waPhone)) waPhone = "52" + waPhone.slice(3);
         waLinkReady = `https://wa.me/${waPhone}?text=${waText}`;
       }
+
+      // Generate invite token so /enviar can poll invite/status to build VA immediately.
+      // invite/status finds recipient active on first call → skips KYC wait → creates VA.
+      const exp = Date.now() + 72 * 60 * 60 * 1000;
+      const invitePayload: Record<string, unknown> = {
+        exp,
+        recipient_name, recipient_email: recipient_email.toLowerCase(),
+        recipient_country: country,
+        sender_name, sender_email: sender_email.toLowerCase(),
+        sender_currency,
+        amount_target,
+        clabe, iban, bic, pix_key,
+        routing_number, account_number, sort_code, bank_code, document_number,
+      };
+      const inviteToken = await encryptInvite(invitePayload);
+      const inviteUrl   = `${appUrl}/recibir?i=${inviteToken}`;
+
       return NextResponse.json({
         status:       "ready",
         pay_link:     payLink,
+        invite_url:   inviteUrl,
         wa_link:      waLinkReady,
         customer_id:  existing.id,
         liq_addr_id:  liqAddr.id,

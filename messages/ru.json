@@ -736,7 +736,11 @@
     "track_step1": "Ожидание депозита",
     "track_step2": "Обработка",
     "track_step3": "Отправка получателю",
-    "track_step4": "Завершено"
+    "track_step4": "Завершено",
+    "step_datos": "Данные",
+    "step_verificacion": "Проверка",
+    "step_deposito": "Депозит",
+    "step_listo": "Готово"
   },
   "recibir": {
     "loading": "Проверка вашего приглашения...",

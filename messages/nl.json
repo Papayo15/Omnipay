@@ -736,7 +736,11 @@
     "track_step1": "Wachten op storting",
     "track_step2": "Verwerking",
     "track_step3": "Verzenden naar ontvanger",
-    "track_step4": "Voltooid"
+    "track_step4": "Voltooid",
+    "step_datos": "Gegevens",
+    "step_verificacion": "Verifiëren",
+    "step_deposito": "Storten",
+    "step_listo": "Klaar"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",

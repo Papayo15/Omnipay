@@ -736,7 +736,11 @@
     "track_step1": "Đang chờ tiền gửi",
     "track_step2": "Đang xử lý",
     "track_step3": "Đang gửi cho người nhận",
-    "track_step4": "Hoàn thành"
+    "track_step4": "Hoàn thành",
+    "step_datos": "Dữ liệu",
+    "step_verificacion": "Xác minh",
+    "step_deposito": "Nộp tiền",
+    "step_listo": "Xong"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",

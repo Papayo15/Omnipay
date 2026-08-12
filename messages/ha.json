@@ -736,7 +736,11 @@
     "track_step1": "Jiran ajiya",
     "track_step2": "Ana sarrafa",
     "track_step3": "Ana aika wa mai karba",
-    "track_step4": "An kammala"
+    "track_step4": "An kammala",
+    "step_datos": "Bayanan",
+    "step_verificacion": "Tabbatar",
+    "step_deposito": "Saka",
+    "step_listo": "Kammala"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",

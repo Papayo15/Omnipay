@@ -268,7 +268,7 @@ export default function EnviarPage() {
       if (!res.ok || data.error) { setError(data.error ?? "Error desconocido"); setStep("error"); return; }
 
       if (data.status === "ready" && data.va) {
-        // Receptor ya verificado: mostrar instrucciones directamente
+        // Receptor ya verificado y VA ya preparado (raro — ruta rápida legacy)
         setVaInfo(data.va);
         setConfirmedAmount(data.amount_target ?? parseFloat(amountTarget));
         setTargetCurrency((data as Record<string, unknown>).target_currency as string ?? "MXN");
@@ -278,13 +278,14 @@ export default function EnviarPage() {
         return;
       }
 
-      // Receptor necesita KYC: iniciar polling
+      // Receptor activo (invite_url presente) o necesita KYC: iniciar polling
       const url = data.invite_url ?? "";
       const token = url ? new URL(url, "https://x.com").searchParams.get("i") ?? "" : "";
       setInviteToken(token);
       setWaLink(data.wa_link ?? "");
       setInviteUrl(url);
       setExpiresAt(data.expires_at ?? "");
+      // Si el receptor ya está activo, el primer poll de invite/status lo detecta y crea el VA
       setStep("waiting");
     } catch {
       setError("Error de conexión. Verifica tu internet.");
@@ -360,13 +361,55 @@ export default function EnviarPage() {
       <div className="w-full max-w-md">
 
         {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-6">
           <button onClick={() => router.back()} className="text-slate-400 hover:text-white transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <Zap className="w-5 h-5 text-[#00C9C8]" />
           <span className="text-white font-bold">OmniPay</span>
         </div>
+
+        {/* Macro step bar — visible desde el inicio */}
+        {step !== "error" && (
+          <div className="flex items-center mb-8">
+            {[
+              { key: "form",         label: t("step_datos") },
+              { key: "waiting",      label: t("step_verificacion") },
+              { key: "instructions", label: t("step_deposito") },
+              { key: "done",         label: t("step_listo") },
+            ].map(({ key, label }, i) => {
+              const done   = (key === "form"         && (step === "waiting" || step === "sender_kyc" || step === "instructions"))
+                          || (key === "waiting"      && step === "instructions")
+                          || (key === "instructions" && sandboxDone);
+              const active = (key === "form"         && (step === "form" || step === "sending"))
+                          || (key === "waiting"      && (step === "waiting" || step === "sender_kyc"))
+                          || (key === "instructions" && step === "instructions" && !sandboxDone)
+                          || (key === "done"         && sandboxDone);
+              return (
+                <div key={key} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
+                      done   ? "bg-emerald-500"
+                      : active ? "bg-[#00C9C8]"
+                      : "bg-slate-800 border border-slate-700"
+                    }`}>
+                      {done
+                        ? <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        : <span className={`text-[9px] font-bold ${active ? "text-slate-900" : "text-slate-500"}`}>{i + 1}</span>
+                      }
+                    </div>
+                    <span className={`text-[9px] font-medium leading-none whitespace-nowrap ${
+                      done ? "text-emerald-400" : active ? "text-white" : "text-slate-600"
+                    }`}>{label}</span>
+                  </div>
+                  {i < 3 && (
+                    <div className={`flex-1 h-px mx-1 mb-3.5 transition-all duration-500 ${done ? "bg-emerald-500" : "bg-slate-700"}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* FORM */}
         {step === "form" && (

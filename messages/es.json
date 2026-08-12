@@ -714,7 +714,11 @@
     "track_step1": "Esperando depósito",
     "track_step2": "Procesando",
     "track_step3": "Enviando al receptor",
-    "track_step4": "Completado"
+    "track_step4": "Completado",
+    "step_datos": "Datos",
+    "step_verificacion": "Verifica",
+    "step_deposito": "Deposita",
+    "step_listo": "Listo"
   },
   "recibir": {
     "loading": "Verificando tu invitación...",

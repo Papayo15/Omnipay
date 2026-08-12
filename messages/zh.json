@@ -736,7 +736,11 @@
     "track_step1": "等待存款",
     "track_step2": "处理中",
     "track_step3": "发送给收款人",
-    "track_step4": "已完成"
+    "track_step4": "已完成",
+    "step_datos": "数据",
+    "step_verificacion": "验证",
+    "step_deposito": "存款",
+    "step_listo": "完成"
   },
   "recibir": {
     "loading": "正在验证邀请...",

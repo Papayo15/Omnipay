@@ -736,7 +736,11 @@
     "track_step1": "Kusubiri amana",
     "track_step2": "Inachakatwa",
     "track_step3": "Inatumwa kwa mpokeaji",
-    "track_step4": "Imekamilika"
+    "track_step4": "Imekamilika",
+    "step_datos": "Data",
+    "step_verificacion": "Thibitisha",
+    "step_deposito": "Weka",
+    "step_listo": "Tayari"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",

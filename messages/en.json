@@ -736,7 +736,11 @@
     "track_step1": "Awaiting deposit",
     "track_step2": "Processing",
     "track_step3": "Sending to recipient",
-    "track_step4": "Completed"
+    "track_step4": "Completed",
+    "step_datos": "Data",
+    "step_verificacion": "Verify",
+    "step_deposito": "Deposit",
+    "step_listo": "Done"
   },
   "recibir": {
     "loading": "Verifying your invitation...",

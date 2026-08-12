@@ -736,7 +736,11 @@
     "track_step1": "Einzahlung ausstehend",
     "track_step2": "Verarbeitung",
     "track_step3": "Senden an Empfänger",
-    "track_step4": "Abgeschlossen"
+    "track_step4": "Abgeschlossen",
+    "step_datos": "Daten",
+    "step_verificacion": "Prüfen",
+    "step_deposito": "Einzahlen",
+    "step_listo": "Fertig"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",
