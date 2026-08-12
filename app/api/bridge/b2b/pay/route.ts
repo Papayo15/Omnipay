@@ -53,6 +53,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       liq_addr_address:  string;
       customer_id:       string;
       nombre:            string;
+      email?:            string;
       country:           string;
       target_currency:   string;
       amount_target:     number;
@@ -195,6 +196,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       destinationCountry: meta.country,
       targetCurrency:     meta.target_currency,
       recipientName:      meta.nombre,
+      recipientEmail:     meta.email,
       recipientAccount:   meta.liq_addr_id,
       payInProvider:      "bridge-va-b2b",
       payOutProvider:     "bridge-liq",
