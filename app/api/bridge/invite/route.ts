@@ -67,6 +67,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     sort_code, bank_code, document_number,
     sender_name, sender_email, amount_target,
   } = body;
+  const sender_currency = ((body as unknown as Record<string, unknown>).sender_currency as string | undefined) ?? "usd";
 
   if (!recipient_name || !recipient_email || !recipient_country || !amount_target) {
     return NextResponse.json(
@@ -175,7 +176,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     clabe, iban, bic, pix_key, routing_number, account_number,
     sort_code, bank_code, document_number,
     sender_name,
-    sender_email: sender_email.toLowerCase(),
+    sender_email:    sender_email.toLowerCase(),
+    sender_currency: sender_currency.toLowerCase(),
     amount_target,
   };
 

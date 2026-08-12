@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ Симулировать KYC получателя (sandbox)",
     "sandbox_recipient_simulated": "✓ KYC получателя симулирован · опрос обнаружит изменение",
     "va_recipient_gets": "Получатель получает",
-    "va_deposit_currency": "Валюта депозита"
+    "va_deposit_currency": "Валюта депозита",
+    "fee_calculating": "Расчёт комиссии...",
+    "fee_recipient_gets": "Получатель получает",
+    "fee_fx_rate": "Курс обмена",
+    "fee_bridge": "Bridge (конвертация)",
+    "fee_omnipay": "OmniPay (сервис)",
+    "fee_sender_deposits": "Отправитель вносит прибл.",
+    "fee_note": "Оценка · Курс подтверждается при обнаружении депозита",
+    "sender_currency_label": "В какой валюте отправитель внесёт средства?"
   },
   "recibir": {
     "loading": "Проверка вашего приглашения...",

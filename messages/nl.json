@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ KYC ontvanger simuleren (sandbox)",
     "sandbox_recipient_simulated": "✓ KYC ontvanger gesimuleerd · de verificatie detecteert de wijziging",
     "va_recipient_gets": "Ontvanger ontvangt",
-    "va_deposit_currency": "Stortingsvaluta"
+    "va_deposit_currency": "Stortingsvaluta",
+    "fee_calculating": "Tarief berekenen...",
+    "fee_recipient_gets": "Ontvanger ontvangt",
+    "fee_fx_rate": "Wisselkoers",
+    "fee_bridge": "Bridge (conversie)",
+    "fee_omnipay": "OmniPay (service)",
+    "fee_sender_deposits": "Afzender stort ca.",
+    "fee_note": "Schatting · Koers bevestigd bij stortingsdetectie",
+    "sender_currency_label": "In welke valuta zal de afzender storten?"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",

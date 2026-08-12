@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ Simula KYC destinatario (sandbox)",
     "sandbox_recipient_simulated": "✓ KYC destinatario simulato · la verifica rileverà il cambiamento",
     "va_recipient_gets": "Il destinatario riceve",
-    "va_deposit_currency": "Valuta di deposito"
+    "va_deposit_currency": "Valuta di deposito",
+    "fee_calculating": "Calcolo tariffa...",
+    "fee_recipient_gets": "Il destinatario riceve",
+    "fee_fx_rate": "Tasso di cambio",
+    "fee_bridge": "Bridge (conversione)",
+    "fee_omnipay": "OmniPay (servizio)",
+    "fee_sender_deposits": "Il mittente deposita ca.",
+    "fee_note": "Stima · Il tasso viene confermato al rilevamento del deposito",
+    "sender_currency_label": "In quale valuta depositerà il mittente?"
   },
   "recibir": {
     "loading": "Verifica del tuo invito...",

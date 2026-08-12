@@ -58,8 +58,9 @@ export default function EnviarPage() {
   const [copied, setCopied] = useState<string | null>(null);
 
   // Datos del emisor
-  const [senderName, setSenderName]   = useState("");
-  const [senderEmail, setSenderEmail] = useState("");
+  const [senderName, setSenderName]       = useState("");
+  const [senderEmail, setSenderEmail]     = useState("");
+  const [senderCurrency, setSenderCurrency] = useState("USD"); // moneda que deposita el emisor
 
   // Datos del receptor
   const [recipientName, setRecipientName]       = useState("");
@@ -81,6 +82,15 @@ export default function EnviarPage() {
   const [payToken, setPayToken]             = useState("");
   const [confirmedAmount, setConfirmedAmount] = useState(0);
   const [targetCurrency, setTargetCurrency]   = useState("MXN"); // moneda que recibe el receptor
+  // Fee quote (shown below amount field)
+  const [feeQuote, setFeeQuote] = useState<{
+    fx_rate: number; from_currency: string; target_currency: string;
+    recipient_gets: number; bridge_fee: number; omnipay_fee: number;
+    total_fee: number; sender_deposits: number;
+  } | null>(null);
+  const [feeLoading, setFeeLoading] = useState(false);
+  const feeDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [sandboxDone, setSandboxDone]             = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing]   = useState(false);
   const [sandboxSimulating, setSandboxSimulating] = useState(false);
@@ -120,6 +130,7 @@ export default function EnviarPage() {
     const base = {
       sender_name:       senderName.trim(),
       sender_email:      senderEmail.trim().toLowerCase(),
+      sender_currency:   senderCurrency.toLowerCase(),
       recipient_name:    recipientName.trim(),
       recipient_email:   recipientEmail.trim().toLowerCase(),
       recipient_phone:   recipientPhone.trim(),
@@ -130,7 +141,27 @@ export default function EnviarPage() {
     if (recipientCountry === "GB") return { ...base, sort_code: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
     if (isSepa) return { ...base, iban: accountField.trim(), bic: bicField.trim() };
     return { ...base, routing_number: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
-  }, [senderName, senderEmail, recipientName, recipientEmail, recipientPhone, recipientCountry, accountField, bicField, amountTarget, isSepa]);
+  }, [senderName, senderEmail, senderCurrency, recipientName, recipientEmail, recipientPhone, recipientCountry, accountField, bicField, amountTarget, isSepa]);
+
+  // Fee preview: debounce 600ms — fetch when amount/country/senderCurrency changes
+  useEffect(() => {
+    const val = parseFloat(amountTarget);
+    if (!val || val <= 0) { setFeeQuote(null); return; }
+    if (feeDebounce.current) clearTimeout(feeDebounce.current);
+    feeDebounce.current = setTimeout(async () => {
+      setFeeLoading(true);
+      try {
+        const qs = new URLSearchParams({
+          from: senderCurrency, to: currency, amount: String(val), country: recipientCountry,
+        });
+        const res = await fetch(`/api/bridge/fx-quote?${qs}`);
+        if (res.ok) setFeeQuote(await res.json());
+        else setFeeQuote(null);
+      } catch { setFeeQuote(null); }
+      finally { setFeeLoading(false); }
+    }, 600);
+    return () => { if (feeDebounce.current) clearTimeout(feeDebounce.current); };
+  }, [amountTarget, recipientCountry, currency, senderCurrency]);
 
   // Detect sandbox once when entering waiting step (ping sandbox advance; 403 = production)
   useEffect(() => {
@@ -346,6 +377,26 @@ export default function EnviarPage() {
                 onChange={e => setSenderEmail(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500/60"
               />
+              {/* Moneda de origen — en qué moneda depositará el emisor */}
+              <div>
+                <p className="text-slate-500 text-[10px] px-1 mb-1">{t("sender_currency_label")}</p>
+                <div className="flex gap-2">
+                  {(["USD","EUR","GBP"] as const).map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setSenderCurrency(c)}
+                      className={`flex-1 py-2 rounded-xl text-sm font-mono font-semibold border transition-all ${
+                        senderCurrency === c
+                          ? "bg-emerald-600 border-emerald-500 text-white"
+                          : "bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-500"
+                      }`}
+                    >
+                      {c === "USD" ? "🇺🇸 USD" : c === "EUR" ? "🇪🇺 EUR" : "🇬🇧 GBP"}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Datos del receptor */}
@@ -420,6 +471,51 @@ export default function EnviarPage() {
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-mono">{currency}</span>
               </div>
               <p className="text-slate-500 text-[10px] px-1">{t("amount_hint")}</p>
+
+              {/* Fee calculator */}
+              {feeLoading && (
+                <div className="flex items-center gap-2 text-slate-500 text-xs px-1">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  {t("fee_calculating")}
+                </div>
+              )}
+              {feeQuote && !feeLoading && (
+                <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-400">{t("fee_recipient_gets")}</span>
+                    <span className="text-emerald-400 font-mono font-semibold">
+                      {feeQuote.recipient_gets.toLocaleString()} {feeQuote.target_currency}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-400">{t("fee_fx_rate")}</span>
+                    <span className="text-slate-300 font-mono">
+                      1 {feeQuote.from_currency} = {feeQuote.fx_rate.toFixed(2)} {feeQuote.target_currency}
+                    </span>
+                  </div>
+                  <div className="border-t border-slate-700/50 pt-2 space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_bridge")}</span>
+                      <span className="text-slate-400 font-mono">
+                        {feeQuote.bridge_fee.toFixed(2)} {feeQuote.from_currency}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_omnipay")}</span>
+                      <span className="text-slate-400 font-mono">
+                        {feeQuote.omnipay_fee.toFixed(2)} {feeQuote.from_currency}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="border-t border-slate-700/50 pt-2 flex justify-between">
+                    <span className="text-slate-300 text-xs font-medium">{t("fee_sender_deposits")}</span>
+                    <span className="text-white font-bold font-mono text-sm">
+                      {feeQuote.sender_deposits.toFixed(2)} {feeQuote.from_currency}
+                    </span>
+                  </div>
+                  <p className="text-slate-600 text-[10px] leading-snug">{t("fee_note")}</p>
+                </div>
+              )}
             </div>
 
             <button

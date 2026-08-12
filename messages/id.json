@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ Simulasikan KYC penerima (sandbox)",
     "sandbox_recipient_simulated": "✓ KYC penerima disimulasikan · polling akan mendeteksi perubahan",
     "va_recipient_gets": "Penerima menerima",
-    "va_deposit_currency": "Mata uang setoran"
+    "va_deposit_currency": "Mata uang setoran",
+    "fee_calculating": "Menghitung biaya...",
+    "fee_recipient_gets": "Penerima mendapat",
+    "fee_fx_rate": "Nilai tukar",
+    "fee_bridge": "Bridge (konversi)",
+    "fee_omnipay": "OmniPay (layanan)",
+    "fee_sender_deposits": "Pengirim menyetor kira-kira",
+    "fee_note": "Perkiraan · Kurs dikonfirmasi saat deposit terdeteksi",
+    "sender_currency_label": "Dalam mata uang apa pengirim akan menyetor?"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",

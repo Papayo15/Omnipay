@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ Simula KYC ya mpokeaji (sandbox)",
     "sandbox_recipient_simulated": "✓ KYC ya mpokeaji imesimuliwa · uchunguzi utaona mabadiliko",
     "va_recipient_gets": "Mpokeaji anapokea",
-    "va_deposit_currency": "Sarafu ya amana"
+    "va_deposit_currency": "Sarafu ya amana",
+    "fee_calculating": "Inahesabu ada...",
+    "fee_recipient_gets": "Mpokeaji anapokea",
+    "fee_fx_rate": "Kiwango cha ubadilishaji",
+    "fee_bridge": "Bridge (ubadilishaji)",
+    "fee_omnipay": "OmniPay (huduma)",
+    "fee_sender_deposits": "Mtumaji anaweka takriban",
+    "fee_note": "Makadirio · Kiwango kinathibitishwa amana inapotambuliwa",
+    "sender_currency_label": "Mtumiaji ataingiza kwa sarafu gani?"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",

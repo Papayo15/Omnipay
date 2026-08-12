@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ Empfänger-KYC simulieren (Sandbox)",
     "sandbox_recipient_simulated": "✓ Empfänger-KYC simuliert · die Prüfung wird die Änderung erkennen",
     "va_recipient_gets": "Empfänger erhält",
-    "va_deposit_currency": "Einzahlungswährung"
+    "va_deposit_currency": "Einzahlungswährung",
+    "fee_calculating": "Gebühr wird berechnet...",
+    "fee_recipient_gets": "Empfänger erhält",
+    "fee_fx_rate": "Wechselkurs",
+    "fee_bridge": "Bridge (Umrechnung)",
+    "fee_omnipay": "OmniPay (Service)",
+    "fee_sender_deposits": "Absender zahlt ca.",
+    "fee_note": "Schätzung · Kurs wird bei Einzahlungserkennung bestätigt",
+    "sender_currency_label": "In welcher Währung zahlt der Absender ein?"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",

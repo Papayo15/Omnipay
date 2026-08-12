@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ Simulate recipient KYC (sandbox)",
     "sandbox_recipient_simulated": "✓ Recipient KYC simulated · polling will detect the change",
     "va_recipient_gets": "Recipient receives",
-    "va_deposit_currency": "Deposit currency"
+    "va_deposit_currency": "Deposit currency",
+    "fee_calculating": "Calculating fee...",
+    "fee_recipient_gets": "Recipient receives",
+    "fee_fx_rate": "Exchange rate",
+    "fee_bridge": "Bridge (conversion)",
+    "fee_omnipay": "OmniPay (service)",
+    "fee_sender_deposits": "Sender deposits approx.",
+    "fee_note": "Estimate · Rate confirmed when deposit is detected",
+    "sender_currency_label": "Which currency will the sender deposit?"
   },
   "recibir": {
     "loading": "Verifying your invitation...",

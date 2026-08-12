@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ 模拟收款方 KYC（沙盒）",
     "sandbox_recipient_simulated": "✓ 收款方 KYC 已模拟 · 轮询将检测到变化",
     "va_recipient_gets": "收款方收到",
-    "va_deposit_currency": "存款货币"
+    "va_deposit_currency": "存款货币",
+    "fee_calculating": "计算费用中...",
+    "fee_recipient_gets": "收款方收到",
+    "fee_fx_rate": "汇率",
+    "fee_bridge": "Bridge（转换）",
+    "fee_omnipay": "OmniPay（服务）",
+    "fee_sender_deposits": "汇款方存入约",
+    "fee_note": "预估 · 汇率在检测到存款时确认",
+    "sender_currency_label": "汇款人以哪种货币存款？"
   },
   "recibir": {
     "loading": "正在验证邀请...",

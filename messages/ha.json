@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ Kwaikwayon KYC mai karɓa (sandbox)",
     "sandbox_recipient_simulated": "✓ An kwaikwayi KYC mai karɓa · binciken zai gano canje-canje",
     "va_recipient_gets": "Mai karɓa yana karɓa",
-    "va_deposit_currency": "Kuɗin ajiya"
+    "va_deposit_currency": "Kuɗin ajiya",
+    "fee_calculating": "Ana ƙidaya kuɗin hidimomin...",
+    "fee_recipient_gets": "Mai karɓa yana karɓa",
+    "fee_fx_rate": "Farashin musanya",
+    "fee_bridge": "Bridge (musanya)",
+    "fee_omnipay": "OmniPay (hidima)",
+    "fee_sender_deposits": "Mai aiko yana saka kusan",
+    "fee_note": "Kimarwa · Ana tabbatar da farashin lokacin da ake ganin ajiya",
+    "sender_currency_label": "Da wane kuɗin mai aiko zai saka?"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",

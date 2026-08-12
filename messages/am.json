@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ ተቀባዩ KYC ምሳሌ አሳይ (sandbox)",
     "sandbox_recipient_simulated": "✓ ተቀባዩ KYC ምሳሌ ተሠርቷል · ፖሊንግ ለውጡን ያገኛል",
     "va_recipient_gets": "ተቀባዩ ይቀበላል",
-    "va_deposit_currency": "የሂሳብ ምንዛሬ"
+    "va_deposit_currency": "የሂሳብ ምንዛሬ",
+    "fee_calculating": "ክፍያ እያሰሉ ነው...",
+    "fee_recipient_gets": "ተቀባዩ ይቀበላል",
+    "fee_fx_rate": "የምንዛሪ ተመን",
+    "fee_bridge": "Bridge (ልወጣ)",
+    "fee_omnipay": "OmniPay (አገልግሎት)",
+    "fee_sender_deposits": "ላኪው ያስቀምጣል (ግምታዊ)",
+    "fee_note": "ግምታዊ · ተመኑ ገቢ ሲታወቅ ይረጋገጣል",
+    "sender_currency_label": "ላኪው በምን ምንዛሬ ያስቀምጣል?"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",

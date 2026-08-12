@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ Simuler la vérification du destinataire (sandbox)",
     "sandbox_recipient_simulated": "✓ Vérification du destinataire simulée · la vérification détectera le changement",
     "va_recipient_gets": "Le destinataire reçoit",
-    "va_deposit_currency": "Devise de dépôt"
+    "va_deposit_currency": "Devise de dépôt",
+    "fee_calculating": "Calcul du tarif...",
+    "fee_recipient_gets": "Le destinataire reçoit",
+    "fee_fx_rate": "Taux de change",
+    "fee_bridge": "Bridge (conversion)",
+    "fee_omnipay": "OmniPay (service)",
+    "fee_sender_deposits": "L'expéditeur dépose env.",
+    "fee_note": "Estimation · Le taux est confirmé lors de la détection du dépôt",
+    "sender_currency_label": "Dans quelle devise l'expéditeur déposera-t-il ?"
   },
   "recibir": {
     "loading": "Vérification de votre invitation...",

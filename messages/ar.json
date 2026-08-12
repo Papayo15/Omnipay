@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ محاكاة KYC المستلم (بيئة اختبار)",
     "sandbox_recipient_simulated": "✓ تمت محاكاة KYC المستلم · سيكتشف نظام الفحص التغيير",
     "va_recipient_gets": "يستلم المستفيد",
-    "va_deposit_currency": "عملة الإيداع"
+    "va_deposit_currency": "عملة الإيداع",
+    "fee_calculating": "حساب الرسوم...",
+    "fee_recipient_gets": "يستلم المستفيد",
+    "fee_fx_rate": "سعر الصرف",
+    "fee_bridge": "Bridge (تحويل)",
+    "fee_omnipay": "OmniPay (خدمة)",
+    "fee_sender_deposits": "يودع المُرسِل تقريباً",
+    "fee_note": "تقدير · يُؤكَّد السعر عند اكتشاف الإيداع",
+    "sender_currency_label": "بأي عملة سيودع المُرسِل؟"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",

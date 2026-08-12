@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ 수신자 KYC 시뮬레이션 (샌드박스)",
     "sandbox_recipient_simulated": "✓ 수신자 KYC 시뮬레이션 완료 · 폴링이 변경 사항을 감지합니다",
     "va_recipient_gets": "수신자 수령액",
-    "va_deposit_currency": "입금 통화"
+    "va_deposit_currency": "입금 통화",
+    "fee_calculating": "수수료 계산 중...",
+    "fee_recipient_gets": "수신자 수령액",
+    "fee_fx_rate": "환율",
+    "fee_bridge": "Bridge (환전)",
+    "fee_omnipay": "OmniPay (서비스)",
+    "fee_sender_deposits": "송금자 입금 예상액",
+    "fee_note": "예상치 · 입금 감지 시 환율 확정",
+    "sender_currency_label": "송금자는 어떤 통화로 입금하나요?"
   },
   "recibir": {
     "loading": "초대장 확인 중...",

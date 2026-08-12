@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ प्राप्तकर्ता KYC सिम्युलेट करें (sandbox)",
     "sandbox_recipient_simulated": "✓ प्राप्तकर्ता KYC सिम्युलेट हुआ · पोलिंग बदलाव का पता लगाएगा",
     "va_recipient_gets": "प्राप्तकर्ता को मिलेगा",
-    "va_deposit_currency": "जमा मुद्रा"
+    "va_deposit_currency": "जमा मुद्रा",
+    "fee_calculating": "शुल्क गणना हो रही है...",
+    "fee_recipient_gets": "प्राप्तकर्ता को मिलेगा",
+    "fee_fx_rate": "विनिमय दर",
+    "fee_bridge": "Bridge (रूपांतरण)",
+    "fee_omnipay": "OmniPay (सेवा)",
+    "fee_sender_deposits": "भेजने वाला जमा करेगा (लगभग)",
+    "fee_note": "अनुमानित · जमा का पता चलने पर दर की पुष्टि होती है",
+    "sender_currency_label": "प्रेषक किस मुद्रा में जमा करेगा?"
   },
   "recibir": {
     "loading": "आपका आमंत्रण सत्यापित हो रहा है...",

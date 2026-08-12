@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ Alıcı KYC'yi simüle et (sandbox)",
     "sandbox_recipient_simulated": "✓ Alıcı KYC simüle edildi · anket değişikliği algılayacak",
     "va_recipient_gets": "Alıcı alır",
-    "va_deposit_currency": "Yatırım para birimi"
+    "va_deposit_currency": "Yatırım para birimi",
+    "fee_calculating": "Ücret hesaplanıyor...",
+    "fee_recipient_gets": "Alıcı alır",
+    "fee_fx_rate": "Döviz kuru",
+    "fee_bridge": "Bridge (dönüştürme)",
+    "fee_omnipay": "OmniPay (hizmet)",
+    "fee_sender_deposits": "Gönderen yaklaşık yatırır",
+    "fee_note": "Tahmin · Kur, yatırım tespitinde onaylanır",
+    "sender_currency_label": "Gönderen hangi para biriminde yatıracak?"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",

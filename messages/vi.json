@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ Mô phỏng KYC người nhận (sandbox)",
     "sandbox_recipient_simulated": "✓ KYC người nhận đã mô phỏng · việc thăm dò sẽ phát hiện thay đổi",
     "va_recipient_gets": "Người nhận nhận được",
-    "va_deposit_currency": "Tiền tệ nạp"
+    "va_deposit_currency": "Tiền tệ nạp",
+    "fee_calculating": "Đang tính phí...",
+    "fee_recipient_gets": "Người nhận nhận được",
+    "fee_fx_rate": "Tỷ giá",
+    "fee_bridge": "Bridge (chuyển đổi)",
+    "fee_omnipay": "OmniPay (dịch vụ)",
+    "fee_sender_deposits": "Người gửi nạp khoảng",
+    "fee_note": "Ước tính · Tỷ giá xác nhận khi phát hiện tiền nạp",
+    "sender_currency_label": "Người gửi sẽ nạp bằng loại tiền nào?"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",

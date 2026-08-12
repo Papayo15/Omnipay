@@ -715,7 +715,15 @@
     "sandbox_simulate_recipient": "⚡ 受取人 KYC をシミュレート（サンドボックス）",
     "sandbox_recipient_simulated": "✓ 受取人 KYC シミュレート完了 · ポーリングが変化を検出します",
     "va_recipient_gets": "受取人が受け取る金額",
-    "va_deposit_currency": "入金通貨"
+    "va_deposit_currency": "入金通貨",
+    "fee_calculating": "手数料計算中...",
+    "fee_recipient_gets": "受取人が受け取る",
+    "fee_fx_rate": "為替レート",
+    "fee_bridge": "Bridge（変換）",
+    "fee_omnipay": "OmniPay（サービス）",
+    "fee_sender_deposits": "送金者の入金額（概算）",
+    "fee_note": "概算 · レートは入金検出時に確定",
+    "sender_currency_label": "送金者はどの通貨で入金しますか？"
   },
   "recibir": {
     "loading": "招待を確認中...",
