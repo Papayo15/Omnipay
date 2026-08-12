@@ -135,8 +135,8 @@ export async function GET(req: NextRequest): Promise<Response> {
         liqAddr = await createLiquidationAddress(liqParams);
       } catch (e1) {
         if (!isEndorsementErr(e1)) throw e1;
-        // Endorsement not yet propagated — wait 2s and retry once
-        await new Promise(r => setTimeout(r, 2000));
+        // Endorsement not yet propagated — wait 5s and retry once
+        await new Promise(r => setTimeout(r, 5000));
         try { await ensureEndorsements(recipient.id, recipientEndorsements); } catch { /* ignore */ }
         liqAddr = await createLiquidationAddress(liqParams);
       }

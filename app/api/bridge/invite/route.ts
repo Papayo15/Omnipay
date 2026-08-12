@@ -9,7 +9,7 @@
 // Zero PII: los datos del receptor viajan encriptados en el token — nunca se persisten.
 
 import { NextRequest, NextResponse } from "next/server";
-import { findCustomerByEmail, createTosLink, createKycLink } from "@/providers/bridge/customers";
+import { findCustomerByEmail, createTosLink, createKycLink, ensureEndorsements } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload } from "@/lib/accountcrypto";
@@ -98,6 +98,19 @@ export async function POST(req: NextRequest): Promise<Response> {
       MX:"MEX", US:"USA", BR:"BRA", CO:"COL", GB:"GBR", CA:"CAN",
       DE:"DEU", FR:"FRA", ES:"ESP", IT:"ITA", NL:"NLD", PT:"PRT",
     };
+
+    const RAIL_ENDORSEMENT: Record<string, string> = {
+      MX:"spei", US:"ach", BR:"pix", CO:"cop", GB:"faster_payments",
+      DE:"sepa",FR:"sepa",ES:"sepa",IT:"sepa",NL:"sepa",PT:"sepa",
+    };
+    const allEndorsements = ["base","sepa","spei","pix","faster_payments","cop"];
+    const railEnd = RAIL_ENDORSEMENT[country];
+    const recipientEndorsements = railEnd
+      ? ["base", railEnd, ...allEndorsements]
+      : allEndorsements;
+
+    // Ensure rail endorsement before liq address — Bridge requires it first
+    try { await ensureEndorsements(existing.id, recipientEndorsements); } catch { /* best-effort */ }
 
     const liqParams: CreateLiquidationParams = {
       customerId:    existing.id,
