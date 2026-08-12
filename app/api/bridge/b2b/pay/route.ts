@@ -240,7 +240,10 @@ export async function POST(req: NextRequest): Promise<Response> {
       }, { status: 422 });
     }
 
-    console.error("[bridge/b2b/pay] unhandled:", err.message, err.type, JSON.stringify(err.details));
-    return NextResponse.json({ error: err.message }, { status: err.status ?? 500 });
+    const detail = err.details ? JSON.stringify(err.details) : "";
+    console.error("[bridge/b2b/pay] unhandled:", err.message, detail);
+    return NextResponse.json({
+      error: err.message + (detail ? ` — ${detail}` : ""),
+    }, { status: err.status ?? 500 });
   }
 }

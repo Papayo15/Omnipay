@@ -99,38 +99,35 @@ export async function createCustomer(params: {
   }
 
   if (isSandbox) {
-    body.birth_date          = "1990-01-01";
-    body.phone               = "+15555555555";
+    // signed_agreement_id required in sandbox for all customer types
     body.signed_agreement_id = crypto.randomUUID();
-    const iso3 = params.country ?? "USA";
 
-    // 1x1 white PNG — Bridge sandbox accepts any image for document fields
-    const FAKE_IMG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII=";
+    if (params.type === "individual") {
+      // Individual-only sandbox fields — Bridge rejects these for business customers
+      body.birth_date = "1990-01-01";
+      body.phone      = "+15555555555";
+      const iso3      = params.country ?? "USA";
 
-    // Passport satisfies government_id_document; use issuing_country matching the customer's country
-    body.identifying_information = [
-      { type: "ssn",      issuing_country: "USA", number: "123456789" },
-      { type: "passport", issuing_country: iso3.toLowerCase(), number: "A12345678", image_front: FAKE_IMG, image_back: FAKE_IMG },
-    ];
+      const FAKE_IMG  = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII=";
 
-    // proof_of_address — required for SEPA endorsement
-    body.documents = [
-      { purposes: ["proof_of_address"], file: FAKE_IMG },
-    ];
-
-    // Compliance fields required for sof_individual_primary_purpose requirement
-    // (missing these keeps base+sepa in "incomplete" and simulate_kyc_approval has nothing to approve)
-    body.account_purpose               = "payments_to_friends_or_family_abroad";
-    body.source_of_funds               = "salary";
-    body.employment_status             = "employed";
-    body.expected_monthly_payments_usd = "0_4999";
-    body.acting_as_intermediary        = false;
-    body.place_of_birth                = { city: "San Francisco", country: "USA" };
-
-    // EEA/international customers require nationalities
-    if (iso3 !== "USA") {
-      body.nationalities = [iso3];
+      body.identifying_information = [
+        { type: "ssn",      issuing_country: "USA", number: "123456789" },
+        { type: "passport", issuing_country: iso3.toLowerCase(), number: "A12345678", image_front: FAKE_IMG, image_back: FAKE_IMG },
+      ];
+      body.documents = [
+        { purposes: ["proof_of_address"], file: FAKE_IMG },
+      ];
+      body.account_purpose               = "payments_to_friends_or_family_abroad";
+      body.source_of_funds               = "salary";
+      body.employment_status             = "employed";
+      body.expected_monthly_payments_usd = "0_4999";
+      body.acting_as_intermediary        = false;
+      body.place_of_birth                = { city: "San Francisco", country: "USA" };
+      if (iso3 !== "USA") {
+        body.nationalities = [iso3];
+      }
     }
+    // Business customers only need signed_agreement_id in sandbox — no personal docs
   }
   const day = Math.floor(Date.now() / 86_400_000);
   return bridgeRequest<BridgeCustomer>(

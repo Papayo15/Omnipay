@@ -215,8 +215,11 @@ export async function POST(req: NextRequest): Promise<Response> {
     });
   } catch (e) {
     const err = e as Error & { type?: string; status?: number; details?: unknown };
-    console.error("[bridge/b2b/checkout]", err.message, err.type, err.status, JSON.stringify(err.details));
-    console.error("[bridge/b2b/checkout] unhandled:", err.message, err.type, JSON.stringify(err.details));
-    return NextResponse.json({ error: err.message }, { status: err.status ?? 500 });
+    const detail = err.details ? JSON.stringify(err.details) : "";
+    console.error("[bridge/b2b/checkout]", err.message, detail);
+    // Include details in response so the UI can show the specific invalid field
+    return NextResponse.json({
+      error: err.message + (detail ? ` — ${detail}` : ""),
+    }, { status: err.status ?? 500 });
   }
 }
