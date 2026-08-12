@@ -438,7 +438,7 @@
     "fee_omnipay_service": "OmniPay አገልግሎት (0.50%)",
     "fee_omnipay_flat": "OmniPay ቋሚ ክፍያ",
     "fee_total_sender": "ላኪው ጠቅላላ ይከፍላል",
-    "fee_fx_rate": "1 {currency} = {rate} USD · ቀጥታ የምንዛሪ ዋጋ",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · የማጣቀሻ ምንዛሪ",
     "error_invalid_iban": "IBAN ልክ አይደለም። በ2 የሀገር ፊደላት ይጀምራል",
     "error_invalid_uk": "ቅርጸት ስህተት ነው: Sort Code / መለያ",
     "error_invalid_us": "ቅርጸት ስህተት ነው: Routing / መለያ",

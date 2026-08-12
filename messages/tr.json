@@ -438,7 +438,7 @@
     "fee_omnipay_service": "OmniPay hizmeti (%0,50)",
     "fee_omnipay_flat": "OmniPay sabit ücret",
     "fee_total_sender": "Gönderenin toplam ödemesi",
-    "fee_fx_rate": "1 {currency} = {rate} USD · Canlı döviz kuru",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · referans kur",
     "error_invalid_iban": "Geçersiz IBAN. 2 ülke harfiyle başlar",
     "error_invalid_uk": "Yanlış format: Sort Code / Hesap",
     "error_invalid_us": "Yanlış format: Routing / Hesap",

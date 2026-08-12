@@ -63,13 +63,11 @@ async function getWiseLiveRate(from: string, to: string): Promise<number> {
     } catch {}
   }
 
-  // Fallback: open exchange rates
+  // Fallback: Frankfurter (ECB) + open.er-api secondary
   try {
-    const res = await fetch(`https://open.er-api.com/v6/latest/${from}`, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json() as { rates: Record<string, number> };
-      if (data.rates[to]) return data.rates[to];
-    }
+    const { getRate } = await import("@/lib/fx-server");
+    const rate = await getRate(from, to);
+    if (rate) return rate;
   } catch {}
 
   throw new Error(`Tasa de cambio no disponible: ${from}→${to}`);

@@ -117,14 +117,8 @@ async function handleTokenMode(body: TokenBody): Promise<Response> {
 
   if (targetCurrency !== "MXN") {
     try {
-      const fxRes = await fetch(
-        `https://open.er-api.com/v6/latest/${targetCurrency}`,
-        { cache: "no-store" },
-      );
-      if (fxRes.ok) {
-        const fxData = await fxRes.json() as { rates?: Record<string, number> };
-        mxnRate = fxData.rates?.MXN ?? 1;
-      }
+      const { getRate } = await import("@/lib/fx-server");
+      mxnRate = (await getRate(targetCurrency, "MXN")) ?? 1;
     } catch { /* use 1:1 if FX lookup fails */ }
   }
 

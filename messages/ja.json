@@ -438,7 +438,7 @@
     "fee_omnipay_service": "OmniPay サービス料 (0.50%)",
     "fee_omnipay_flat": "OmniPay 固定手数料",
     "fee_total_sender": "送金者の合計支払い",
-    "fee_fx_rate": "1 {currency} = {rate} USD · リアルタイム為替レート",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · 参考レート",
     "error_invalid_iban": "無効なIBAN。国コード2文字から始まります",
     "error_invalid_uk": "形式が違います: Sort Code / 口座番号",
     "error_invalid_us": "形式が違います: Routing / 口座番号",

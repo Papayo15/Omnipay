@@ -7,7 +7,8 @@
 // `amount` = monto en moneda del receptor
 
 import { NextRequest, NextResponse } from "next/server";
-import { calcStaticQuote } from "@/lib/bridge-fees";
+import { calcStaticQuote }  from "@/lib/bridge-fees";
+import { fetchRatesFrom }   from "@/lib/fx-server";
 
 export const runtime = "edge";
 
@@ -22,17 +23,8 @@ export async function GET(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: "amount must be > 0" }, { status: 400 });
   }
 
-  // Fetch all rates in one call (USD base, gratuito, sin API key)
-  let ratesFromUSD: Record<string, number> = {};
-  try {
-    const res = await fetch("https://open.er-api.com/v6/latest/USD", {
-      next: { revalidate: 300 },
-    });
-    if (res.ok) {
-      const data = await res.json() as { rates?: Record<string, number> };
-      ratesFromUSD = data.rates ?? {};
-    }
-  } catch { /* proceed without rates */ }
+  // Fetch all rates from USD — Frankfurter primary, open.er-api fallback
+  const ratesFromUSD = await fetchRatesFrom("USD");
 
   // 1 FROM = ? TO
   // from → USD → to

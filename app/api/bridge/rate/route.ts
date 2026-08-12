@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decryptPayload }            from "@/lib/accountcrypto";
 import { calcStaticQuote }           from "@/lib/bridge-fees";
+import { fetchRatesFrom }            from "@/lib/fx-server";
 
 export const runtime = "edge";
 
@@ -32,15 +33,8 @@ export async function GET(req: NextRequest): Promise<Response> {
   const tgtCurrency = (meta.target_currency ?? "MXN").toUpperCase();
   const srcCurrency = currency.toUpperCase();
 
-  // Fetch all rates from USD base — one request covers every conversion we need
-  let ratesFromUSD: Record<string, number> = {};
-  try {
-    const fxRes = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
-    if (fxRes.ok) {
-      const fxData = await fxRes.json() as { rates?: Record<string, number> };
-      ratesFromUSD = fxData.rates ?? {};
-    }
-  } catch { /* proceed with fallback */ }
+  // Fetch all rates from USD base — Frankfurter primary, open.er-api fallback
+  const ratesFromUSD = await fetchRatesFrom("USD");
 
   // Convert amount_target (local currency) → USD (same logic as /api/bridge/pay)
   let amountUSD = meta.amount_target;

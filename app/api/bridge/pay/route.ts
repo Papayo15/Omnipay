@@ -17,6 +17,7 @@ import { decryptPayload }                         from "@/lib/accountcrypto";
 import { buildDynamicQuote }                      from "@/lib/bridge-fees";
 import { createOrder }                            from "@/lib/order-state";
 import { getRedis }                               from "@/lib/redis";
+import { getRate }                               from "@/lib/fx-server";
 
 // nodejs required — Redis TCP sockets incompatible with Edge
 export const runtime = "nodejs";
@@ -83,17 +84,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     // We need to send USD into the virtual account, so convert first.
     let amountUSD = meta.amount_target;
     if (meta.target_currency && meta.target_currency !== "USD") {
-      try {
-        const fxRes = await fetch(
-          `https://open.er-api.com/v6/latest/${meta.target_currency}`,
-          { cache: "no-store" },
-        );
-        if (fxRes.ok) {
-          const fxData = await fxRes.json() as { rates?: Record<string, number> };
-          const rate = fxData.rates?.USD;
-          if (rate) amountUSD = parseFloat((meta.amount_target * rate).toFixed(2));
-        }
-      } catch { /* use amount_target as-is if FX lookup fails */ }
+      const rate = await getRate(meta.target_currency, "USD").catch(() => null);
+      if (rate) amountUSD = parseFloat((meta.amount_target * rate).toFixed(2));
     }
 
     // Minimum amount guard — prevents uneconomical transactions

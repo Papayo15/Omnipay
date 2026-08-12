@@ -438,7 +438,7 @@
     "fee_omnipay_service": "OmniPay Service (0,50%)",
     "fee_omnipay_flat": "OmniPay Pauschale",
     "fee_total_sender": "Absender zahlt insgesamt",
-    "fee_fx_rate": "1 {currency} = {rate} USD · Live-Wechselkurs",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · Referenzkurs",
     "error_invalid_iban": "Ungültige IBAN. Muss mit 2 Länderkürzeln beginnen (z.B. DE89...)",
     "error_invalid_uk": "Falsches Format. Verwende: Sort Code / Konto (z.B. 20-00-00 / 55779911)",
     "error_invalid_us": "Falsches Format. Verwende: Routing / Konto (z.B. 021000021 / 12345678)",

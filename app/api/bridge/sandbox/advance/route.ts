@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateOrder, getOrderAsync } from "@/lib/order-state";
 import { handleCompletion }           from "@/app/api/bridge/webhook/route";
+import { sendAdminWhatsApp }          from "@/lib/notify";
 
 export const runtime = "nodejs";
 
@@ -51,6 +52,12 @@ export async function GET(req: NextRequest): Promise<Response> {
         destination_currency: order.targetCurrency ?? "USD",
       },
     });
+  } else {
+    // Order lives in a different Lambda (Edge b2b/pay vs Node.js advance route) — no Redis.
+    // Still fire the admin WhatsApp so sandbox testing gets the notification.
+    await sendAdminWhatsApp(
+      `✅ OmniPay — Pago COMPLETADO (sandbox)\nOrden: ${orderId}\n(Sin datos adicionales — configura REDIS_URL para historial completo)`,
+    );
   }
 
   return NextResponse.json({

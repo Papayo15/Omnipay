@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse }              from "next/server";
 import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink } from "@/providers/bridge/customers";
+import { getRate }                               from "@/lib/fx-server";
 import { createVirtualAccount }                   from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
 import { buildDynamicQuote }                      from "@/lib/bridge-fees";
@@ -73,14 +74,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Convert target amount to USD for quote
     let amountUSD = meta.amount_target;
     if (meta.target_currency && meta.target_currency !== "USD") {
-      try {
-        const fxRes = await fetch(`https://open.er-api.com/v6/latest/${meta.target_currency}`, { cache: "no-store" });
-        if (fxRes.ok) {
-          const fxData = await fxRes.json() as { rates?: Record<string, number> };
-          const rate = fxData.rates?.USD;
-          if (rate) amountUSD = parseFloat((meta.amount_target * rate).toFixed(2));
-        }
-      } catch { /* use as-is */ }
+      const rate = await getRate(meta.target_currency, "USD").catch(() => null);
+      if (rate) amountUSD = parseFloat((meta.amount_target * rate).toFixed(2));
     }
 
     const quote = await buildDynamicQuote({

@@ -438,7 +438,7 @@
     "fee_omnipay_service": "Сервис OmniPay (0,50%)",
     "fee_omnipay_flat": "Фиксированная комиссия OmniPay",
     "fee_total_sender": "Отправитель платит итого",
-    "fee_fx_rate": "1 {currency} = {rate} USD · Курс в реальном времени",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · справочный курс",
     "error_invalid_iban": "Неверный IBAN. Начинается с 2 букв страны",
     "error_invalid_uk": "Неверный формат: Sort Code / Счёт",
     "error_invalid_us": "Неверный формат: Routing / Счёт",

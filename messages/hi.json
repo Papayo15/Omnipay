@@ -438,7 +438,7 @@
     "fee_omnipay_service": "OmniPay सेवा (0.50%)",
     "fee_omnipay_flat": "OmniPay निश्चित शुल्क",
     "fee_total_sender": "भेजने वाला कुल भुगतान करता है",
-    "fee_fx_rate": "1 {currency} = {rate} USD · लाइव विनिमय दर",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · संदर्भ दर",
     "error_invalid_iban": "IBAN अमान्य। 2 देश अक्षरों से शुरू होता है",
     "error_invalid_uk": "गलत प्रारूप: Sort Code / खाता",
     "error_invalid_us": "गलत प्रारूप: Routing / खाता",

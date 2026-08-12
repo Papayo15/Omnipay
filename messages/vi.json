@@ -438,7 +438,7 @@
     "fee_omnipay_service": "Dịch vụ OmniPay (0.50%)",
     "fee_omnipay_flat": "Phí cố định OmniPay",
     "fee_total_sender": "Người gửi trả tổng cộng",
-    "fee_fx_rate": "1 {currency} = {rate} USD · Tỷ giá trực tiếp",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · tỷ giá tham chiếu",
     "error_invalid_iban": "IBAN không hợp lệ. Bắt đầu bằng 2 chữ cái quốc gia",
     "error_invalid_uk": "Sai định dạng: Sort Code / Tài khoản",
     "error_invalid_us": "Sai định dạng: Routing / Tài khoản",

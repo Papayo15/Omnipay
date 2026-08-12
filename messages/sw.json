@@ -438,7 +438,7 @@
     "fee_omnipay_service": "Huduma ya OmniPay (0.50%)",
     "fee_omnipay_flat": "Ada ya kawaida ya OmniPay",
     "fee_total_sender": "Mtumaji analipa jumla",
-    "fee_fx_rate": "1 {currency} = {rate} USD · Kiwango cha sasa",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · kiwango cha rejeleo",
     "error_invalid_iban": "IBAN si sahihi. Inaanza na herufi 2 za nchi",
     "error_invalid_uk": "Umbizo sio sahihi: Sort Code / Akaunti",
     "error_invalid_us": "Umbizo sio sahihi: Routing / Akaunti",

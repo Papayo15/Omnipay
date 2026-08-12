@@ -438,7 +438,7 @@
     "fee_omnipay_service": "Layanan OmniPay (0,50%)",
     "fee_omnipay_flat": "Tarif tetap OmniPay",
     "fee_total_sender": "Pengirim membayar total",
-    "fee_fx_rate": "1 {currency} = {rate} USD · Kurs langsung",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · kurs referensi",
     "error_invalid_iban": "IBAN tidak valid. Diawali 2 huruf negara",
     "error_invalid_uk": "Format salah: Sort Code / Rekening",
     "error_invalid_us": "Format salah: Routing / Rekening",

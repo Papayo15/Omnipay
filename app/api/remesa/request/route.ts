@@ -35,16 +35,7 @@ const COUNTRY_CURRENCY: Record<string, string> = {
   CO: "COP", PE: "PEN", CL: "CLP", AR: "ARS", NG: "NGN", KE: "KES",
 };
 
-// FX server-side sin cache — el quote es orientativo para el mensaje de WhatsApp
-async function fetchRate(from: string, to: string): Promise<number | null> {
-  if (from === to) return 1;
-  try {
-    const res = await fetch(`https://open.er-api.com/v6/latest/${from}`, { cache: "no-store" });
-    if (!res.ok) return null;
-    const data = await res.json() as { rates: Record<string, number> };
-    return data.rates[to] ?? null;
-  } catch { return null; }
-}
+import { getRate as fetchRate } from "@/lib/fx-server";
 
 export async function POST(req: NextRequest) {
   try {

@@ -450,7 +450,7 @@
     "fee_omnipay_service": "OmniPay service (0.50%)",
     "fee_omnipay_flat": "OmniPay flat fee",
     "fee_total_sender": "Sender pays in total",
-    "fee_fx_rate": "1 {currency} = {rate} USD · Live exchange rate",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · reference rate",
     "error_invalid_iban": "Invalid IBAN. Must start with 2 country letters + 2 digits (e.g. DE89...)",
     "error_invalid_uk": "Wrong format. Use: Sort Code / Account (e.g. 20-00-00 / 55779911)",
     "error_invalid_us": "Wrong format. Use: Routing / Account (e.g. 021000021 / 12345678)",

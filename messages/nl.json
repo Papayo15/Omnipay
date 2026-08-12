@@ -438,7 +438,7 @@
     "fee_omnipay_service": "OmniPay service (0,50%)",
     "fee_omnipay_flat": "OmniPay vast tarief",
     "fee_total_sender": "Afzender betaalt in totaal",
-    "fee_fx_rate": "1 {currency} = {rate} USD · Live wisselkoers",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · referentiekoers",
     "error_invalid_iban": "Ongeldige IBAN. Begint met 2 landletters (bijv. NL02...)",
     "error_invalid_uk": "Verkeerd formaat: Sort Code / Rekening",
     "error_invalid_us": "Verkeerd formaat: Routing / Rekening",

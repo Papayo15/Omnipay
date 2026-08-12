@@ -438,7 +438,7 @@
     "fee_omnipay_service": "خدمة OmniPay (0.50%)",
     "fee_omnipay_flat": "رسوم OmniPay الثابتة",
     "fee_total_sender": "إجمالي ما يدفعه المرسل",
-    "fee_fx_rate": "1 {currency} = {rate} USD · سعر الصرف المباشر",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · سعر صرف مرجعي",
     "error_invalid_iban": "IBAN غير صالح. يبدأ بحرفين للدولة",
     "error_invalid_uk": "تنسيق خاطئ: Sort Code / الحساب",
     "error_invalid_us": "تنسيق خاطئ: Routing / الحساب",

@@ -438,7 +438,7 @@
     "fee_omnipay_service": "Servizio OmniPay (0,50%)",
     "fee_omnipay_flat": "Tariffa fissa OmniPay",
     "fee_total_sender": "Il mittente paga in totale",
-    "fee_fx_rate": "1 {currency} = {rate} USD · Tasso di cambio live",
+    "fee_fx_rate": "≈ 1 {currency} = {rate} USD · tasso di riferimento",
     "error_invalid_iban": "IBAN non valido. Deve iniziare con 2 lettere del paese (es. IT60...)",
     "error_invalid_uk": "Formato errato. Usa: Sort Code / Conto (es. 20-00-00 / 55779911)",
     "error_invalid_us": "Formato errato. Usa: Routing / Conto (es. 021000021 / 12345678)",
