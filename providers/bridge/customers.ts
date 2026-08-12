@@ -53,7 +53,9 @@ export async function patchCustomerAddress(
   const iso3      = ALPHA2_TO_ALPHA3[country] ?? "USA";
   const addr      = ADDRESS_DEFAULTS[iso3] ?? ADDRESS_DEFAULTS["USA"];
 
-  const update: Record<string, unknown> = { residential_address: addr };
+  // Bridge uses `residential_address` for individual, `primary_address` for business
+  const addrField = customerType === "business" ? "primary_address" : "residential_address";
+  const update: Record<string, unknown> = { [addrField]: addr };
 
   if (isSandbox && includeComplianceFields && customerType === "individual") {
     // Individual compliance fields — Bridge rejects these for business customers.
@@ -89,8 +91,9 @@ export async function createCustomer(params: {
   const { country: _c, endorsements: _e, ...rest } = params;
   const body: Record<string, unknown> = { ...rest };
 
-  // Bridge requires `residential_address` (alpha-3 country) for individual customers
-  body.residential_address = ADDRESS_DEFAULTS[params.country ?? "USA"] ?? ADDRESS_DEFAULTS["USA"];
+  // Bridge uses `residential_address` for individual, `primary_address` for business
+  const addrField = params.type === "business" ? "primary_address" : "residential_address";
+  body[addrField] = ADDRESS_DEFAULTS[params.country ?? "USA"] ?? ADDRESS_DEFAULTS["USA"];
 
   // Request specific endorsements — puts them in "pending" state so
   // simulate_kyc_approval (sandbox) or real KYC can approve them.
