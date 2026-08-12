@@ -773,14 +773,6 @@ export default function P2PPage() {
               );
             })()}
 
-            {/* Teléfono (opcional) */}
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">{t("label_recipient_phone")}</label>
-              <input type="tel" inputMode="tel" value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)}
-                placeholder="+52 55 1234 5678"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
-            </div>
-
             <button onClick={generateLink} disabled={submitting || !bridgeReady}
               className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
               {submitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}

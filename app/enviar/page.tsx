@@ -429,15 +429,6 @@ export default function EnviarPage() {
                 onChange={e => setRecipientEmail(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60"
               />
-              <input
-                type="tel"
-                placeholder={t("recipient_whatsapp")}
-                value={recipientPhone}
-                onChange={e => setRecipientPhone(e.target.value)}
-                className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60"
-              />
-              <p className="text-slate-500 text-[10px] -mt-1 px-1">{t("whatsapp_hint_optional")}</p>
-
               <select
                 value={recipientCountry}
                 onChange={e => { setRecipientCountry(e.target.value); setAccountField(""); setBicField(""); }}
