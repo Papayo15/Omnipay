@@ -53,10 +53,11 @@ export async function patchCustomerAddress(
   const iso3      = ALPHA2_TO_ALPHA3[country] ?? "USA";
   const addr      = ADDRESS_DEFAULTS[iso3] ?? ADDRESS_DEFAULTS["USA"];
 
-  // Bridge field name for address differs by customer type.
-  // Send all plausible variants so at least one is accepted regardless of API version.
+  // Bridge address field names differ by customer type (from Bridge API docs):
+  //   individual → residential_address
+  //   business   → registered_address + physical_address (both required for full compliance)
   const update: Record<string, unknown> = customerType === "business"
-    ? { primary_address: addr, residential_address: addr }  // business: both field names
+    ? { registered_address: addr, physical_address: addr }
     : { residential_address: addr };
 
   if (isSandbox && includeComplianceFields && customerType === "individual") {
@@ -95,8 +96,9 @@ export async function createCustomer(params: {
 
   const addr = ADDRESS_DEFAULTS[params.country ?? "USA"] ?? ADDRESS_DEFAULTS["USA"];
   if (params.type === "business") {
-    body.primary_address     = addr;
-    body.residential_address = addr;  // Bridge may use either field for business customers
+    // Bridge business customers use registered_address + physical_address (not residential_address)
+    body.registered_address = addr;
+    body.physical_address   = addr;
   } else {
     body.residential_address = addr;
   }
