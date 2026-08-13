@@ -476,7 +476,8 @@
     "kyc_polling_body": "Muna duba tabbatarwa. Wannan na iya ɗaukar ɗan lokaci.",
     "kyc_polling_wait": "Idan ya ɗauki fiye da minti 2, rufe wannan taga kuma koma ta hanyar haɗi ɗaya.",
     "kyc_polling_approved": "✓ An tabbatar da asali — Ana ƙirƙirar hanyar haɗin biyan kuɗinka...",
-    "share_invite": "Raba"
+    "share_invite": "Raba",
+    "calculate_fees_button": "Lissafa kuɗin →"
   },
   "pagar_bridge": {
     "submit": "Aika kuɗi →",

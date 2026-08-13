@@ -476,7 +476,8 @@
     "kyc_polling_body": "Stiamo verificando il tuo documento. Potrebbe richiedere un momento.",
     "kyc_polling_wait": "Se ci vuole più di 2 minuti, chiudi questa finestra e torna con lo stesso link.",
     "kyc_polling_approved": "✓ Identità verificata — Generazione del tuo link di pagamento...",
-    "share_invite": "Condividi"
+    "share_invite": "Condividi",
+    "calculate_fees_button": "Calcola tariffe →"
   },
   "pagar_bridge": {
     "submit": "Effettua invio →",

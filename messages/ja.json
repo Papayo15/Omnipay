@@ -476,7 +476,8 @@
     "kyc_polling_body": "確認を検証しています。少々お待ちください。",
     "kyc_polling_wait": "2分以上かかる場合は、このウィンドウを閉じて同じリンクから戻ってください。",
     "kyc_polling_approved": "✓ 本人確認完了 — 支払いリンクを生成中...",
-    "share_invite": "共有"
+    "share_invite": "共有",
+    "calculate_fees_button": "手数料を確認 →"
   },
   "pagar_bridge": {
     "submit": "送金する →",

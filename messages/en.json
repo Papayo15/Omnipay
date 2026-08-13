@@ -476,7 +476,8 @@
     "error_invalid_routing": "Routing number must be 9 digits (e.g. 021000021)",
     "error_invalid_account_uk": "UK account number must be 8 digits",
     "bic_required": "BIC / SWIFT (required)",
-    "share_invite": "Share"
+    "share_invite": "Share",
+    "calculate_fees_button": "Calculate fees →"
   },
   "pagar_bridge": {
     "submit": "Send money →",

@@ -476,7 +476,8 @@
     "kyc_polling_body": "Doğrulamanızı kontrol ediyoruz. Bu biraz zaman alabilir.",
     "kyc_polling_wait": "2 dakikadan fazla sürerse bu pencereyi kapatın ve aynı bağlantıyla geri dönün.",
     "kyc_polling_approved": "✓ Kimlik doğrulandı — Ödeme bağlantınız oluşturuluyor...",
-    "share_invite": "Paylaş"
+    "share_invite": "Paylaş",
+    "calculate_fees_button": "Ücretleri hesapla →"
   },
   "pagar_bridge": {
     "submit": "Para gönder →",

@@ -476,7 +476,8 @@
     "kyc_polling_body": "Wir prüfen Ihre Verifizierung. Das kann einen Moment dauern.",
     "kyc_polling_wait": "Wenn es mehr als 2 Minuten dauert, schließen Sie dieses Fenster und kehren Sie mit demselben Link zurück.",
     "kyc_polling_approved": "✓ Identität verifiziert — Ihr Zahlungslink wird generiert...",
-    "share_invite": "Teilen"
+    "share_invite": "Teilen",
+    "calculate_fees_button": "Gebühren berechnen →"
   },
   "pagar_bridge": {
     "submit": "Überweisung senden →",

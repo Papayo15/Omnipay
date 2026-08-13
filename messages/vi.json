@@ -476,7 +476,8 @@
     "kyc_polling_body": "Chúng tôi đang kiểm tra xác minh của bạn. Có thể mất một chút thời gian.",
     "kyc_polling_wait": "Nếu mất hơn 2 phút, hãy đóng cửa sổ này và quay lại bằng cùng liên kết.",
     "kyc_polling_approved": "✓ Danh tính đã xác minh — Đang tạo liên kết thanh toán...",
-    "share_invite": "Chia sẻ"
+    "share_invite": "Chia sẻ",
+    "calculate_fees_button": "Xem phí →"
   },
   "pagar_bridge": {
     "submit": "Gửi tiền →",

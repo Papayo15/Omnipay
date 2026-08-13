@@ -476,7 +476,8 @@
     "kyc_polling_body": "Kami sedang memeriksa verifikasi Anda. Ini mungkin membutuhkan waktu sebentar.",
     "kyc_polling_wait": "Jika membutuhkan lebih dari 2 menit, tutup jendela ini dan kembali dengan tautan yang sama.",
     "kyc_polling_approved": "✓ Identitas terverifikasi — Membuat tautan pembayaran Anda...",
-    "share_invite": "Bagikan"
+    "share_invite": "Bagikan",
+    "calculate_fees_button": "Lihat biaya →"
   },
   "pagar_bridge": {
     "submit": "Kirim uang →",

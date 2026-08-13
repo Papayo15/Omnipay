@@ -48,6 +48,7 @@ export async function patchCustomerAddress(
   country: string,
   includeComplianceFields = false,
   customerType: "individual" | "business" = "individual",
+  businessName?: string,
 ): Promise<void> {
   const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
   const iso3      = ALPHA2_TO_ALPHA3[country] ?? "USA";
@@ -55,10 +56,10 @@ export async function patchCustomerAddress(
 
   // Bridge address fields per type (from Bridge API docs):
   //   individual → residential_address
-  //   business   → registered_address + physical_address
+  //   business   → registered_address + physical_address + business_name required in PUT
   // Send residential_address for all types as Bridge may check it universally.
   const update: Record<string, unknown> = customerType === "business"
-    ? { registered_address: addr, physical_address: addr, residential_address: addr }
+    ? { registered_address: addr, physical_address: addr, residential_address: addr, ...(businessName ? { business_name: businessName } : {}) }
     : { residential_address: addr };
 
   if (isSandbox && includeComplianceFields && customerType === "individual") {

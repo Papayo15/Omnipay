@@ -476,7 +476,8 @@
     "kyc_polling_body": "نحن نراجع تحققك. قد يستغرق هذا لحظة.",
     "kyc_polling_wait": "إذا استغرق أكثر من دقيقتين، أغلق هذه النافذة وعد باستخدام نفس الرابط.",
     "kyc_polling_approved": "✓ تم التحقق من الهوية — جارٍ إنشاء رابط الدفع...",
-    "share_invite": "مشاركة"
+    "share_invite": "مشاركة",
+    "calculate_fees_button": "احسب الرسوم →"
   },
   "pagar_bridge": {
     "submit": "إرسال التحويل →",

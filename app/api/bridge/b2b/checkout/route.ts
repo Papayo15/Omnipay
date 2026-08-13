@@ -124,14 +124,14 @@ export async function POST(req: NextRequest): Promise<Response> {
       // Set address AFTER KYB simulation — sandbox simulate_kyc_approval may clear address fields.
       // Retry with multiple field names since Bridge business address field name varies by API version.
       try {
-        await patchCustomerAddress(customer.id, country_upper, false, "business");
+        await patchCustomerAddress(customer.id, country_upper, false, "business", business_name);
       } catch (addrErr) {
         console.warn("[bridge/b2b/checkout] patchCustomerAddress post-kyb:", (addrErr as Error).message);
       }
     } else {
       // Production: set address before external account creation
       try {
-        await patchCustomerAddress(customer.id, country_upper, false, "business");
+        await patchCustomerAddress(customer.id, country_upper, false, "business", business_name);
       } catch (addrErr) {
         console.warn("[bridge/b2b/checkout] patchCustomerAddress:", (addrErr as Error).message);
       }

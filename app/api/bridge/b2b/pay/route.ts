@@ -126,15 +126,15 @@ export async function POST(req: NextRequest): Promise<Response> {
 
       // Set address AFTER KYB simulation — sandbox simulate may clear address fields.
       try {
-        await patchCustomerAddress(senderCustomer.id, "US", false, "business");
+        await patchCustomerAddress(senderCustomer.id, "US", false, "business", business_name);
       } catch (addrErr) {
         console.warn("[bridge/b2b/pay] patchCustomerAddress post-kyb:", (addrErr as Error).message);
       }
     } else {
       try {
-        await patchCustomerAddress(senderCustomer.id, "US", false, "business");
+        await patchCustomerAddress(senderCustomer.id, "US", false, "business", business_name);
       } catch (addrErr) {
-        console.warn("[bridge/b2b/pay] patchCustomerAddress:", (addrErr as Error).message);
+        console.error("[bridge/b2b/pay] patchCustomerAddress FAILED:", JSON.stringify(addrErr));
       }
     }
 

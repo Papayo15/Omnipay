@@ -476,7 +476,8 @@
     "kyc_polling_body": "확인을 검토하고 있습니다. 잠시 기다려 주세요.",
     "kyc_polling_wait": "2분 이상 걸리면 이 창을 닫고 같은 링크로 돌아오세요.",
     "kyc_polling_approved": "✓ 신원 확인 완료 — 결제 링크 생성 중...",
-    "share_invite": "공유"
+    "share_invite": "공유",
+    "calculate_fees_button": "수수료 확인 →"
   },
   "pagar_bridge": {
     "submit": "송금하기 →",

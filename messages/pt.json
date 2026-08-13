@@ -476,7 +476,8 @@
     "kyc_polling_body": "Estamos verificando seu cadastro. Isso pode levar um momento.",
     "kyc_polling_wait": "Se demorar mais de 2 minutos, feche esta janela e volte com o mesmo link.",
     "kyc_polling_approved": "✓ Identidade verificada — Gerando seu link de cobrança...",
-    "share_invite": "Compartilhar"
+    "share_invite": "Compartilhar",
+    "calculate_fees_button": "Calcular tarifas →"
   },
   "pagar_bridge": {
     "submit": "Realizar envio →",

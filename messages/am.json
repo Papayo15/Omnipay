@@ -476,7 +476,8 @@
     "kyc_polling_body": "ማረጋገጫዎን እያረጋገጥን ነው። ጥቂት ደቂቃዎች ሊወስድ ይችላል።",
     "kyc_polling_wait": "ከ2 ደቂቃ በላይ ከወሰደ፣ ይህን መስኮት ዝጉ እና በተመሳሳይ ሊንክ ይመለሱ።",
     "kyc_polling_approved": "✓ ማንነት ተረጋግጧል — የክፍያ ሊንክዎ እየተፈጠረ ነው...",
-    "share_invite": "አጋራ"
+    "share_invite": "አጋራ",
+    "calculate_fees_button": "ወጪዎችን ያሰሉ →"
   },
   "pagar_bridge": {
     "submit": "ገንዘብ ላክ →",

@@ -476,7 +476,8 @@
     "kyc_polling_body": "We controleren uw verificatie. Dit kan even duren.",
     "kyc_polling_wait": "Als het langer dan 2 minuten duurt, sluit dit venster en keer terug met dezelfde link.",
     "kyc_polling_approved": "✓ Identiteit geverifieerd — Uw betaallink wordt gegenereerd...",
-    "share_invite": "Delen"
+    "share_invite": "Delen",
+    "calculate_fees_button": "Kosten berekenen →"
   },
   "pagar_bridge": {
     "submit": "Verzending uitvoeren →",
