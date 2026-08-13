@@ -96,6 +96,7 @@ export default function B2BBridgePage() {
   const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
   const [sandboxDone,      setSandboxDone]      = useState(false);
   const [trackStep,        setTrackStep]        = useState(1);
+  const [pendingKybRetry,  setPendingKybRetry]  = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -108,7 +109,7 @@ export default function B2BBridgePage() {
     if (type !== "b2b" && !kybDone) { window.location.href = "/b2b"; return; }
     setToken(tok);
 
-    // Restore form state after KYB redirect
+    // Restore form state after KYB redirect and auto-retry
     if (kybDone) {
       const savedRaw = sessionStorage.getItem("b2b_bridge_form");
       if (savedRaw) {
@@ -117,10 +118,12 @@ export default function B2BBridgePage() {
         setEmail(snap.email ?? "");
         setCurrency(snap.currency ?? "usd");
         sessionStorage.removeItem("b2b_bridge_form");
+        setPendingKybRetry(true);
       }
       window.history.replaceState({}, "", `/b2b-bridge?t=${tok}&type=b2b`);
     }
   }, []);
+
 
   const handleSubmit = useCallback(async () => {
     if (!token || !businessName.trim() || !email.includes("@")) return;
@@ -179,6 +182,13 @@ export default function B2BBridgePage() {
       setSandboxAdvancing(false);
     }
   }, [result]);
+
+  // Auto-retry after KYB redirect — fires once handleSubmit is in scope
+  useEffect(() => {
+    if (!pendingKybRetry || !token || !businessName || !email.includes("@")) return;
+    setPendingKybRetry(false);
+    handleSubmit();
+  }, [pendingKybRetry, token, businessName, email, handleSubmit]);
 
   // Track: poll Bridge order status every 10s while instructions are open
   useEffect(() => {

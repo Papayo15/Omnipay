@@ -389,13 +389,15 @@ export default function P2PPage() {
   }, [shareLink]);
 
 
-  const accountValid = account.trim().length >= 5;
-  const amtUSDLocal  = fxRate && parseFloat(amountLocal) >= 1
+  const accountValid      = account.trim().length >= 5;
+  const amtUSDLocal       = fxRate && parseFloat(amountLocal) >= 1
     ? (currency === "USD" ? parseFloat(amountLocal) : parseFloat(amountLocal) * fxRate)
     : 0;
-  const bicRequired  = SEPA_COUNTRIES.has(country) && !bic.trim();
-  const cpfRequired  = country === "BR" && !cpf.trim();
-  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && fxRate !== null && amtUSDLocal >= 20 && rail === "bridge" && !bicRequired && !cpfRequired;
+  const bicRequired       = SEPA_COUNTRIES.has(country) && !bic.trim();
+  const cpfRequired       = country === "BR" && !cpf.trim();
+  // feeBreakdownShown mirrors exactly the condition under which the fee breakdown renders
+  const feeBreakdownShown = !!(fxRate && parseFloat(amountLocal) >= 1 && amtUSDLocal >= 20);
+  const bridgeReady       = !!nombre.trim() && email.includes("@") && accountValid && feeBreakdownShown && rail === "bridge" && !bicRequired && !cpfRequired;
 
   // ── KYC Info — pre-verification explanation ──────────────────────────────────
   if (step === "kyc_info") {
