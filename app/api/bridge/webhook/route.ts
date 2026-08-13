@@ -242,10 +242,13 @@ export async function handleCompletion(orderId: string, data: Record<string, unk
   const destCurrency = (data as { receipt?: { destination_currency?: string } })?.receipt?.destination_currency;
 
   const tipoLabel = order?.orderType === "b2b-bridge" ? "B2B Wire" : "P2P";
+  const fechaHora = new Date(order?.completedAt ?? Date.now())
+    .toLocaleString("es-MX", { timeZone: "America/Mexico_City", hour12: false });
   await sendAdminWhatsApp(
     `✅ OmniPay — Pago COMPLETADO [${tipoLabel}]\n` +
     `Orden: ${orderId}\n` +
-    `Receptor: ${order?.recipientName ?? "?"} · ${order?.destinationCountry ?? "?"}\n` +
+    `Fecha: ${fechaHora}\n` +
+    (order?.recipientEmail ? `Receptor: ${order.recipientEmail} · ${order?.destinationCountry ?? "?"}\n` : `País: ${order?.destinationCountry ?? "?"}\n`) +
     (order?.amount    ? `Depositó: $${order.amount.toFixed(2)} USD\n`                                                              : "") +
     (destAmount       ? `Recibió: ${Number(destAmount).toLocaleString("es-MX")} ${(destCurrency ?? "").toUpperCase()}\n`          : "") +
     (order?.senderEmail ? `Emisor: ${order.senderEmail}\n`                                                                        : "") +
