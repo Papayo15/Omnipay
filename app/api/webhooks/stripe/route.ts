@@ -17,6 +17,8 @@
 
 import { NextRequest, NextResponse }                            from "next/server";
 import Stripe                                                    from "stripe";
+
+export const runtime = "nodejs";
 import { parseCobrarV2Link, parseRemesaV2Link, buildReceiptURL } from "@/lib/link";
 import { decryptPayload }                                        from "@/lib/accountcrypto";
 import { getWiseAccountType, buildWiseAccountDetails }           from "@/lib/wise-accounts";
@@ -252,7 +254,13 @@ export async function POST(req: NextRequest) {
   const sig     = req.headers.get("stripe-signature") ?? "";
   const secret  = process.env.STRIPE_WEBHOOK_SECRET ?? "";
 
+  console.log("[stripe/webhook] received", { hasSig: !!sig, hasSecret: !!secret, bodyLen: rawBody.length });
+
   if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+  if (!secret) {
+    console.error("[stripe/webhook] STRIPE_WEBHOOK_SECRET not configured — check Vercel env vars");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+  }
   if (!await verifyStripeSignature(rawBody, sig, secret))
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
 
