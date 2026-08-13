@@ -81,6 +81,12 @@ function RecibirEmpresaContent() {
   const currency = country === "MX" ? "MXN" : country === "GB" ? "GBP"
     : country === "CO" ? "COP" : country === "US" ? "USD" : "EUR";
 
+  // Minimum equivalent to $50 USD per currency (approximate, API enforces exact)
+  const minLocalAmount: Record<string, number> = {
+    USD: 50, MXN: 900, EUR: 47, GBP: 40, COP: 210000, BRL: 280,
+  };
+  const minLocal = minLocalAmount[currency] ?? 50;
+
   // Detect return from KYB
   useEffect(() => {
     const kybDone = searchParams.get("kyb_done") === "1";
@@ -190,7 +196,7 @@ function RecibirEmpresaContent() {
     }
   }, [businessName, email, country, accountField, bicField, isSepa, amount]);
 
-  const isValid = businessName && email && accountField && amount && parseFloat(amount) >= 100;
+  const isValid = businessName && email && accountField && amount && parseFloat(amount) >= minLocal;
 
   return (
     <main className="min-h-screen bg-[#0f172a] flex flex-col items-center px-5 pt-8 pb-16">
@@ -242,7 +248,9 @@ function RecibirEmpresaContent() {
                   className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 pr-16 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500/60" />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-mono">{currency}</span>
               </div>
-              <p className="text-slate-500 text-[10px] px-1">{t("amount_hint")}</p>
+              <p className="text-slate-500 text-[10px] px-1">
+                {t("amount_hint")} · Mínimo {minLocal.toLocaleString()} {currency} (~$50 USD)
+              </p>
             </div>
 
             <button onClick={handleSubmit} disabled={!isValid}
