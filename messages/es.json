@@ -576,7 +576,7 @@
     "q4": "¿Qué pasa si cierro la página después del KYC?",
     "a4": "En envíos personales (P2P): vuelve al link original — el sistema detectará tu verificación y continuará automáticamente sin que tengas que repetir el proceso. En pagos empresariales (B2B): igual — vuelve al link de cobro y el sistema retoma desde donde dejaste.",
     "q5": "¿Cuánto me cuesta?",
-    "a5": "Envío personal (P2P): OmniPay 0.50% + $0.49 fijo · Bridge ~0.75% conversión · Sin markup FX. Pago empresarial B2B via Bridge Wire: igual que P2P. Pago empresarial B2B via Stripe+Wise: Stripe 2.9% + Wise ~0.5% + OmniPay 1%. Usamos la tasa de mercado real — sin margen oculto en el tipo de cambio.",
+    "a5": "Envío personal (P2P) o B2B Wire: OmniPay 0.35% (mín. $0.40–$0.75) · Bridge ~0.75% conversión · Sin markup FX. Pago empresarial B2B via Stripe+Wise: Stripe 2.9%+$0.30 · Wise ~0.8% · OmniPay 0.35%+$1.99. Usamos la tasa de mercado real — sin margen oculto en el tipo de cambio.",
     "q6": "¿Qué pasa si hay un fallo técnico durante la transferencia?",
     "a6": "Si el sistema falla en cualquier punto antes de que Bridge confirme el pago final, los fondos son devueltos automáticamente al emisor. Nada queda retenido: Bridge no libera el dinero hasta confirmar que el destino lo recibió correctamente. Si el problema persiste, contacta a nuestro soporte desde la página de inicio."
   },

@@ -578,7 +578,7 @@
     "q4": "What if I close the page after completing KYC?",
     "a4": "For personal transfers (P2P): return to the original link — the system will detect your completed verification and continue automatically. For business payments (B2B): same — return to the payment link and the system picks up where you left off.",
     "q5": "How much does it cost?",
-    "a5": "Personal transfer (P2P): OmniPay 0.50% + $0.49 flat · Bridge ~0.75% conversion · No FX markup. Business B2B via Bridge Wire: same as P2P. Business B2B via Stripe+Wise: Stripe 2.9% + Wise ~0.5% + OmniPay 1%. We use the real market rate — no hidden FX spread.",
+    "a5": "Personal transfer (P2P) or B2B Wire: OmniPay 0.35% (min. $0.40–$0.75) · Bridge ~0.75% conversion · No FX markup. Business B2B via Stripe+Wise: Stripe 2.9%+$0.30 · Wise ~0.8% · OmniPay 0.35%+$1.99. We use the real market rate — no hidden FX spread.",
     "q6": "What happens if there is a technical failure during the transfer?",
     "a6": "If the system fails at any point before Bridge confirms the final payment, the funds are automatically returned to the sender. Nothing is left stranded: Bridge does not release money until it confirms the recipient received it. If the issue persists, contact our support from the home page."
   },

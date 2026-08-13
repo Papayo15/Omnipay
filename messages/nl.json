@@ -653,7 +653,7 @@
     "q4": "Wat als ik de pagina sluit na de KYC?",
     "a4": "P2P: Keer terug naar de oorspronkelijke link — het systeem gaat automatisch verder. B2B: hetzelfde.",
     "q5": "Wat kost het?",
-    "a5": "P2P: OmniPay 0,50% + $0,49 · Bridge ~0,75% · Geen FX-opslag. B2B Stripe+Wise: Stripe 2,9% + Wise ~0,5% + OmniPay 1%. Echte marktkoers.",
+    "a5": "Persoonlijke overschrijving (P2P) of B2B Wire: OmniPay 0,35% (min. $0,40–$0,75) · Bridge ~0,75% conversie · Geen FX-opslag. Zakelijke betaling B2B via Stripe+Wise: Stripe 2,9%+$0,30 · Wise ~0,8% · OmniPay 0,35%+$1,99. Wij gebruiken de echte marktkoers — geen verborgen FX-marge.",
     "q6": "Wat gebeurt er als er een technische storing optreedt tijdens de overboeking?",
     "a6": "Als het systeem faalt voordat Bridge de definitieve betaling bevestigt, worden de fondsen automatisch teruggestort naar de afzender. Niets blijft hangen: Bridge geeft geld pas vrij na bevestiging van ontvangst. Als het probleem aanhoudt, neem dan contact op met onze support via de startpagina."
   },
