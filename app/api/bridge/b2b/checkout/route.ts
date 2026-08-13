@@ -96,20 +96,24 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     if (isSandbox) {
       try { await ensureEndorsements(customer.id, endorsements); } catch { /* best-effort */ }
+      // simulateKycApproval twice — once immediately after ensureEndorsements so new
+      // endorsements (spei/pix/fps) are approved even on an already-active customer.
+      try { await simulateKycApproval(customer.id); } catch { /* best-effort */ }
       try {
         await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", endorsements });
       } catch { /* duplicate_record = already pending */ }
+      await new Promise(r => setTimeout(r, 500));
       try { await simulateKycApproval(customer.id); } catch { /* may already be approved */ }
 
-      // Poll up to 6 s — Bridge may take a moment to mark the business customer active
+      // Poll up to 8 s — Bridge may take a moment to mark the business customer active
       let kybActive = false;
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 8; i++) {
         await new Promise(r => setTimeout(r, 1000));
         try {
           const verified = await getCustomer(customer.id);
           kybActive = verified.status === "active" || verified.kyb_status === "approved";
           if (kybActive) break;
-          if (i === 2) {
+          if (i === 3) {
             try { await simulateKycApproval(customer.id); } catch { /* retry */ }
           }
         } catch { break; }
