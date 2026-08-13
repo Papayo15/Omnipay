@@ -223,7 +223,7 @@ export default function EnviarEmpresaWirePage() {
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-mono">{currency}</span>
               </div>
               <p className="text-slate-500 text-[10px] px-1">
-                {t("amount_hint")} · Mínimo {minLocal.toLocaleString()} {currency} (~$50 USD)
+                Mínimo {minLocal.toLocaleString()} {currency} (~$50 USD)
               </p>
             </div>
 
