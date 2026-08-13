@@ -143,7 +143,6 @@ export default function P2PPage() {
   const [pendingKycRetry, setPendingKycRetry] = useState(false);
   const [kycStillPending, setKycStillPending] = useState(false);
   const [savedKycForm,    setSavedKycForm]    = useState(false);
-  const [feeCalculated,   setFeeCalculated]   = useState(false);
   // Ref always fresh in callbacks — tracks whether current generateLink call is a KYC retry
   const kycAutoRetryRef = useRef(false);
 
@@ -396,11 +395,9 @@ export default function P2PPage() {
     : 0;
   const bicRequired       = SEPA_COUNTRIES.has(country) && !bic.trim();
   const cpfRequired       = country === "BR" && !cpf.trim();
-  // allReadyToCalc: todos los campos obligatorios llenos + monto válido — habilita el botón Calcular
-  const allReadyToCalc    = !!nombre.trim() && email.includes("@") && accountValid && !bicRequired && !cpfRequired && !!fxRate && parseFloat(amountLocal) >= 1 && amtUSDLocal >= 20 && rail === "bridge";
-  // feeBreakdownShown: calculador visible y confirmado por el usuario
-  const feeBreakdownShown = feeCalculated && allReadyToCalc;
-  const bridgeReady       = feeBreakdownShown;
+  // feeBreakdownShown mirrors exactly the condition under which the fee breakdown renders
+  const feeBreakdownShown = !!(fxRate && parseFloat(amountLocal) >= 1 && amtUSDLocal >= 20);
+  const bridgeReady       = !!nombre.trim() && email.includes("@") && accountValid && feeBreakdownShown && rail === "bridge" && !bicRequired && !cpfRequired;
 
   // ── KYC Info — pre-verification explanation ──────────────────────────────────
   if (step === "kyc_info") {
@@ -587,7 +584,7 @@ export default function P2PPage() {
         {/* Nombre receptor */}
         <div>
           <label className="block text-xs text-slate-400 mb-1">{t("label_recipient")}</label>
-          <input type="text" value={nombre} onChange={(e) => { setNombre(e.target.value); setFeeCalculated(false); }}
+          <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)}
             placeholder={t("name_placeholder")}
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
         </div>
@@ -595,7 +592,7 @@ export default function P2PPage() {
         {/* Email */}
         <div>
           <label className="block text-xs text-slate-400 mb-1">{t("email_label")}</label>
-          <input type="email" inputMode="email" value={email} onChange={(e) => { setEmail(e.target.value); setFeeCalculated(false); }}
+          <input type="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
         </div>
@@ -603,7 +600,7 @@ export default function P2PPage() {
         {/* País destino */}
         <div>
           <label className="block text-xs text-slate-400 mb-1">{t("country_label")}</label>
-          <select value={country} onChange={(e) => { setCountry(e.target.value); setFeeCalculated(false); }}
+          <select value={country} onChange={(e) => setCountry(e.target.value)}
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500">
             {COUNTRY_OPTIONS.map((c) => (
               <option key={c.code} value={c.code}>{c.flag} {t(`country_${c.code}`)} — {c.currency}</option>
@@ -637,7 +634,7 @@ export default function P2PPage() {
               </label>
               <input type="text" inputMode={country === "MX" ? "numeric" : "text"}
                 value={account}
-                onChange={(e) => { setAccount(country === "MX" ? e.target.value.replace(/\D/g, "").slice(0, 18) : e.target.value); setFeeCalculated(false); }}
+                onChange={(e) => setAccount(country === "MX" ? e.target.value.replace(/\D/g, "").slice(0, 18) : e.target.value)}
                 placeholder={
                   country === "MX" ? t("clabe_placeholder")
                   : SEPA_COUNTRIES.has(country) ? "DE89 3704 0044 0532 0130 00"
@@ -679,7 +676,7 @@ export default function P2PPage() {
                 <input
                   type="text"
                   value={bic}
-                  onChange={(e) => { setBic(e.target.value.replace(/\s+/g, "").toUpperCase()); setFeeCalculated(false); }}
+                  onChange={(e) => setBic(e.target.value.replace(/\s+/g, "").toUpperCase())}
                   placeholder="DEUTDEDBXXX"
                   maxLength={11}
                   className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors ${
@@ -700,7 +697,7 @@ export default function P2PPage() {
                   type="text"
                   inputMode="numeric"
                   value={cpf}
-                  onChange={(e) => { setCpf(e.target.value); setFeeCalculated(false); }}
+                  onChange={(e) => setCpf(e.target.value)}
                   placeholder={t("cpf_placeholder")}
                   maxLength={18}
                   className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors ${
@@ -715,22 +712,13 @@ export default function P2PPage() {
             <div>
               <label className="block text-xs text-slate-400 mb-1">{t("amount_receive_label")} ({currency})</label>
               <input type="number" inputMode="numeric" value={amountLocal}
-                onChange={(e) => { setAmountLocal(e.target.value); setFeeCalculated(false); }}
+                onChange={(e) => setAmountLocal(e.target.value)}
                 placeholder={currency === "MXN" ? "5000" : currency === "USD" ? "300" : "500"} min="1"
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
             </div>
 
-            {/* Botón calcular — visible cuando todos los campos están llenos pero aún no se calculó */}
-            {allReadyToCalc && !feeCalculated && (
-              <button
-                onClick={() => setFeeCalculated(true)}
-                className="w-full bg-slate-700 hover:bg-slate-600 active:scale-95 transition-all text-white py-3 rounded-2xl font-semibold text-sm">
-                {t("calculate_fees_button")}
-              </button>
-            )}
-
             {/* Fee breakdown — cálculo local, sin API call, instantáneo */}
-            {feeCalculated && fxRate && parseFloat(amountLocal) >= 1 && (() => {
+            {fxRate && parseFloat(amountLocal) >= 1 && (() => {
               const f = calcBridgeFees(parseFloat(amountLocal), currency, fxRate);
               const amtUSD = currency === "USD" ? parseFloat(amountLocal) : parseFloat(amountLocal) * fxRate;
               const belowMin = amtUSD < 20;
