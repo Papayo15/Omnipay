@@ -251,7 +251,26 @@ export async function POST(req: NextRequest): Promise<Response> {
     const err = e as Error & { type?: string; status?: number; details?: unknown };
     const detail = err.details ? JSON.stringify(err.details) : "";
     console.error("[bridge/b2b/checkout]", err.message, detail);
-    // Include details in response so the UI can show the specific invalid field
+
+    // Endorsement not yet approved — customer needs KYB for the new rail (SPEI/PIX/FPS/COP)
+    if (err.type === "missing_required_endorsements" || (err.message ?? "").toLowerCase().includes("endorsement")) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
+      let kybUrl: string | null = null;
+      try {
+        const kl = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business" });
+        kybUrl = kl.url ?? kl.kyc_link ?? null;
+        if (kybUrl) {
+          const sep = kybUrl.includes("?") ? "&" : "?";
+          kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(`${appUrl}/enviar-empresa-wire?kyb_done=1`)}`;
+        }
+      } catch { /* best-effort */ }
+      return NextResponse.json({
+        needs_kyb: true,
+        kyb_url:   kybUrl,
+        message:   "Tu empresa necesita aprobar un nuevo corredor de pago (SPEI/PIX/FPS). Completa la verificación KYB.",
+      }, { status: 202 });
+    }
+
     return NextResponse.json({
       error: err.message + (detail ? ` — ${detail}` : ""),
     }, { status: err.status ?? 500 });
