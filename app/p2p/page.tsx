@@ -262,16 +262,6 @@ export default function P2PPage() {
       setErrorMsg(t("cpf_label") + " es requerido para Brasil"); setStep("error"); return;
     }
 
-    // Convert local amount to USD to enforce $20 minimum
-    // fxRate = getFXRate(currency, "USD") → local→USD (e.g. 0.057 for MXN)
-    const rateNow = fxRate ?? 1;
-    const amtUSD  = currency === "USD" ? amt : amt * rateNow;
-    if (amtUSD < 20) {
-      setErrorMsg("El monto mínimo de envío es $20 USD.");
-      setStep("error");
-      return;
-    }
-
     // If FX rate not yet loaded, fetch it now before proceeding
     let rate = fxRate;
     if (!rate) {
@@ -281,6 +271,14 @@ export default function P2PPage() {
     }
 
     setSubmitting(true);
+    // Enforce $20 USD minimum with real rate
+    const amtUSDCheck = currency === "USD" ? amt : amt * (rate ?? 0);
+    if (!rate || amtUSDCheck < 20) {
+      setErrorMsg("El monto mínimo de envío es $20 USD equivalente.");
+      setStep("error");
+      return;
+    }
+
     setStep("generating");
     try {
       // 1. Get real Bridge quote (fees confirmed at this moment)
