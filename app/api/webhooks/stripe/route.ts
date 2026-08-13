@@ -214,7 +214,14 @@ async function processPendingOrders(
         </div>`;
       await Promise.allSettled([
         senderEmail    ? sendEmailNotification(senderEmail,    "OmniPay: transferencia completada ✅", completionHtml("sender")) : Promise.resolve(),
-        sendAdminWhatsApp(`✅ OmniPay B2B completado\nPI: ${entry.piId}\nWise TX: ${txId}\nPrincipal: ${entry.principalCAD} CAD → ${targetCurrency}`),
+        sendAdminWhatsApp(
+          `✅ OmniPay B2B completado\n` +
+          `PI: ${entry.piId}\n` +
+          `Wise TX: ${txId}\n` +
+          `Receptor: ${recipientName} · ${targetCountry}\n` +
+          `Principal: ${entry.principalCAD} CAD → ${targetCurrency}\n` +
+          (senderEmail ? `Emisor: ${senderEmail}` : ""),
+        ),
       ]);
 
       // PII (recipientName, recipientAccount, phones) se descarta aquí — fin del scope
@@ -342,7 +349,13 @@ export async function POST(req: NextRequest) {
               </div>`,
             )
           : Promise.resolve(),
-        sendAdminWhatsApp(`💳 OmniPay B2B confirmado\nPI: ${piId}\nPrincipal: ${principalCAD} CAD\nEntrega: 4-5 días hábiles`),
+        sendAdminWhatsApp(
+          `💳 OmniPay B2B confirmado\n` +
+          `PI: ${piId}\n` +
+          `Receptor: ${recipientName}\n` +
+          `Principal: ${principalCAD} CAD\n` +
+          `Entrega: 4-5 días hábiles`,
+        ),
       ]);
       // ── senderPhone, senderEmail, recipientName descartados aquí ─────────
 

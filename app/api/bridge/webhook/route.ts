@@ -123,7 +123,11 @@ export async function POST(req: NextRequest): Promise<Response> {
             errorMessage: String(data.failure_reason ?? type),
           });
           await sendAdminWhatsApp(
-            `🚨 OmniPay — Transfer FALLIDA\nOrden: ${orderId}\nMotivo: ${data.failure_reason ?? type}`,
+            `🚨 OmniPay — Transfer FALLIDA\n` +
+            `Orden: ${orderId}\n` +
+            `Receptor: ${order?.recipientName ?? "?"} · ${order?.destinationCountry ?? "?"}\n` +
+            `Monto: $${order?.amount?.toFixed(2) ?? "?"} USD\n` +
+            `Motivo: ${data.failure_reason ?? type}`,
           );
         } else if (mapped === "PROCESSING") {
           updateOrder(orderId, { status: "PROCESSING_ONCHAIN" });
@@ -237,12 +241,14 @@ export async function handleCompletion(orderId: string, data: Record<string, unk
     ?.receipt?.destination_amount;
   const destCurrency = (data as { receipt?: { destination_currency?: string } })?.receipt?.destination_currency;
 
+  const tipoLabel = order?.orderType === "b2b-bridge" ? "B2B Wire" : "P2P";
   await sendAdminWhatsApp(
-    `✅ OmniPay — Pago COMPLETADO\n` +
+    `✅ OmniPay — Pago COMPLETADO [${tipoLabel}]\n` +
     `Orden: ${orderId}\n` +
-    `Receptor: ${order?.recipientName ?? "?"}\n` +
-    `País: ${order?.destinationCountry ?? "?"}\n` +
-    (destAmount ? `Monto recibido: ${destAmount} ${(destCurrency ?? "").toUpperCase()}\n` : "") +
+    `Receptor: ${order?.recipientName ?? "?"} · ${order?.destinationCountry ?? "?"}\n` +
+    (order?.amount    ? `Depositó: $${order.amount.toFixed(2)} USD\n`                                                              : "") +
+    (destAmount       ? `Recibió: ${Number(destAmount).toLocaleString("es-MX")} ${(destCurrency ?? "").toUpperCase()}\n`          : "") +
+    (order?.senderEmail ? `Emisor: ${order.senderEmail}\n`                                                                        : "") +
     `Comprobante: ${receiptUrl}`,
   );
 

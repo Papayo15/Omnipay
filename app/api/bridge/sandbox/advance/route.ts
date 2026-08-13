@@ -29,6 +29,11 @@ export async function GET(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: "order_id is required and must start with OP-" }, { status: 400 });
   }
 
+  // OP-PING is a sandbox-detection probe from the UI — not a real order, skip silently
+  if (orderId === "OP-PING") {
+    return NextResponse.json({ ok: true, sandbox: true, ping: true });
+  }
+
   // getOrderAsync falls back to Redis so this works across Vercel instances.
   // In Edge→Node cross-invocation sandbox, the order may not be in memory — proceed anyway.
   const order = await getOrderAsync(orderId);
