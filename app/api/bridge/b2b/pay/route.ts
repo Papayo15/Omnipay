@@ -78,6 +78,13 @@ export async function POST(req: NextRequest): Promise<Response> {
       if (rate) amountUSD = parseFloat((meta.amount_target * rate).toFixed(2));
     }
 
+    if (amountUSD < 50) {
+      return NextResponse.json(
+        { error: `Monto mínimo para B2B Wire es $50 USD. Monto recibido: $${amountUSD.toFixed(2)} USD.` },
+        { status: 400 },
+      );
+    }
+
     const quote = await buildDynamicQuote({
       amount:  amountUSD,
       country: meta.country,

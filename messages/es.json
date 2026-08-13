@@ -861,7 +861,7 @@
     "amount_exact_note": "Transfiere el monto exacto",
     "fee_title": "Desglose de comisión",
     "fee_principal": "Principal",
-    "fee_service": "OmniPay (0.35%)",
+    "fee_service": "OmniPay (comisión)",
     "fee_flat": "Tarifa fija",
     "fee_kyb_label": "KYB empresarial (1ª vez)",
     "fee_total": "Total a transferir",
@@ -889,7 +889,8 @@
     "copy_link": "Copiar link",
     "new_link": "+ Generar otro link",
     "link_instructions_title": "¿Qué sigue?",
-    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles."
+    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles.",
+    "fee_exchange_approx": "≈ tipo de cambio"
   },
   "recibir_empresa": {
     "title": "Wire Empresarial — Recibir",

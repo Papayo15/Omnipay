@@ -60,8 +60,11 @@ export async function GET(req: NextRequest): Promise<Response> {
   } else {
     // Order lives in a different Lambda (Edge b2b/pay vs Node.js advance route) — no Redis.
     // Still fire the admin WhatsApp so sandbox testing gets the notification.
+    const tipoLabel = orderId.startsWith("OP-B2B") ? "B2B Wire" : "P2P";
     await sendAdminWhatsApp(
-      `✅ OmniPay — Pago COMPLETADO (sandbox)\nOrden: ${orderId}\n(Sin datos adicionales — configura REDIS_URL para historial completo)`,
+      `✅ OmniPay — Pago COMPLETADO [${tipoLabel}] (sandbox)\n` +
+      `Orden: ${orderId}\n` +
+      `⚠️ Datos completos requieren REDIS_URL en Vercel (cross-Lambda)`,
     );
   }
 

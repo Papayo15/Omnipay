@@ -882,7 +882,7 @@
     "amount_exact_note": "Canja adadin daidai",
     "fee_title": "Bayani akan kuɗaɗen hidima",
     "fee_principal": "Babban kuɗi",
-    "fee_service": "Hidimar OmniPay (0.50%)",
+    "fee_service": "OmniPay (kuɗin aiki)",
     "fee_flat": "Kuɗin daidai",
     "fee_kyb_label": "KYB na kasuwanci (karo na farko)",
     "fee_total": "Jimillar da za a canja",
@@ -910,7 +910,8 @@
     "copy_link": "Copiar link",
     "new_link": "+ Generar otro link",
     "link_instructions_title": "¿Qué sigue?",
-    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles."
+    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles.",
+    "fee_exchange_approx": "≈ ƙimar musayar"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

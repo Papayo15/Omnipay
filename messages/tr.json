@@ -883,7 +883,7 @@
     "amount_exact_note": "Tam tutarı transfer edin",
     "fee_title": "Ücret dökümü",
     "fee_principal": "Anapara",
-    "fee_service": "OmniPay (0.35%)",
+    "fee_service": "OmniPay (hizmet ücreti)",
     "fee_flat": "Sabit ücret",
     "fee_kyb_label": "Kurumsal KYB (ilk kez)",
     "fee_total": "Toplam transfer",
@@ -911,7 +911,8 @@
     "copy_link": "Copiar link",
     "new_link": "+ Generar otro link",
     "link_instructions_title": "¿Qué sigue?",
-    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles."
+    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles.",
+    "fee_exchange_approx": "≈ döviz kuru"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

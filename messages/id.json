@@ -883,7 +883,7 @@
     "amount_exact_note": "Transfer jumlah yang tepat",
     "fee_title": "Rincian biaya",
     "fee_principal": "Pokok",
-    "fee_service": "OmniPay (0.35%)",
+    "fee_service": "OmniPay (biaya layanan)",
     "fee_flat": "Biaya tetap",
     "fee_kyb_label": "KYB bisnis (pertama kali)",
     "fee_total": "Total yang ditransfer",
@@ -911,7 +911,8 @@
     "copy_link": "Copiar link",
     "new_link": "+ Generar otro link",
     "link_instructions_title": "¿Qué sigue?",
-    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles."
+    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles.",
+    "fee_exchange_approx": "≈ kurs tukar"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

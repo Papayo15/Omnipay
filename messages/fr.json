@@ -883,7 +883,7 @@
     "amount_exact_note": "Virer le montant exact",
     "fee_title": "Détail des frais",
     "fee_principal": "Principal",
-    "fee_service": "OmniPay (0.35%)",
+    "fee_service": "OmniPay (service)",
     "fee_flat": "Frais fixes",
     "fee_kyb_label": "KYB entreprise (1ère fois)",
     "fee_total": "Total à virer",
@@ -911,7 +911,8 @@
     "copy_link": "Copiar link",
     "new_link": "+ Generar otro link",
     "link_instructions_title": "¿Qué sigue?",
-    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles."
+    "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles.",
+    "fee_exchange_approx": "≈ taux de change"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",
