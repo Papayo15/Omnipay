@@ -395,7 +395,7 @@ export default function P2PPage() {
     : 0;
   const bicRequired  = SEPA_COUNTRIES.has(country) && !bic.trim();
   const cpfRequired  = country === "BR" && !cpf.trim();
-  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && amtUSDLocal >= 20 && rail === "bridge" && !bicRequired && !cpfRequired;
+  const bridgeReady  = !!nombre.trim() && email.includes("@") && accountValid && fxRate !== null && amtUSDLocal >= 20 && rail === "bridge" && !bicRequired && !cpfRequired;
 
   // ── KYC Info — pre-verification explanation ──────────────────────────────────
   if (step === "kyc_info") {
