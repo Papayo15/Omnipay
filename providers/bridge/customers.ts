@@ -7,7 +7,7 @@ export interface BridgeCustomer {
   id:          string;
   type:        "individual" | "business";
   email:       string;
-  status?:     "active" | "inactive" | "incomplete" | "rejected" | "under_review";
+  status?:     "active" | "inactive" | "incomplete" | "rejected" | "under_review" | "deposits_restricted";
   kyc_status?: "approved" | "pending" | "incomplete" | "rejected" | "under_review";
   kyb_status?: "approved" | "pending" | "incomplete" | "rejected" | "under_review";
   first_name?: string;
@@ -192,8 +192,10 @@ export async function findCustomerByEmail(email: string): Promise<BridgeCustomer
       `/customers?email=${encodeURIComponent(email.toLowerCase())}`,
     );
     if (!res.data?.length) return null;
-    // Prefer active customer if multiple exist with same email
-    return res.data.find((c) => c.status === "active") ?? res.data[0];
+    // Prefer fully active; deposits_restricted can still make outbound transfers
+    return res.data.find((c) => c.status === "active")
+        ?? res.data.find((c) => c.status === "deposits_restricted")
+        ?? res.data[0];
   } catch {
     return null;
   }
@@ -212,7 +214,7 @@ export async function getOrCreateCustomer(params: {
   business_name?: string;
   country?:       string;       // alpha-3, passed to createCustomer for address defaults
   endorsements?:  string[];     // included in customer creation to put endorsements pending
-}): Promise<{ customer: BridgeCustomer; isNew: boolean; needsKyc: boolean }> {
+}): Promise<{ customer: BridgeCustomer; isNew: boolean; needsKyc: boolean; depositsRestricted?: boolean }> {
   const existing = await findCustomerByEmail(params.email);
 
   if (existing && existing.type === params.type) {
@@ -221,10 +223,12 @@ export async function getOrCreateCustomer(params: {
     if (existing.type === "individual") {
       try { await ensureEndorsements(existing.id, ["base","sepa","spei","pix","faster_payments","cop"]); } catch { /* best-effort */ }
     }
+    // deposits_restricted: KYC/KYB is approved but inbound deposits are blocked (RFI pending).
+    // Treat as approved for outbound flows (sender VA); block for inbound (receiver liq address).
     const kycApproved = params.type === "business"
       ? existing.kyb_status === "approved"
-      : existing.status === "active" || existing.kyc_status === "approved";
-    return { customer: existing, isNew: false, needsKyc: !kycApproved };
+      : existing.status === "active" || existing.status === "deposits_restricted" || existing.kyc_status === "approved";
+    return { customer: existing, isNew: false, needsKyc: !kycApproved, depositsRestricted: existing.status === "deposits_restricted" };
   }
 
   const customer = await createCustomer(params);

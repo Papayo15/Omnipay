@@ -73,13 +73,21 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // Get or create Bridge BUSINESS customer (KYB)
     // Pass country so the initial address matches the recipient's actual country
-    const { customer, needsKyc: needsKyb, isNew } = await getOrCreateCustomer({
+    const { customer, needsKyc: needsKyb, isNew, depositsRestricted } = await getOrCreateCustomer({
       type:          "business",
       email:         email.toLowerCase(),
       business_name,
       country:       ISO3_FROM_ALPHA2[country_upper] ?? "USA",
       endorsements,
     });
+
+    if (depositsRestricted) {
+      return NextResponse.json({
+        error: "La empresa receptora tiene restricciones de depósito temporales en Bridge (RFI pendiente). Contacta a Bridge para resolverlo.",
+        bridge_type: "deposits_restricted",
+        customer_id: customer.id,
+      }, { status: 422 });
+    }
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 

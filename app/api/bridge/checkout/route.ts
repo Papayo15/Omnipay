@@ -96,7 +96,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const endorsements = ["base", "sepa", "spei", "pix", "faster_payments", "cop"];
 
     // 1. Get or create Bridge customer (KYC)
-    const { customer, needsKyc, isNew } = await getOrCreateCustomer({
+    const { customer, needsKyc, isNew, depositsRestricted } = await getOrCreateCustomer({
       type:         "individual",
       email:        email.toLowerCase(),
       first_name:   nombre.split(" ")[0],
@@ -104,6 +104,16 @@ export async function POST(req: NextRequest): Promise<Response> {
       country:      country_iso3,
       endorsements,
     });
+
+    // deposits_restricted: Bridge has blocked inbound deposits for this customer (RFI pending).
+    // The recipient cannot receive new payments until Bridge resolves the restriction.
+    if (depositsRestricted) {
+      return NextResponse.json({
+        error: "Tu cuenta en Bridge tiene restricciones de depósito temporales. Contacta a Bridge para resolver el RFI pendiente.",
+        bridge_type: "deposits_restricted",
+        customer_id: customer.id,
+      }, { status: 422 });
+    }
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 

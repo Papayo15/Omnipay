@@ -207,6 +207,28 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
   }
 
+  // ── Customer status updated ───────────────────────────────────────────────
+  // Bridge sends this when a customer transitions status (e.g., active → deposits_restricted).
+  // deposits_restricted: inbound blocked, outbound allowed — triggered by Bridge RFI.
+  // Deadline: Sept 17, 2026 — Bridge will start sending this status; code must accept it.
+  if (type === "customer.updated") {
+    const customerId = String(data.id ?? "");
+    const status     = String(data.status ?? "");
+    const email      = String(data.email ?? "");
+
+    console.log(`[bridge/webhook] customer.updated id=${customerId} status=${status}`);
+
+    if (status === "deposits_restricted") {
+      await sendAdminWhatsApp(
+        `⚠️ OmniPay — Cliente con depósitos restringidos\n` +
+        `ID: ${customerId}\n` +
+        (email ? `Email: ${email}\n` : "") +
+        `Estado: deposits_restricted\n` +
+        `Este cliente no puede recibir nuevos depósitos (Bridge RFI pendiente).`,
+      );
+    }
+  }
+
   return NextResponse.json({ received: true });
 }
 
