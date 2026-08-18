@@ -7,7 +7,7 @@ export interface BridgeCustomer {
   id:          string;
   type:        "individual" | "business";
   email:       string;
-  status?:     "active" | "inactive" | "incomplete" | "rejected" | "under_review" | "under_review_awaiting_ubo" | "deposits_restricted" | "paused" | "offboarded";
+  status?:     "active" | "approved" | "inactive" | "incomplete" | "not_started" | "rejected" | "under_review" | "awaiting_questionnaire" | "awaiting_ubo" | "deposits_restricted" | "paused" | "offboarded";
   kyc_status?: "approved" | "pending" | "incomplete" | "not_started" | "rejected" | "under_review" | "awaiting_ubo";
   kyb_status?: "approved" | "pending" | "incomplete" | "not_started" | "rejected" | "under_review" | "awaiting_ubo";
   first_name?: string;
@@ -192,8 +192,8 @@ export async function findCustomerByEmail(email: string): Promise<BridgeCustomer
       `/customers?email=${encodeURIComponent(email.toLowerCase())}`,
     );
     if (!res.data?.length) return null;
-    // Prefer fully active; deposits_restricted can still make outbound transfers
-    return res.data.find((c) => c.status === "active")
+    // Prefer fully active/approved; deposits_restricted can still make outbound transfers
+    return res.data.find((c) => c.status === "active" || c.status === "approved")
         ?? res.data.find((c) => c.status === "deposits_restricted")
         ?? res.data[0];
   } catch {
@@ -230,7 +230,7 @@ export async function getOrCreateCustomer(params: {
     const kycApproved  = !isBlocked && (
       params.type === "business"
         ? existing.kyb_status === "approved"
-        : existing.status === "active" || isRestricted || existing.kyc_status === "approved"
+        : existing.status === "active" || existing.status === "approved" || isRestricted || existing.kyc_status === "approved"
     );
     return { customer: existing, isNew: false, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
   }

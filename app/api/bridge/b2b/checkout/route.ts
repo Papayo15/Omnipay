@@ -119,7 +119,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         await new Promise(r => setTimeout(r, 1000));
         try {
           const verified = await getCustomer(customer.id);
-          kybActive = verified.status === "active" || verified.kyb_status === "approved";
+          kybActive = verified.status === "active" || verified.status === "approved" || verified.kyb_status === "approved";
           if (kybActive) break;
           if (i === 3) {
             try { await simulateKycApproval(customer.id); } catch { /* retry */ }

@@ -208,10 +208,10 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   // ── Customer status updated ───────────────────────────────────────────────
-  // Bridge sends this when a customer transitions status (e.g., active → deposits_restricted).
-  // deposits_restricted: inbound blocked, outbound allowed — triggered by Bridge RFI.
-  // Deadline: Sept 17, 2026 — Bridge will start sending this status; code must accept it.
-  if (type === "customer.updated") {
+  // Bridge sends customer.updated.status_transitioned on any status change.
+  // customer.updated fires on non-status field updates; handle both to be safe.
+  // deposits_restricted: inbound blocked, outbound allowed (Bridge RFI) — Sept 17, 2026 deadline.
+  if (type === "customer.updated.status_transitioned" || type === "customer.updated") {
     const customerId = String(data.id ?? "");
     const status     = String(data.status ?? "");
     const email      = String(data.email ?? "");
