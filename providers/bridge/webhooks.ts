@@ -90,5 +90,18 @@ export async function verifyBridgeWebhook(
 }
 
 export function parseWebhookEvent(rawBody: string): BridgeWebhookEvent {
-  return JSON.parse(rawBody) as BridgeWebhookEvent;
+  const raw = JSON.parse(rawBody) as Record<string, unknown>;
+  // Normalize both Bridge webhook formats into a single shape:
+  //   Old: { id, type, data, created_at }
+  //   New: { event_id, event_type, event_object, event_object_status, event_created_at }
+  const isNewFormat = typeof raw.event_type === "string";
+  if (isNewFormat) {
+    return {
+      id:         String(raw.event_id ?? ""),
+      type:       String(raw.event_type ?? ""),
+      data:       (raw.event_object as Record<string, unknown>) ?? {},
+      created_at: String(raw.event_created_at ?? ""),
+    };
+  }
+  return raw as unknown as BridgeWebhookEvent;
 }
