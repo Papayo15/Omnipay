@@ -223,8 +223,21 @@ export async function POST(req: NextRequest): Promise<Response> {
         `⚠️ OmniPay — Cliente con depósitos restringidos\n` +
         `ID: ${customerId}\n` +
         (email ? `Email: ${email}\n` : "") +
-        `Estado: deposits_restricted\n` +
-        `Este cliente no puede recibir nuevos depósitos (Bridge RFI pendiente).`,
+        `Nuevos depósitos serán auto-devueltos. Puede seguir retirando fondos existentes.`,
+      );
+    } else if (status === "paused") {
+      await sendAdminWhatsApp(
+        `⏸️ OmniPay — Cuenta pausada por Bridge\n` +
+        `ID: ${customerId}\n` +
+        (email ? `Email: ${email}\n` : "") +
+        `Cuenta bajo revisión temporal por Bridge.`,
+      );
+    } else if (status === "offboarded") {
+      await sendAdminWhatsApp(
+        `🚫 OmniPay — Cliente dado de baja por Bridge\n` +
+        `ID: ${customerId}\n` +
+        (email ? `Email: ${email}\n` : "") +
+        `Cuenta permanentemente cerrada.`,
       );
     }
   }

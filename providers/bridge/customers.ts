@@ -7,9 +7,9 @@ export interface BridgeCustomer {
   id:          string;
   type:        "individual" | "business";
   email:       string;
-  status?:     "active" | "inactive" | "incomplete" | "rejected" | "under_review" | "deposits_restricted";
-  kyc_status?: "approved" | "pending" | "incomplete" | "rejected" | "under_review";
-  kyb_status?: "approved" | "pending" | "incomplete" | "rejected" | "under_review";
+  status?:     "active" | "inactive" | "incomplete" | "rejected" | "under_review" | "under_review_awaiting_ubo" | "deposits_restricted" | "paused" | "offboarded";
+  kyc_status?: "approved" | "pending" | "incomplete" | "not_started" | "rejected" | "under_review" | "awaiting_ubo";
+  kyb_status?: "approved" | "pending" | "incomplete" | "not_started" | "rejected" | "under_review" | "awaiting_ubo";
   first_name?: string;
   last_name?:  string;
   business_name?: string;
@@ -214,7 +214,7 @@ export async function getOrCreateCustomer(params: {
   business_name?: string;
   country?:       string;       // alpha-3, passed to createCustomer for address defaults
   endorsements?:  string[];     // included in customer creation to put endorsements pending
-}): Promise<{ customer: BridgeCustomer; isNew: boolean; needsKyc: boolean; depositsRestricted?: boolean }> {
+}): Promise<{ customer: BridgeCustomer; isNew: boolean; needsKyc: boolean; depositsRestricted?: boolean; accountBlocked?: boolean }> {
   const existing = await findCustomerByEmail(params.email);
 
   if (existing && existing.type === params.type) {
@@ -223,12 +223,16 @@ export async function getOrCreateCustomer(params: {
     if (existing.type === "individual") {
       try { await ensureEndorsements(existing.id, ["base","sepa","spei","pix","faster_payments","cop"]); } catch { /* best-effort */ }
     }
-    // deposits_restricted: KYC/KYB is approved but inbound deposits are blocked (RFI pending).
-    // Treat as approved for outbound flows (sender VA); block for inbound (receiver liq address).
-    const kycApproved = params.type === "business"
-      ? existing.kyb_status === "approved"
-      : existing.status === "active" || existing.status === "deposits_restricted" || existing.kyc_status === "approved";
-    return { customer: existing, isNew: false, needsKyc: !kycApproved, depositsRestricted: existing.status === "deposits_restricted" };
+    // deposits_restricted: inbound blocked, outbound allowed. Treat as approved for sender flows.
+    // paused/offboarded: fully blocked — surface as needsKyc so caller shows an error.
+    const isRestricted = existing.status === "deposits_restricted";
+    const isBlocked    = existing.status === "paused" || existing.status === "offboarded";
+    const kycApproved  = !isBlocked && (
+      params.type === "business"
+        ? existing.kyb_status === "approved"
+        : existing.status === "active" || isRestricted || existing.kyc_status === "approved"
+    );
+    return { customer: existing, isNew: false, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
   }
 
   const customer = await createCustomer(params);
