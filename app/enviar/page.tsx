@@ -117,6 +117,14 @@ export default function EnviarPage() {
     : recipientCountry === "US" ? "USD"
     : "EUR";
 
+  const MIN_LOCAL: Record<string, number> = {
+    USD: 20, MXN: 380, BRL: 110, EUR: 19, GBP: 16,
+    COP: 85_000, ARS: 20_000, CLP: 19_000, PEN: 75,
+  };
+  const quoteMinLocal  = feeQuote ? (MIN_LOCAL[feeQuote.target_currency] ?? 20) : 20;
+  const quoteBelowMin  = feeQuote ? feeQuote.recipient_gets < quoteMinLocal : true;
+  const quoteReady     = !!feeQuote && !feeLoading && !quoteBelowMin;
+
   const buildBody = useCallback(() => {
     const base = {
       sender_name:       senderName.trim(),
@@ -525,72 +533,63 @@ export default function EnviarPage() {
                   {t("fee_calculating")}
                 </div>
               )}
-              {feeQuote && !feeLoading && (() => {
-                const MIN_LOCAL: Record<string, number> = {
-                  USD: 20, MXN: 380, BRL: 110, EUR: 19, GBP: 16,
-                  COP: 85_000, ARS: 20_000, CLP: 19_000, PEN: 75,
-                };
-                const minLocal = MIN_LOCAL[feeQuote.target_currency] ?? 20;
-                const belowMin = feeQuote.recipient_gets < minLocal;
-                if (belowMin) {
-                  return (
-                    <div className="bg-red-900/20 border border-red-500/40 rounded-xl p-4 text-center">
-                      <p className="text-red-400 text-sm font-semibold">
-                        Monto mínimo: {minLocal.toLocaleString()} {feeQuote.target_currency}
-                      </p>
-                      <p className="text-slate-500 text-xs mt-1">Equivale a ≈ $20 USD</p>
+              {feeQuote && !feeLoading && quoteBelowMin && (
+                <div className="bg-red-900/20 border border-red-500/40 rounded-xl p-4 text-center">
+                  <p className="text-red-400 text-sm font-semibold">
+                    Monto mínimo: {quoteMinLocal.toLocaleString()} {feeQuote.target_currency}
+                  </p>
+                  <p className="text-slate-500 text-xs mt-1">Equivale a ≈ $20 USD</p>
+                </div>
+              )}
+              {quoteReady && feeQuote && (
+                <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-400">{t("fee_recipient_gets")}</span>
+                    <span className="text-emerald-400 font-mono font-semibold">
+                      {feeQuote.recipient_gets.toLocaleString()} {feeQuote.target_currency}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-400">{t("fee_fx_rate")}</span>
+                    <span className="text-slate-300 font-mono">
+                      1 {feeQuote.from_currency} = {feeQuote.fx_rate.toFixed(2)} {feeQuote.target_currency}
+                    </span>
+                  </div>
+                  <div className="border-t border-slate-700/50 pt-2 space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_bridge")}</span>
+                      <span className="text-slate-400 font-mono">
+                        {feeQuote.bridge_fee.toFixed(2)} {feeQuote.from_currency}
+                      </span>
                     </div>
-                  );
-                }
-                return (
-                  <>
-                    <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 space-y-2">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-slate-400">{t("fee_recipient_gets")}</span>
-                        <span className="text-emerald-400 font-mono font-semibold">
-                          {feeQuote.recipient_gets.toLocaleString()} {feeQuote.target_currency}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-xs">
-                        <span className="text-slate-400">{t("fee_fx_rate")}</span>
-                        <span className="text-slate-300 font-mono">
-                          1 {feeQuote.from_currency} = {feeQuote.fx_rate.toFixed(2)} {feeQuote.target_currency}
-                        </span>
-                      </div>
-                      <div className="border-t border-slate-700/50 pt-2 space-y-1">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-500">{t("fee_bridge")}</span>
-                          <span className="text-slate-400 font-mono">
-                            {feeQuote.bridge_fee.toFixed(2)} {feeQuote.from_currency}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-500">{t("fee_omnipay")}</span>
-                          <span className="text-slate-400 font-mono">
-                            {feeQuote.omnipay_fee.toFixed(2)} {feeQuote.from_currency}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="border-t border-slate-700/50 pt-2 flex justify-between">
-                        <span className="text-slate-300 text-xs font-medium">{t("fee_sender_deposits")}</span>
-                        <span className="text-white font-bold font-mono text-sm">
-                          {feeQuote.sender_deposits.toFixed(2)} {feeQuote.from_currency}
-                        </span>
-                      </div>
-                      <p className="text-slate-600 text-[10px] leading-snug">{t("fee_note")}</p>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_omnipay")}</span>
+                      <span className="text-slate-400 font-mono">
+                        {feeQuote.omnipay_fee.toFixed(2)} {feeQuote.from_currency}
+                      </span>
                     </div>
-                    <button
-                      onClick={handleSubmit}
-                      disabled={!senderName || !senderEmail || !recipientName || !recipientEmail || !accountField || !amountTarget}
-                      className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
-                    >
-                      <Send className="w-4 h-4" />
-                      {t("cta")}
-                    </button>
-                  </>
-                );
-              })()}
+                  </div>
+                  <div className="border-t border-slate-700/50 pt-2 flex justify-between">
+                    <span className="text-slate-300 text-xs font-medium">{t("fee_sender_deposits")}</span>
+                    <span className="text-white font-bold font-mono text-sm">
+                      {feeQuote.sender_deposits.toFixed(2)} {feeQuote.from_currency}
+                    </span>
+                  </div>
+                  <p className="text-slate-600 text-[10px] leading-snug">{t("fee_note")}</p>
+                </div>
+              )}
             </div>
+
+            {quoteReady && (
+              <button
+                onClick={handleSubmit}
+                disabled={!senderName || !senderEmail || !recipientName || !recipientEmail || !accountField || !amountTarget}
+                className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                {t("cta")}
+              </button>
+            )}
           </div>
         )}
 
