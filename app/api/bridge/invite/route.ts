@@ -14,6 +14,7 @@ import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload } from "@/lib/accountcrypto";
 import { getTargetCurrency } from "@/lib/routing";
+import { sendEmailNotification } from "@/lib/notify";
 
 export const runtime = "edge";
 
@@ -260,6 +261,29 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (/^521\d{10}$/.test(waPhone)) waPhone = "52" + waPhone.slice(3);
     waLink = `https://wa.me/${waPhone}?text=${waText}`;
   }
+
+  // Send verification link email to recipient — fire-and-forget, never blocks response
+  const verifyLink = tosUrl ?? kycUrl ?? recibir;
+  const emailSubject = `${sender_name} quiere enviarte dinero — verifica tu identidad`;
+  const emailHtml = `
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f172a;color:#e2e8f0;padding:32px;border-radius:16px">
+      <p style="font-size:22px;font-weight:700;color:#fff;margin:0 0 8px">Hola ${recipient_name} 👋</p>
+      <p style="font-size:15px;color:#94a3b8;margin:0 0 24px">
+        <strong style="color:#e2e8f0">${sender_name}</strong> quiere enviarte dinero a través de OmniPay.
+        Solo necesitas verificar tu identidad <strong style="color:#fff">una sola vez</strong> — tarda aproximadamente 2 minutos.
+      </p>
+      <a href="${verifyLink}" style="display:block;background:#10b981;color:#fff;text-align:center;padding:16px 24px;border-radius:12px;font-weight:700;font-size:16px;text-decoration:none;margin-bottom:24px">
+        Verificar mi identidad →
+      </a>
+      <p style="font-size:12px;color:#475569;margin:0">
+        OmniPay no almacena tus datos bancarios ni documentos de identidad.<br>
+        La verificación es procesada por Bridge Building Inc., registrado ante FinCEN.<br>
+        Si no esperabas este mensaje, puedes ignorarlo.
+      </p>
+    </div>
+  `;
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  sendEmailNotification(recipient_email.toLowerCase(), emailSubject, emailHtml);
 
   return NextResponse.json({
     status:       "invite_sent",
