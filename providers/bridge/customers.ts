@@ -239,8 +239,10 @@ export async function getOrCreateCustomer(params: {
     const customer = await createCustomer(params);
     return { customer, isNew: true, needsKyc: true };
   } catch (err) {
-    const e = err as Error & { source?: Record<string, unknown> };
-    const isEmailTaken = JSON.stringify(e.source ?? e.message ?? "").toLowerCase().includes("already exists");
+    const e = err as Error & { details?: unknown };
+    // Bridge returns { code:"invalid_parameters", source:{ key:{ email:"A customer with this email already exists" } } }
+    // The full response is on e.details; e.message is the generic "Please resubmit..." text.
+    const isEmailTaken = JSON.stringify(e.details ?? e.message ?? "").toLowerCase().includes("already exists");
     if (isEmailTaken) {
       // Race condition or findCustomerByEmail returned null despite customer existing.
       // Re-fetch and return the existing customer.
