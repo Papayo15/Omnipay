@@ -695,35 +695,35 @@ export default function B2BPage() {
 
         {/* KYB verification absorbed by OmniPay — no toggle needed */}
 
-        {/* Live fee estimate */}
+        {/* Live fee estimate + generate button — only shown when amount is entered */}
         {(() => {
           const amt = parseFloat(amount);
           if (!amt || amt <= 0) return null;
           const f = calcB2BFees(amt);
           return (
-            <div className="bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 space-y-1.5 text-xs">
-              <p className="text-slate-400 font-medium uppercase tracking-wide text-[10px] mb-2">Estimado de costos (CAD)</p>
-              <div className="flex justify-between text-slate-300"><span>Monto a transferir</span><span className="font-mono">${amt.toFixed(2)}</span></div>
-              <div className="flex justify-between text-slate-400"><span>Stripe aceptación (2.9%+$0.30)</span><span className="font-mono">+ ${f.stripe.toFixed(2)}</span></div>
-              <div className="flex justify-between text-slate-400"><span>Wise FX entrada (CAD→intermedio ~0.60%)</span><span className="font-mono">+ ${f.wiseFxIn.toFixed(2)}</span></div>
-              <div className="flex justify-between text-slate-400"><span>Wise FX salida (→moneda local ~0.50%)</span><span className="font-mono">+ ${f.wiseFxOut.toFixed(2)}</span></div>
-              <div className="flex justify-between text-slate-400"><span>OmniPay servicio (0.50%)</span><span className="font-mono">+ ${f.omniSvc.toFixed(2)}</span></div>
-              <div className="flex justify-between text-slate-400"><span>OmniPay flat B2B</span><span className="font-mono">+ ${OMNI_FLAT.toFixed(2)}</span></div>
-              <div className="border-t border-slate-700 pt-1.5 flex justify-between font-semibold text-white">
-                <span>Total que paga el cliente</span>
-                <span className="font-mono text-indigo-300">${f.total.toFixed(2)} CAD</span>
+            <>
+              <div className="bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 space-y-1.5 text-xs">
+                <p className="text-slate-400 font-medium uppercase tracking-wide text-[10px] mb-2">Estimado de costos (CAD)</p>
+                <div className="flex justify-between text-slate-300"><span>Monto a transferir</span><span className="font-mono">${amt.toFixed(2)}</span></div>
+                <div className="flex justify-between text-slate-400"><span>Stripe aceptación (2.9%+$0.30)</span><span className="font-mono">+ ${f.stripe.toFixed(2)}</span></div>
+                <div className="flex justify-between text-slate-400"><span>Wise FX entrada (CAD→intermedio ~0.60%)</span><span className="font-mono">+ ${f.wiseFxIn.toFixed(2)}</span></div>
+                <div className="flex justify-between text-slate-400"><span>Wise FX salida (→moneda local ~0.50%)</span><span className="font-mono">+ ${f.wiseFxOut.toFixed(2)}</span></div>
+                <div className="flex justify-between text-slate-400"><span>OmniPay servicio (0.50%)</span><span className="font-mono">+ ${f.omniSvc.toFixed(2)}</span></div>
+                <div className="flex justify-between text-slate-400"><span>OmniPay flat B2B</span><span className="font-mono">+ ${OMNI_FLAT.toFixed(2)}</span></div>
+                <div className="border-t border-slate-700 pt-1.5 flex justify-between font-semibold text-white">
+                  <span>Total que paga el cliente</span>
+                  <span className="font-mono text-indigo-300">${f.total.toFixed(2)} CAD</span>
+                </div>
+                <p className="text-slate-600 text-[10px] pt-0.5">Estimado local · Tarifas reales confirmadas al generar el link</p>
               </div>
-              <p className="text-slate-600 text-[10px] pt-0.5">Estimado local · Tarifas reales confirmadas al generar el link</p>
-            </div>
+              {formError && <p className="text-red-400 text-sm">{formError}</p>}
+              <button onClick={handleCreate} disabled={submitting}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:opacity-50 transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
+                {submitting ? t("btn_generating") : t("btn_generate")}
+              </button>
+            </>
           );
         })()}
-
-        {formError && <p className="text-red-400 text-sm">{formError}</p>}
-
-        <button onClick={handleCreate} disabled={submitting}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:opacity-50 transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
-          {submitting ? t("btn_generating") : t("btn_generate")}
-        </button>
 
         <p className="text-center text-xs text-slate-600 pb-6">
           🔒 {t("b2b_zero_data")}

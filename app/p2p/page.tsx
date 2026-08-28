@@ -733,54 +733,55 @@ export default function P2PPage() {
                 );
               }
               return (
-                <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-2">{t("fee_breakdown_title")}</p>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">{t("fee_recipient_gets")}</span>
-                    <span className="text-white font-semibold">{parseFloat(amountLocal).toLocaleString()} {currency}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t("fee_usd_equiv")}</span>
-                    <span className="text-slate-400">${f.usd.toFixed(2)} USD</span>
-                  </div>
-                  <div className="border-t border-slate-800 pt-1 mt-1" />
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t("fee_bridge_onramp")}</span>
-                    <span className="text-blue-400">+${f.onramp.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t("fee_bridge_offramp")}</span>
-                    <span className="text-blue-400">+${f.offramp.toFixed(2)}</span>
-                  </div>
-                  {f.fxFee > 0 && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">{t("fee_bridge_fx", { currency, pct: (f.fxPct * 100).toFixed(2) })}</span>
-                      <span className="text-blue-400">+${f.fxFee.toFixed(2)}</span>
+                <>
+                  <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
+                    <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mb-2">{t("fee_breakdown_title")}</p>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">{t("fee_recipient_gets")}</span>
+                      <span className="text-white font-semibold">{parseFloat(amountLocal).toLocaleString()} {currency}</span>
                     </div>
-                  )}
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t("fee_omnipay_service")}</span>
-                    <span className="text-emerald-400">+${f.omniSvc.toFixed(2)}</span>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_usd_equiv")}</span>
+                      <span className="text-slate-400">${f.usd.toFixed(2)} USD</span>
+                    </div>
+                    <div className="border-t border-slate-800 pt-1 mt-1" />
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_bridge_onramp")}</span>
+                      <span className="text-blue-400">+${f.onramp.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_bridge_offramp")}</span>
+                      <span className="text-blue-400">+${f.offramp.toFixed(2)}</span>
+                    </div>
+                    {f.fxFee > 0 && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-500">{t("fee_bridge_fx", { currency, pct: (f.fxPct * 100).toFixed(2) })}</span>
+                        <span className="text-blue-400">+${f.fxFee.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_omnipay_service")}</span>
+                      <span className="text-emerald-400">+${f.omniSvc.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">{t("fee_omnipay_flat")}</span>
+                      <span className="text-emerald-400">+${f.omniFlat.toFixed(2)}</span>
+                    </div>
+                    <div className="border-t border-slate-700 pt-2 flex justify-between text-sm font-bold">
+                      <span className="text-white">{t("fee_total_sender")}</span>
+                      <span className="text-emerald-400">${f.total.toFixed(2)} USD</span>
+                    </div>
+                    <p className="text-[10px] text-slate-600 text-center mt-1">
+                      {t("fee_fx_rate", { currency, rate: fxRate.toFixed(4) })}
+                    </p>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t("fee_omnipay_flat")}</span>
-                    <span className="text-emerald-400">+${f.omniFlat.toFixed(2)}</span>
-                  </div>
-                  <div className="border-t border-slate-700 pt-2 flex justify-between text-sm font-bold">
-                    <span className="text-white">{t("fee_total_sender")}</span>
-                    <span className="text-emerald-400">${f.total.toFixed(2)} USD</span>
-                  </div>
-                  <p className="text-[10px] text-slate-600 text-center mt-1">
-                    {t("fee_fx_rate", { currency, rate: fxRate.toFixed(4) })}
-                  </p>
-                </div>
+                  <button onClick={generateLink} disabled={submitting || !bridgeReady}
+                    className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
+                    {submitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}
+                  </button>
+                </>
               );
             })()}
-
-            <button onClick={generateLink} disabled={submitting || !bridgeReady}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
-              {submitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}
-            </button>
             <div className="mt-3">
               <TrustBanner variant="checkout" />
             </div>
