@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse }        from "next/server";
 import {
-  getOrCreateCustomer, getKycUrlFromCustomer,
+  getOrCreateCustomer, getCustomer, getKycUrlFromCustomer,
   patchCustomerAddress, ensureEndorsements, createKycLink,
   createTosLink, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
 } from "@/providers/bridge/customers";
@@ -118,10 +118,19 @@ export async function POST(req: NextRequest): Promise<Response> {
     const senderCountry = CURRENCY_TO_COUNTRY[source_currency] ?? "US";
     try { await patchCustomerAddress(senderCustomer.id, senderCountry, true); } catch { /* best-effort */ }
 
-    // 2. Sandbox KYC gate — show simulate button for new OR unverified customers
-    //    isNew || needsKyc: Bridge sandbox may auto-approve on creation, so needsKyc
-    //    could be false even for a brand-new customer. isNew catches that case.
-    if (isSandbox && (isSenderNew || needsKyc)) {
+    // 2. Sandbox KYC gate — show simulate button for new OR unverified customers.
+    //    Re-check by ID when existing customer shows needsKyc: list endpoint lags
+    //    behind getCustomer after simulate-kyc runs.
+    let kycStillNeeded = isSenderNew || needsKyc;
+    if (isSandbox && !isSenderNew && needsKyc) {
+      try {
+        const fresh = await getCustomer(senderCustomer.id);
+        const freshActive = fresh.status === "active" || fresh.status === "approved"
+          || fresh.kyc_status === "approved";
+        if (freshActive) kycStillNeeded = false;
+      } catch { /* best-effort */ }
+    }
+    if (isSandbox && kycStillNeeded) {
       const kycRedirectUri = redirect_uri ?? `${appUrl}/enviar?kyc_done=1`;
       return NextResponse.json({
         needs_kyc:   true,

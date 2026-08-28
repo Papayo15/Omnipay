@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse }        from "next/server";
 import {
-  getOrCreateCustomer, getKycUrlFromCustomer,
+  getOrCreateCustomer, getCustomer, getKycUrlFromCustomer,
   patchCustomerAddress, ensureEndorsements, createKycLink,
   createTosLink, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
 } from "@/providers/bridge/customers";
@@ -121,10 +121,19 @@ export async function POST(req: NextRequest): Promise<Response> {
       console.warn("[bridge/b2b/send] patchCustomerAddress:", (addrErr as Error).message);
     }
 
-    // 2. Sandbox KYB gate — show simulate button for new OR unverified customers
-    //    Use isNew || needsKyb: Bridge sandbox sometimes auto-approves on creation,
-    //    so needsKyb may be false even for a brand-new customer. isNew catches that case.
-    if (isSandbox && (isNew || needsKyb)) {
+    // 2. Sandbox KYB gate — show simulate button for new OR unverified customers.
+    //    If existing customer still shows needsKyb, re-check by ID (list endpoint
+    //    has slower eventual consistency than getCustomer, so it may lag post-simulate).
+    let kybStillNeeded = isNew || needsKyb;
+    if (isSandbox && !isNew && needsKyb) {
+      try {
+        const fresh = await getCustomer(senderCustomer.id);
+        const freshActive = fresh.status === "active" || fresh.status === "approved"
+          || (fresh as unknown as Record<string, string>).kyb_status === "approved";
+        if (freshActive) kybStillNeeded = false;
+      } catch { /* best-effort */ }
+    }
+    if (isSandbox && kybStillNeeded) {
       const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
       return NextResponse.json({
         needs_kyb:   true,

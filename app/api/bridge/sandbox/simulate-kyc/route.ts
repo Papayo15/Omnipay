@@ -62,6 +62,10 @@ export async function POST(req: NextRequest): Promise<Response> {
       }, { status: 422 });
     }
 
+    // Extra wait for Bridge list endpoints to catch up with the status change.
+    // getCustomer(id) updates faster than findCustomerByEmail (list-based cache).
+    await new Promise(r => setTimeout(r, 3000));
+
     return NextResponse.json({ ok: true, customer_id, status: "active" });
   } catch (e) {
     const err = e as Error;
