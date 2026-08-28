@@ -14,9 +14,9 @@
 
 import { NextRequest, NextResponse }        from "next/server";
 import {
-  getOrCreateCustomer, getCustomer, getKycUrlFromCustomer,
+  getOrCreateCustomer, getKycUrlFromCustomer,
   patchCustomerAddress, ensureEndorsements, createKycLink,
-  simulateKycApproval, createTosLink, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
+  createTosLink, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
@@ -118,8 +118,10 @@ export async function POST(req: NextRequest): Promise<Response> {
     const senderCountry = CURRENCY_TO_COUNTRY[source_currency] ?? "US";
     try { await patchCustomerAddress(senderCustomer.id, senderCountry, true); } catch { /* best-effort */ }
 
-    // 2. Sandbox KYC gate — return needs_kyc so UI can show the Simular button
-    if (isSandbox && needsKyc) {
+    // 2. Sandbox KYC gate — show simulate button for new OR unverified customers
+    //    isNew || needsKyc: Bridge sandbox may auto-approve on creation, so needsKyc
+    //    could be false even for a brand-new customer. isNew catches that case.
+    if (isSandbox && (isSenderNew || needsKyc)) {
       const kycRedirectUri = redirect_uri ?? `${appUrl}/enviar?kyc_done=1`;
       return NextResponse.json({
         needs_kyc:   true,
