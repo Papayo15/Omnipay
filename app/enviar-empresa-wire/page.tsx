@@ -246,18 +246,22 @@ export default function EnviarEmpresaWirePage() {
           </div>
         )}
 
-        {/* KYB required */}
+        {/* KYB required — email sent to recipient */}
         {step === "kyb" && (
           <div className="space-y-6">
             <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 space-y-3">
-              <p className="text-amber-300 font-semibold text-sm">🏢 {t("kyb_title")}</p>
+              <p className="text-amber-300 font-semibold text-sm">📧 {t("kyb_title")}</p>
               <p className="text-slate-300 text-sm leading-relaxed">{t("kyb_body")}</p>
+              <p className="text-slate-400 text-xs">{t("kyb_email_sent")}: <strong className="text-slate-200">{recipientEmail}</strong></p>
             </div>
             {kybUrl && (
-              <a href={kybUrl} target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 rounded-2xl transition-all">
-                {t("kyb_cta")}
-              </a>
+              <p className="text-slate-500 text-xs text-center leading-relaxed">
+                {t("kyb_or_share_link")}:{" "}
+                <button onClick={() => navigator.clipboard.writeText(kybUrl)}
+                  className="text-[#00C9C8] underline underline-offset-2 hover:text-white transition-colors">
+                  {t("kyb_copy_link")}
+                </button>
+              </p>
             )}
             <p className="text-slate-500 text-xs text-center leading-relaxed">{t("kyb_after")}</p>
             <button onClick={() => setStep("form")} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">

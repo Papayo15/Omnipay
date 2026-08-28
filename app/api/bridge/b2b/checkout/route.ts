@@ -16,6 +16,7 @@ import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, createKycLink,
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
+import { sendEmailNotification }           from "@/lib/notify";
 import { getTargetCurrency }               from "@/lib/routing";
 
 export const runtime = "edge";
@@ -181,6 +182,28 @@ export async function POST(req: NextRequest): Promise<Response> {
         const sep = kybUrl.includes("?") ? "&" : "?";
         kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirect_uri)}`;
       }
+      // Email the RECIPIENT business — they need to complete KYB, not the sender
+      if (kybUrl) {
+        const emailHtml = `
+          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f172a;color:#e2e8f0;padding:32px;border-radius:16px">
+            <p style="font-size:22px;font-weight:700;color:#fff;margin:0 0 8px">Hola, ${business_name} 👋</p>
+            <p style="font-size:15px;color:#94a3b8;margin:0 0 24px">
+              Hay un pago empresarial pendiente para su empresa a través de OmniPay.<br>
+              Solo necesita verificar la identidad de su empresa <strong style="color:#fff">una sola vez</strong> — tarda aproximadamente 5 minutos.
+            </p>
+            <a href="${kybUrl}" style="display:block;background:#10b981;color:#fff;text-align:center;padding:16px 24px;border-radius:12px;font-weight:700;font-size:16px;text-decoration:none;margin-bottom:24px">
+              Verificar empresa →
+            </a>
+            <p style="font-size:12px;color:#475569;margin:0">
+              OmniPay no almacena documentos ni datos bancarios de su empresa.<br>
+              La verificación es procesada por Bridge Building Inc., registrado ante FinCEN.<br>
+              Si no esperaba este mensaje, puede ignorarlo.
+            </p>
+          </div>
+        `;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        sendEmailNotification(email.toLowerCase(), "Verificación empresarial requerida — pago pendiente en OmniPay", emailHtml);
+      }
       return NextResponse.json({
         needs_kyb:   true,
         kyb_url:     kybUrl,
@@ -218,6 +241,25 @@ export async function POST(req: NextRequest): Promise<Response> {
           const redirectUri = `${appUrl}/enviar-empresa-wire?kyb_done=1&step=checkout`;
           const sep = kybUrl.includes("?") ? "&" : "?";
           kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirectUri)}`;
+          const emailHtml = `
+            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f172a;color:#e2e8f0;padding:32px;border-radius:16px">
+              <p style="font-size:22px;font-weight:700;color:#fff;margin:0 0 8px">Hola, ${business_name} 👋</p>
+              <p style="font-size:15px;color:#94a3b8;margin:0 0 24px">
+                Hay un pago empresarial pendiente para su empresa a través de OmniPay.<br>
+                Se requiere verificación adicional para activar el corredor de pago. Tarda aproximadamente 5 minutos.
+              </p>
+              <a href="${kybUrl}" style="display:block;background:#10b981;color:#fff;text-align:center;padding:16px 24px;border-radius:12px;font-weight:700;font-size:16px;text-decoration:none;margin-bottom:24px">
+                Verificar empresa →
+              </a>
+              <p style="font-size:12px;color:#475569;margin:0">
+                OmniPay no almacena documentos ni datos bancarios de su empresa.<br>
+                La verificación es procesada por Bridge Building Inc., registrado ante FinCEN.<br>
+                Si no esperaba este mensaje, puede ignorarlo.
+              </p>
+            </div>
+          `;
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          sendEmailNotification(email.toLowerCase(), "Verificación adicional requerida — pago pendiente en OmniPay", emailHtml);
         }
         return NextResponse.json({
           needs_kyb:   true,
