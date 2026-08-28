@@ -235,8 +235,29 @@ export async function getOrCreateCustomer(params: {
     return { customer: existing, isNew: false, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
   }
 
-  const customer = await createCustomer(params);
-  return { customer, isNew: true, needsKyc: true };
+  try {
+    const customer = await createCustomer(params);
+    return { customer, isNew: true, needsKyc: true };
+  } catch (err) {
+    const e = err as Error & { source?: Record<string, unknown> };
+    const isEmailTaken = JSON.stringify(e.source ?? e.message ?? "").toLowerCase().includes("already exists");
+    if (isEmailTaken) {
+      // Race condition or findCustomerByEmail returned null despite customer existing.
+      // Re-fetch and return the existing customer.
+      const recovered = await findCustomerByEmail(params.email);
+      if (recovered) {
+        const isRestricted = recovered.status === "deposits_restricted";
+        const isBlocked    = recovered.status === "paused" || recovered.status === "offboarded";
+        const kycApproved  = !isBlocked && (
+          params.type === "business"
+            ? recovered.kyb_status === "approved"
+            : recovered.status === "active" || recovered.status === "approved" || isRestricted || recovered.kyc_status === "approved"
+        );
+        return { customer: recovered, isNew: false, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
+      }
+    }
+    throw err;
+  }
 }
 
 // Maps Bridge payment rail → endorsement type required
