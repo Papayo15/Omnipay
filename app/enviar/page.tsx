@@ -606,7 +606,7 @@ export default function EnviarPage() {
         {step === "waiting" && (
           <div className="space-y-6">
             <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 space-y-3">
-              <p className="text-amber-300 font-semibold text-sm">📲 {t("waiting_title")}</p>
+              <p className="text-amber-300 font-semibold text-sm">📲 {t("waiting_title", { name: recipientName })}</p>
               <p className="text-slate-300 text-sm leading-relaxed">
                 {t("waiting_body", { name: recipientName })}
               </p>
