@@ -730,7 +730,7 @@
     "fee_bridge": "Bridge（変換）",
     "fee_omnipay": "OmniPay（サービス）",
     "fee_sender_deposits": "送金者の入金額（概算）",
-    "fee_note": "概算 · レートは入金検出時に確定",
+    "fee_note": "概算金額 — 実際の為替レートは入金時に若干変動する場合があります。",
     "sender_currency_label": "送金者はどの通貨で入金しますか？",
     "receipt_emails_sent": "送信者と受取人に確認メールを送信しました",
     "receipt_view": "全体の領収書を表示",

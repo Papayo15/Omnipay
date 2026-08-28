@@ -730,7 +730,7 @@
     "fee_bridge": "Bridge (conversione)",
     "fee_omnipay": "OmniPay (servizio)",
     "fee_sender_deposits": "Il mittente deposita ca.",
-    "fee_note": "Stima · Il tasso viene confermato al rilevamento del deposito",
+    "fee_note": "Importo approssimativo — il tasso di cambio reale può variare leggermente al momento del deposito.",
     "sender_currency_label": "In quale valuta depositerà il mittente?",
     "receipt_emails_sent": "Email di conferma inviate a mittente e destinatario",
     "receipt_view": "Visualizza ricevuta completa",

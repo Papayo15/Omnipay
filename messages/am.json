@@ -730,7 +730,7 @@
     "fee_bridge": "Bridge (ልወጣ)",
     "fee_omnipay": "OmniPay (አገልግሎት)",
     "fee_sender_deposits": "ላኪው ያስቀምጣል (ግምታዊ)",
-    "fee_note": "ግምታዊ · ተመኑ ገቢ ሲታወቅ ይረጋገጣል",
+    "fee_note": "የግምት መጠን — ትክክለኛው የምንዛሪ ተመን በተቀማጭ ጊዜ ትንሽ ሊለያይ ይችላል.",
     "sender_currency_label": "ላኪው በምን ምንዛሬ ያስቀምጣል?",
     "receipt_emails_sent": "የማረጋገጫ ኢሜሎች ለላኪ እና ለተቀባዩ ተልከዋል",
     "receipt_view": "ሙሉ ደረሰኝ ይመልከቱ",

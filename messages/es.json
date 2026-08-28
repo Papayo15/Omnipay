@@ -708,7 +708,7 @@
     "fee_bridge": "Bridge (conversión)",
     "fee_omnipay": "OmniPay (servicio)",
     "fee_sender_deposits": "El emisor deposita aprox.",
-    "fee_note": "Estimado · La tasa se confirma al detectar el depósito",
+    "fee_note": "Monto aproximado — la tasa de cambio real puede variar ligeramente al momento del depósito.",
     "sender_currency_label": "¿En qué moneda depositará el emisor?",
     "receipt_emails_sent": "Correos de confirmación enviados a emisor y receptor",
     "receipt_view": "Ver comprobante completo",

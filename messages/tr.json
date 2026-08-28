@@ -730,7 +730,7 @@
     "fee_bridge": "Bridge (dönüştürme)",
     "fee_omnipay": "OmniPay (hizmet)",
     "fee_sender_deposits": "Gönderen yaklaşık yatırır",
-    "fee_note": "Tahmin · Kur, yatırım tespitinde onaylanır",
+    "fee_note": "Yaklaşık tutar — gerçek döviz kuru depozito anında hafifçe değişebilir.",
     "sender_currency_label": "Gönderen hangi para biriminde yatıracak?",
     "receipt_emails_sent": "Gönderici ve alıcıya onay e-postaları gönderildi",
     "receipt_view": "Makbuzu görüntüle",

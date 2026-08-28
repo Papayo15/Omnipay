@@ -730,7 +730,7 @@
     "fee_bridge": "Bridge (conversion)",
     "fee_omnipay": "OmniPay (service)",
     "fee_sender_deposits": "Sender deposits approx.",
-    "fee_note": "Estimate · Rate confirmed when deposit is detected",
+    "fee_note": "Approximate amount — the actual exchange rate may vary slightly at the time of deposit.",
     "sender_currency_label": "Which currency will the sender deposit?",
     "receipt_emails_sent": "Confirmation emails sent to sender and recipient",
     "receipt_view": "View full receipt",

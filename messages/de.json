@@ -730,7 +730,7 @@
     "fee_bridge": "Bridge (Umrechnung)",
     "fee_omnipay": "OmniPay (Service)",
     "fee_sender_deposits": "Absender zahlt ca.",
-    "fee_note": "Schätzung · Kurs wird bei Einzahlungserkennung bestätigt",
+    "fee_note": "Ungefährer Betrag — der tatsächliche Wechselkurs kann zum Zeitpunkt der Einzahlung leicht variieren.",
     "sender_currency_label": "In welcher Währung zahlt der Absender ein?",
     "receipt_emails_sent": "Bestätigungs-E-Mails an Absender und Empfänger gesendet",
     "receipt_view": "Vollständigen Beleg anzeigen",

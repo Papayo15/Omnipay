@@ -730,7 +730,7 @@
     "fee_bridge": "Bridge (chuyển đổi)",
     "fee_omnipay": "OmniPay (dịch vụ)",
     "fee_sender_deposits": "Người gửi nạp khoảng",
-    "fee_note": "Ước tính · Tỷ giá xác nhận khi phát hiện tiền nạp",
+    "fee_note": "Số tiền ước tính — tỷ giá hối đoái thực tế có thể thay đổi nhỏ tại thời điểm nạp tiền.",
     "sender_currency_label": "Người gửi sẽ nạp bằng loại tiền nào?",
     "receipt_emails_sent": "Email xác nhận đã gửi đến người gửi và người nhận",
     "receipt_view": "Xem biên lai đầy đủ",

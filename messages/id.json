@@ -730,7 +730,7 @@
     "fee_bridge": "Bridge (konversi)",
     "fee_omnipay": "OmniPay (layanan)",
     "fee_sender_deposits": "Pengirim menyetor kira-kira",
-    "fee_note": "Perkiraan · Kurs dikonfirmasi saat deposit terdeteksi",
+    "fee_note": "Jumlah perkiraan — nilai tukar aktual mungkin sedikit berbeda saat deposit dilakukan.",
     "sender_currency_label": "Dalam mata uang apa pengirim akan menyetor?",
     "receipt_emails_sent": "Email konfirmasi dikirim ke pengirim dan penerima",
     "receipt_view": "Lihat tanda terima lengkap",

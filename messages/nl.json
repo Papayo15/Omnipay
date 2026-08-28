@@ -730,7 +730,7 @@
     "fee_bridge": "Bridge (conversie)",
     "fee_omnipay": "OmniPay (service)",
     "fee_sender_deposits": "Afzender stort ca.",
-    "fee_note": "Schatting · Koers bevestigd bij stortingsdetectie",
+    "fee_note": "Geschat bedrag — de werkelijke wisselkoers kan licht variëren op het moment van storting.",
     "sender_currency_label": "In welke valuta zal de afzender storten?",
     "receipt_emails_sent": "Bevestigingsmails verzonden naar afzender en ontvanger",
     "receipt_view": "Volledig ontvangstbewijs bekijken",

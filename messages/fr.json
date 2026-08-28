@@ -730,7 +730,7 @@
     "fee_bridge": "Bridge (conversion)",
     "fee_omnipay": "OmniPay (service)",
     "fee_sender_deposits": "L'expéditeur dépose env.",
-    "fee_note": "Estimation · Le taux est confirmé lors de la détection du dépôt",
+    "fee_note": "Montant approximatif — le taux de change réel peut varier légèrement au moment du dépôt.",
     "sender_currency_label": "Dans quelle devise l'expéditeur déposera-t-il ?",
     "receipt_emails_sent": "Emails de confirmation envoyés à l'expéditeur et au destinataire",
     "receipt_view": "Voir le reçu complet",
