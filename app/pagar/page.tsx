@@ -107,6 +107,11 @@ function CopyField({ label, value }: { label: string; value: string }) {
 
 
 const MIN_AMOUNT_USD = 20;
+// Minimum in local (recipient) currency — mirrors checkout/route.ts MIN_LOCAL
+const MIN_LOCAL: Record<string, number> = {
+  USD: 20, MXN: 380, BRL: 110, EUR: 19, GBP: 16,
+  COP: 85_000, ARS: 20_000, CLP: 19_000, PEN: 75,
+};
 
 export default function PagarPage() {
   const t  = useTranslations("pagar_bridge");
@@ -215,11 +220,14 @@ export default function PagarPage() {
   const handleSubmit = useCallback(async () => {
     if (!token || !name.trim() || !email.includes("@")) return;
 
-    // Minimum check on principal (not total+fees) — server enforces this too
-    if (ratePreview && ratePreview.recipient_gets < MIN_AMOUNT_USD) {
-      setErrorMsg(`El monto mínimo de envío es $${MIN_AMOUNT_USD} USD.`);
-      setStep("error");
-      return;
+    // Minimum check — compare recipient_gets (local currency) to per-currency floor
+    if (ratePreview) {
+      const minLocal = MIN_LOCAL[ratePreview.target_currency] ?? MIN_AMOUNT_USD;
+      if (ratePreview.recipient_gets < minLocal) {
+        setErrorMsg(`El monto mínimo es ${minLocal.toLocaleString()} ${ratePreview.target_currency} (≈ $${MIN_AMOUNT_USD} USD).`);
+        setStep("error");
+        return;
+      }
     }
 
     setStep("loading");
@@ -800,7 +808,10 @@ export default function PagarPage() {
 
         <button
           onClick={handleSubmit}
-          disabled={!name.trim() || !email.includes("@")}
+          disabled={
+            !name.trim() || !email.includes("@") || !ratePreview || rateLoading ||
+            ratePreview.recipient_gets < (MIN_LOCAL[ratePreview.target_currency] ?? MIN_AMOUNT_USD)
+          }
           className="w-full bg-[#00C9C8] hover:bg-[#00b3b2] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-black font-bold py-4 rounded-2xl text-sm mt-2">
           {t("submit")}
         </button>
