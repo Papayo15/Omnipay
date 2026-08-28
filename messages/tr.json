@@ -934,7 +934,12 @@
     "va_recipient_gets": "Alıcı alıyor",
     "va_deposit_currency": "Para yatırma birimi",
     "copy": "Kopyala",
-    "min_amount": "Minimum {amount} {currency} (~$50 USD)"
+    "min_amount": "Minimum {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ Ödemeyi simüle et (sandbox)",
+    "sandbox_payment_done": "Simüle edilen ödeme tamamlandı",
+    "receipt_date": "Tarih",
+    "receipt_status": "Durum",
+    "receipt_completed": "Tamamlandı"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -934,7 +934,12 @@
     "va_recipient_gets": "Mpokeaji anapata",
     "va_deposit_currency": "Sarafu ya Amana",
     "copy": "Nakili",
-    "min_amount": "Kiwango cha chini {amount} {currency} (~$50 USD)"
+    "min_amount": "Kiwango cha chini {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ Simula malipo (sandbox)",
+    "sandbox_payment_done": "Malipo ya majaribio yamekamilika",
+    "receipt_date": "Tarehe",
+    "receipt_status": "Hali",
+    "receipt_completed": "Imekamilika"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

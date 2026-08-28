@@ -934,7 +934,12 @@
     "va_recipient_gets": "يستلم المستفيد",
     "va_deposit_currency": "عملة الإيداع",
     "copy": "نسخ",
-    "min_amount": "الحد الأدنى {amount} {currency} (~$50 USD)"
+    "min_amount": "الحد الأدنى {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ محاكاة الدفع (sandbox)",
+    "sandbox_payment_done": "اكتملت محاكاة الدفع",
+    "receipt_date": "التاريخ",
+    "receipt_status": "الحالة",
+    "receipt_completed": "مكتمل"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

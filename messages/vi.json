@@ -934,7 +934,12 @@
     "va_recipient_gets": "Người nhận nhận được",
     "va_deposit_currency": "Tiền tệ nạp",
     "copy": "Sao chép",
-    "min_amount": "Tối thiểu {amount} {currency} (~$50 USD)"
+    "min_amount": "Tối thiểu {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ Mô phỏng thanh toán (sandbox)",
+    "sandbox_payment_done": "Thanh toán mô phỏng hoàn tất",
+    "receipt_date": "Ngày",
+    "receipt_status": "Trạng thái",
+    "receipt_completed": "Hoàn tất"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

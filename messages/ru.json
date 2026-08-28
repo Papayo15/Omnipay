@@ -934,7 +934,12 @@
     "va_recipient_gets": "Получатель получает",
     "va_deposit_currency": "Валюта депозита",
     "copy": "Копировать",
-    "min_amount": "Минимум {amount} {currency} (~$50 USD)"
+    "min_amount": "Минимум {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ Симулировать платёж (sandbox)",
+    "sandbox_payment_done": "Симулированный платёж завершён",
+    "receipt_date": "Дата",
+    "receipt_status": "Статус",
+    "receipt_completed": "Завершено"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

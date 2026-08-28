@@ -934,7 +934,12 @@
     "va_recipient_gets": "수신자 수령액",
     "va_deposit_currency": "입금 통화",
     "copy": "복사",
-    "min_amount": "최소 {amount} {currency} (~$50 USD)"
+    "min_amount": "최소 {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ 결제 시뮬레이션 (sandbox)",
+    "sandbox_payment_done": "시뮬레이션 결제 완료",
+    "receipt_date": "날짜",
+    "receipt_status": "상태",
+    "receipt_completed": "완료"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

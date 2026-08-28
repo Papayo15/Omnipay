@@ -934,7 +934,12 @@
     "va_recipient_gets": "Ontvanger ontvangt",
     "va_deposit_currency": "Stortingsvaluta",
     "copy": "Kopiëren",
-    "min_amount": "Minimaal {amount} {currency} (~$50 USD)"
+    "min_amount": "Minimaal {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ Betaling simuleren (sandbox)",
+    "sandbox_payment_done": "Gesimuleerde betaling voltooid",
+    "receipt_date": "Datum",
+    "receipt_status": "Status",
+    "receipt_completed": "Voltooid"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

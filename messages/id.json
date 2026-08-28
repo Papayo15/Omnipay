@@ -934,7 +934,12 @@
     "va_recipient_gets": "Penerima mendapat",
     "va_deposit_currency": "Mata uang setoran",
     "copy": "Salin",
-    "min_amount": "Minimum {amount} {currency} (~$50 USD)"
+    "min_amount": "Minimum {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ Simulasi pembayaran (sandbox)",
+    "sandbox_payment_done": "Simulasi pembayaran selesai",
+    "receipt_date": "Tanggal",
+    "receipt_status": "Status",
+    "receipt_completed": "Selesai"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

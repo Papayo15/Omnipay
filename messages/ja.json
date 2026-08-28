@@ -934,7 +934,12 @@
     "va_recipient_gets": "受取人が受け取る",
     "va_deposit_currency": "入金通貨",
     "copy": "コピー",
-    "min_amount": "最低 {amount} {currency}（〜$50 USD）"
+    "min_amount": "最低 {amount} {currency}（〜$50 USD）",
+    "sandbox_simulate_payment": "⚡ 支払いをシミュレート (sandbox)",
+    "sandbox_payment_done": "シミュレート支払い完了",
+    "receipt_date": "日付",
+    "receipt_status": "ステータス",
+    "receipt_completed": "完了"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

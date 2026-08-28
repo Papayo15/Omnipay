@@ -934,7 +934,12 @@
     "va_recipient_gets": "Il destinatario riceve",
     "va_deposit_currency": "Valuta di deposito",
     "copy": "Copia",
-    "min_amount": "Minimo {amount} {currency} (~$50 USD)"
+    "min_amount": "Minimo {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ Simula pagamento (sandbox)",
+    "sandbox_payment_done": "Pagamento simulato completato",
+    "receipt_date": "Data",
+    "receipt_status": "Stato",
+    "receipt_completed": "Completato"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -929,6 +929,11 @@
     "share_link": "Compartir link",
     "copy_link": "Copiar link",
     "new_link": "+ Generar otro link",
+    "sandbox_simulate_payment": "⚡ Simulate payment (sandbox)",
+    "sandbox_payment_done": "Simulated payment completed",
+    "receipt_date": "Date",
+    "receipt_status": "Status",
+    "receipt_completed": "Completed",
     "link_instructions_title": "¿Qué sigue?",
     "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles.",
     "fee_exchange_approx": "≈ exchange rate"

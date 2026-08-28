@@ -933,7 +933,12 @@
     "va_recipient_gets": "Mai karɓa yana karɓa",
     "va_deposit_currency": "Kuɗin Ajiya",
     "copy": "Kwafi",
-    "min_amount": "Ƙarancin {amount} {currency} (~$50 USD)"
+    "min_amount": "Ƙarancin {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ Kwaikwayon biyan kuɗi (sandbox)",
+    "sandbox_payment_done": "An kammala kwaikwayon biyan kuɗi",
+    "receipt_date": "Kwanan wata",
+    "receipt_status": "Yanayi",
+    "receipt_completed": "An kammala"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

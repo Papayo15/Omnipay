@@ -934,7 +934,12 @@
     "va_recipient_gets": "प्राप्तकर्ता को मिलता है",
     "va_deposit_currency": "जमा मुद्रा",
     "copy": "कॉपी",
-    "min_amount": "न्यूनतम {amount} {currency} (~$50 USD)"
+    "min_amount": "न्यूनतम {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ भुगतान सिमुलेट करें (sandbox)",
+    "sandbox_payment_done": "सिमुलेटेड भुगतान पूर्ण",
+    "receipt_date": "तारीख",
+    "receipt_status": "स्थिति",
+    "receipt_completed": "पूर्ण"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

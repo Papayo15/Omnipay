@@ -934,7 +934,12 @@
     "va_recipient_gets": "收款人收到",
     "va_deposit_currency": "存款货币",
     "copy": "复制",
-    "min_amount": "最低 {amount} {currency}（约$50 USD）"
+    "min_amount": "最低 {amount} {currency}（约$50 USD）",
+    "sandbox_simulate_payment": "⚡ 模拟支付 (sandbox)",
+    "sandbox_payment_done": "模拟支付完成",
+    "receipt_date": "日期",
+    "receipt_status": "状态",
+    "receipt_completed": "已完成"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -934,7 +934,12 @@
     "va_recipient_gets": "ተቀባዩ ያገኛል",
     "va_deposit_currency": "የቀረጥ ምንዛሬ",
     "copy": "ቅዳ",
-    "min_amount": "ቢያንስ {amount} {currency} (~$50 USD)"
+    "min_amount": "ቢያንስ {amount} {currency} (~$50 USD)",
+    "sandbox_simulate_payment": "⚡ ክፍያ ለምሳሌ (sandbox)",
+    "sandbox_payment_done": "ምሳሌ ክፍያ ተጠናቋል",
+    "receipt_date": "ቀን",
+    "receipt_status": "ሁኔታ",
+    "receipt_completed": "ተጠናቋል"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",
