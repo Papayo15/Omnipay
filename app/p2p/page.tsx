@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { getFXRate } from "@/lib/fx";
 import { validateClabe, detectBank, type BankInfo } from "@/lib/clabe";
 import { TrustBanner } from "@/components/TrustBanner";
+import { ALCHEMYPAY_COUNTRIES } from "@/lib/funding-provider";
 
 type Step = "form" | "generating" | "kyc_info" | "kyc_polling" | "share" | "error";
 
@@ -73,31 +74,8 @@ const COUNTRY_OPTIONS = [
   { code: "VA", currency: "EUR", flag: "🇻🇦" },
 ];
 
-// Countries with no native Bridge rail — routed through Alchemy Pay instead
-// (see lib/funding-provider.ts). Shown by code, not translated name — country
-// codes are identifiers like currency codes, not prose.
-const ALCHEMYPAY_COUNTRIES = [
-  { code: "AU", currency: "AUD", flag: "🇦🇺" },
-  { code: "NG", currency: "NGN", flag: "🇳🇬" },
-  { code: "KE", currency: "KES", flag: "🇰🇪" },
-  { code: "GH", currency: "GHS", flag: "🇬🇭" },
-  { code: "IN", currency: "INR", flag: "🇮🇳" },
-  { code: "PH", currency: "PHP", flag: "🇵🇭" },
-  { code: "ID", currency: "IDR", flag: "🇮🇩" },
-  { code: "VN", currency: "VND", flag: "🇻🇳" },
-  { code: "TH", currency: "THB", flag: "🇹🇭" },
-  { code: "MY", currency: "MYR", flag: "🇲🇾" },
-  { code: "SG", currency: "SGD", flag: "🇸🇬" },
-  { code: "JP", currency: "JPY", flag: "🇯🇵" },
-  { code: "KR", currency: "KRW", flag: "🇰🇷" },
-  { code: "PK", currency: "PKR", flag: "🇵🇰" },
-  { code: "BD", currency: "BDT", flag: "🇧🇩" },
-  { code: "ZA", currency: "ZAR", flag: "🇿🇦" },
-  { code: "EG", currency: "EGP", flag: "🇪🇬" },
-  { code: "MA", currency: "MAD", flag: "🇲🇦" },
-  { code: "AE", currency: "AED", flag: "🇦🇪" },
-  { code: "SA", currency: "SAR", flag: "🇸🇦" },
-];
+// Countries with no native Bridge rail — routed through Alchemy Pay instead.
+// Shared with /recibir-empresa (B2B) — see lib/funding-provider.ts.
 
 interface BridgeQuote {
   amount_principal:  number;

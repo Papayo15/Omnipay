@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Zap, ArrowLeft, Building2, CheckCircle2, AlertCircle, Clock, ExternalLink } from "lucide-react";
 import { SEPA_COUNTRIES } from "@/lib/wise-accounts";
+import { ALCHEMYPAY_COUNTRIES } from "@/lib/funding-provider";
 
 const BRIDGE_COUNTRIES = [
   { code: "MX", flag: "🇲🇽", rail: "SPEI" },
@@ -64,9 +65,22 @@ function RecibirEmpresaContent() {
   const [country, setCountry] = useState("MX");
   const [accountField, setAccountField] = useState("");
   const [bicField, setBicField] = useState("");
+  const [apBankCode, setApBankCode] = useState("");
   const [amount, setAmount] = useState("");
+  const [alchemyPayEnabled, setAlchemyPayEnabled] = useState(false);
+  const [apSubmitting, setApSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/alchemypay/status")
+      .then((r) => r.json())
+      .then((d: { onrampEnabled?: boolean }) => setAlchemyPayEnabled(!!d.onrampEnabled))
+      .catch(() => setAlchemyPayEnabled(false));
+  }, []);
 
   const isSepa = SEPA_COUNTRIES.has(country);
+  const isBridgeCountry = BRIDGE_COUNTRIES.some((c) => c.code === country);
+  const rail: "bridge" | "alchemypay" = isBridgeCountry || !alchemyPayEnabled ? "bridge" : "alchemypay";
+  const apCountryInfo = ALCHEMYPAY_COUNTRIES.find((c) => c.code === country);
 
   const accountLabel = country === "MX" ? tF("clabe_label")
     : isSepa        ? tF("iban_label")
@@ -78,7 +92,8 @@ function RecibirEmpresaContent() {
     : country === "GB" ? tF("hint_uk")
     : country === "US" ? tF("hint_us")
     : null;
-  const currency = country === "MX" ? "MXN" : country === "GB" ? "GBP"
+  const currency = apCountryInfo ? apCountryInfo.currency
+    : country === "MX" ? "MXN" : country === "GB" ? "GBP"
     : country === "CO" ? "COP" : country === "US" ? "USD" : "EUR";
 
   // Minimum equivalent to $50 USD per currency (approximate, API enforces exact)
@@ -196,6 +211,41 @@ function RecibirEmpresaContent() {
     }
   }, [businessName, email, country, accountField, bicField, isSepa, amount]);
 
+  const handleSubmitAlchemyPay = useCallback(async () => {
+    setApSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/alchemypay/order/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderType:          "b2b-bridge",
+          recipientName:      businessName.trim(),
+          recipientEmail:     email.trim().toLowerCase(),
+          recipientCountry:   country,
+          recipientCurrency:  currency,
+          recipientAmount:    parseFloat(amount),
+          accountNumber:      accountField.trim(),
+          bankCode:           apBankCode.trim() || undefined,
+        }),
+      });
+      const data = await res.json() as { pay_link?: string; error?: string };
+      if (!res.ok || !data.pay_link) throw new Error(data.error ?? "Error generando link");
+
+      setPayLink(data.pay_link);
+      const waText = encodeURIComponent(
+        `Hola, soy ${businessName}. Te comparto el link para que nos puedas pagar vía OmniPay: ${data.pay_link}`
+      );
+      setWaLink(`https://wa.me/?text=${waText}`);
+      setStep("ready");
+    } catch (e) {
+      setError((e as Error).message);
+      setStep("error");
+    } finally {
+      setApSubmitting(false);
+    }
+  }, [businessName, email, country, currency, accountField, apBankCode, amount]);
+
   const isValid = businessName && email && accountField && amount && parseFloat(amount) >= minLocal;
 
   return (
@@ -227,18 +277,37 @@ function RecibirEmpresaContent() {
               <input type="email" placeholder={t("your_email")} value={email} onChange={e => setEmail(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60" />
 
-              <select value={country} onChange={e => { setCountry(e.target.value); setAccountField(""); setBicField(""); }}
+              <select value={country} onChange={e => { setCountry(e.target.value); setAccountField(""); setBicField(""); setApBankCode(""); }}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#00C9C8]/60">
                 {BRIDGE_COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {tF(`country_${c.code}`)} ({c.rail})</option>)}
+                {/* Alchemy Pay countries — only listed once ALCHEMYPAY_APP_ID/SECRET are set server-side */}
+                {alchemyPayEnabled && ALCHEMYPAY_COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.flag} {c.code} — {c.currency}</option>
+                ))}
               </select>
 
-              <input type="text" placeholder={accountLabel} value={accountField} onChange={e => setAccountField(e.target.value)}
-                className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
-              {isSepa && (
-                <input type="text" placeholder={tF("bic_label")} value={bicField} onChange={e => setBicField(e.target.value)}
-                  className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+              {rail === "alchemypay" && (
+                <p className="text-[#00C9C8] text-xs">⚡ {tF("alchemypay_rail_note")}</p>
               )}
-              {accountHint && <p className="text-slate-500 text-[10px] px-1">{accountHint}</p>}
+
+              {rail === "bridge" ? (
+                <>
+                  <input type="text" placeholder={accountLabel} value={accountField} onChange={e => setAccountField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+                  {isSepa && (
+                    <input type="text" placeholder={tF("bic_label")} value={bicField} onChange={e => setBicField(e.target.value)}
+                      className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+                  )}
+                  {accountHint && <p className="text-slate-500 text-[10px] px-1">{accountHint}</p>}
+                </>
+              ) : (
+                <>
+                  <input type="text" placeholder={tF("alchemypay_account_placeholder")} value={accountField} onChange={e => setAccountField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+                  <input type="text" placeholder={`${tF("alchemypay_bank_code_label")} (${tF("alchemypay_bank_code_optional")})`} value={apBankCode} onChange={e => setApBankCode(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+                </>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -253,7 +322,7 @@ function RecibirEmpresaContent() {
               </p>
             </div>
 
-            <button onClick={handleSubmit} disabled={!isValid}
+            <button onClick={rail === "bridge" ? handleSubmit : handleSubmitAlchemyPay} disabled={!isValid || apSubmitting}
               className="w-full bg-[#00C9C8] hover:bg-[#00b8b7] disabled:bg-slate-700 disabled:text-slate-500 text-[#0f172a] font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2">
               <Building2 className="w-4 h-4" />
               {t("cta")}
