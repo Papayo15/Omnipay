@@ -379,6 +379,11 @@
     "canada_new_request": "+ 新しいリクエスト",
     "unsupported_note": "お探しの国が見当たりませんか？ネットワークを拡大中 — 近日中に対応国を追加します。",
     "zero_data_note": "🔒 個人データは保存しません · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "この国はAlchemy Pay経由で処理されます — 送金先もセキュリティも同じです。",
+    "alchemypay_account_placeholder": "口座番号 / IBAN / PayID",
+    "alchemypay_bank_code_label": "銀行コード",
+    "alchemypay_bank_code_optional": "任意",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "情報を入力 · 送金者にリンクを共有してください",
     "form_intro": "あなたの情報",
     "country_MX": "メキシコ",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — ブラジルレアル",
     "va_save_title": "💾 この銀行情報を保存",
     "va_save_body": "次回は銀行アプリから直接このアカウントに送金するだけ。OmniPayに戻らなくても、自動的に受取人に届きます。",
+    "alchemypay_alt_intro": "カードでお支払いしたいですか？Alchemy Payを即時の代替手段としてご利用ください。",
+    "alchemypay_alt_button": "Alchemy Payで支払う",
+    "alchemypay_alt_loading": "リダイレクト中…",
     "tos_required_title": "⚠️ Bridgeの利用規約に同意",
     "tos_required_body": "続行する前にBridgeの利用規約に同意してください。クリック、同意、このページに戻ってください。",
     "tos_accept_button": "Bridgeの規約に同意 →",
@@ -1048,5 +1056,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "プライバシーポリシー",
     "footer_home": "OmniPay ホーム"
+  },
+  "pagar_alchemypay": {
+    "page_title": "Alchemy Payで支払う",
+    "powered_by_note": "送金先は同じ — BridgeではなくAlchemy Pay経由で処理されます。",
+    "recipient_gets": "受取人が受け取る金額",
+    "email_label": "あなたのメールアドレス",
+    "name_label": "お名前（任意）",
+    "name_placeholder": "フルネーム",
+    "your_country_label": "あなたの国",
+    "amount_label": "送金額",
+    "redirecting": "リダイレクト中…",
+    "continue_button": "支払いに進む",
+    "footer_note": "🔒 Alchemy Payの安全なページで支払いを完了します。"
   }
 }

@@ -21,36 +21,6 @@ export async function getTransfer(id: string): Promise<BridgeTransfer> {
   return bridgeRequest<BridgeTransfer>("GET", `/transfers/${id}`);
 }
 
-// Crypto-to-crypto on-chain transfer — sends USDC already sitting in Bridge's
-// custody (from a completed pay-in) out to an external wallet address instead of
-// a bank account. Used by the Alchemy Pay off-ramp flow: after Alchemy Pay's
-// off-ramp order gives us a deposit address, we call this to move the USDC there.
-// Bridge API ref: POST /v0/transfers, destination.payment_rail: "polygon".
-export async function createOnChainTransfer(params: {
-  orderId:        string;   // used as idempotency key
-  usdcAmount:     number;
-  toAddress:      string;   // destination on-chain address (e.g. Alchemy Pay's off-ramp deposit address)
-}): Promise<BridgeTransfer> {
-  return bridgeRequest<BridgeTransfer>(
-    "POST",
-    "/transfers",
-    {
-      amount:   params.usdcAmount.toFixed(6),
-      currency: "usdc",
-      source: {
-        payment_rail: "polygon",
-        currency:     "usdc",
-      },
-      destination: {
-        payment_rail: "polygon",
-        currency:     "usdc",
-        to_address:   params.toAddress,
-      },
-    },
-    `onchain-${params.orderId}`,
-  );
-}
-
 export function mapTransferStatus(status: BridgeTransfer["status"]): "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" {
   switch (status) {
     case "payment_processed": return "COMPLETED";

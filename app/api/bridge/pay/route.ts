@@ -246,6 +246,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       recipientAccount:   meta.liq_addr_id,
       payInProvider:      "bridge-va",
       payOutProvider:     "bridge-liq",
+      recipientOnchainAddress: meta.liq_addr_address,
       amount:             amountUSD,
       senderEmail:        sender_email.toLowerCase(),
       recipientEmail:     (meta as { email?: string }).email ?? undefined,

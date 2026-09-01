@@ -379,6 +379,11 @@
     "canada_new_request": "+ Permintaan baru",
     "unsupported_note": "Tidak melihat negara Anda? Kami memperluas jaringan — segera hadir lebih banyak tujuan.",
     "zero_data_note": "🔒 Tidak menyimpan data pribadi · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "Negara ini diproses melalui Alchemy Pay — tujuan sama, keamanan sama.",
+    "alchemypay_account_placeholder": "Nomor rekening / IBAN / PayID",
+    "alchemypay_bank_code_label": "Kode bank",
+    "alchemypay_bank_code_optional": "opsional",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "Isi data Anda · Bagikan link ke pengirim uang",
     "form_intro": "Data Anda",
     "country_MX": "Meksiko",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — Real Brasil",
     "va_save_title": "💾 Simpan detail bank ini",
     "va_save_body": "Lain kali, transfer langsung dari aplikasi bank Anda ke akun ini. Uang akan tiba secara otomatis tanpa perlu membuka OmniPay lagi.",
+    "alchemypay_alt_intro": "Lebih suka bayar pakai kartu? Gunakan Alchemy Pay sebagai alternatif instan.",
+    "alchemypay_alt_button": "Bayar dengan Alchemy Pay",
+    "alchemypay_alt_loading": "Mengalihkan…",
     "tos_required_title": "⚠️ Setujui Syarat Bridge",
     "tos_required_body": "Anda harus menyetujui syarat Bridge sebelum melanjutkan. Klik, setujui, dan kembali ke halaman ini.",
     "tos_accept_button": "Setujui Syarat Bridge →",
@@ -1048,5 +1056,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "Kebijakan Privasi",
     "footer_home": "Beranda OmniPay"
+  },
+  "pagar_alchemypay": {
+    "page_title": "Bayar via Alchemy Pay",
+    "powered_by_note": "Tujuan sama, diproses melalui Alchemy Pay, bukan Bridge.",
+    "recipient_gets": "Penerima mendapatkan",
+    "email_label": "Email Anda",
+    "name_label": "Nama Anda (opsional)",
+    "name_placeholder": "Nama lengkap",
+    "your_country_label": "Negara Anda",
+    "amount_label": "Jumlah yang Anda kirim",
+    "redirecting": "Mengalihkan…",
+    "continue_button": "Lanjutkan ke pembayaran",
+    "footer_note": "🔒 Anda akan menyelesaikan pembayaran di halaman aman Alchemy Pay."
   }
 }

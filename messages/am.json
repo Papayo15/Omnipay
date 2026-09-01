@@ -379,6 +379,11 @@
     "canada_new_request": "+ አዲስ ጥያቄ",
     "unsupported_note": "አገርዎን አያዩም? ኔትወርካችንን እናሰፋለን — ብዙ መዳረሻዎች ሲቀርቡ።",
     "zero_data_note": "🔒 ምንም የግል ዳታ አናከማቸም · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "ይህ ሀገር በAlchemy Pay በኩል ይሰራል — ተመሳሳይ መድረሻ፣ ተመሳሳይ ደህንነት።",
+    "alchemypay_account_placeholder": "የመለያ ቁጥር / IBAN / PayID",
+    "alchemypay_bank_code_label": "የባንክ ኮድ",
+    "alchemypay_bank_code_optional": "አማራጭ",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "ዝርዝሮቹን ይሙሉ · ገንዘብ የሚልኩዎትን ሰው ሊንኩን ያጋሩ",
     "form_intro": "የእርስዎ ዝርዝሮች",
     "country_MX": "ሜክሲኮ",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — የብራዚል ሪያል",
     "va_save_title": "💾 ይህን የባንክ ዝርዝር ያስቀምጡ",
     "va_save_body": "ሊከፍሉ ሲፈልጉ ወደ ባንክ ፕሮግራምዎ ሂደው ወደ ይህ መለያ ቀጥታ ይላኩ። ገንዘቡ ወደ ተቀባዩ ያለ OmniPay ይደርሳል።",
+    "alchemypay_alt_intro": "በካርድ መክፈል ይመርጣሉ? Alchemy Payን ፈጣን አማራጭ አድርገው ይጠቀሙ።",
+    "alchemypay_alt_button": "በAlchemy Pay ይክፈሉ",
+    "alchemypay_alt_loading": "በማዞር ላይ…",
     "tos_required_title": "⚠️ የBridge ውሎችን ይቀበሉ",
     "tos_required_body": "ለመቀጠል የBridge ውሎችን ይቀበሉ። ጠቅ ያድርጉ፣ ይቀበሉ፣ ወደ ይህ ገጽ ይመለሱ።",
     "tos_accept_button": "ውሎቹን ይቀበሉ →",
@@ -1048,5 +1056,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "የግላዊነት ፖሊሲ",
     "footer_home": "OmniPay መነሻ"
+  },
+  "pagar_alchemypay": {
+    "page_title": "በAlchemy Pay ይክፈሉ",
+    "powered_by_note": "ተመሳሳይ መድረሻ፣ በBridge ፈንታ በAlchemy Pay ይሰራል።",
+    "recipient_gets": "ተቀባዩ የሚያገኘው",
+    "email_label": "የእርስዎ ኢሜይል",
+    "name_label": "የእርስዎ ስም (አማራጭ)",
+    "name_placeholder": "ሙሉ ስም",
+    "your_country_label": "የእርስዎ ሀገር",
+    "amount_label": "የሚልኩት መጠን",
+    "redirecting": "በማዞር ላይ…",
+    "continue_button": "ወደ ክፍያ ይቀጥሉ",
+    "footer_note": "🔒 ክፍያውን በAlchemy Pay ደህንነቱ በተጠበቀ ገጽ ላይ ያጠናቅቃሉ።"
   }
 }

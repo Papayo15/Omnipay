@@ -379,6 +379,11 @@
     "canada_new_request": "+ Новый запрос",
     "unsupported_note": "Не видите свою страну? Мы расширяем сеть — скоро будет больше направлений.",
     "zero_data_note": "🔒 Личные данные не хранятся · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "Эта страна обрабатывается через Alchemy Pay — тот же пункт назначения, та же безопасность.",
+    "alchemypay_account_placeholder": "Номер счёта / IBAN / PayID",
+    "alchemypay_bank_code_label": "Код банка",
+    "alchemypay_bank_code_optional": "необязательно",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "Заполните данные · Отправьте ссылку тому, кто переведёт деньги",
     "form_intro": "Ваши данные",
     "country_MX": "Мексика",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — Бразильский реал",
     "va_save_title": "💾 Сохраните банковские реквизиты",
     "va_save_body": "В следующий раз просто переведите деньги напрямую из вашего банка на этот счёт. Деньги автоматически поступят получателю без посещения OmniPay.",
+    "alchemypay_alt_intro": "Хотите заплатить картой? Используйте Alchemy Pay как мгновенную альтернативу.",
+    "alchemypay_alt_button": "Оплатить через Alchemy Pay",
+    "alchemypay_alt_loading": "Перенаправление…",
     "tos_required_title": "⚠️ Примите условия Bridge",
     "tos_required_body": "Вы должны принять условия Bridge перед продолжением. Нажмите, примите и вернитесь на эту страницу.",
     "tos_accept_button": "Принять условия Bridge →",
@@ -1048,5 +1056,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "Политика конфиденциальности",
     "footer_home": "Главная OmniPay"
+  },
+  "pagar_alchemypay": {
+    "page_title": "Оплата через Alchemy Pay",
+    "powered_by_note": "Тот же пункт назначения, обработка через Alchemy Pay вместо Bridge.",
+    "recipient_gets": "Получатель получает",
+    "email_label": "Ваш email",
+    "name_label": "Ваше имя (необязательно)",
+    "name_placeholder": "Полное имя",
+    "your_country_label": "Ваша страна",
+    "amount_label": "Сумма, которую вы отправляете",
+    "redirecting": "Перенаправление…",
+    "continue_button": "Перейти к оплате",
+    "footer_note": "🔒 Вы завершите оплату на защищённой странице Alchemy Pay."
   }
 }

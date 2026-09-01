@@ -379,6 +379,11 @@
     "canada_new_request": "+ Nouvelle demande",
     "unsupported_note": "Vous ne voyez pas votre pays ? Nous élargissons notre réseau — plus de destinations bientôt.",
     "zero_data_note": "🔒 Aucune donnée personnelle stockée · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "Ce pays est traité via Alchemy Pay — même destination, même sécurité.",
+    "alchemypay_account_placeholder": "Numéro de compte / IBAN / PayID",
+    "alchemypay_bank_code_label": "Code banque",
+    "alchemypay_bank_code_optional": "facultatif",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "Remplissez vos coordonnées · Partagez le lien avec l'expéditeur",
     "form_intro": "Vos coordonnées",
     "country_MX": "Mexique",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — Réal brésilien",
     "va_save_title": "💾 Enregistrez ces coordonnées bancaires",
     "va_save_body": "La prochaine fois, transférez directement depuis votre banque vers ce compte. L'argent arrive automatiquement chez le destinataire — sans retourner sur OmniPay.",
+    "alchemypay_alt_intro": "Vous préférez payer par carte ? Utilisez Alchemy Pay comme alternative instantanée.",
+    "alchemypay_alt_button": "Payer avec Alchemy Pay",
+    "alchemypay_alt_loading": "Redirection…",
     "tos_required_title": "⚠️ Accepter les conditions de Bridge",
     "tos_required_body": "Vous devez accepter les conditions de Bridge avant de continuer. Cliquez, acceptez, et revenez sur cette page.",
     "tos_accept_button": "Accepter les conditions →",
@@ -1048,5 +1056,18 @@
     "s12_p": "Pour toute question sur ces Conditions, contactez-nous à : legal@omnipay.ca",
     "footer_privacy": "Politique de Confidentialité",
     "footer_home": "Accueil OmniPay"
+  },
+  "pagar_alchemypay": {
+    "page_title": "Payer via Alchemy Pay",
+    "powered_by_note": "Même destination, traité via Alchemy Pay au lieu de Bridge.",
+    "recipient_gets": "Le destinataire reçoit",
+    "email_label": "Votre e-mail",
+    "name_label": "Votre nom (facultatif)",
+    "name_placeholder": "Nom complet",
+    "your_country_label": "Votre pays",
+    "amount_label": "Montant envoyé",
+    "redirecting": "Redirection…",
+    "continue_button": "Continuer vers le paiement",
+    "footer_note": "🔒 Vous terminerez le paiement sur la page sécurisée d'Alchemy Pay."
   }
 }

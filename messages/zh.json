@@ -379,6 +379,11 @@
     "canada_new_request": "+ 新请求",
     "unsupported_note": "没看到您的国家？我们正在扩展网络 — 即将推出更多目的地。",
     "zero_data_note": "🔒 不存储任何个人数据 · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "该国家通过 Alchemy Pay 处理 — 相同目的地，相同安全性。",
+    "alchemypay_account_placeholder": "账号 / IBAN / PayID",
+    "alchemypay_bank_code_label": "银行代码",
+    "alchemypay_bank_code_optional": "可选",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "填写您的信息 · 将链接分享给汇款人",
     "form_intro": "您的信息",
     "country_MX": "墨西哥",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — 巴西雷亚尔",
     "va_save_title": "💾 保存这些银行信息",
     "va_save_body": "下次只需从您的银行直接转账到此账户，资金将自动到达收款人，无需再次访问 OmniPay。",
+    "alchemypay_alt_intro": "更想用卡支付？使用 Alchemy Pay 作为即时替代方案。",
+    "alchemypay_alt_button": "使用 Alchemy Pay 支付",
+    "alchemypay_alt_loading": "跳转中…",
     "tos_required_title": "⚠️ 接受 Bridge 条款",
     "tos_required_body": "在继续之前，您必须接受 Bridge 的条款。点击、接受并返回此页面。",
     "tos_accept_button": "接受 Bridge 条款 →",
@@ -1048,5 +1056,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "隐私政策",
     "footer_home": "OmniPay 首页"
+  },
+  "pagar_alchemypay": {
+    "page_title": "使用 Alchemy Pay 支付",
+    "powered_by_note": "目的地相同，通过 Alchemy Pay 而非 Bridge 处理。",
+    "recipient_gets": "收款人收到",
+    "email_label": "您的邮箱",
+    "name_label": "您的姓名（可选）",
+    "name_placeholder": "全名",
+    "your_country_label": "您的国家",
+    "amount_label": "您发送的金额",
+    "redirecting": "跳转中…",
+    "continue_button": "继续支付",
+    "footer_note": "🔒 您将在 Alchemy Pay 的安全页面完成支付。"
   }
 }

@@ -379,6 +379,11 @@
     "canada_new_request": "+ Yêu cầu mới",
     "unsupported_note": "Không thấy quốc gia của bạn? Chúng tôi đang mở rộng mạng — sắp có thêm điểm đến.",
     "zero_data_note": "🔒 Không lưu trữ dữ liệu cá nhân · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "Quốc gia này được xử lý qua Alchemy Pay — cùng điểm đến, cùng mức bảo mật.",
+    "alchemypay_account_placeholder": "Số tài khoản / IBAN / PayID",
+    "alchemypay_bank_code_label": "Mã ngân hàng",
+    "alchemypay_bank_code_optional": "tùy chọn",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "Điền thông tin của bạn · Chia sẻ liên kết với người sẽ gửi tiền",
     "form_intro": "Thông tin của bạn",
     "country_MX": "Mexico",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — Real Brazil",
     "va_save_title": "💾 Lưu thông tin ngân hàng này",
     "va_save_body": "Lần tới, chỉ cần chuyển khoản trực tiếp từ ngân hàng của bạn đến tài khoản này. Tiền sẽ tự động đến người nhận mà không cần truy cập OmniPay.",
+    "alchemypay_alt_intro": "Muốn thanh toán bằng thẻ? Dùng Alchemy Pay như một lựa chọn tức thì.",
+    "alchemypay_alt_button": "Thanh toán bằng Alchemy Pay",
+    "alchemypay_alt_loading": "Đang chuyển hướng…",
     "tos_required_title": "⚠️ Chấp nhận Điều khoản Bridge",
     "tos_required_body": "Bạn phải chấp nhận điều khoản của Bridge trước khi tiếp tục. Nhấp, chấp nhận và quay lại trang này.",
     "tos_accept_button": "Chấp nhận Điều khoản Bridge →",
@@ -1048,5 +1056,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "Chính sách Quyền riêng tư",
     "footer_home": "Trang chủ OmniPay"
+  },
+  "pagar_alchemypay": {
+    "page_title": "Thanh toán qua Alchemy Pay",
+    "powered_by_note": "Cùng điểm đến, được xử lý qua Alchemy Pay thay vì Bridge.",
+    "recipient_gets": "Người nhận nhận được",
+    "email_label": "Email của bạn",
+    "name_label": "Tên của bạn (tùy chọn)",
+    "name_placeholder": "Họ và tên",
+    "your_country_label": "Quốc gia của bạn",
+    "amount_label": "Số tiền bạn gửi",
+    "redirecting": "Đang chuyển hướng…",
+    "continue_button": "Tiếp tục thanh toán",
+    "footer_note": "🔒 Bạn sẽ hoàn tất thanh toán trên trang bảo mật của Alchemy Pay."
   }
 }

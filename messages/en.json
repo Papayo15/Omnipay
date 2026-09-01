@@ -391,6 +391,11 @@
     "canada_new_request": "+ New request",
     "unsupported_note": "Don't see your country? We're expanding our network — more destinations coming soon.",
     "zero_data_note": "🔒 We store no personal data · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "This country is processed via Alchemy Pay — same destination, same security.",
+    "alchemypay_account_placeholder": "Account number / IBAN / PayID",
+    "alchemypay_bank_code_label": "Bank code",
+    "alchemypay_bank_code_optional": "optional",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "Fill in your details · Share the link with whoever will send you money",
     "form_intro": "Your details",
     "country_MX": "Mexico",
@@ -557,6 +562,9 @@
     "currency_brl": "BRL — Brazilian Real",
     "va_save_title": "💾 Save these bank details",
     "va_save_body": "Next time, just transfer directly from your banking app to this account. Your money arrives automatically — no need to visit OmniPay again.",
+    "alchemypay_alt_intro": "Prefer to pay by card instead? Use Alchemy Pay for an instant alternative.",
+    "alchemypay_alt_button": "Pay with Alchemy Pay",
+    "alchemypay_alt_loading": "Redirecting…",
     "tos_required_title": "⚠️ Accept Bridge Terms",
     "tos_required_body": "You must accept Bridge's terms before continuing. Click, accept, and return to this page.",
     "tos_accept_button": "Accept Bridge Terms →"
@@ -1045,5 +1053,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "Privacy Policy",
     "footer_home": "OmniPay Home"
+  },
+  "pagar_alchemypay": {
+    "page_title": "Pay via Alchemy Pay",
+    "powered_by_note": "Same destination, processed through Alchemy Pay instead of Bridge.",
+    "recipient_gets": "Recipient gets",
+    "email_label": "Your email",
+    "name_label": "Your name (optional)",
+    "name_placeholder": "Full name",
+    "your_country_label": "Your country",
+    "amount_label": "Amount you're sending",
+    "redirecting": "Redirecting…",
+    "continue_button": "Continue to payment",
+    "footer_note": "🔒 You'll complete payment on Alchemy Pay's secure page."
   }
 }

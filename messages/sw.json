@@ -379,6 +379,11 @@
     "canada_new_request": "+ Ombi jipya",
     "unsupported_note": "Huoni nchi yako? Tunapanua mtandao wetu — maeneo zaidi yanakuja hivi karibuni.",
     "zero_data_note": "🔒 Hatuhifadhi data ya kibinafsi · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "Nchi hii inashughulikiwa kupitia Alchemy Pay — marudio sawa, usalama sawa.",
+    "alchemypay_account_placeholder": "Nambari ya akaunti / IBAN / PayID",
+    "alchemypay_bank_code_label": "Msimbo wa benki",
+    "alchemypay_bank_code_optional": "hiari",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "Jaza taarifa zako · Shiriki kiungo na anayetuma pesa",
     "form_intro": "Taarifa zako",
     "country_MX": "Meksiko",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — Real ya Brazili",
     "va_save_title": "💾 Hifadhi maelezo haya ya benki",
     "va_save_body": "Mara ijayo, hamisha moja kwa moja kutoka benki yako kwenye akaunti hii. Pesa itafika kwa mpokeaji kiotomatiki bila kutembelea OmniPay tena.",
+    "alchemypay_alt_intro": "Unapendelea kulipa kwa kadi? Tumia Alchemy Pay kama mbadala wa papo hapo.",
+    "alchemypay_alt_button": "Lipa kwa Alchemy Pay",
+    "alchemypay_alt_loading": "Inaelekeza…",
     "tos_required_title": "⚠️ Kubali Masharti ya Bridge",
     "tos_required_body": "Lazima ukubali masharti ya Bridge kabla ya kuendelea. Bonyeza, kubali, na urudi ukurasa huu.",
     "tos_accept_button": "Kubali Masharti →",
@@ -1048,5 +1056,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "Sera ya Faragha",
     "footer_home": "Nyumbani OmniPay"
+  },
+  "pagar_alchemypay": {
+    "page_title": "Lipa kupitia Alchemy Pay",
+    "powered_by_note": "Marudio sawa, inashughulikiwa kupitia Alchemy Pay badala ya Bridge.",
+    "recipient_gets": "Mpokeaji anapata",
+    "email_label": "Barua pepe yako",
+    "name_label": "Jina lako (hiari)",
+    "name_placeholder": "Jina kamili",
+    "your_country_label": "Nchi yako",
+    "amount_label": "Kiasi unachotuma",
+    "redirecting": "Inaelekeza…",
+    "continue_button": "Endelea kulipa",
+    "footer_note": "🔒 Utakamilisha malipo kwenye ukurasa salama wa Alchemy Pay."
   }
 }

@@ -3,9 +3,9 @@
 //
 // Factory y orquestador de proveedores de Pay-out.
 //
-// Variables de entorno que controlan el routing:
-//   PAYOUT_PROVIDER_MX=bridge | alchemypay
-//   PAYOUT_PROVIDER_GLOBAL=bridge
+// Bridge es el único proveedor de este orquestador. Alchemy Pay se enruta
+// aparte, a nivel de orden completa (no de payout individual) — ver
+// lib/funding-provider.ts y app/api/alchemypay/order/create.
 //
 // La lógica de fallback automático vive aquí:
 //   - Si el proveedor principal lanza { code: "UNSUPPORTED_CORRIDOR" }
@@ -15,26 +15,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { IPayOutProvider, PayOutParams, PayOutResult, PayOutProviderName } from "./interface";
-import { bridgeProvider }     from "./bridge";
-import { alchemypayProvider } from "./alchemypay";
+import { bridgeProvider } from "./bridge";
 
 export type { IPayOutProvider, PayOutParams, PayOutResult, VirtualAccount, VirtualAccountParams, PayOutFeeInfo, PayOutProviderName } from "./interface";
 
-function byName(name: string | undefined): IPayOutProvider {
-  return name === "alchemypay" ? alchemypayProvider : bridgeProvider;
-}
-
-/**
- * Returns the pay-out provider for Mexico.
- * Set PAYOUT_PROVIDER_MX=alchemypay to route MX payouts through Alchemy Pay.
- * Defaults to Bridge when the env var is absent or unrecognized.
- */
 export function getMxPayOutProvider(): IPayOutProvider {
-  return byName(process.env.PAYOUT_PROVIDER_MX);
+  return bridgeProvider;
 }
 
 export function getGlobalPayOutProvider(): IPayOutProvider {
-  return byName(process.env.PAYOUT_PROVIDER_GLOBAL);
+  return bridgeProvider;
 }
 
 /**
@@ -96,5 +86,5 @@ export async function executeWithFallback(params: PayOutParams): Promise<PayOutR
 }
 
 export function getAllPayOutProviders(): IPayOutProvider[] {
-  return [bridgeProvider, alchemypayProvider];
+  return [bridgeProvider];
 }

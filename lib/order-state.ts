@@ -34,6 +34,8 @@ export interface OrderRecord {
   orderType?:         OrderType;  // defaults to "p2p" if not set
   payInProvider?:     string;   // "bridge-va" | "alchemypay" | ...
   payOutProvider?:    string;   // "bridge-liq" | "alchemypay" | ...
+  recipientOnchainAddress?: string;  // recipient's Bridge liquidation address (Polygon) —
+                                      // destination for Alchemy Pay's on-ramp when used
   destinationCountry: string;
   recipientName:      string;
   recipientAccount:   string;     // cifrado — solo se guarda masked para display

@@ -73,6 +73,32 @@ const COUNTRY_OPTIONS = [
   { code: "VA", currency: "EUR", flag: "🇻🇦" },
 ];
 
+// Countries with no native Bridge rail — routed through Alchemy Pay instead
+// (see lib/funding-provider.ts). Shown by code, not translated name — country
+// codes are identifiers like currency codes, not prose.
+const ALCHEMYPAY_COUNTRIES = [
+  { code: "AU", currency: "AUD", flag: "🇦🇺" },
+  { code: "NG", currency: "NGN", flag: "🇳🇬" },
+  { code: "KE", currency: "KES", flag: "🇰🇪" },
+  { code: "GH", currency: "GHS", flag: "🇬🇭" },
+  { code: "IN", currency: "INR", flag: "🇮🇳" },
+  { code: "PH", currency: "PHP", flag: "🇵🇭" },
+  { code: "ID", currency: "IDR", flag: "🇮🇩" },
+  { code: "VN", currency: "VND", flag: "🇻🇳" },
+  { code: "TH", currency: "THB", flag: "🇹🇭" },
+  { code: "MY", currency: "MYR", flag: "🇲🇾" },
+  { code: "SG", currency: "SGD", flag: "🇸🇬" },
+  { code: "JP", currency: "JPY", flag: "🇯🇵" },
+  { code: "KR", currency: "KRW", flag: "🇰🇷" },
+  { code: "PK", currency: "PKR", flag: "🇵🇰" },
+  { code: "BD", currency: "BDT", flag: "🇧🇩" },
+  { code: "ZA", currency: "ZAR", flag: "🇿🇦" },
+  { code: "EG", currency: "EGP", flag: "🇪🇬" },
+  { code: "MA", currency: "MAD", flag: "🇲🇦" },
+  { code: "AE", currency: "AED", flag: "🇦🇪" },
+  { code: "SA", currency: "SAR", flag: "🇸🇦" },
+];
+
 interface BridgeQuote {
   amount_principal:  number;
   bridge_onramp:     number;
@@ -146,10 +172,54 @@ export default function P2PPage() {
   // Ref always fresh in callbacks — tracks whether current generateLink call is a KYC retry
   const kycAutoRetryRef = useRef(false);
 
-  const selectedCountry = COUNTRY_OPTIONS.find((c) => c.code === country) ?? COUNTRY_OPTIONS[0];
-  const currency        = selectedCountry.currency;
+  const [apBankCode,      setApBankCode]      = useState("");
+  const [alchemyPayEnabled, setAlchemyPayEnabled] = useState(false);
+  const [apSubmitting,      setApSubmitting]      = useState(false);
 
-  const rail = BANK_RAIL_COUNTRIES.has(country) ? "bridge" : "unavailable";
+  useEffect(() => {
+    fetch("/api/alchemypay/status")
+      .then((r) => r.json())
+      .then((d: { onrampEnabled?: boolean }) => setAlchemyPayEnabled(!!d.onrampEnabled))
+      .catch(() => setAlchemyPayEnabled(false));
+  }, []);
+
+  const ALL_COUNTRIES   = [...COUNTRY_OPTIONS, ...ALCHEMYPAY_COUNTRIES];
+  const selectedCountry = ALL_COUNTRIES.find((c) => c.code === country) ?? ALL_COUNTRIES[0];
+  const currency         = selectedCountry.currency;
+
+  const rail = BANK_RAIL_COUNTRIES.has(country) ? "bridge" : (alchemyPayEnabled ? "alchemypay" : "unavailable");
+
+  const generateLinkAlchemyPay = useCallback(async () => {
+    const amt = parseFloat(amountLocal);
+    if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt) return;
+    setApSubmitting(true);
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/alchemypay/order/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderType:          "p2p",
+          recipientName:      nombre.trim(),
+          recipientEmail:     email.toLowerCase().trim(),
+          recipientCountry:   country,
+          recipientCurrency:  currency,
+          recipientAmount:    amt,
+          accountNumber:      account.trim(),
+          bankCode:           apBankCode.trim() || undefined,
+        }),
+      });
+      const data = await res.json() as { pay_link?: string; error?: string };
+      if (!res.ok || !data.pay_link) throw new Error(data.error ?? "Error");
+      setShareLink(data.pay_link);
+      setStep("share");
+    } catch (err) {
+      setErrorMsg((err as Error).message);
+      setStep("error");
+    } finally {
+      setApSubmitting(false);
+    }
+  }, [nombre, email, country, currency, account, apBankCode, amountLocal]);
 
   // Pre-populate from URL query params — also detects post-KYC return
   useEffect(() => {
@@ -191,6 +261,7 @@ export default function P2PPage() {
     setAccount("");
     setCpf("");
     setBic("");
+    setApBankCode("");
     setBankInfo(null);
     setClabeValid(null);
   }, [country]);
@@ -603,6 +674,10 @@ export default function P2PPage() {
             {COUNTRY_OPTIONS.map((c) => (
               <option key={c.code} value={c.code}>{c.flag} {t(`country_${c.code}`)} — {c.currency}</option>
             ))}
+            {/* Alchemy Pay countries — only listed once ALCHEMYPAY_APP_ID/SECRET are set server-side */}
+            {alchemyPayEnabled && ALCHEMYPAY_COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>{c.flag} {c.code} — {c.currency}</option>
+            ))}
           </select>
         </div>
 
@@ -782,6 +857,51 @@ export default function P2PPage() {
                 </>
               );
             })()}
+            <div className="mt-3">
+              <TrustBanner variant="checkout" />
+            </div>
+          </>
+        )}
+
+        {/* ══ ALCHEMY PAY FORM (país sin riel nativo en Bridge) ══════════════ */}
+        {rail === "alchemypay" && (
+          <>
+            <div className="bg-[#00C9C8]/10 border border-[#00C9C8]/30 rounded-xl px-4 py-3">
+              <p className="text-[#00C9C8] text-xs font-medium">⚡ {t("alchemypay_rail_note")}</p>
+            </div>
+
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">{t("account_label")}</label>
+              <input type="text" value={account} onChange={(e) => setAccount(e.target.value)}
+                placeholder={t("alchemypay_account_placeholder")}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#00C9C8] text-sm font-mono" />
+            </div>
+
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">
+                {t("alchemypay_bank_code_label")} <span className="text-slate-600">({t("alchemypay_bank_code_optional")})</span>
+              </label>
+              <input type="text" value={apBankCode} onChange={(e) => setApBankCode(e.target.value)}
+                placeholder={t("alchemypay_bank_code_placeholder")}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#00C9C8] text-sm font-mono" />
+            </div>
+
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">{t("amount_receive_label")} ({currency})</label>
+              <input type="number" inputMode="numeric" value={amountLocal}
+                onChange={(e) => setAmountLocal(e.target.value)}
+                placeholder="100" min="1"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#00C9C8] text-sm" />
+            </div>
+
+            <button
+              onClick={generateLinkAlchemyPay}
+              disabled={apSubmitting || !nombre.trim() || !email.includes("@") || account.trim().length < 5 || !amountLocal}
+              className="w-full bg-[#00C9C8] hover:bg-[#00b3b2] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-slate-900 py-4 rounded-2xl font-semibold text-lg mt-2"
+            >
+              {apSubmitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}
+            </button>
+
             <div className="mt-3">
               <TrustBanner variant="checkout" />
             </div>

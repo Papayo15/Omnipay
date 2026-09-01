@@ -12,8 +12,8 @@
 //        PAYOUT_PROVIDER_MX=mi-proveedor      (para México y LATAM)
 //        PAYOUT_PROVIDER_GLOBAL=mi-proveedor  (para el resto del mundo)
 //
-// Proveedores activos: "bridge" (default) y "alchemypay" (fallback/corredores sin
-// riel nativo en Bridge — ver providers/alchemypay/).
+// Proveedor activo: "bridge". Alchemy Pay se enruta aparte (whole-order, sin
+// pasar por este orquestador) — ver lib/funding-provider.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Parámetros de entrada para ejecutar un pago de salida */
@@ -74,7 +74,7 @@ export interface PayOutFeeInfo {
   source:       "live" | "mock" | "cached";
 }
 
-export type PayOutProviderName = "bridge" | "alchemypay";
+export type PayOutProviderName = "bridge";
 
 /** Contrato que todo proveedor de Pay-out debe cumplir */
 export interface IPayOutProvider {

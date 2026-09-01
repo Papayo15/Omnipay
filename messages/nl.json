@@ -379,6 +379,11 @@
     "canada_new_request": "+ Nieuw verzoek",
     "unsupported_note": "Uw land niet zichtbaar? We breiden ons netwerk uit — meer bestemmingen binnenkort.",
     "zero_data_note": "🔒 Geen persoonlijke gegevens opgeslagen · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "Dit land wordt verwerkt via Alchemy Pay — dezelfde bestemming, dezelfde beveiliging.",
+    "alchemypay_account_placeholder": "Rekeningnummer / IBAN / PayID",
+    "alchemypay_bank_code_label": "Bankcode",
+    "alchemypay_bank_code_optional": "optioneel",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "Vul uw gegevens in · Deel de link met wie u geld stuurt",
     "form_intro": "Uw gegevens",
     "country_MX": "Mexico",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — Braziliaanse real",
     "va_save_title": "💾 Bewaar deze bankgegevens",
     "va_save_body": "De volgende keer, stuur gewoon geld via uw bank naar dit account. Het geld arriveert automatisch bij de ontvanger — zonder OmniPay opnieuw te bezoeken.",
+    "alchemypay_alt_intro": "Liever met kaart betalen? Gebruik Alchemy Pay als direct alternatief.",
+    "alchemypay_alt_button": "Betalen met Alchemy Pay",
+    "alchemypay_alt_loading": "Doorverwijzen…",
     "tos_required_title": "⚠️ Accepteer de Bridge-voorwaarden",
     "tos_required_body": "U moet de Bridge-voorwaarden accepteren voordat u doorgaat. Klik, accepteer, en keer terug naar deze pagina.",
     "tos_accept_button": "Bridge-voorwaarden accepteren →",
@@ -1048,5 +1056,18 @@
     "s12_p": "Voor vragen: legal@omnipay.ca",
     "footer_privacy": "Privacybeleid",
     "footer_home": "OmniPay Home"
+  },
+  "pagar_alchemypay": {
+    "page_title": "Betalen met Alchemy Pay",
+    "powered_by_note": "Zelfde bestemming, verwerkt via Alchemy Pay in plaats van Bridge.",
+    "recipient_gets": "Ontvanger krijgt",
+    "email_label": "Uw e-mail",
+    "name_label": "Uw naam (optioneel)",
+    "name_placeholder": "Volledige naam",
+    "your_country_label": "Uw land",
+    "amount_label": "Bedrag dat u verstuurt",
+    "redirecting": "Doorverwijzen…",
+    "continue_button": "Doorgaan naar betaling",
+    "footer_note": "🔒 U rondt de betaling af op de beveiligde pagina van Alchemy Pay."
   }
 }

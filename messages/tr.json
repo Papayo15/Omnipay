@@ -379,6 +379,11 @@
     "canada_new_request": "+ Yeni talep",
     "unsupported_note": "Ülkenizi görmüyor musunuz? Ağımızı genişletiyoruz — yakında daha fazla hedef.",
     "zero_data_note": "🔒 Kişisel veri saklamıyoruz · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "Bu ülke Alchemy Pay üzerinden işlenir — aynı hedef, aynı güvenlik.",
+    "alchemypay_account_placeholder": "Hesap numarası / IBAN / PayID",
+    "alchemypay_bank_code_label": "Banka kodu",
+    "alchemypay_bank_code_optional": "isteğe bağlı",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "Bilgilerinizi doldurun · Linki size para gönderecek kişiyle paylaşın",
     "form_intro": "Bilgileriniz",
     "country_MX": "Meksika",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — Brezilya reali",
     "va_save_title": "💾 Bu banka bilgilerini kaydet",
     "va_save_body": "Bir dahaki seferinde, doğrudan bankandan bu hesaba transfer yap. Para, OmniPay'e tekrar girmeden otomatik olarak alıcıya ulaşır.",
+    "alchemypay_alt_intro": "Kartla ödemeyi mi tercih edersin? Anında alternatif için Alchemy Pay'i kullan.",
+    "alchemypay_alt_button": "Alchemy Pay ile öde",
+    "alchemypay_alt_loading": "Yönlendiriliyor…",
     "tos_required_title": "⚠️ Bridge Şartlarını Kabul Et",
     "tos_required_body": "Devam etmeden önce Bridge şartlarını kabul etmelisiniz. Tıkla, kabul et ve bu sayfaya geri dön.",
     "tos_accept_button": "Bridge Şartlarını Kabul Et →",
@@ -1048,5 +1056,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "Gizlilik Politikası",
     "footer_home": "OmniPay Ana Sayfa"
+  },
+  "pagar_alchemypay": {
+    "page_title": "Alchemy Pay ile öde",
+    "powered_by_note": "Aynı hedef, Bridge yerine Alchemy Pay üzerinden işlenir.",
+    "recipient_gets": "Alıcı şunu alır",
+    "email_label": "E-postan",
+    "name_label": "Adın (isteğe bağlı)",
+    "name_placeholder": "Ad soyad",
+    "your_country_label": "Ülken",
+    "amount_label": "Gönderdiğin tutar",
+    "redirecting": "Yönlendiriliyor…",
+    "continue_button": "Ödemeye devam et",
+    "footer_note": "🔒 Ödemeyi Alchemy Pay'in güvenli sayfasında tamamlayacaksın."
   }
 }

@@ -379,6 +379,11 @@
     "canada_new_request": "+ طلب جديد",
     "unsupported_note": "لا ترى بلدك؟ نحن نوسع شبكتنا — المزيد من الوجهات قريباً.",
     "zero_data_note": "🔒 لا نخزن أي بيانات شخصية · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "تتم معالجة هذا البلد عبر Alchemy Pay — نفس الوجهة، نفس الأمان.",
+    "alchemypay_account_placeholder": "رقم الحساب / IBAN / PayID",
+    "alchemypay_bank_code_label": "رمز البنك",
+    "alchemypay_bank_code_optional": "اختياري",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "أكمل بياناتك · شارك الرابط مع من سيرسل إليك المال",
     "form_intro": "بياناتك",
     "country_MX": "المكسيك",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — ريال برازيلي",
     "va_save_title": "💾 احفظ بياناتك البنكية",
     "va_save_body": "في المرة القادمة، قم بتحويل الأموال مباشرة من بنكك إلى هذا الحساب. ستصل الأموال تلقائياً إلى المستلم دون الحاجة لزيارة OmniPay.",
+    "alchemypay_alt_intro": "تفضل الدفع بالبطاقة؟ استخدم Alchemy Pay كبديل فوري.",
+    "alchemypay_alt_button": "الدفع عبر Alchemy Pay",
+    "alchemypay_alt_loading": "جارٍ إعادة التوجيه…",
     "tos_required_title": "⚠️ قبول شروط Bridge",
     "tos_required_body": "يجب قبول شروط Bridge قبل المتابعة. انقر، وافق، ثم عد إلى هذه الصفحة.",
     "tos_accept_button": "قبول شروط Bridge →",
@@ -1048,5 +1056,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "سياسة الخصوصية",
     "footer_home": "الصفحة الرئيسية OmniPay"
+  },
+  "pagar_alchemypay": {
+    "page_title": "الدفع عبر Alchemy Pay",
+    "powered_by_note": "نفس الوجهة، تتم المعالجة عبر Alchemy Pay بدلاً من Bridge.",
+    "recipient_gets": "يحصل المستلم على",
+    "email_label": "بريدك الإلكتروني",
+    "name_label": "اسمك (اختياري)",
+    "name_placeholder": "الاسم الكامل",
+    "your_country_label": "بلدك",
+    "amount_label": "المبلغ الذي ترسله",
+    "redirecting": "جارٍ إعادة التوجيه…",
+    "continue_button": "المتابعة إلى الدفع",
+    "footer_note": "🔒 ستكمل الدفع على صفحة Alchemy Pay الآمنة."
   }
 }

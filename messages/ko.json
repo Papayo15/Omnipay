@@ -379,6 +379,11 @@
     "canada_new_request": "+ 새 요청",
     "unsupported_note": "국가를 찾지 못하셨나요? 네트워크를 확장 중입니다 — 곧 더 많은 목적지가 추가됩니다.",
     "zero_data_note": "🔒 개인 데이터를 저장하지 않습니다 · Bridge.xyz · AES-256-GCM",
+    "alchemypay_rail_note": "이 국가는 Alchemy Pay를 통해 처리됩니다 — 동일한 목적지, 동일한 보안.",
+    "alchemypay_account_placeholder": "계좌번호 / IBAN / PayID",
+    "alchemypay_bank_code_label": "은행 코드",
+    "alchemypay_bank_code_optional": "선택 사항",
+    "alchemypay_bank_code_placeholder": "BSB / Sort code / Routing number",
     "page_sub": "정보를 입력하세요 · 송금자에게 링크를 공유하세요",
     "form_intro": "내 정보",
     "country_MX": "멕시코",
@@ -545,6 +550,9 @@
     "currency_brl": "BRL — 브라질 헤알",
     "va_save_title": "💾 이 계좌 정보를 저장하세요",
     "va_save_body": "다음번에는 은행 앱에서 이 계좌로 직접 이체하세요. OmniPay에 다시 들어갈 필요 없이 자동으로 수취인에게 전달됩니다.",
+    "alchemypay_alt_intro": "카드로 결제하시겠어요? 즉시 대안으로 Alchemy Pay를 이용하세요.",
+    "alchemypay_alt_button": "Alchemy Pay로 결제",
+    "alchemypay_alt_loading": "리디렉션 중…",
     "tos_required_title": "⚠️ Bridge 이용약관 동의",
     "tos_required_body": "계속하려면 Bridge 이용약관에 동의해야 합니다. 클릭, 동의, 이 페이지로 돌아오세요.",
     "tos_accept_button": "Bridge 이용약관 동의 →",
@@ -1048,5 +1056,18 @@
     "s12_p": "For questions about these Terms, contact us at: legal@omnipay.ca",
     "footer_privacy": "개인정보 처리방침",
     "footer_home": "OmniPay 홈"
+  },
+  "pagar_alchemypay": {
+    "page_title": "Alchemy Pay로 결제",
+    "powered_by_note": "동일한 목적지, Bridge 대신 Alchemy Pay를 통해 처리됩니다.",
+    "recipient_gets": "수취인이 받는 금액",
+    "email_label": "이메일",
+    "name_label": "이름 (선택 사항)",
+    "name_placeholder": "전체 이름",
+    "your_country_label": "국가",
+    "amount_label": "보내는 금액",
+    "redirecting": "리디렉션 중…",
+    "continue_button": "결제 계속하기",
+    "footer_note": "🔒 Alchemy Pay의 안전한 페이지에서 결제를 완료합니다."
   }
 }
