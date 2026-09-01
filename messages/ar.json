@@ -1068,6 +1068,9 @@
     "amount_label": "المبلغ الذي ترسله",
     "redirecting": "جارٍ إعادة التوجيه…",
     "continue_button": "المتابعة إلى الدفع",
-    "footer_note": "🔒 ستكمل الدفع على صفحة Alchemy Pay الآمنة."
+    "footer_note": "🔒 ستكمل الدفع على صفحة Alchemy Pay الآمنة.",
+    "completed_title": "تم استلام الدفعة",
+    "completed_body": "أكدت Alchemy Pay دفعتك. سنُخطر المستلم بمجرد وصول الأموال.",
+    "track_button": "تتبع هذا التحويل"
   }
 }

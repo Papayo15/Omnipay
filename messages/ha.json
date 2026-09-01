@@ -1067,6 +1067,9 @@
     "amount_label": "Adadin da kake tura",
     "redirecting": "Ana turawa…",
     "continue_button": "Ci gaba zuwa biya",
-    "footer_note": "🔒 Za ka kammala biyan kuɗi a shafin tsaro na Alchemy Pay."
+    "footer_note": "🔒 Za ka kammala biyan kuɗi a shafin tsaro na Alchemy Pay.",
+    "completed_title": "An karɓi biyan kuɗi",
+    "completed_body": "Alchemy Pay ta tabbatar da biyan ka. Za mu sanar da mai karɓa da zarar kuɗin sun isa.",
+    "track_button": "Bibiyi wannan canja wuri"
   }
 }

@@ -1068,6 +1068,9 @@
     "amount_label": "Gönderdiğin tutar",
     "redirecting": "Yönlendiriliyor…",
     "continue_button": "Ödemeye devam et",
-    "footer_note": "🔒 Ödemeyi Alchemy Pay'in güvenli sayfasında tamamlayacaksın."
+    "footer_note": "🔒 Ödemeyi Alchemy Pay'in güvenli sayfasında tamamlayacaksın.",
+    "completed_title": "Ödeme alındı",
+    "completed_body": "Alchemy Pay ödemeni onayladı. Fonlar ulaştığında alıcıyı bilgilendireceğiz.",
+    "track_button": "Bu transferi takip et"
   }
 }

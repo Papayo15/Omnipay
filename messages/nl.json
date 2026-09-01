@@ -1068,6 +1068,9 @@
     "amount_label": "Bedrag dat u verstuurt",
     "redirecting": "Doorverwijzen…",
     "continue_button": "Doorgaan naar betaling",
-    "footer_note": "🔒 U rondt de betaling af op de beveiligde pagina van Alchemy Pay."
+    "footer_note": "🔒 U rondt de betaling af op de beveiligde pagina van Alchemy Pay.",
+    "completed_title": "Betaling ontvangen",
+    "completed_body": "Alchemy Pay heeft uw betaling bevestigd. We laten de ontvanger weten zodra het geld binnenkomt.",
+    "track_button": "Deze overboeking volgen"
   }
 }

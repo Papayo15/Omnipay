@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { TrustBanner } from "@/components/TrustBanner";
 
-type Step = "loading" | "form" | "submitting" | "error";
+type Step = "loading" | "form" | "submitting" | "completed" | "error";
 
 // Countries routed through Alchemy Pay — i.e. everything with no native Bridge
 // rail (see lib/funding-provider.ts). Kept in sync manually since the sender
@@ -55,9 +55,22 @@ export default function PagarAlchemyPayPage() {
   const [amount, setAmount]         = useState("");
   const [errorMsg, setErrorMsg]     = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
+
+    // Alchemy Pay redirects back here after the sender finishes payment (and
+    // any inline verification it required) on its own hosted page — this is
+    // the "OmniPay handshake" return leg, same idea as Bridge's ?kyc_done=1.
+    const orderId  = p.get("order_id");
+    const apStatus = p.get("ap_status");
+    if (orderId && apStatus === "completed") {
+      setCompletedOrderId(orderId);
+      setStep("completed");
+      return;
+    }
+
     const tok = p.get("t");
     if (!tok) { window.location.href = "/"; return; }
     setToken(tok);
@@ -115,6 +128,27 @@ export default function PagarAlchemyPayPage() {
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5">
         <div className="text-5xl">⚠️</div>
         <p className="text-slate-300 text-sm max-w-xs">{errorMsg}</p>
+      </main>
+    );
+  }
+
+  // Return leg from Alchemy Pay's hosted checkout — ?order_id=...&ap_status=completed
+  if (step === "completed") {
+    return (
+      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-6 text-center gap-5">
+        <div className="text-5xl">✅</div>
+        <div>
+          <h2 className="text-white font-bold text-xl mb-1">{t("completed_title")}</h2>
+          <p className="text-slate-400 text-sm max-w-xs">{t("completed_body")}</p>
+        </div>
+        {completedOrderId && (
+          <a
+            href={`/seguimiento?order_id=${completedOrderId}`}
+            className="w-full max-w-xs bg-[#00C9C8] hover:bg-[#00b3b2] text-slate-900 text-sm font-bold py-3.5 rounded-2xl transition-colors"
+          >
+            {t("track_button")}
+          </a>
+        )}
       </main>
     );
   }

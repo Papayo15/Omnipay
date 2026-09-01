@@ -1068,6 +1068,9 @@
     "amount_label": "Kiasi unachotuma",
     "redirecting": "Inaelekeza…",
     "continue_button": "Endelea kulipa",
-    "footer_note": "🔒 Utakamilisha malipo kwenye ukurasa salama wa Alchemy Pay."
+    "footer_note": "🔒 Utakamilisha malipo kwenye ukurasa salama wa Alchemy Pay.",
+    "completed_title": "Malipo yamepokelewa",
+    "completed_body": "Alchemy Pay imethibitisha malipo yako. Tutamjulisha mpokeaji mara fedha zitakapofika.",
+    "track_button": "Fuatilia uhamisho huu"
   }
 }

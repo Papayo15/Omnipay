@@ -1067,6 +1067,9 @@
     "amount_label": "Valor que você envia",
     "redirecting": "Redirecionando…",
     "continue_button": "Continuar para o pagamento",
-    "footer_note": "🔒 Você concluirá o pagamento na página segura da Alchemy Pay."
+    "footer_note": "🔒 Você concluirá o pagamento na página segura da Alchemy Pay.",
+    "completed_title": "Pagamento recebido",
+    "completed_body": "A Alchemy Pay confirmou seu pagamento. Avisaremos o destinatário assim que os fundos chegarem.",
+    "track_button": "Acompanhar esta transferência"
   }
 }

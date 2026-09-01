@@ -1068,6 +1068,9 @@
     "amount_label": "送金額",
     "redirecting": "リダイレクト中…",
     "continue_button": "支払いに進む",
-    "footer_note": "🔒 Alchemy Payの安全なページで支払いを完了します。"
+    "footer_note": "🔒 Alchemy Payの安全なページで支払いを完了します。",
+    "completed_title": "支払いを受け付けました",
+    "completed_body": "Alchemy Payがお支払いを確認しました。資金が届き次第、受取人にお知らせします。",
+    "track_button": "この送金を追跡"
   }
 }

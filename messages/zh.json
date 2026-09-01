@@ -1068,6 +1068,9 @@
     "amount_label": "您发送的金额",
     "redirecting": "跳转中…",
     "continue_button": "继续支付",
-    "footer_note": "🔒 您将在 Alchemy Pay 的安全页面完成支付。"
+    "footer_note": "🔒 您将在 Alchemy Pay 的安全页面完成支付。",
+    "completed_title": "已收到付款",
+    "completed_body": "Alchemy Pay 已确认您的付款。资金到账后我们会通知收款人。",
+    "track_button": "追踪此次转账"
   }
 }

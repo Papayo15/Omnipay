@@ -1068,6 +1068,9 @@
     "amount_label": "የሚልኩት መጠን",
     "redirecting": "በማዞር ላይ…",
     "continue_button": "ወደ ክፍያ ይቀጥሉ",
-    "footer_note": "🔒 ክፍያውን በAlchemy Pay ደህንነቱ በተጠበቀ ገጽ ላይ ያጠናቅቃሉ።"
+    "footer_note": "🔒 ክፍያውን በAlchemy Pay ደህንነቱ በተጠበቀ ገጽ ላይ ያጠናቅቃሉ።",
+    "completed_title": "ክፍያ ደርሷል",
+    "completed_body": "Alchemy Pay ክፍያዎን አረጋግጧል። ገንዘቡ ሲደርስ ተቀባዩን እናሳውቃለን።",
+    "track_button": "ይህን ዝውውር ይከታተሉ"
   }
 }
