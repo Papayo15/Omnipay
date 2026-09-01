@@ -11,6 +11,9 @@
 //   5. Ajusta la variable de entorno:
 //        PAYOUT_PROVIDER_MX=mi-proveedor      (para México y LATAM)
 //        PAYOUT_PROVIDER_GLOBAL=mi-proveedor  (para el resto del mundo)
+//
+// Proveedores activos: "bridge" (default) y "alchemypay" (fallback/corredores sin
+// riel nativo en Bridge — ver providers/alchemypay/).
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Parámetros de entrada para ejecutar un pago de salida */
@@ -65,13 +68,13 @@ export interface VirtualAccount {
 /** Fee info del proveedor de salida para el monitor */
 export interface PayOutFeeInfo {
   provider:     PayOutProviderName;
-  fxSpreadPct:  number;   // % de spread FX aplicado (ej: 0.4 para Bitso)
+  fxSpreadPct:  number;   // % de spread FX aplicado
   fixedFeeUsd:  number;   // Fee fijo por transferencia
   fetchedAt:    number;
   source:       "live" | "mock" | "cached";
 }
 
-export type PayOutProviderName = "bridge" | "bitso-direct" | "belo";
+export type PayOutProviderName = "bridge" | "alchemypay";
 
 /** Contrato que todo proveedor de Pay-out debe cumplir */
 export interface IPayOutProvider {

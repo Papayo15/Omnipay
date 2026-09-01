@@ -9,14 +9,19 @@
 //   - Sender and recipient info (name, country)
 //   - Amount sent + fees paid (line by line)
 //   - Amount received in local currency
-//   - Bridge transfer ID (verifiable externally)
+//   - Transfer ID (verifiable externally)
 //   - Date/time
 //   - WhatsApp and Telegram share links
+//
+// Provider-agnostic on purpose: an order can have settled through Bridge or
+// through Alchemy Pay (payOutProvider) — the shape below is identical either
+// way. `_settledVia` is internal telemetry only, never rendered to the user.
 
 import { NextRequest, NextResponse }    from "next/server";
 import { getOrderAsync }                from "@/lib/order-state";
 import { buildWhatsAppLink, buildTelegramLink, buildOmniPayMessage } from "@/lib/messaging";
 import { getTransfer }                  from "@/providers/bridge/transfers";
+import { queryOffRampOrder }            from "@/providers/alchemypay/offramp";
 
 export const runtime = "nodejs";
 
@@ -30,23 +35,30 @@ export async function GET(req: NextRequest): Promise<Response> {
   const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
   const trackUrl = `${appUrl}/api/bridge/track?order_id=${orderId}`;
 
-  // Try to get live transfer details from Bridge (amount received in local currency)
+  // Try to get live settlement details from whichever provider actually paid out.
   let destinationAmount: string | null = null;
   let destinationCurrency: string | null = null;
-  let bridgeTransferId: string | null = order.transferId ?? null;
+  let providerTransferId: string | null = order.transferId ?? null;
 
-  if (order.transferId && process.env.BRIDGE_API_KEY) {
+  if (order.payOutProvider === "alchemypay" && order.transferId) {
+    try {
+      const off = await queryOffRampOrder(orderId);
+      destinationAmount   = off.fiatAmount ?? null;
+      destinationCurrency = order.targetCurrency?.toUpperCase() ?? null;
+      providerTransferId  = off.orderNo;
+    } catch { /* use stored values */ }
+  } else if (order.transferId && process.env.BRIDGE_API_KEY) {
     try {
       const tx = await getTransfer(order.transferId);
       destinationAmount   = tx.receipt?.destination_amount ?? null;
       destinationCurrency = tx.receipt?.destination_currency?.toUpperCase() ?? null;
-      bridgeTransferId    = tx.id;
+      providerTransferId  = tx.id;
     } catch { /* use stored values */ }
   }
 
   const receiptData = {
     order_id:            orderId,
-    bridge_transfer_id:  bridgeTransferId,
+    transfer_id:         providerTransferId,
     status:              order.status,
     recipient_name:      order.recipientName,
     destination_country: order.destinationCountry,
@@ -54,8 +66,8 @@ export async function GET(req: NextRequest): Promise<Response> {
     destination_amount:  destinationAmount,
     created_at:          new Date(order.createdAt).toISOString(),
     completed_at:        order.completedAt ? new Date(order.completedAt).toISOString() : null,
-    powered_by:          "Bridge.xyz",
     issuer:              "OmniPay Global",
+    _settledVia:         order.payOutProvider ?? "bridge",   // internal only — do not render
   };
 
   // Build WhatsApp/Telegram share message

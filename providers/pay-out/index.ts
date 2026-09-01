@@ -4,7 +4,7 @@
 // Factory y orquestador de proveedores de Pay-out.
 //
 // Variables de entorno que controlan el routing:
-//   PAYOUT_PROVIDER_MX=bridge | bitso-direct | belo
+//   PAYOUT_PROVIDER_MX=bridge | alchemypay
 //   PAYOUT_PROVIDER_GLOBAL=bridge
 //
 // La lógica de fallback automático vive aquí:
@@ -15,21 +15,27 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { IPayOutProvider, PayOutParams, PayOutResult, PayOutProviderName } from "./interface";
-import { bridgeProvider } from "./bridge";
-import { bitsoProvider }  from "./bitso";
+import { bridgeProvider }     from "./bridge";
+import { alchemypayProvider } from "./alchemypay";
 
 export type { IPayOutProvider, PayOutParams, PayOutResult, VirtualAccount, VirtualAccountParams, PayOutFeeInfo, PayOutProviderName } from "./interface";
 
+function byName(name: string | undefined): IPayOutProvider {
+  return name === "alchemypay" ? alchemypayProvider : bridgeProvider;
+}
+
 /**
  * Returns the pay-out provider for Mexico.
- * Set PAYOUT_PROVIDER_MX=bitso-direct in Vercel to route MX payouts through Bitso.
+ * Set PAYOUT_PROVIDER_MX=alchemypay to route MX payouts through Alchemy Pay.
  * Defaults to Bridge when the env var is absent or unrecognized.
  */
 export function getMxPayOutProvider(): IPayOutProvider {
-  return process.env.PAYOUT_PROVIDER_MX === "bitso-direct" ? bitsoProvider : bridgeProvider;
+  return byName(process.env.PAYOUT_PROVIDER_MX);
 }
 
-export function getGlobalPayOutProvider(): IPayOutProvider { return bridgeProvider; }
+export function getGlobalPayOutProvider(): IPayOutProvider {
+  return byName(process.env.PAYOUT_PROVIDER_GLOBAL);
+}
 
 /**
  * Selecciona automáticamente el proveedor correcto según el país destino.
@@ -90,5 +96,5 @@ export async function executeWithFallback(params: PayOutParams): Promise<PayOutR
 }
 
 export function getAllPayOutProviders(): IPayOutProvider[] {
-  return [bridgeProvider, bitsoProvider];
+  return [bridgeProvider, alchemypayProvider];
 }

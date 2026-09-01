@@ -1,13 +1,16 @@
 // Base HTTP client for Bridge.xyz API
 // Reads BRIDGE_API_BASE (default: sandbox) and BRIDGE_API_KEY from env.
 
-const BASE = (() => {
+// Resolved lazily (inside bridgeRequest) rather than at module load — a
+// module-level throw blows up `next build`'s page-data collection for any route
+// that imports this file, even when no Bridge request is ever actually made.
+function getBase(): string {
   const b = process.env.BRIDGE_API_BASE;
   if (!b && process.env.NODE_ENV === "production") {
     throw new Error("BRIDGE_API_BASE must be set in production. Add it to your Vercel environment variables.");
   }
   return b ?? "https://api.sandbox.bridge.xyz/v0";
-})();
+}
 
 export class BridgeError extends Error {
   constructor(
@@ -35,7 +38,7 @@ export async function bridgeRequest<T>(
   };
   if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
 
-  const res  = await fetch(`${BASE}${path}`, {
+  const res  = await fetch(`${getBase()}${path}`, {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,

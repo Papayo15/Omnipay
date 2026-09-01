@@ -32,8 +32,8 @@ export interface OrderRecord {
   orderId:            string;
   status:             OrderStatus;
   orderType?:         OrderType;  // defaults to "p2p" if not set
-  payInProvider?:     string;
-  payOutProvider?:    string;
+  payInProvider?:     string;   // "bridge-va" | "alchemypay" | ...
+  payOutProvider?:    string;   // "bridge-liq" | "alchemypay" | ...
   destinationCountry: string;
   recipientName:      string;
   recipientAccount:   string;     // cifrado — solo se guarda masked para display

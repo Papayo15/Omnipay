@@ -50,8 +50,6 @@ interface B2BPayResponse {
   error?:               string;
 }
 
-const BITSO_ENABLED = process.env.NEXT_PUBLIC_BITSO_ENABLED === "true";
-
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   function copy() {
@@ -130,11 +128,8 @@ export default function B2BBridgePage() {
     setStep("loading");
     const redirectUri = `${window.location.origin}/b2b-bridge?t=${encodeURIComponent(token)}&type=b2b&kyb_done=1`;
     try {
-      const isBitsoMxn = currency === "mxn" && BITSO_ENABLED;
-      const endpoint   = isBitsoMxn ? "/api/bitso/checkout" : "/api/bridge/b2b/pay";
-      const reqBody    = isBitsoMxn
-        ? { token, sender_name: businessName.trim(), sender_email: email.toLowerCase().trim() }
-        : { token, business_name: businessName.trim(), sender_email: email.toLowerCase().trim(), source_currency: currency, redirect_uri: redirectUri };
+      const endpoint = "/api/bridge/b2b/pay";
+      const reqBody  = { token, business_name: businessName.trim(), sender_email: email.toLowerCase().trim(), source_currency: currency, redirect_uri: redirectUri };
 
       const res  = await fetch(endpoint, {
         method: "POST",
@@ -382,22 +377,14 @@ export default function B2BBridgePage() {
           </div>
         </div>
 
-        {/* Single-use CLABE notice (Bitso) vs Bridge timeline */}
-        {di.beneficiary_name === "OmniPay / Bitso" ? (
-          <div className="bg-amber-900/20 border border-amber-500/30 rounded-xl px-4 py-3 mb-4">
-            <p className="text-amber-400 text-xs font-semibold mb-1">{t("clabe_notice_title")}</p>
-            <p className="text-slate-400 text-xs leading-relaxed">{t("clabe_notice_body")}</p>
+        <div className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 mb-4">
+          <p className="text-white text-xs font-semibold mb-2">{t("delivery_title")}</p>
+          <div className="flex items-center gap-2 text-slate-400 text-xs">
+            <span className="text-[#00C9C8]">⚡</span>
+            <span>{t("delivery_via")}</span>
           </div>
-        ) : (
-          <div className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 mb-4">
-            <p className="text-white text-xs font-semibold mb-2">{t("delivery_title")}</p>
-            <div className="flex items-center gap-2 text-slate-400 text-xs">
-              <span className="text-[#00C9C8]">⚡</span>
-              <span>{t("delivery_via")}</span>
-            </div>
-            <p className="text-slate-600 text-[10px] mt-2">{t("delivery_vs")}</p>
-          </div>
-        )}
+          <p className="text-slate-600 text-[10px] mt-2">{t("delivery_vs")}</p>
+        </div>
 
         {/* Progress tracker — shown while transfer is pending */}
         {!sandboxDone && (() => {

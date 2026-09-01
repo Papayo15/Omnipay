@@ -1,6 +1,5 @@
-// Route utilities — Bridge-only architecture
-// selectP2PRail and Bitso-specific logic removed.
-// Only getTargetCurrency() remains, used across API routes and providers.
+// Route utilities — Bridge-only architecture.
+// getTargetCurrency() is used across API routes and providers.
 
 // Returns the local fiat currency for a given 2-letter country code.
 export function getTargetCurrency(targetCountry: string): string {

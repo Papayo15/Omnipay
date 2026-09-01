@@ -12,7 +12,7 @@ import { buildRemesaV2Link } from "@/lib/link";
 // stripe `payment_intent.succeeded` (servidor→servidor), no un POST manual del cliente.
 //
 // REGLA 3 — Ciphertext unificado: cuenta bancaria + teléfonos en un solo AES-256-GCM string.
-// El webhook lo desencripta para ejecutar Wise y enviar notificaciones SMS/WhatsApp.
+// El webhook lo desencripta para ejecutar Wise (webhooks/stripe) y enviar notificaciones SMS/WhatsApp.
 
 interface RemesaRequestBody {
   recipientName: string;     // nombre del receptor
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Un solo ciphertext AES-256-GCM con cuenta + modo + teléfonos (Regla 3).
-    // El webhook lo desencripta → lee receiveMode → enruta a Wise / Thunes.
+    // El webhook lo desencripta → lee receiveMode → ejecuta el payout vía Wise.
     const encryptedPayload = await encryptPayload({
       account:        recipientAccount.trim(),
       receiveMode:    receiveMode ?? "bank",

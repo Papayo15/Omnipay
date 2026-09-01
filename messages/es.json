@@ -52,7 +52,6 @@
     "go_home": "Ir al inicio",
     "error_generic": "Error al procesar. Intenta de nuevo.",
     "your_name_label": "Tu nombre completo",
-    "account_trust": "Tarjeta de débito · vía Wise/Thunes",
     "processing_note": "Recibirás un SMS cuando se acredite",
     "error_invalid_account": "Datos de cuenta incorrectos. Verifica e intenta de nuevo.",
     "retry_account": "Intentar con otra cuenta",
@@ -60,7 +59,6 @@
     "receive_mode_bank": "Cuenta bancaria",
     "card_number_label": "Número de tarjeta (16 dígitos)",
     "card_hint_text": "Visa, Mastercard o UnionPay · 16 dígitos",
-    "account_trust_card": "Tarjeta de débito · vía Paysend / Visa Direct",
     "processing_note_card": "Tu dinero llegará en segundos a tu tarjeta",
     "error_card_not_eligible": "Esta tarjeta no es elegible para depósitos internacionales. Intenta con otra tarjeta o usa cuenta bancaria."
   },
@@ -542,9 +540,7 @@
     "va_save_body": "La próxima vez, solo transfiere desde tu banco directamente a esta cuenta. El dinero llega automáticamente al receptor — sin necesidad de volver a OmniPay.",
     "tos_required_title": "⚠️ Acepta los Términos de Bridge",
     "tos_required_body": "Debes aceptar los términos de Bridge antes de continuar. Haz clic, acepta, y vuelve a esta página.",
-    "tos_accept_button": "Aceptar Términos de Bridge →",
-    "bitso_clabe_title": "CLABE de un solo uso",
-    "bitso_clabe_body": "Esta CLABE es exclusiva para esta transferencia. Para un nuevo envío, pide al receptor que genere un nuevo link de pago."
+    "tos_accept_button": "Aceptar Términos de Bridge →"
   },
   "seguimiento": {
     "page_title": "Estado del envío",
@@ -594,7 +590,6 @@
     "page_subtitle": "Ingresa los datos del receptor en el extranjero. Te daremos una CLABE para hacer el SPEI.",
     "coming_soon_title": "Enviar desde México",
     "coming_soon_body": "Pronto podrás enviar dinero desde México a USA, Europa y más — vía SPEI directo.",
-    "coming_soon_note": "Canal 4 · Bitso Multi-CLABE · próximamente",
     "label_nombre": "Nombre del receptor",
     "label_email": "Email del receptor",
     "label_country": "País del receptor",
@@ -617,7 +612,6 @@
     "btn_generate": "Generar CLABE de cobro",
     "btn_generating": "Generando CLABE…",
     "generating_msg": "Generando CLABE…",
-    "footer_note": "Canal 4 · Bitso Multi-CLABE · OmniPay no guarda tu dinero",
     "ready_title": "CLABE lista",
     "ready_subtitle": "Haz SPEI desde tu banco mexicano",
     "card_amount": "Monto a enviar",
@@ -633,7 +627,6 @@
     "error_title": "Algo salió mal",
     "btn_retry": "Intentar de nuevo",
     "btn_back": "Volver",
-    "corridor_info": "MXN → {currency} via Bitso SPEI",
     "corridor_detail": "El receptor recibirá {currency} en su cuenta en {country}."
   },
   "enviar": {
@@ -885,8 +878,6 @@
     "fee_kyb_label": "KYB empresarial (1ª vez)",
     "fee_total": "Total a transferir",
     "fee_recipient": "Receptor recibe",
-    "clabe_notice_title": "CLABE de un solo uso",
-    "clabe_notice_body": "Esta CLABE es exclusiva para esta transferencia. Para un nuevo envío, genera un nuevo link de pago.",
     "delivery_title": "Tiempo estimado de entrega",
     "delivery_via": "1–2 días hábiles vía Bridge",
     "delivery_vs": "vs. 4–5 días con Stripe + Wise · Sin cargo de tarjeta",

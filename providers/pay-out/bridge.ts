@@ -3,12 +3,12 @@
 //
 // Implementación de Bridge.xyz como proveedor de Pay-out.
 // Bridge es un orchestrator que puede liquidar:
-//   - MXN vía Bitso internamente (corredor US→MX)
+//   - MXN vía SPEI (corredor US→MX)
 //   - USD vía ACH (corredor US doméstico)
 //   - EUR vía SEPA (corredor Europe)
 //   - Otras monedas via rieles locales
 //
-// Ventaja vs integración directa con Bitso:
+// Ventaja vs integración directa con un exchange:
 //   - Bridge maneja la conversión USDC → fiat internamente
 //   - Un solo contrato para múltiples corredores
 //   - Cuentas virtuales de recepción (Virtual IBANs / US accounts)
