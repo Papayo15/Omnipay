@@ -47,6 +47,7 @@ interface FormSnapshot {
   recipientBusinessName: string;
   recipientCountry:   string;
   accountField:       string;
+  routingField:       string;
   bicField:           string;
   amount:             string;
 }

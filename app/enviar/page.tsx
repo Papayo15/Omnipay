@@ -173,7 +173,7 @@ export default function EnviarPage() {
       const snap = JSON.parse(saved) as {
         senderName: string; senderEmail: string; senderCurrency: string;
         recipientName: string; recipientCountry: string;
-        accountField: string; bicField: string; amountTarget: string;
+        accountField: string; routingField: string; bicField: string; amountTarget: string;
       };
       setSenderName(snap.senderName ?? "");
       setSenderEmail(snap.senderEmail ?? "");
