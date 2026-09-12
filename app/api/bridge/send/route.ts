@@ -238,6 +238,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       || JSON.stringify((e as { details?: unknown })?.details ?? "").toLowerCase().includes("unsupported");
 
     let liqAddr: { id: string; address: string };
+    let actualRail = getRailForCountry(country);
     try {
       liqAddr = await createLiquidationAddress(liqParams);
     } catch (e1) {
@@ -248,6 +249,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           : NATIVE_RAILS[country]?.rail ?? "ach";
         console.warn(`[bridge/send] Rail ${liqParams.rail ?? "unknown"} unsupported by Bridge, retrying with ${fallbackRail}`);
         liqAddr = await createLiquidationAddress({ ...liqParams, rail: fallbackRail });
+        actualRail = fallbackRail;
       } else if (isEndorsementErr(e1)) {
         await new Promise(r => setTimeout(r, 5000));
         try { await ensureEndorsements(senderCustomer.id, fullEndorsements); } catch { /* ignore */ }
@@ -378,7 +380,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       },
       target_currency:    targetCurrency,
       amount_target,
-      destination_rail:   getRailForCountry(country),
+      destination_rail:   actualRail,
       needs_kyc:  false,
       is_sandbox: isSandbox,
       track_url:  `${appUrl}/api/bridge/track?order_id=${orderId}`,
