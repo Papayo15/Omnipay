@@ -88,6 +88,16 @@ export default function EnviarPage() {
   const [sandboxDone, setSandboxDone]         = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
   const [showSandboxBtn, setShowSandboxBtn]   = useState(false);
+  const [railInfo, setRailInfo]               = useState<{ rail: string; eta_key: string } | null>(null);
+
+  // Fetch active rail for selected destination country (respects BRIDGE_USE_FEDNOW etc.)
+  useEffect(() => {
+    if (!recipientCountry) return;
+    fetch(`/api/bridge/rail-info?country=${recipientCountry}`)
+      .then(r => r.json())
+      .then(d => setRailInfo(d as { rail: string; eta_key: string }))
+      .catch(() => {});
+  }, [recipientCountry]);
 
   const isSepa   = SEPA_COUNTRIES.has(recipientCountry);
   const needsBic = isSepa;
@@ -440,6 +450,16 @@ export default function EnviarPage() {
                   <option key={c.code} value={c.code}>{c.flag} {tF(`country_${c.code}`)} ({c.rail})</option>
                 ))}
               </select>
+
+              {/* Rail ETA hint — shows active rail incl. FedNow/SEPA Instant if enabled */}
+              {railInfo && (
+                <div className="flex items-center justify-between bg-slate-800/40 border border-slate-700/40 rounded-xl px-3 py-2">
+                  <span className="text-slate-500 text-xs">{t("eta_label")}</span>
+                  <span className="text-xs font-medium" style={{ color: ["spei","pix","fednow","sepa_instant"].includes(railInfo.rail) ? "#34d399" : ["fps","cop","wire"].includes(railInfo.rail) ? "#fbbf24" : "#94a3b8" }}>
+                    {t(railInfo.eta_key as "eta_ach")}
+                  </span>
+                </div>
+              )}
 
               <input
                 type="text"

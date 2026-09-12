@@ -89,6 +89,16 @@ export default function EnviarEmpresaWirePage() {
   const [sandboxDone, setSandboxDone]         = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
   const [showSandboxBtn, setShowSandboxBtn]   = useState(false);
+  const [railInfo, setRailInfo]               = useState<{ rail: string; eta_key: string } | null>(null);
+
+  // Fetch active rail for selected destination country (respects BRIDGE_USE_FEDNOW etc.)
+  useEffect(() => {
+    if (!recipientCountry) return;
+    fetch(`/api/bridge/rail-info?country=${recipientCountry}`)
+      .then(r => r.json())
+      .then(d => setRailInfo(d as { rail: string; eta_key: string }))
+      .catch(() => {});
+  }, [recipientCountry]);
 
   const isSepa = SEPA_COUNTRIES.has(recipientCountry);
 
@@ -372,6 +382,14 @@ export default function EnviarEmpresaWirePage() {
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#00C9C8]/60">
                 {BRIDGE_COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {tF(`country_${c.code}`)} ({c.rail})</option>)}
               </select>
+              {railInfo && (
+                <div className="flex items-center justify-between bg-slate-800/40 border border-slate-700/40 rounded-xl px-3 py-2">
+                  <span className="text-slate-500 text-xs">{t("eta_label")}</span>
+                  <span className="text-xs font-medium" style={{ color: ["spei","pix","fednow","sepa_instant"].includes(railInfo.rail) ? "#34d399" : ["fps","cop","wire"].includes(railInfo.rail) ? "#fbbf24" : "#94a3b8" }}>
+                    {t(railInfo.eta_key as "eta_ach")}
+                  </span>
+                </div>
+              )}
               <input type="text" placeholder={accountLabel} value={accountField} onChange={e => setAccountField(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
               {isSepa && (
