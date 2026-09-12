@@ -477,7 +477,9 @@
     "kyc_polling_wait": "Ikiwa inachukua zaidi ya dakika 2, funga dirisha hili na urudi ukitumia kiungo sawa.",
     "kyc_polling_approved": "✓ Utambulisho umethibitishwa — Kuunda kiungo chako cha malipo...",
     "share_invite": "Shiriki",
-    "calculate_fees_button": "Hesabu ada →"
+    "calculate_fees_button": "Hesabu ada →",
+    "routing_label": "Nambari ya routing (tarakimu 9)",
+    "account_number_label": "Nambari ya akaunti ya benki"
   },
   "pagar_bridge": {
     "submit": "Tuma pesa →",

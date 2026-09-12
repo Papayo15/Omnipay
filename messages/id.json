@@ -477,7 +477,9 @@
     "kyc_polling_wait": "Jika membutuhkan lebih dari 2 menit, tutup jendela ini dan kembali dengan tautan yang sama.",
     "kyc_polling_approved": "✓ Identitas terverifikasi — Membuat tautan pembayaran Anda...",
     "share_invite": "Bagikan",
-    "calculate_fees_button": "Lihat biaya →"
+    "calculate_fees_button": "Lihat biaya →",
+    "routing_label": "Nomor routing (9 digit)",
+    "account_number_label": "Nomor rekening bank"
   },
   "pagar_bridge": {
     "submit": "Kirim uang →",

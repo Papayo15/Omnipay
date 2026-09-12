@@ -477,7 +477,9 @@
     "kyc_polling_wait": "Als het langer dan 2 minuten duurt, sluit dit venster en keer terug met dezelfde link.",
     "kyc_polling_approved": "✓ Identiteit geverifieerd — Uw betaallink wordt gegenereerd...",
     "share_invite": "Delen",
-    "calculate_fees_button": "Kosten berekenen →"
+    "calculate_fees_button": "Kosten berekenen →",
+    "routing_label": "Routeringsnummer (9 cijfers)",
+    "account_number_label": "Bankrekeningnummer"
   },
   "pagar_bridge": {
     "submit": "Verzending uitvoeren →",

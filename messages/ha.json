@@ -477,7 +477,9 @@
     "kyc_polling_wait": "Idan ya ɗauki fiye da minti 2, rufe wannan taga kuma koma ta hanyar haɗi ɗaya.",
     "kyc_polling_approved": "✓ An tabbatar da asali — Ana ƙirƙirar hanyar haɗin biyan kuɗinka...",
     "share_invite": "Raba",
-    "calculate_fees_button": "Lissafa kuɗin →"
+    "calculate_fees_button": "Lissafa kuɗin →",
+    "routing_label": "Lambar routing (lamba 9)",
+    "account_number_label": "Lambar asusun banki"
   },
   "pagar_bridge": {
     "submit": "Aika kuɗi →",

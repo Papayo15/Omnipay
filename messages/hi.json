@@ -477,7 +477,9 @@
     "kyc_polling_wait": "अगर 2 मिनट से अधिक समय लगे, इस विंडो को बंद करें और उसी लिंक से वापस आएं।",
     "kyc_polling_approved": "✓ पहचान सत्यापित — आपका भुगतान लिंक बनाया जा रहा है...",
     "share_invite": "साझा करें",
-    "calculate_fees_button": "शुल्क देखें →"
+    "calculate_fees_button": "शुल्क देखें →",
+    "routing_label": "रूटिंग नंबर (9 अंक)",
+    "account_number_label": "बैंक खाता संख्या"
   },
   "pagar_bridge": {
     "submit": "पैसे भेजें →",

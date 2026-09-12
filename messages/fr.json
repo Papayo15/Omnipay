@@ -477,7 +477,9 @@
     "kyc_polling_wait": "Si cela prend plus de 2 minutes, fermez cette fenêtre et revenez avec le même lien.",
     "kyc_polling_approved": "✓ Identité vérifiée — Génération de votre lien de paiement...",
     "share_invite": "Partager",
-    "calculate_fees_button": "Calculer les frais →"
+    "calculate_fees_button": "Calculer les frais →",
+    "routing_label": "Numéro de routage (9 chiffres)",
+    "account_number_label": "Numéro de compte bancaire"
   },
   "pagar_bridge": {
     "submit": "Effectuer l'envoi →",

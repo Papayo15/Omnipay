@@ -477,7 +477,9 @@
     "kyc_polling_wait": "Nếu mất hơn 2 phút, hãy đóng cửa sổ này và quay lại bằng cùng liên kết.",
     "kyc_polling_approved": "✓ Danh tính đã xác minh — Đang tạo liên kết thanh toán...",
     "share_invite": "Chia sẻ",
-    "calculate_fees_button": "Xem phí →"
+    "calculate_fees_button": "Xem phí →",
+    "routing_label": "Số định tuyến (9 chữ số)",
+    "account_number_label": "Số tài khoản ngân hàng"
   },
   "pagar_bridge": {
     "submit": "Gửi tiền →",

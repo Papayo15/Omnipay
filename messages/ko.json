@@ -477,7 +477,9 @@
     "kyc_polling_wait": "2분 이상 걸리면 이 창을 닫고 같은 링크로 돌아오세요.",
     "kyc_polling_approved": "✓ 신원 확인 완료 — 결제 링크 생성 중...",
     "share_invite": "공유",
-    "calculate_fees_button": "수수료 확인 →"
+    "calculate_fees_button": "수수료 확인 →",
+    "routing_label": "라우팅 번호 (9자리)",
+    "account_number_label": "은행 계좌 번호"
   },
   "pagar_bridge": {
     "submit": "송금하기 →",

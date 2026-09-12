@@ -477,7 +477,9 @@
     "kyc_polling_wait": "إذا استغرق أكثر من دقيقتين، أغلق هذه النافذة وعد باستخدام نفس الرابط.",
     "kyc_polling_approved": "✓ تم التحقق من الهوية — جارٍ إنشاء رابط الدفع...",
     "share_invite": "مشاركة",
-    "calculate_fees_button": "احسب الرسوم →"
+    "calculate_fees_button": "احسب الرسوم →",
+    "routing_label": "رقم التوجيه (9 أرقام)",
+    "account_number_label": "رقم الحساب البنكي"
   },
   "pagar_bridge": {
     "submit": "إرسال التحويل →",

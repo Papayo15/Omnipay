@@ -477,7 +477,9 @@
     "kyc_polling_wait": "Se demorar mais de 2 minutos, feche esta janela e volte com o mesmo link.",
     "kyc_polling_approved": "✓ Identidade verificada — Gerando seu link de cobrança...",
     "share_invite": "Compartilhar",
-    "calculate_fees_button": "Calcular tarifas →"
+    "calculate_fees_button": "Calcular tarifas →",
+    "routing_label": "Número de roteamento (9 dígitos)",
+    "account_number_label": "Número de conta bancária"
   },
   "pagar_bridge": {
     "submit": "Realizar envio →",
