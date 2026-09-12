@@ -469,6 +469,8 @@
     "us_label": "Routing / Account",
     "co_label": "Bre-B Account Number",
     "account_label": "Account number",
+    "routing_label": "Routing number (9 digits)",
+    "account_number_label": "Bank account number",
     "cpf_label": "CPF or CNPJ (Brazilian ID)",
     "cpf_placeholder": "000.000.000-00 or 00.000.000/0001-00",
     "cpf_hint": "Required by Bridge for Brazil (11-digit CPF or 14-digit CNPJ)",

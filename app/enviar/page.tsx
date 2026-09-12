@@ -63,6 +63,7 @@ export default function EnviarPage() {
   const [recipientName, setRecipientName]       = useState("");
   const [recipientCountry, setRecipientCountry] = useState("MX");
   const [accountField, setAccountField]         = useState("");
+  const [routingField, setRoutingField]         = useState("");
   const [bicField, setBicField]                 = useState("");
   const [amountTarget, setAmountTarget]         = useState("");
 
@@ -139,8 +140,9 @@ export default function EnviarPage() {
     if (recipientCountry === "MX") return { ...base, clabe: accountField.trim() };
     if (recipientCountry === "GB") return { ...base, sort_code: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
     if (isSepa) return { ...base, iban: accountField.trim(), bic: bicField.trim() };
-    return { ...base, routing_number: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
-  }, [senderName, senderEmail, senderCurrency, recipientName, recipientCountry, accountField, bicField, amountTarget, isSepa]);
+    if (recipientCountry === "US") return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
+    return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
+  }, [senderName, senderEmail, senderCurrency, recipientName, recipientCountry, accountField, routingField, bicField, amountTarget, isSepa]);
 
   // Fee preview: debounce 600ms — fetch when amount/country/senderCurrency changes
   useEffect(() => {
@@ -179,6 +181,7 @@ export default function EnviarPage() {
       setRecipientName(snap.recipientName ?? "");
       setRecipientCountry(snap.recipientCountry ?? "MX");
       setAccountField(snap.accountField ?? "");
+      setRoutingField(snap.routingField ?? "");
       setBicField(snap.bicField ?? "");
       setAmountTarget(snap.amountTarget ?? "");
       sessionStorage.removeItem("enviar_form_state");
@@ -246,7 +249,7 @@ export default function EnviarPage() {
         // Save form state before redirecting to Bridge ToS
         sessionStorage.setItem("enviar_form_state", JSON.stringify({
           senderName, senderEmail, senderCurrency,
-          recipientName, recipientCountry, accountField, bicField, amountTarget,
+          recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
         }));
         window.location.href = data.tos_url;
         return;
@@ -255,7 +258,7 @@ export default function EnviarPage() {
       if (data.needs_kyc) {
         sessionStorage.setItem("enviar_form_state", JSON.stringify({
           senderName, senderEmail, senderCurrency,
-          recipientName, recipientCountry, accountField, bicField, amountTarget,
+          recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
         }));
         setKycUrl(data.kyc_url ?? "");
         setKycCustomerId((data as Record<string, unknown>).customer_id as string ?? "");
@@ -443,11 +446,11 @@ export default function EnviarPage() {
               />
               <select
                 value={recipientCountry}
-                onChange={e => { setRecipientCountry(e.target.value); setAccountField(""); setBicField(""); }}
+                onChange={e => { setRecipientCountry(e.target.value); setAccountField(""); setRoutingField(""); setBicField(""); }}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#00C9C8]/60"
               >
                 {BRIDGE_COUNTRIES.map(c => (
-                  <option key={c.code} value={c.code}>{c.flag} {tF(`country_${c.code}`)} ({c.rail})</option>
+                  <option key={c.code} value={c.code}>{c.flag} {tF(`country_${c.code}`)}</option>
                 ))}
               </select>
 
@@ -461,24 +464,45 @@ export default function EnviarPage() {
                 </div>
               )}
 
-              <input
-                type="text"
-                placeholder={accountLabel}
-                value={accountField}
-                onChange={e => setAccountField(e.target.value)}
-                className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono"
-              />
-              {needsBic && (
-                <input
-                  type="text"
-                  placeholder={tF("bic_label")}
-                  value={bicField}
-                  onChange={e => setBicField(e.target.value)}
-                  className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono"
-                />
-              )}
-              {accountHint && (
-                <p className="text-slate-500 text-[10px] px-1">{accountHint}</p>
+              {recipientCountry === "US" ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder={tF("routing_label")}
+                    value={routingField}
+                    onChange={e => setRoutingField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono"
+                  />
+                  <input
+                    type="text"
+                    placeholder={tF("account_number_label")}
+                    value={accountField}
+                    onChange={e => setAccountField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono"
+                  />
+                </>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    placeholder={accountLabel}
+                    value={accountField}
+                    onChange={e => setAccountField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono"
+                  />
+                  {needsBic && (
+                    <input
+                      type="text"
+                      placeholder={tF("bic_label")}
+                      value={bicField}
+                      onChange={e => setBicField(e.target.value)}
+                      className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono"
+                    />
+                  )}
+                  {accountHint && (
+                    <p className="text-slate-500 text-[10px] px-1">{accountHint}</p>
+                  )}
+                </>
               )}
             </div>
 
@@ -554,7 +578,7 @@ export default function EnviarPage() {
             {quoteReady && (
               <button
                 onClick={handleSubmit}
-                disabled={!senderName || !senderEmail || !recipientName || !accountField || !amountTarget}
+                disabled={!senderName || !senderEmail || !recipientName || !accountField || !amountTarget || (recipientCountry === "US" && !routingField)}
                 className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
               >
                 <Send className="w-4 h-4" />

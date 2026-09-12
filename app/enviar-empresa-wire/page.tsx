@@ -71,6 +71,7 @@ export default function EnviarEmpresaWirePage() {
   const [recipientBusinessName, setRecipientBusinessName] = useState("");
   const [recipientCountry, setRecipientCountry]           = useState("MX");
   const [accountField, setAccountField] = useState("");
+  const [routingField, setRoutingField] = useState("");
   const [bicField, setBicField]         = useState("");
   const [amount, setAmount]             = useState("");
 
@@ -134,6 +135,7 @@ export default function EnviarEmpresaWirePage() {
       setRecipientBusinessName(snap.recipientBusinessName ?? "");
       setRecipientCountry(snap.recipientCountry ?? "MX");
       setAccountField(snap.accountField ?? "");
+      setRoutingField(snap.routingField ?? "");
       setBicField(snap.bicField ?? "");
       setAmount(snap.amount ?? "");
       sessionStorage.removeItem("b2b_send_form");
@@ -165,8 +167,9 @@ export default function EnviarEmpresaWirePage() {
     if (recipientCountry === "GB") return { ...base, sort_code: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
     if (isSepa) return { ...base, iban: accountField.trim(), bic: bicField.trim() };
     if (recipientCountry === "CO") return { ...base, account_number: accountField.trim() };
-    return { ...base, routing_number: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
-  }, [senderBusinessName, senderEmail, sourceCurrency, recipientBusinessName, recipientCountry, accountField, bicField, amount, isSepa]);
+    if (recipientCountry === "US") return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
+    return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
+  }, [senderBusinessName, senderEmail, sourceCurrency, recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount, isSepa]);
 
   const handleSubmit = useCallback(async () => {
     setStep("submitting");
@@ -188,7 +191,7 @@ export default function EnviarEmpresaWirePage() {
       if (data.needs_tos && data.tos_url) {
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
-          recipientBusinessName, recipientCountry, accountField, bicField, amount,
+          recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
         }));
         window.location.href = data.tos_url;
         return;
@@ -197,7 +200,7 @@ export default function EnviarEmpresaWirePage() {
       if (data.needs_kyb) {
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
-          recipientBusinessName, recipientCountry, accountField, bicField, amount,
+          recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
         }));
         setKybUrl(data.kyb_url ?? "");
         setKybCustomerId(data.customer_id ?? "");
@@ -326,7 +329,8 @@ export default function EnviarEmpresaWirePage() {
   );
 
   const isValid = senderBusinessName && senderEmail.includes("@") && recipientBusinessName && accountField
-    && amount && parseFloat(amount) >= minLocal;
+    && amount && parseFloat(amount) >= minLocal
+    && (recipientCountry !== "US" || !!routingField);
 
   return (
     <main className="min-h-screen bg-[#0f172a] flex flex-col items-center px-5 pt-8 pb-16">
@@ -378,9 +382,9 @@ export default function EnviarEmpresaWirePage() {
               <input type="text" placeholder={t("recipient_business")} value={recipientBusinessName}
                 onChange={e => setRecipientBusinessName(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60" />
-              <select value={recipientCountry} onChange={e => { setRecipientCountry(e.target.value); setAccountField(""); setBicField(""); }}
+              <select value={recipientCountry} onChange={e => { setRecipientCountry(e.target.value); setAccountField(""); setRoutingField(""); setBicField(""); }}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#00C9C8]/60">
-                {BRIDGE_COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {tF(`country_${c.code}`)} ({c.rail})</option>)}
+                {BRIDGE_COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {tF(`country_${c.code}`)}</option>)}
               </select>
               {railInfo && (
                 <div className="flex items-center justify-between bg-slate-800/40 border border-slate-700/40 rounded-xl px-3 py-2">
@@ -390,13 +394,24 @@ export default function EnviarEmpresaWirePage() {
                   </span>
                 </div>
               )}
-              <input type="text" placeholder={accountLabel} value={accountField} onChange={e => setAccountField(e.target.value)}
-                className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
-              {isSepa && (
-                <input type="text" placeholder={tF("bic_label")} value={bicField} onChange={e => setBicField(e.target.value)}
-                  className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+              {recipientCountry === "US" ? (
+                <>
+                  <input type="text" placeholder={tF("routing_label")} value={routingField} onChange={e => setRoutingField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+                  <input type="text" placeholder={tF("account_number_label")} value={accountField} onChange={e => setAccountField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+                </>
+              ) : (
+                <>
+                  <input type="text" placeholder={accountLabel} value={accountField} onChange={e => setAccountField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+                  {isSepa && (
+                    <input type="text" placeholder={tF("bic_label")} value={bicField} onChange={e => setBicField(e.target.value)}
+                      className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+                  )}
+                  {accountHint && <p className="text-slate-500 text-[10px] px-1">{accountHint}</p>}
+                </>
               )}
-              {accountHint && <p className="text-slate-500 text-[10px] px-1">{accountHint}</p>}
             </div>
 
             {/* Amount */}
