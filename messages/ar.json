@@ -756,7 +756,8 @@
     "eta_sepa": "1–2 أيام عمل (SEPA)",
     "eta_fps": "~ساعتان (Faster Payments UK)",
     "eta_cop": "نفس اليوم أو اليوم التالي",
-    "eta_fednow": "ثوانٍ — FedNow فوري"
+    "eta_fednow": "ثوانٍ — FedNow فوري",
+    "eta_sepa_instant": "~10 ثوانٍ (SEPA Instant)"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2 أيام عمل (SEPA)",
     "eta_fps": "~ساعتان (Faster Payments UK)",
     "eta_cop": "نفس اليوم أو اليوم التالي",
-    "eta_fednow": "ثوانٍ — FedNow فوري"
+    "eta_fednow": "ثوانٍ — FedNow فوري",
+    "eta_sepa_instant": "~10 ثوانٍ (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

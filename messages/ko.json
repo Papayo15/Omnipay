@@ -756,7 +756,8 @@
     "eta_sepa": "1–2 영업일 (SEPA)",
     "eta_fps": "~2시간 (Faster Payments UK)",
     "eta_cop": "당일 또는 다음 영업일",
-    "eta_fednow": "초 단위 — FedNow 실시간"
+    "eta_fednow": "초 단위 — FedNow 실시간",
+    "eta_sepa_instant": "~10초 (SEPA Instant)"
   },
   "recibir": {
     "loading": "초대장 확인 중...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2 영업일 (SEPA)",
     "eta_fps": "~2시간 (Faster Payments UK)",
     "eta_cop": "당일 또는 다음 영업일",
-    "eta_fednow": "초 단위 — FedNow 실시간"
+    "eta_fednow": "초 단위 — FedNow 실시간",
+    "eta_sepa_instant": "~10초 (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

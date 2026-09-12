@@ -756,7 +756,8 @@
     "eta_sepa": "1–2 рабочих дня (SEPA)",
     "eta_fps": "~2 часа (Faster Payments UK)",
     "eta_cop": "В тот же день или следующий рабочий",
-    "eta_fednow": "Секунды — FedNow в реальном времени"
+    "eta_fednow": "Секунды — FedNow в реальном времени",
+    "eta_sepa_instant": "~10 секунд (SEPA Instant)"
   },
   "recibir": {
     "loading": "Проверка вашего приглашения...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2 рабочих дня (SEPA)",
     "eta_fps": "~2 часа (Faster Payments UK)",
     "eta_cop": "В тот же день или следующий рабочий",
-    "eta_fednow": "Секунды — FedNow в реальном времени"
+    "eta_fednow": "Секунды — FedNow в реальном времени",
+    "eta_sepa_instant": "~10 секунд (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

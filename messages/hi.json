@@ -756,7 +756,8 @@
     "eta_sepa": "1–2 कार्यदिवस (SEPA)",
     "eta_fps": "~2 घंटे (Faster Payments UK)",
     "eta_cop": "उसी दिन या अगले कार्यदिवस",
-    "eta_fednow": "सेकंड — FedNow रियल-टाइम है"
+    "eta_fednow": "सेकंड — FedNow रियल-टाइम है",
+    "eta_sepa_instant": "~10 सेकंड (SEPA Instant)"
   },
   "recibir": {
     "loading": "आपका आमंत्रण सत्यापित हो रहा है...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2 कार्यदिवस (SEPA)",
     "eta_fps": "~2 घंटे (Faster Payments UK)",
     "eta_cop": "उसी दिन या अगले कार्यदिवस",
-    "eta_fednow": "सेकंड — FedNow रियल-टाइम है"
+    "eta_fednow": "सेकंड — FedNow रियल-टाइम है",
+    "eta_sepa_instant": "~10 सेकंड (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

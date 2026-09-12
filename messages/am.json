@@ -756,7 +756,8 @@
     "eta_sepa": "1–2 የሥራ ቀናት (SEPA)",
     "eta_fps": "~2 ሰዓታት (Faster Payments UK)",
     "eta_cop": "ዛሬ ወይም ቀጣይ የሥራ ቀን",
-    "eta_fednow": "ሰከንዶች — FedNow ቀጥታ ነው"
+    "eta_fednow": "ሰከንዶች — FedNow ቀጥታ ነው",
+    "eta_sepa_instant": "~10 ሰከንዶች (SEPA Instant)"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2 የሥራ ቀናት (SEPA)",
     "eta_fps": "~2 ሰዓታት (Faster Payments UK)",
     "eta_cop": "ዛሬ ወይም ቀጣይ የሥራ ቀን",
-    "eta_fednow": "ሰከንዶች — FedNow ቀጥታ ነው"
+    "eta_fednow": "ሰከንዶች — FedNow ቀጥታ ነው",
+    "eta_sepa_instant": "~10 ሰከንዶች (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

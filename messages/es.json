@@ -737,7 +737,8 @@
     "eta_sepa": "1–2 días hábiles (SEPA)",
     "eta_fps": "~2 horas (Faster Payments UK)",
     "eta_cop": "Mismo día o siguiente día hábil",
-    "eta_fednow": "Segundos — FedNow es en tiempo real"
+    "eta_fednow": "Segundos — FedNow es en tiempo real",
+    "eta_sepa_instant": "~10 segundos (SEPA Instant)"
   },
   "recibir": {
     "loading": "Verificando tu invitación...",
@@ -931,6 +932,7 @@
     "eta_fps": "~2 horas (Faster Payments UK)",
     "eta_cop": "Mismo día o siguiente día hábil",
     "eta_fednow": "Segundos — FedNow es en tiempo real",
+    "eta_sepa_instant": "~10 segundos (SEPA Instant)",
     "link_instructions_title": "¿Qué sigue?",
     "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles.",
     "fee_exchange_approx": "≈ tipo de cambio"

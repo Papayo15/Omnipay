@@ -756,7 +756,8 @@
     "eta_sepa": "Siku 1–2 za kazi (SEPA)",
     "eta_fps": "~Masaa 2 (Faster Payments UK)",
     "eta_cop": "Siku hiyo au siku ya kazi inayofuata",
-    "eta_fednow": "Sekunde — FedNow ni ya wakati halisi"
+    "eta_fednow": "Sekunde — FedNow ni ya wakati halisi",
+    "eta_sepa_instant": "~10 sekunde (SEPA Instant)"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",
@@ -955,7 +956,8 @@
     "eta_sepa": "Siku 1–2 za kazi (SEPA)",
     "eta_fps": "~Masaa 2 (Faster Payments UK)",
     "eta_cop": "Siku hiyo au siku ya kazi inayofuata",
-    "eta_fednow": "Sekunde — FedNow ni ya wakati halisi"
+    "eta_fednow": "Sekunde — FedNow ni ya wakati halisi",
+    "eta_sepa_instant": "~10 sekunde (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

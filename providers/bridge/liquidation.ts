@@ -3,13 +3,13 @@
 // sending it to the receptor's bank account.
 // Created once per receptor — reusable for multiple transactions.
 //
-// Verified supported rails (Bridge API docs, 2024):
-//   ACH/Wire  → USD  → United States
-//   SPEI      → MXN  → Mexico
-//   PIX       → BRL  → Brazil
-//   FPS       → GBP  → United Kingdom
-//   SEPA      → EUR  → EEA (31 countries)
-//   Bre-B     → COP  → Colombia (beta)
+// Verified supported rails (Bridge API docs):
+//   ACH / Wire / FedNow  → USD  → United States
+//   SPEI                 → MXN  → Mexico
+//   PIX                  → BRL  → Brazil
+//   FPS                  → GBP  → United Kingdom
+//   SEPA / SEPA Instant  → EUR  → EEA (31+ countries)
+//   Bre-B / Bank Transfer→ COP  → Colombia
 //
 // NOT supported by Bridge: Canada EFT, India IMPS, Philippines InstaPay
 // Those corridors are not available on this platform.
@@ -17,6 +17,13 @@
 import { bridgeRequest } from "./client";
 import { createExternalAccount } from "./external-accounts";
 import { patchCustomerAddress } from "./customers";
+
+// SEPA rail — standard (1-2 days) or Instant (~10 seconds, 24/7) when approved by Bridge.
+// To enable SEPA Instant: negotiate with Bridge, then set BRIDGE_USE_SEPA_INSTANT=true in Vercel.
+// Note: SEPA Instant falls back to standard SEPA if the recipient's bank doesn't support SCT Inst.
+const SEPA_RAIL = process.env.BRIDGE_USE_SEPA_INSTANT === "true"
+  ? { rail: "sepa_instant", currency: "eur", fields: ["iban"], label: "SEPA Instant" }
+  : { rail: "sepa",         currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" };
 
 // Countries with native payment rails on Bridge.
 // All other countries → not supported on this platform.
@@ -41,45 +48,16 @@ export const NATIVE_RAILS: Record<string, {
   CO: { rail: "cop",  currency: "cop", fields: ["account_number", "bank_code"],      label: "Bre-B / Transferencia" },
   // United Kingdom
   GB: { rail: "fps",  currency: "gbp", fields: ["sort_code", "account_number"],      label: "Faster Payments"    },
-  // SEPA — Eurozone (EUR)
-  DE: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  FR: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  ES: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  IT: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  NL: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  PT: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  BE: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  AT: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  IE: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  FI: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  GR: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  CY: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  EE: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  LV: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  LT: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  LU: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  MT: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  SK: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  SI: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  HR: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
+  // SEPA — Eurozone (EUR) — uses SEPA_RAIL (standard or instant, env-gated above)
+  DE: SEPA_RAIL, FR: SEPA_RAIL, ES: SEPA_RAIL, IT: SEPA_RAIL, NL: SEPA_RAIL,
+  PT: SEPA_RAIL, BE: SEPA_RAIL, AT: SEPA_RAIL, IE: SEPA_RAIL, FI: SEPA_RAIL,
+  GR: SEPA_RAIL, CY: SEPA_RAIL, EE: SEPA_RAIL, LV: SEPA_RAIL, LT: SEPA_RAIL,
+  LU: SEPA_RAIL, MT: SEPA_RAIL, SK: SEPA_RAIL, SI: SEPA_RAIL, HR: SEPA_RAIL,
   // SEPA — Non-Eurozone (EUR via SEPA IBAN)
-  SE: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  DK: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  NO: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  PL: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  CZ: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  HU: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  RO: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  BG: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  CH: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  IS: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  LI: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },
-  // SEPA micro-states and additional territories
-  AD: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },  // Andorra
-  MC: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },  // Monaco
-  SM: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },  // San Marino
-  XK: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },  // Kosovo
-  VA: { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" },  // Vatican City
+  SE: SEPA_RAIL, DK: SEPA_RAIL, NO: SEPA_RAIL, PL: SEPA_RAIL, CZ: SEPA_RAIL,
+  HU: SEPA_RAIL, RO: SEPA_RAIL, BG: SEPA_RAIL, CH: SEPA_RAIL, IS: SEPA_RAIL, LI: SEPA_RAIL,
+  // SEPA micro-states
+  AD: SEPA_RAIL, MC: SEPA_RAIL, SM: SEPA_RAIL, XK: SEPA_RAIL, VA: SEPA_RAIL,
 };
 
 export interface LiquidationAddress {

@@ -756,7 +756,8 @@
     "eta_sepa": "1–2 hari kerja (SEPA)",
     "eta_fps": "~2 jam (Faster Payments UK)",
     "eta_cop": "Hari yang sama atau hari kerja berikutnya",
-    "eta_fednow": "Detik — FedNow real-time"
+    "eta_fednow": "Detik — FedNow real-time",
+    "eta_sepa_instant": "~10 detik (SEPA Instant)"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2 hari kerja (SEPA)",
     "eta_fps": "~2 jam (Faster Payments UK)",
     "eta_cop": "Hari yang sama atau hari kerja berikutnya",
-    "eta_fednow": "Detik — FedNow real-time"
+    "eta_fednow": "Detik — FedNow real-time",
+    "eta_sepa_instant": "~10 detik (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

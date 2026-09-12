@@ -756,7 +756,8 @@
     "eta_sepa": "1–2 werkdagen (SEPA)",
     "eta_fps": "~2 uur (Faster Payments UK)",
     "eta_cop": "Zelfde dag of volgende werkdag",
-    "eta_fednow": "Seconden — FedNow is realtime"
+    "eta_fednow": "Seconden — FedNow is realtime",
+    "eta_sepa_instant": "~10 seconden (SEPA Instant)"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2 werkdagen (SEPA)",
     "eta_fps": "~2 uur (Faster Payments UK)",
     "eta_cop": "Zelfde dag of volgende werkdag",
-    "eta_fednow": "Seconden — FedNow is realtime"
+    "eta_fednow": "Seconden — FedNow is realtime",
+    "eta_sepa_instant": "~10 seconden (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

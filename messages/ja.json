@@ -756,7 +756,8 @@
     "eta_sepa": "1〜2営業日 (SEPA)",
     "eta_fps": "約2時間 (Faster Payments UK)",
     "eta_cop": "当日または翌営業日",
-    "eta_fednow": "数秒 — FedNowはリアルタイム"
+    "eta_fednow": "数秒 — FedNowはリアルタイム",
+    "eta_sepa_instant": "~10秒 (SEPA Instant)"
   },
   "recibir": {
     "loading": "招待を確認中...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1〜2営業日 (SEPA)",
     "eta_fps": "約2時間 (Faster Payments UK)",
     "eta_cop": "当日または翌営業日",
-    "eta_fednow": "数秒 — FedNowはリアルタイム"
+    "eta_fednow": "数秒 — FedNowはリアルタイム",
+    "eta_sepa_instant": "~10秒 (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

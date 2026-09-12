@@ -756,7 +756,8 @@
     "eta_sepa": "1–2 iş günü (SEPA)",
     "eta_fps": "~2 saat (Faster Payments UK)",
     "eta_cop": "Aynı gün veya sonraki iş günü",
-    "eta_fednow": "Saniyeler — FedNow gerçek zamanlı"
+    "eta_fednow": "Saniyeler — FedNow gerçek zamanlı",
+    "eta_sepa_instant": "~10 saniye (SEPA Instant)"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2 iş günü (SEPA)",
     "eta_fps": "~2 saat (Faster Payments UK)",
     "eta_cop": "Aynı gün veya sonraki iş günü",
-    "eta_fednow": "Saniyeler — FedNow gerçek zamanlı"
+    "eta_fednow": "Saniyeler — FedNow gerçek zamanlı",
+    "eta_sepa_instant": "~10 saniye (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -756,7 +756,8 @@
     "eta_sepa": "1–2 Werktage (SEPA)",
     "eta_fps": "~2 Stunden (Faster Payments UK)",
     "eta_cop": "Gleicher Tag oder nächster Werktag",
-    "eta_fednow": "Sekunden — FedNow ist Echtzeit"
+    "eta_fednow": "Sekunden — FedNow ist Echtzeit",
+    "eta_sepa_instant": "~10 Sekunden (SEPA Instant)"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2 Werktage (SEPA)",
     "eta_fps": "~2 Stunden (Faster Payments UK)",
     "eta_cop": "Gleicher Tag oder nächster Werktag",
-    "eta_fednow": "Sekunden — FedNow ist Echtzeit"
+    "eta_fednow": "Sekunden — FedNow ist Echtzeit",
+    "eta_sepa_instant": "~10 Sekunden (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -756,7 +756,8 @@
     "eta_sepa": "1–2 ngày làm việc (SEPA)",
     "eta_fps": "~2 giờ (Faster Payments UK)",
     "eta_cop": "Cùng ngày hoặc ngày làm việc tiếp theo",
-    "eta_fednow": "Giây — FedNow thời gian thực"
+    "eta_fednow": "Giây — FedNow thời gian thực",
+    "eta_sepa_instant": "~10 giây (SEPA Instant)"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2 ngày làm việc (SEPA)",
     "eta_fps": "~2 giờ (Faster Payments UK)",
     "eta_cop": "Cùng ngày hoặc ngày làm việc tiếp theo",
-    "eta_fednow": "Giây — FedNow thời gian thực"
+    "eta_fednow": "Giây — FedNow thời gian thực",
+    "eta_sepa_instant": "~10 giây (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

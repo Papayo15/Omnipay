@@ -756,7 +756,8 @@
     "eta_sepa": "1–2个工作日 (SEPA)",
     "eta_fps": "约2小时 (Faster Payments UK)",
     "eta_cop": "当日或下一工作日",
-    "eta_fednow": "秒级 — FedNow 实时到账"
+    "eta_fednow": "秒级 — FedNow 实时到账",
+    "eta_sepa_instant": "~10秒 (SEPA Instant)"
   },
   "recibir": {
     "loading": "正在验证邀请...",
@@ -955,7 +956,8 @@
     "eta_sepa": "1–2个工作日 (SEPA)",
     "eta_fps": "约2小时 (Faster Payments UK)",
     "eta_cop": "当日或下一工作日",
-    "eta_fednow": "秒级 — FedNow 实时到账"
+    "eta_fednow": "秒级 — FedNow 实时到账",
+    "eta_sepa_instant": "~10秒 (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

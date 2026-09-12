@@ -755,7 +755,8 @@
     "eta_sepa": "Kwanaki 1–2 na aiki (SEPA)",
     "eta_fps": "~Awanni 2 (Faster Payments UK)",
     "eta_cop": "Ranar nan ko ranar aiki mai zuwa",
-    "eta_fednow": "Daƙiƙoƙi — FedNow na ainihin lokaci ne"
+    "eta_fednow": "Daƙiƙoƙi — FedNow na ainihin lokaci ne",
+    "eta_sepa_instant": "~10 daƙiƙoƙi (SEPA Instant)"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",
@@ -954,7 +955,8 @@
     "eta_sepa": "Kwanaki 1–2 na aiki (SEPA)",
     "eta_fps": "~Awanni 2 (Faster Payments UK)",
     "eta_cop": "Ranar nan ko ranar aiki mai zuwa",
-    "eta_fednow": "Daƙiƙoƙi — FedNow na ainihin lokaci ne"
+    "eta_fednow": "Daƙiƙoƙi — FedNow na ainihin lokaci ne",
+    "eta_sepa_instant": "~10 daƙiƙoƙi (SEPA Instant)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",
