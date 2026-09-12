@@ -746,7 +746,17 @@
     "kyc_body": "규제 제공업체(Bridge, FinCEN 등록 MSB)가 신원을 확인해야 합니다. 2-3분 소요, 한 번만 진행됩니다.",
     "kyc_cta": "지금 확인하기 →",
     "kyc_after": "확인 후 여기로 돌아오거나 자동 리디렉션을 기다리세요.",
-    "sandbox_simulate_kyc": "⚡ KYC 시뮬레이션 (sandbox)"
+    "sandbox_simulate_kyc": "⚡ KYC 시뮬레이션 (sandbox)",
+    "eta_label": "⏱ 수신자 수령 예상 시간",
+    "eta_ach": "1–2 영업일 (ACH)",
+    "eta_ach_same_day": "당일 영업일 (Same-Day ACH)",
+    "eta_wire": "은행 마감 전이면 당일",
+    "eta_spei": "초 단위 — SPEI 실시간",
+    "eta_pix": "초 단위 — PIX 실시간",
+    "eta_sepa": "1–2 영업일 (SEPA)",
+    "eta_fps": "~2시간 (Faster Payments UK)",
+    "eta_cop": "당일 또는 다음 영업일",
+    "eta_fednow": "초 단위 — FedNow 실시간"
   },
   "recibir": {
     "loading": "초대장 확인 중...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "시뮬레이션 결제 완료",
     "receipt_date": "날짜",
     "receipt_status": "상태",
-    "receipt_completed": "완료"
+    "receipt_completed": "완료",
+    "eta_label": "⏱ 수신자 수령 예상 시간",
+    "eta_ach": "1–2 영업일 (ACH)",
+    "eta_ach_same_day": "당일 영업일 (Same-Day ACH)",
+    "eta_wire": "은행 마감 전이면 당일",
+    "eta_spei": "초 단위 — SPEI 실시간",
+    "eta_pix": "초 단위 — PIX 실시간",
+    "eta_sepa": "1–2 영업일 (SEPA)",
+    "eta_fps": "~2시간 (Faster Payments UK)",
+    "eta_cop": "당일 또는 다음 영업일",
+    "eta_fednow": "초 단위 — FedNow 실시간"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

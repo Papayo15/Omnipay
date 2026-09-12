@@ -746,7 +746,17 @@
     "kyc_body": "我们的受监管提供商（Bridge，FinCEN注册MSB）需要验证您的身份。只需2-3分钟，只做一次。",
     "kyc_cta": "立即验证 →",
     "kyc_after": "验证后，返回此页面或等待自动跳转。",
-    "sandbox_simulate_kyc": "⚡ 模拟KYC（sandbox）"
+    "sandbox_simulate_kyc": "⚡ 模拟KYC（sandbox）",
+    "eta_label": "⏱ 收款人收款时间",
+    "eta_ach": "1–2个工作日 (ACH)",
+    "eta_ach_same_day": "当日工作日 (Same-Day ACH)",
+    "eta_wire": "银行截止时间前当日到账",
+    "eta_spei": "秒级 — SPEI 实时到账",
+    "eta_pix": "秒级 — PIX 实时到账",
+    "eta_sepa": "1–2个工作日 (SEPA)",
+    "eta_fps": "约2小时 (Faster Payments UK)",
+    "eta_cop": "当日或下一工作日",
+    "eta_fednow": "秒级 — FedNow 实时到账"
   },
   "recibir": {
     "loading": "正在验证邀请...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "模拟支付完成",
     "receipt_date": "日期",
     "receipt_status": "状态",
-    "receipt_completed": "已完成"
+    "receipt_completed": "已完成",
+    "eta_label": "⏱ 收款人收款时间",
+    "eta_ach": "1–2个工作日 (ACH)",
+    "eta_ach_same_day": "当日工作日 (Same-Day ACH)",
+    "eta_wire": "银行截止时间前当日到账",
+    "eta_spei": "秒级 — SPEI 实时到账",
+    "eta_pix": "秒级 — PIX 实时到账",
+    "eta_sepa": "1–2个工作日 (SEPA)",
+    "eta_fps": "约2小时 (Faster Payments UK)",
+    "eta_cop": "当日或下一工作日",
+    "eta_fednow": "秒级 — FedNow 实时到账"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -746,7 +746,17 @@
     "kyc_body": "Il nostro fornitore regolamentato (Bridge, MSB registrato FinCEN) deve verificare la tua identità. Richiede 2–3 minuti e non si ripete mai.",
     "kyc_cta": "Verifica ora →",
     "kyc_after": "Una volta verificato, torna qui o attendi il reindirizzamento automatico.",
-    "sandbox_simulate_kyc": "⚡ Simulazione KYC (sandbox)"
+    "sandbox_simulate_kyc": "⚡ Simulazione KYC (sandbox)",
+    "eta_label": "⏱ Il destinatario riceve in",
+    "eta_ach": "1–2 giorni lavorativi (ACH)",
+    "eta_ach_same_day": "Stesso giorno lavorativo (Same-Day ACH)",
+    "eta_wire": "Stesso giorno se prima del cutoff bancario",
+    "eta_spei": "Secondi — SPEI è in tempo reale",
+    "eta_pix": "Secondi — PIX è in tempo reale",
+    "eta_sepa": "1–2 giorni lavorativi (SEPA)",
+    "eta_fps": "~2 ore (Faster Payments UK)",
+    "eta_cop": "Stesso giorno o giorno lavorativo seguente",
+    "eta_fednow": "Secondi — FedNow è in tempo reale"
   },
   "recibir": {
     "loading": "Verifica del tuo invito...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "Pagamento simulato completato",
     "receipt_date": "Data",
     "receipt_status": "Stato",
-    "receipt_completed": "Completato"
+    "receipt_completed": "Completato",
+    "eta_label": "⏱ Il destinatario riceve in",
+    "eta_ach": "1–2 giorni lavorativi (ACH)",
+    "eta_ach_same_day": "Stesso giorno lavorativo (Same-Day ACH)",
+    "eta_wire": "Stesso giorno se prima del cutoff bancario",
+    "eta_spei": "Secondi — SPEI è in tempo reale",
+    "eta_pix": "Secondi — PIX è in tempo reale",
+    "eta_sepa": "1–2 giorni lavorativi (SEPA)",
+    "eta_fps": "~2 ore (Faster Payments UK)",
+    "eta_cop": "Stesso giorno o giorno lavorativo seguente",
+    "eta_fednow": "Secondi — FedNow è in tempo reale"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

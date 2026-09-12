@@ -746,7 +746,17 @@
     "kyc_body": "Düzenlenmiş sağlayıcımız (Bridge, FinCEN kayıtlı MSB) kimliğinizi doğrulaması gerekiyor. 2–3 dakika sürer, yalnızca bir kez yapılır.",
     "kyc_cta": "Şimdi doğrula →",
     "kyc_after": "Doğrulandıktan sonra buraya dönün veya otomatik yönlendirmeyi bekleyin.",
-    "sandbox_simulate_kyc": "⚡ KYC simüle et (sandbox)"
+    "sandbox_simulate_kyc": "⚡ KYC simüle et (sandbox)",
+    "eta_label": "⏱ Alıcı şu sürede alır",
+    "eta_ach": "1–2 iş günü (ACH)",
+    "eta_ach_same_day": "Aynı iş günü (Same-Day ACH)",
+    "eta_wire": "Banka kesim saatinden önce ise aynı gün",
+    "eta_spei": "Saniyeler — SPEI gerçek zamanlı",
+    "eta_pix": "Saniyeler — PIX gerçek zamanlı",
+    "eta_sepa": "1–2 iş günü (SEPA)",
+    "eta_fps": "~2 saat (Faster Payments UK)",
+    "eta_cop": "Aynı gün veya sonraki iş günü",
+    "eta_fednow": "Saniyeler — FedNow gerçek zamanlı"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "Simüle edilen ödeme tamamlandı",
     "receipt_date": "Tarih",
     "receipt_status": "Durum",
-    "receipt_completed": "Tamamlandı"
+    "receipt_completed": "Tamamlandı",
+    "eta_label": "⏱ Alıcı şu sürede alır",
+    "eta_ach": "1–2 iş günü (ACH)",
+    "eta_ach_same_day": "Aynı iş günü (Same-Day ACH)",
+    "eta_wire": "Banka kesim saatinden önce ise aynı gün",
+    "eta_spei": "Saniyeler — SPEI gerçek zamanlı",
+    "eta_pix": "Saniyeler — PIX gerçek zamanlı",
+    "eta_sepa": "1–2 iş günü (SEPA)",
+    "eta_fps": "~2 saat (Faster Payments UK)",
+    "eta_cop": "Aynı gün veya sonraki iş günü",
+    "eta_fednow": "Saniyeler — FedNow gerçek zamanlı"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

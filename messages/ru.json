@@ -746,7 +746,17 @@
     "kyc_body": "Наш регулируемый провайдер (Bridge, MSB, зарегистрированный в FinCEN) должен подтвердить вашу личность. Занимает 2–3 минуты, только один раз.",
     "kyc_cta": "Подтвердить сейчас →",
     "kyc_after": "После подтверждения вернитесь сюда или дождитесь автоматического перенаправления.",
-    "sandbox_simulate_kyc": "⚡ Симуляция KYC (sandbox)"
+    "sandbox_simulate_kyc": "⚡ Симуляция KYC (sandbox)",
+    "eta_label": "⏱ Получатель получит через",
+    "eta_ach": "1–2 рабочих дня (ACH)",
+    "eta_ach_same_day": "Тот же рабочий день (Same-Day ACH)",
+    "eta_wire": "В тот же день до банковского дедлайна",
+    "eta_spei": "Секунды — SPEI в реальном времени",
+    "eta_pix": "Секунды — PIX в реальном времени",
+    "eta_sepa": "1–2 рабочих дня (SEPA)",
+    "eta_fps": "~2 часа (Faster Payments UK)",
+    "eta_cop": "В тот же день или следующий рабочий",
+    "eta_fednow": "Секунды — FedNow в реальном времени"
   },
   "recibir": {
     "loading": "Проверка вашего приглашения...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "Симулированный платёж завершён",
     "receipt_date": "Дата",
     "receipt_status": "Статус",
-    "receipt_completed": "Завершено"
+    "receipt_completed": "Завершено",
+    "eta_label": "⏱ Получатель получит через",
+    "eta_ach": "1–2 рабочих дня (ACH)",
+    "eta_ach_same_day": "Тот же рабочий день (Same-Day ACH)",
+    "eta_wire": "В тот же день до банковского дедлайна",
+    "eta_spei": "Секунды — SPEI в реальном времени",
+    "eta_pix": "Секунды — PIX в реальном времени",
+    "eta_sepa": "1–2 рабочих дня (SEPA)",
+    "eta_fps": "~2 часа (Faster Payments UK)",
+    "eta_cop": "В тот же день или следующий рабочий",
+    "eta_fednow": "Секунды — FedNow в реальном времени"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

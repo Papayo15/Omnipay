@@ -746,7 +746,17 @@
     "kyc_body": "規制プロバイダー（Bridge、FinCEN登録MSB）がIDを確認する必要があります。2〜3分かかり、一度だけです。",
     "kyc_cta": "今すぐ確認 →",
     "kyc_after": "確認後、ここに戻るか、自動リダイレクトをお待ちください。",
-    "sandbox_simulate_kyc": "⚡ KYCシミュレーション（sandbox）"
+    "sandbox_simulate_kyc": "⚡ KYCシミュレーション（sandbox）",
+    "eta_label": "⏱ 受取人への到着",
+    "eta_ach": "1〜2営業日 (ACH)",
+    "eta_ach_same_day": "当日 (Same-Day ACH)",
+    "eta_wire": "銀行カットオフ前なら当日",
+    "eta_spei": "数秒 — SPEIはリアルタイム",
+    "eta_pix": "数秒 — PIXはリアルタイム",
+    "eta_sepa": "1〜2営業日 (SEPA)",
+    "eta_fps": "約2時間 (Faster Payments UK)",
+    "eta_cop": "当日または翌営業日",
+    "eta_fednow": "数秒 — FedNowはリアルタイム"
   },
   "recibir": {
     "loading": "招待を確認中...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "シミュレート支払い完了",
     "receipt_date": "日付",
     "receipt_status": "ステータス",
-    "receipt_completed": "完了"
+    "receipt_completed": "完了",
+    "eta_label": "⏱ 受取人への到着",
+    "eta_ach": "1〜2営業日 (ACH)",
+    "eta_ach_same_day": "当日 (Same-Day ACH)",
+    "eta_wire": "銀行カットオフ前なら当日",
+    "eta_spei": "数秒 — SPEIはリアルタイム",
+    "eta_pix": "数秒 — PIXはリアルタイム",
+    "eta_sepa": "1〜2営業日 (SEPA)",
+    "eta_fps": "約2時間 (Faster Payments UK)",
+    "eta_cop": "当日または翌営業日",
+    "eta_fednow": "数秒 — FedNowはリアルタイム"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -746,7 +746,17 @@
     "kyc_body": "Penyedia teregulasi kami (Bridge, MSB terdaftar FinCEN) perlu memverifikasi identitas Anda. Hanya 2–3 menit dan tidak pernah diulang.",
     "kyc_cta": "Verifikasi sekarang →",
     "kyc_after": "Setelah diverifikasi, kembali ke sini atau tunggu pengalihan otomatis.",
-    "sandbox_simulate_kyc": "⚡ Simulasi KYC (sandbox)"
+    "sandbox_simulate_kyc": "⚡ Simulasi KYC (sandbox)",
+    "eta_label": "⏱ Penerima menerima dalam",
+    "eta_ach": "1–2 hari kerja (ACH)",
+    "eta_ach_same_day": "Hari kerja yang sama (Same-Day ACH)",
+    "eta_wire": "Hari yang sama jika sebelum batas waktu bank",
+    "eta_spei": "Detik — SPEI real-time",
+    "eta_pix": "Detik — PIX real-time",
+    "eta_sepa": "1–2 hari kerja (SEPA)",
+    "eta_fps": "~2 jam (Faster Payments UK)",
+    "eta_cop": "Hari yang sama atau hari kerja berikutnya",
+    "eta_fednow": "Detik — FedNow real-time"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "Simulasi pembayaran selesai",
     "receipt_date": "Tanggal",
     "receipt_status": "Status",
-    "receipt_completed": "Selesai"
+    "receipt_completed": "Selesai",
+    "eta_label": "⏱ Penerima menerima dalam",
+    "eta_ach": "1–2 hari kerja (ACH)",
+    "eta_ach_same_day": "Hari kerja yang sama (Same-Day ACH)",
+    "eta_wire": "Hari yang sama jika sebelum batas waktu bank",
+    "eta_spei": "Detik — SPEI real-time",
+    "eta_pix": "Detik — PIX real-time",
+    "eta_sepa": "1–2 hari kerja (SEPA)",
+    "eta_fps": "~2 jam (Faster Payments UK)",
+    "eta_cop": "Hari yang sama atau hari kerja berikutnya",
+    "eta_fednow": "Detik — FedNow real-time"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

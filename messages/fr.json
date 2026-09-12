@@ -746,7 +746,17 @@
     "kyc_body": "Notre prestataire régulé (Bridge, MSB enregistré FinCEN) doit vérifier votre identité. Prend 2–3 minutes et ne se répète jamais.",
     "kyc_cta": "Vérifier maintenant →",
     "kyc_after": "Une fois vérifié, revenez ici ou attendez la redirection automatique.",
-    "sandbox_simulate_kyc": "⚡ Simuler KYC (sandbox)"
+    "sandbox_simulate_kyc": "⚡ Simuler KYC (sandbox)",
+    "eta_label": "⏱ Le destinataire reçoit en",
+    "eta_ach": "1–2 jours ouvrables (ACH)",
+    "eta_ach_same_day": "Même jour ouvrable (Same-Day ACH)",
+    "eta_wire": "Même jour si avant l'heure de coupure",
+    "eta_spei": "Secondes — SPEI est en temps réel",
+    "eta_pix": "Secondes — PIX est en temps réel",
+    "eta_sepa": "1–2 jours ouvrables (SEPA)",
+    "eta_fps": "~2 heures (Faster Payments UK)",
+    "eta_cop": "Même jour ou jour ouvrable suivant",
+    "eta_fednow": "Secondes — FedNow est en temps réel"
   },
   "recibir": {
     "loading": "Vérification de votre invitation...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "Paiement simulé terminé",
     "receipt_date": "Date",
     "receipt_status": "Statut",
-    "receipt_completed": "Terminé"
+    "receipt_completed": "Terminé",
+    "eta_label": "⏱ Le destinataire reçoit en",
+    "eta_ach": "1–2 jours ouvrables (ACH)",
+    "eta_ach_same_day": "Même jour ouvrable (Same-Day ACH)",
+    "eta_wire": "Même jour si avant l'heure de coupure",
+    "eta_spei": "Secondes — SPEI est en temps réel",
+    "eta_pix": "Secondes — PIX est en temps réel",
+    "eta_sepa": "1–2 jours ouvrables (SEPA)",
+    "eta_fps": "~2 heures (Faster Payments UK)",
+    "eta_cop": "Même jour ou jour ouvrable suivant",
+    "eta_fednow": "Secondes — FedNow est en temps réel"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

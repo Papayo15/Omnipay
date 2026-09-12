@@ -746,7 +746,17 @@
     "kyc_body": "Onze gereguleerde aanbieder (Bridge, FinCEN-geregistreerde MSB) moet uw identiteit verifiëren. Duurt 2–3 minuten en nooit herhaald.",
     "kyc_cta": "Nu verifiëren →",
     "kyc_after": "Na verificatie hier terugkeren of wachten op automatische omleiding.",
-    "sandbox_simulate_kyc": "⚡ KYC simuleren (sandbox)"
+    "sandbox_simulate_kyc": "⚡ KYC simuleren (sandbox)",
+    "eta_label": "⏱ Ontvanger ontvangt binnen",
+    "eta_ach": "1–2 werkdagen (ACH)",
+    "eta_ach_same_day": "Zelfde werkdag (Same-Day ACH)",
+    "eta_wire": "Zelfde dag als vóór banksluitingstijd",
+    "eta_spei": "Seconden — SPEI is realtime",
+    "eta_pix": "Seconden — PIX is realtime",
+    "eta_sepa": "1–2 werkdagen (SEPA)",
+    "eta_fps": "~2 uur (Faster Payments UK)",
+    "eta_cop": "Zelfde dag of volgende werkdag",
+    "eta_fednow": "Seconden — FedNow is realtime"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "Gesimuleerde betaling voltooid",
     "receipt_date": "Datum",
     "receipt_status": "Status",
-    "receipt_completed": "Voltooid"
+    "receipt_completed": "Voltooid",
+    "eta_label": "⏱ Ontvanger ontvangt binnen",
+    "eta_ach": "1–2 werkdagen (ACH)",
+    "eta_ach_same_day": "Zelfde werkdag (Same-Day ACH)",
+    "eta_wire": "Zelfde dag als vóór banksluitingstijd",
+    "eta_spei": "Seconden — SPEI is realtime",
+    "eta_pix": "Seconden — PIX is realtime",
+    "eta_sepa": "1–2 werkdagen (SEPA)",
+    "eta_fps": "~2 uur (Faster Payments UK)",
+    "eta_cop": "Zelfde dag of volgende werkdag",
+    "eta_fednow": "Seconden — FedNow is realtime"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

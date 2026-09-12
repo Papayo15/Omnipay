@@ -82,8 +82,9 @@ export default function EnviarEmpresaWirePage() {
 
   // Instructions state
   const [vaInfo, setVaInfo]               = useState<VaInfo | null>(null);
-  const [confirmedAmount, setConfirmedAmount] = useState(0);
-  const [targetCurrency, setTargetCurrency]   = useState("MXN");
+  const [confirmedAmount, setConfirmedAmount]   = useState(0);
+  const [targetCurrency, setTargetCurrency]     = useState("MXN");
+  const [destinationRail, setDestinationRail]   = useState("");
   const [orderId, setOrderId]             = useState("");
   const [sandboxDone, setSandboxDone]         = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
@@ -213,6 +214,7 @@ export default function EnviarEmpresaWirePage() {
       });
       setConfirmedAmount(data.amount_target ?? parseFloat(amount));
       setTargetCurrency(data.target_currency ?? recipientCurrency);
+      setDestinationRail((data as Record<string, unknown>).destination_rail as string ?? "");
       setOrderId(data.order_id ?? "");
       setStep("instructions");
     } catch (e) {
@@ -483,6 +485,16 @@ export default function EnviarEmpresaWirePage() {
                 )}
               </div>
             </div>
+
+            {/* ETA badge — cuánto tarda en llegar al banco del receptor */}
+            {destinationRail && (
+              <div className="flex items-center justify-between bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-2.5">
+                <span className="text-slate-400 text-xs">{t("eta_label")}</span>
+                <span className="text-sm font-medium" style={{ color: ["spei","pix","rtp"].includes(destinationRail) ? "#34d399" : ["fps","cop"].includes(destinationRail) ? "#fbbf24" : "#94a3b8" }}>
+                  {t(`eta_${destinationRail}` as "eta_ach")}
+                </span>
+              </div>
+            )}
 
             <p className="text-slate-500 text-xs text-center leading-relaxed px-2">{t("instructions_note")}</p>
 

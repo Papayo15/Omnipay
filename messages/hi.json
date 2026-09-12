@@ -746,7 +746,17 @@
     "kyc_body": "हमारे विनियमित प्रदाता (Bridge, FinCEN-पंजीकृत MSB) को आपकी पहचान सत्यापित करनी होगी। 2–3 मिनट लगते हैं, केवल एक बार।",
     "kyc_cta": "अभी सत्यापित करें →",
     "kyc_after": "सत्यापित होने के बाद, यहाँ वापस आएं या स्वचालित पुनर्निर्देशन की प्रतीक्षा करें।",
-    "sandbox_simulate_kyc": "⚡ KYC सिमुलेट करें (sandbox)"
+    "sandbox_simulate_kyc": "⚡ KYC सिमुलेट करें (sandbox)",
+    "eta_label": "⏱ प्राप्तकर्ता को मिलेगा",
+    "eta_ach": "1–2 कार्यदिवस (ACH)",
+    "eta_ach_same_day": "उसी कार्यदिवस (Same-Day ACH)",
+    "eta_wire": "उसी दिन, बैंक कटऑफ से पहले",
+    "eta_spei": "सेकंड — SPEI रियल-टाइम है",
+    "eta_pix": "सेकंड — PIX रियल-टाइम है",
+    "eta_sepa": "1–2 कार्यदिवस (SEPA)",
+    "eta_fps": "~2 घंटे (Faster Payments UK)",
+    "eta_cop": "उसी दिन या अगले कार्यदिवस",
+    "eta_fednow": "सेकंड — FedNow रियल-टाइम है"
   },
   "recibir": {
     "loading": "आपका आमंत्रण सत्यापित हो रहा है...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "सिमुलेटेड भुगतान पूर्ण",
     "receipt_date": "तारीख",
     "receipt_status": "स्थिति",
-    "receipt_completed": "पूर्ण"
+    "receipt_completed": "पूर्ण",
+    "eta_label": "⏱ प्राप्तकर्ता को मिलेगा",
+    "eta_ach": "1–2 कार्यदिवस (ACH)",
+    "eta_ach_same_day": "उसी कार्यदिवस (Same-Day ACH)",
+    "eta_wire": "उसी दिन, बैंक कटऑफ से पहले",
+    "eta_spei": "सेकंड — SPEI रियल-टाइम है",
+    "eta_pix": "सेकंड — PIX रियल-टाइम है",
+    "eta_sepa": "1–2 कार्यदिवस (SEPA)",
+    "eta_fps": "~2 घंटे (Faster Payments UK)",
+    "eta_cop": "उसी दिन या अगले कार्यदिवस",
+    "eta_fednow": "सेकंड — FedNow रियल-टाइम है"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

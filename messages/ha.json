@@ -745,7 +745,17 @@
     "kyc_body": "Masu samarwa namu (Bridge, MSB da aka yi rajista da FinCEN) suna buƙatar tabbatar da asalinku. Yana ɗaukar minti 2–3 kawai.",
     "kyc_cta": "Tabbatar yanzu →",
     "kyc_after": "Bayan tabbatarwa, dawo nan ko jira juyawar atomatik.",
-    "sandbox_simulate_kyc": "⚡ Kwaikwayon KYC (sandbox)"
+    "sandbox_simulate_kyc": "⚡ Kwaikwayon KYC (sandbox)",
+    "eta_label": "⏱ Mai karɓa zai karɓa cikin",
+    "eta_ach": "Kwanaki 1–2 na aiki (ACH)",
+    "eta_ach_same_day": "Ranar aiki ɗaya (Same-Day ACH)",
+    "eta_wire": "Ranar nan idan kafin lokacin rufe banki",
+    "eta_spei": "Daƙiƙoƙi — SPEI na ainihin lokaci ne",
+    "eta_pix": "Daƙiƙoƙi — PIX na ainihin lokaci ne",
+    "eta_sepa": "Kwanaki 1–2 na aiki (SEPA)",
+    "eta_fps": "~Awanni 2 (Faster Payments UK)",
+    "eta_cop": "Ranar nan ko ranar aiki mai zuwa",
+    "eta_fednow": "Daƙiƙoƙi — FedNow na ainihin lokaci ne"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",
@@ -934,7 +944,17 @@
     "sandbox_payment_done": "An kammala kwaikwayon biyan kuɗi",
     "receipt_date": "Kwanan wata",
     "receipt_status": "Yanayi",
-    "receipt_completed": "An kammala"
+    "receipt_completed": "An kammala",
+    "eta_label": "⏱ Mai karɓa zai karɓa cikin",
+    "eta_ach": "Kwanaki 1–2 na aiki (ACH)",
+    "eta_ach_same_day": "Ranar aiki ɗaya (Same-Day ACH)",
+    "eta_wire": "Ranar nan idan kafin lokacin rufe banki",
+    "eta_spei": "Daƙiƙoƙi — SPEI na ainihin lokaci ne",
+    "eta_pix": "Daƙiƙoƙi — PIX na ainihin lokaci ne",
+    "eta_sepa": "Kwanaki 1–2 na aiki (SEPA)",
+    "eta_fps": "~Awanni 2 (Faster Payments UK)",
+    "eta_cop": "Ranar nan ko ranar aiki mai zuwa",
+    "eta_fednow": "Daƙiƙoƙi — FedNow na ainihin lokaci ne"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

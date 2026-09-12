@@ -746,7 +746,17 @@
     "kyc_body": "Nhà cung cấp được quản lý của chúng tôi (Bridge, MSB đăng ký FinCEN) cần xác minh danh tính của bạn. Mất 2–3 phút và không bao giờ lặp lại.",
     "kyc_cta": "Xác minh ngay →",
     "kyc_after": "Sau khi xác minh, quay lại đây hoặc đợi chuyển hướng tự động.",
-    "sandbox_simulate_kyc": "⚡ Mô phỏng KYC (sandbox)"
+    "sandbox_simulate_kyc": "⚡ Mô phỏng KYC (sandbox)",
+    "eta_label": "⏱ Người nhận nhận tiền trong",
+    "eta_ach": "1–2 ngày làm việc (ACH)",
+    "eta_ach_same_day": "Cùng ngày làm việc (Same-Day ACH)",
+    "eta_wire": "Cùng ngày nếu trước giờ cắt của ngân hàng",
+    "eta_spei": "Giây — SPEI thời gian thực",
+    "eta_pix": "Giây — PIX thời gian thực",
+    "eta_sepa": "1–2 ngày làm việc (SEPA)",
+    "eta_fps": "~2 giờ (Faster Payments UK)",
+    "eta_cop": "Cùng ngày hoặc ngày làm việc tiếp theo",
+    "eta_fednow": "Giây — FedNow thời gian thực"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "Thanh toán mô phỏng hoàn tất",
     "receipt_date": "Ngày",
     "receipt_status": "Trạng thái",
-    "receipt_completed": "Hoàn tất"
+    "receipt_completed": "Hoàn tất",
+    "eta_label": "⏱ Người nhận nhận tiền trong",
+    "eta_ach": "1–2 ngày làm việc (ACH)",
+    "eta_ach_same_day": "Cùng ngày làm việc (Same-Day ACH)",
+    "eta_wire": "Cùng ngày nếu trước giờ cắt của ngân hàng",
+    "eta_spei": "Giây — SPEI thời gian thực",
+    "eta_pix": "Giây — PIX thời gian thực",
+    "eta_sepa": "1–2 ngày làm việc (SEPA)",
+    "eta_fps": "~2 giờ (Faster Payments UK)",
+    "eta_cop": "Cùng ngày hoặc ngày làm việc tiếp theo",
+    "eta_fednow": "Giây — FedNow thời gian thực"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

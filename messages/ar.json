@@ -746,7 +746,17 @@
     "kyc_body": "يحتاج مزودنا المنظم (Bridge، MSB مسجل في FinCEN) إلى التحقق من هويتك. يستغرق 2–3 دقائق ولا يتكرر.",
     "kyc_cta": "التحقق الآن →",
     "kyc_after": "بعد التحقق، عد إلى هنا أو انتظر إعادة التوجيه التلقائي.",
-    "sandbox_simulate_kyc": "⚡ محاكاة KYC (sandbox)"
+    "sandbox_simulate_kyc": "⚡ محاكاة KYC (sandbox)",
+    "eta_label": "⏱ المستلم يحصل على المال في",
+    "eta_ach": "1–2 أيام عمل (ACH)",
+    "eta_ach_same_day": "نفس يوم العمل (Same-Day ACH)",
+    "eta_wire": "نفس اليوم قبل وقت الإغلاق البنكي",
+    "eta_spei": "ثوانٍ — SPEI فوري",
+    "eta_pix": "ثوانٍ — PIX فوري",
+    "eta_sepa": "1–2 أيام عمل (SEPA)",
+    "eta_fps": "~ساعتان (Faster Payments UK)",
+    "eta_cop": "نفس اليوم أو اليوم التالي",
+    "eta_fednow": "ثوانٍ — FedNow فوري"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "اكتملت محاكاة الدفع",
     "receipt_date": "التاريخ",
     "receipt_status": "الحالة",
-    "receipt_completed": "مكتمل"
+    "receipt_completed": "مكتمل",
+    "eta_label": "⏱ المستلم يحصل على المال في",
+    "eta_ach": "1–2 أيام عمل (ACH)",
+    "eta_ach_same_day": "نفس يوم العمل (Same-Day ACH)",
+    "eta_wire": "نفس اليوم قبل وقت الإغلاق البنكي",
+    "eta_spei": "ثوانٍ — SPEI فوري",
+    "eta_pix": "ثوانٍ — PIX فوري",
+    "eta_sepa": "1–2 أيام عمل (SEPA)",
+    "eta_fps": "~ساعتان (Faster Payments UK)",
+    "eta_cop": "نفس اليوم أو اليوم التالي",
+    "eta_fednow": "ثوانٍ — FedNow فوري"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -27,7 +27,15 @@ export const NATIVE_RAILS: Record<string, {
   label:    string;
 }> = {
   // Americas
-  US: { rail: "ach",  currency: "usd", fields: ["routing_number", "account_number"], label: "ACH Bank Account"   },
+  // US rails available in Bridge Liquidation Addresses: ach | wire | fednow
+  // Default: ach (1-2 business days, no fee).
+  // To enable FedNow (instant, 24/7): negotiate with Bridge, then set BRIDGE_USE_FEDNOW=true.
+  // To enable Wire (same-day): set BRIDGE_USE_WIRE=true (incurs Bridge wire fee ~$25).
+  US: process.env.BRIDGE_USE_FEDNOW === "true"
+    ? { rail: "fednow", currency: "usd", fields: ["routing_number", "account_number"], label: "FedNow (Instant)" }
+    : process.env.BRIDGE_USE_WIRE === "true"
+    ? { rail: "wire",   currency: "usd", fields: ["routing_number", "account_number"], label: "Wire (Same Day)" }
+    : { rail: "ach",    currency: "usd", fields: ["routing_number", "account_number"], label: "ACH Bank Account" },
   MX: { rail: "spei", currency: "mxn", fields: ["clabe"],                            label: "CLABE (SPEI)"       },
   BR: { rail: "pix",  currency: "brl", fields: ["pix_key"],                          label: "Chave PIX"          },
   CO: { rail: "cop",  currency: "cop", fields: ["account_number", "bank_code"],      label: "Bre-B / Transferencia" },

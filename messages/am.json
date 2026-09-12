@@ -746,7 +746,17 @@
     "kyc_body": "Bridge (FinCEN-ምዝገባ MSB) ማንነትዎን ማረጋገጥ ያስፈልጋል። 2–3 ደቂቃ ብቻ ይወስዳል፣ አንድ ጊዜ ብቻ።",
     "kyc_cta": "አሁን ያረጋግጡ →",
     "kyc_after": "ከተረጋገጠ በኋላ ወደ ዚህ ይመለሱ ወይም ራስ-ሰር ይዘዋወሩ።",
-    "sandbox_simulate_kyc": "⚡ KYC ሲሙሌት (sandbox)"
+    "sandbox_simulate_kyc": "⚡ KYC ሲሙሌት (sandbox)",
+    "eta_label": "⏱ ተቀባዩ ይቀበላል",
+    "eta_ach": "1–2 የሥራ ቀናት (ACH)",
+    "eta_ach_same_day": "በዚሁ ቀን (Same-Day ACH)",
+    "eta_wire": "ቆረጣ ሰዓት ካለፈ በፊት ተቀምጦ ከሆነ ዛሬ",
+    "eta_spei": "ሰከንዶች — SPEI ቀጥታ ነው",
+    "eta_pix": "ሰከንዶች — PIX ቀጥታ ነው",
+    "eta_sepa": "1–2 የሥራ ቀናት (SEPA)",
+    "eta_fps": "~2 ሰዓታት (Faster Payments UK)",
+    "eta_cop": "ዛሬ ወይም ቀጣይ የሥራ ቀን",
+    "eta_fednow": "ሰከንዶች — FedNow ቀጥታ ነው"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "ምሳሌ ክፍያ ተጠናቋል",
     "receipt_date": "ቀን",
     "receipt_status": "ሁኔታ",
-    "receipt_completed": "ተጠናቋል"
+    "receipt_completed": "ተጠናቋል",
+    "eta_label": "⏱ ተቀባዩ ይቀበላል",
+    "eta_ach": "1–2 የሥራ ቀናት (ACH)",
+    "eta_ach_same_day": "በዚሁ ቀን (Same-Day ACH)",
+    "eta_wire": "ቆረጣ ሰዓት ካለፈ በፊት ተቀምጦ ከሆነ ዛሬ",
+    "eta_spei": "ሰከንዶች — SPEI ቀጥታ ነው",
+    "eta_pix": "ሰከንዶች — PIX ቀጥታ ነው",
+    "eta_sepa": "1–2 የሥራ ቀናት (SEPA)",
+    "eta_fps": "~2 ሰዓታት (Faster Payments UK)",
+    "eta_cop": "ዛሬ ወይም ቀጣይ የሥራ ቀን",
+    "eta_fednow": "ሰከንዶች — FedNow ቀጥታ ነው"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

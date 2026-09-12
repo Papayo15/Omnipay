@@ -746,7 +746,17 @@
     "kyc_body": "Mtoa huduma wetu wenye leseni (Bridge, MSB iliyosajiliwa FinCEN) anahitaji kuthibitisha utambulisho wako. Inachukua dakika 2–3 pekee.",
     "kyc_cta": "Thibitisha sasa →",
     "kyc_after": "Baada ya kuthibitishwa, rudi hapa au subiri uelekezaji wa kiotomatiki.",
-    "sandbox_simulate_kyc": "⚡ Simula KYC (sandbox)"
+    "sandbox_simulate_kyc": "⚡ Simula KYC (sandbox)",
+    "eta_label": "⏱ Mpokeaji anapata ndani ya",
+    "eta_ach": "Siku 1–2 za kazi (ACH)",
+    "eta_ach_same_day": "Siku hiyo ya kazi (Same-Day ACH)",
+    "eta_wire": "Siku hiyo kabla ya muda wa benki",
+    "eta_spei": "Sekunde — SPEI ni ya wakati halisi",
+    "eta_pix": "Sekunde — PIX ni ya wakati halisi",
+    "eta_sepa": "Siku 1–2 za kazi (SEPA)",
+    "eta_fps": "~Masaa 2 (Faster Payments UK)",
+    "eta_cop": "Siku hiyo au siku ya kazi inayofuata",
+    "eta_fednow": "Sekunde — FedNow ni ya wakati halisi"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",
@@ -935,7 +945,17 @@
     "sandbox_payment_done": "Malipo ya majaribio yamekamilika",
     "receipt_date": "Tarehe",
     "receipt_status": "Hali",
-    "receipt_completed": "Imekamilika"
+    "receipt_completed": "Imekamilika",
+    "eta_label": "⏱ Mpokeaji anapata ndani ya",
+    "eta_ach": "Siku 1–2 za kazi (ACH)",
+    "eta_ach_same_day": "Siku hiyo ya kazi (Same-Day ACH)",
+    "eta_wire": "Siku hiyo kabla ya muda wa benki",
+    "eta_spei": "Sekunde — SPEI ni ya wakati halisi",
+    "eta_pix": "Sekunde — PIX ni ya wakati halisi",
+    "eta_sepa": "Siku 1–2 za kazi (SEPA)",
+    "eta_fps": "~Masaa 2 (Faster Payments UK)",
+    "eta_cop": "Siku hiyo au siku ya kazi inayofuata",
+    "eta_fednow": "Sekunde — FedNow ni ya wakati halisi"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",
