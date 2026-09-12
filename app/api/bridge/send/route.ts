@@ -232,14 +232,29 @@ export async function POST(req: NextRequest): Promise<Response> {
       (e as Error)?.message?.toLowerCase().includes("endorsement")
       || (e as Error)?.message?.toLowerCase().includes("not active");
 
+    const isUnsupportedRail = (e: unknown) =>
+      (e as Error)?.message?.toLowerCase().includes("unsupported rail")
+      || (e as Error)?.message?.toLowerCase().includes("unsupported_rail")
+      || JSON.stringify((e as { details?: unknown })?.details ?? "").toLowerCase().includes("unsupported");
+
     let liqAddr: { id: string; address: string };
     try {
       liqAddr = await createLiquidationAddress(liqParams);
     } catch (e1) {
-      if (!isEndorsementErr(e1)) throw e1;
-      await new Promise(r => setTimeout(r, 5000));
-      try { await ensureEndorsements(senderCustomer.id, fullEndorsements); } catch { /* ignore */ }
-      liqAddr = await createLiquidationAddress(liqParams);
+      if (isUnsupportedRail(e1)) {
+        // Bridge hasn't enabled this rail (fednow / sepa_instant) for this account yet — fall back gracefully
+        const fallbackRail = country === "US" ? "ach"
+          : SEPA_SET.has(country) ? "sepa"
+          : NATIVE_RAILS[country]?.rail ?? "ach";
+        console.warn(`[bridge/send] Rail ${liqParams.rail ?? "unknown"} unsupported by Bridge, retrying with ${fallbackRail}`);
+        liqAddr = await createLiquidationAddress({ ...liqParams, rail: fallbackRail });
+      } else if (isEndorsementErr(e1)) {
+        await new Promise(r => setTimeout(r, 5000));
+        try { await ensureEndorsements(senderCustomer.id, fullEndorsements); } catch { /* ignore */ }
+        liqAddr = await createLiquidationAddress(liqParams);
+      } else {
+        throw e1;
+      }
     }
 
     // 7. Build fee quote

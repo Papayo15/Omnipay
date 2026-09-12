@@ -87,6 +87,8 @@ export interface CreateLiquidationParams {
   sortCode?:       string;
   bankCode?:       string;
   documentNumber?: string;  // PIX: CPF (11 digits) or CNPJ (14 digits)
+  // Override the rail derived from country (used for graceful fallback when a rail is unsupported)
+  rail?:           string;
   // Common
   ownerName:       string;
   ownerType?:      "individual" | "business";
@@ -428,7 +430,7 @@ export async function createLiquidationAddress(
   // NOT nested under a "destination" key. Docs: external_account_id, destination_payment_rail,
   // destination_currency are all at root level alongside currency and chain.
   const destCurrency = NATIVE_RAILS[country]?.currency ?? "usd";
-  const destRail     = NATIVE_RAILS[country]?.rail ?? "ach";
+  const destRail     = params.rail ?? NATIVE_RAILS[country]?.rail ?? "ach";
   // Stable key (no day rotation) — same customer+country+account always reuses the same liq address
   const liqKey       = `liq8-${params.customerId}-${country}-${identKey}`;
   const liqBody      = {
