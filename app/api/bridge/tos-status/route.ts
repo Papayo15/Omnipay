@@ -31,7 +31,6 @@ export async function GET(req: NextRequest): Promise<Response> {
     if (err.status === 404 || err.message?.includes("not found") || err.message?.includes("404")) {
       return NextResponse.json({ accepted: false, tos_status: "pending", not_found: true });
     }
-    console.error("[tos-status]", err.message);
-    return NextResponse.json({ accepted: false, tos_status: "unknown", error: err.message });
+    return NextResponse.json({ accepted: false, tos_status: "pending" });
   }
 }
