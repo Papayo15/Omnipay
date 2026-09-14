@@ -80,6 +80,7 @@ export default function EnviarPage() {
   const [kycLongReview, setKycLongReview] = useState(false);
   const kycPollCount = useRef(0);
   const kycPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const kycPopup     = useRef<Window | null>(null);
   const [vaInfo, setVaInfo]               = useState<VaInfo | null>(null);
   const [orderId, setOrderId]             = useState("");
   const [confirmedAmount, setConfirmedAmount]   = useState(0);
@@ -231,6 +232,7 @@ export default function EnviarPage() {
         const data = await res.json() as { approved?: boolean };
         if (data.approved) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycPolling(false);
           setAutoRetry(true);
         }
@@ -753,7 +755,10 @@ export default function EnviarPage() {
               </div>
             ) : kycUrl ? (
               <button
-                onClick={() => { window.open(kycUrl, "_blank"); setKycPolling(true); }}
+                onClick={() => {
+                  kycPopup.current = window.open(kycUrl, "bridge_kyc", "width=520,height=700,left=200,top=80,resizable=yes,scrollbars=yes");
+                  setKycPolling(true);
+                }}
                 className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
               >
                 {t("kyc_cta")}
