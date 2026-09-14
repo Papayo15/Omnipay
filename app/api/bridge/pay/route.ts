@@ -23,11 +23,12 @@ import { getRate }                               from "@/lib/fx-server";
 export const runtime = "nodejs";
 
 interface PayBody {
-  token:           string;   // encrypted token from /api/bridge/checkout
-  sender_name:     string;
-  sender_email:    string;
-  source_currency: "usd" | "eur" | "gbp" | "mxn" | "brl";
-  sender_phone?:   string;
+  token:                string;   // encrypted token from /api/bridge/checkout
+  sender_name:          string;
+  sender_email:         string;
+  source_currency:      "usd" | "eur" | "gbp" | "mxn" | "brl";
+  sender_phone?:        string;
+  existing_customer_id?: string;
 }
 
 // Which Polygon/Ethereum network to use per source currency
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   try { body = await req.json() as PayBody; }
   catch { return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 }); }
 
-  const { token, sender_name, sender_email, source_currency, sender_phone } = body;
+  const { token, sender_name, sender_email, source_currency, sender_phone, existing_customer_id } = body;
 
   if (!token || !sender_name || !sender_email || !source_currency) {
     return NextResponse.json(
@@ -104,14 +105,31 @@ export async function POST(req: NextRequest): Promise<Response> {
       type:    "p2p",
     });
 
-    // 3. Get or create Bridge customer for the SENDER (KYC)
-    const { customer: senderCustomer, needsKyc, isNew: isSenderNew } = await getOrCreateCustomer({
-      type:        "individual",
-      email:       sender_email.toLowerCase(),
-      first_name:  sender_name.split(" ")[0],
-      last_name:   sender_name.split(" ").slice(1).join(" ") || "-",
-      endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"],
-    });
+    // 3. Get or create Bridge customer for the SENDER (KYC).
+    //    On retry, use existing_customer_id to bypass Bridge list-endpoint eventual consistency.
+    let senderCustomer: Awaited<ReturnType<typeof getOrCreateCustomer>>["customer"];
+    let needsKyc: boolean;
+    let isSenderNew: boolean;
+    if (existing_customer_id) {
+      const c  = await getCustomer(existing_customer_id);
+      const c2 = c as unknown as Record<string, unknown>;
+      const kycApproved = c.status === "active" || c.status === "approved"
+        || c2.kyc_status === "approved";
+      senderCustomer = c;
+      needsKyc       = !kycApproved;
+      isSenderNew    = false;
+    } else {
+      const result = await getOrCreateCustomer({
+        type:        "individual",
+        email:       sender_email.toLowerCase(),
+        first_name:  sender_name.split(" ")[0],
+        last_name:   sender_name.split(" ").slice(1).join(" ") || "-",
+        endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"],
+      });
+      senderCustomer = result.customer;
+      needsKyc       = result.needsKyc;
+      isSenderNew    = result.isNew;
+    }
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 

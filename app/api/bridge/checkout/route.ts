@@ -37,6 +37,7 @@ interface CheckoutBody {
   document_number?:  string;  // Brazil: CPF (11 digits) or CNPJ (14 digits) for PIX
   amount_target:     number;
   recipient_phone?:  string;
+  existing_customer_id?: string;
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     nombre, email, country, receive_method,
     clabe, iban, bic, pix_key, routing_number, account_number,
     sort_code, bank_name, bank_code, document_number,
-    amount_target, recipient_phone,
+    amount_target, recipient_phone, existing_customer_id,
   } = body;
 
   if (!nombre || !email || !country || !receive_method || !amount_target) {
@@ -95,15 +96,35 @@ export async function POST(req: NextRequest): Promise<Response> {
     // sepa also activates payout_fiat (required even for non-SEPA rails like ACH/SPEI).
     const endorsements = ["base", "sepa", "spei", "pix", "faster_payments", "cop"];
 
-    // 1. Get or create Bridge customer (KYC)
-    const { customer, needsKyc, isNew, depositsRestricted } = await getOrCreateCustomer({
-      type:         "individual",
-      email:        email.toLowerCase(),
-      first_name:   nombre.split(" ")[0],
-      last_name:    nombre.split(" ").slice(1).join(" ") || "-",
-      country:      country_iso3,
-      endorsements,
-    });
+    // 1. Get or create Bridge customer (KYC).
+    //    On retry, use existing_customer_id to bypass Bridge list-endpoint eventual consistency.
+    let customer: Awaited<ReturnType<typeof getOrCreateCustomer>>["customer"];
+    let needsKyc: boolean;
+    let isNew: boolean;
+    let depositsRestricted: boolean | undefined;
+    if (existing_customer_id) {
+      const c  = await getCustomer(existing_customer_id);
+      const c2 = c as unknown as Record<string, unknown>;
+      const kycApproved = c.status === "active" || c.status === "approved"
+        || c2.kyc_status === "approved" || c.status === "deposits_restricted";
+      customer           = c;
+      needsKyc           = !kycApproved;
+      isNew              = false;
+      depositsRestricted = c.status === "deposits_restricted";
+    } else {
+      const result = await getOrCreateCustomer({
+        type:         "individual",
+        email:        email.toLowerCase(),
+        first_name:   nombre.split(" ")[0],
+        last_name:    nombre.split(" ").slice(1).join(" ") || "-",
+        country:      country_iso3,
+        endorsements,
+      });
+      customer           = result.customer;
+      needsKyc           = result.needsKyc;
+      isNew              = result.isNew;
+      depositsRestricted = result.depositsRestricted;
+    }
 
     // deposits_restricted: Bridge has blocked inbound deposits for this customer (RFI pending).
     // The recipient cannot receive new payments until Bridge resolves the restriction.

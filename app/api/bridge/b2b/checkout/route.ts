@@ -37,6 +37,7 @@ interface B2BCheckoutBody {
   bank_code?:      string;
   amount_target:   number;
   redirect_uri?:   string;
+  existing_customer_id?: string;
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     business_name, email, country, receive_method,
     clabe, iban, bic, pix_key, routing_number, account_number,
     sort_code, bank_name, bank_code,
-    amount_target, redirect_uri,
+    amount_target, redirect_uri, existing_customer_id,
   } = body;
 
   if (!business_name || !email || !country || !receive_method || !amount_target) {
@@ -72,15 +73,33 @@ export async function POST(req: NextRequest): Promise<Response> {
     const railEndorse    = RAIL_ENDORSEMENT[railForCountry] ?? "base";
     const endorsements   = ["base", "sepa", ...(railEndorse !== "base" && railEndorse !== "sepa" ? [railEndorse] : [])];
 
-    // Get or create Bridge BUSINESS customer (KYB)
-    // Pass country so the initial address matches the recipient's actual country
-    const { customer, needsKyc: needsKyb, isNew, depositsRestricted } = await getOrCreateCustomer({
-      type:          "business",
-      email:         email.toLowerCase(),
-      business_name,
-      country:       ISO3_FROM_ALPHA2[country_upper] ?? "USA",
-      endorsements,
-    });
+    // Get or create Bridge BUSINESS customer (KYB).
+    // On retry, use existing_customer_id to bypass Bridge list-endpoint eventual consistency.
+    let customer: Awaited<ReturnType<typeof getOrCreateCustomer>>["customer"];
+    let needsKyb: boolean;
+    let isNew: boolean;
+    let depositsRestricted: boolean | undefined;
+    if (existing_customer_id) {
+      const c  = await getCustomer(existing_customer_id);
+      const c2 = c as unknown as Record<string, unknown>;
+      const kybApproved = c2.kyb_status === "approved";
+      customer           = c;
+      needsKyb           = !kybApproved;
+      isNew              = false;
+      depositsRestricted = c.status === "deposits_restricted";
+    } else {
+      const result = await getOrCreateCustomer({
+        type:          "business",
+        email:         email.toLowerCase(),
+        business_name,
+        country:       ISO3_FROM_ALPHA2[country_upper] ?? "USA",
+        endorsements,
+      });
+      customer           = result.customer;
+      needsKyb           = result.needsKyc;
+      isNew              = result.isNew;
+      depositsRestricted = result.depositsRestricted;
+    }
 
     if (depositsRestricted) {
       return NextResponse.json({

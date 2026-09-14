@@ -235,7 +235,8 @@ export default function PagarPage() {
     setStep("loading");
     try {
       const endpoint = "/api/bridge/pay";
-      const reqBody  = { token, sender_name: name.trim(), sender_email: email.toLowerCase().trim(), source_currency: currency, sender_phone: phone.trim() || undefined };
+      const reqBody: Record<string, unknown> = { token, sender_name: name.trim(), sender_email: email.toLowerCase().trim(), source_currency: currency, sender_phone: phone.trim() || undefined };
+      if (kycCustomerId) reqBody.existing_customer_id = kycCustomerId;
 
       const res = await fetch(endpoint, {
         method: "POST",

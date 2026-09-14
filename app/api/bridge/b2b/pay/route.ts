@@ -21,12 +21,13 @@ import { createOrder }                            from "@/lib/order-state";
 export const runtime = "edge";
 
 interface B2BPayBody {
-  token:            string;
-  business_name:    string;
-  sender_email:     string;
-  source_currency:  "usd" | "eur" | "gbp" | "mxn" | "brl" | "cop";
-  sender_phone?:    string;
-  redirect_uri?:    string;
+  token:                 string;
+  business_name:         string;
+  sender_email:          string;
+  source_currency:       "usd" | "eur" | "gbp" | "mxn" | "brl" | "cop";
+  sender_phone?:         string;
+  redirect_uri?:         string;
+  existing_customer_id?: string;
 }
 
 const NETWORK_BY_CURRENCY: Record<string, "polygon" | "ethereum" | "solana"> = {
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   try { body = await req.json() as B2BPayBody; }
   catch { return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 }); }
 
-  const { token, business_name, sender_email, source_currency, sender_phone, redirect_uri } = body;
+  const { token, business_name, sender_email, source_currency, sender_phone, redirect_uri, existing_customer_id } = body;
 
   if (!token || !business_name || !sender_email || !source_currency) {
     return NextResponse.json(
@@ -92,13 +93,28 @@ export async function POST(req: NextRequest): Promise<Response> {
       type:    "b2b",
     });
 
-    // Get or create Bridge BUSINESS customer for the SENDER
-    const { customer: senderCustomer, needsKyc: needsKyb, isNew } = await getOrCreateCustomer({
-      type:          "business",
-      email:         sender_email.toLowerCase(),
-      business_name,
-      endorsements:  ["base", "sepa"],
-    });
+    // Get or create Bridge BUSINESS customer for the SENDER.
+    // On retry, use existing_customer_id to bypass Bridge list-endpoint eventual consistency.
+    let senderCustomer: Awaited<ReturnType<typeof getOrCreateCustomer>>["customer"];
+    let needsKyb: boolean;
+    let isNew: boolean;
+    if (existing_customer_id) {
+      const c  = await getCustomer(existing_customer_id);
+      const c2 = c as unknown as Record<string, unknown>;
+      senderCustomer = c;
+      needsKyb       = c2.kyb_status !== "approved";
+      isNew          = false;
+    } else {
+      const result = await getOrCreateCustomer({
+        type:          "business",
+        email:         sender_email.toLowerCase(),
+        business_name,
+        endorsements:  ["base", "sepa"],
+      });
+      senderCustomer = result.customer;
+      needsKyb       = result.needsKyc;
+      isNew          = result.isNew;
+    }
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 

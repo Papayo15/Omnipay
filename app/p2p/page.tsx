@@ -402,6 +402,7 @@ export default function P2PPage() {
       // Card support kept in code for future activation
       // body.card_number = ...
 
+      if (kycCustomerId) body.existing_customer_id = kycCustomerId;
       const res  = await fetch("/api/bridge/checkout", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
