@@ -529,7 +529,7 @@ export default function EnviarEmpresaWirePage() {
               </p>
             </div>
 
-            <button onClick={handleSubmit} disabled={!isValid}
+            <button onClick={() => handleSubmit(false)} disabled={!isValid}
               className="w-full bg-[#00C9C8] hover:bg-[#00b8b7] disabled:bg-slate-700 disabled:text-slate-500 text-[#0f172a] font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2">
               <Building2 className="w-4 h-4" />
               {t("cta")}

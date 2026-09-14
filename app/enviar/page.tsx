@@ -691,7 +691,7 @@ export default function EnviarPage() {
 
             {quoteReady && (
               <button
-                onClick={handleSubmit}
+                onClick={() => handleSubmit(false)}
                 disabled={!senderName || !senderEmail || !recipientName || !accountField || !amountTarget || (recipientCountry === "US" && !routingField)}
                 className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
               >
