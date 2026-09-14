@@ -130,9 +130,10 @@ export async function POST(req: NextRequest): Promise<Response> {
           redirect_uri: `${appUrl}/pagar?t=${token}&type=p2p&tos_done=1`,
         });
         return NextResponse.json({
-          needs_tos: true,
-          tos_url:   tosLink.url,
-          message:   "El emisor debe aceptar los Términos de Bridge antes de continuar.",
+          needs_tos:   true,
+          tos_url:     tosLink.url,
+          customer_id: senderCustomer.id,
+          message:     "El emisor debe aceptar los Términos de Bridge antes de continuar.",
         }, { status: 202 });
       } catch { /* proceed if ToS link fails */ }
     }

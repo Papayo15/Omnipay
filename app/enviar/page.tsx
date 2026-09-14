@@ -69,7 +69,7 @@ export default function EnviarPage() {
 
   // Post-submit state
   const [tosUrl, setTosUrl]               = useState("");
-  const tosAccepted  = useRef(false);
+  const [tosCustomerId, setTosCustomerId] = useState("");
   const tosPopup     = useRef<Window | null>(null);
   const tosPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [kycUrl, setKycUrl]               = useState("");
@@ -209,15 +209,23 @@ export default function EnviarPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRetry]);
 
-  // ToS polling — retries send every 3 s while popup is open; advances when Bridge confirms ToS
+  // ToS polling — polls /api/bridge/tos-status every 3 s; when accepted, closes popup and retries
   useEffect(() => {
-    if (step !== "tos" || !tosUrl) return;
-    tosPollTimer.current = setInterval(() => {
-      setAutoRetry(true);
+    if (step !== "tos" || !tosCustomerId) return;
+    tosPollTimer.current = setInterval(async () => {
+      try {
+        const res  = await fetch(`/api/bridge/tos-status?customer_id=${tosCustomerId}`);
+        const data = await res.json() as { accepted?: boolean };
+        if (data.accepted) {
+          if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
+          if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
+          setAutoRetry(true);
+        }
+      } catch { /* keep polling */ }
     }, 3000);
     return () => { if (tosPollTimer.current) clearInterval(tosPollTimer.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, tosUrl]);
+  }, [step, tosCustomerId]);
 
   // KYC polling — checks Bridge every 2 s while user does KYC in a separate tab
   useEffect(() => {
@@ -283,7 +291,7 @@ export default function EnviarPage() {
         body:    JSON.stringify(buildBody()),
       });
       const data = await res.json() as {
-        needs_tos?: boolean; tos_url?: string;
+        needs_tos?: boolean; tos_url?: string; customer_id?: string;
         needs_kyc?: boolean; kyc_url?: string;
         order_id?: string; deposit_instructions?: Record<string, unknown>;
         amount_target?: number; target_currency?: string; error?: string;
@@ -295,6 +303,7 @@ export default function EnviarPage() {
           recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
         }));
         setTosUrl(data.tos_url);
+        if (data.customer_id) setTosCustomerId(data.customer_id);
         // Open as small popup so OmniPay stays visible in background
         if (!tosPopup.current || tosPopup.current.closed) {
           tosPopup.current = window.open(
@@ -305,7 +314,7 @@ export default function EnviarPage() {
         setStep("tos");
         return;
       }
-      // ToS was accepted — stop polling and close popup
+      // ToS confirmed by tos-status poll — popup already closed by polling useEffect
       if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
       if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
 

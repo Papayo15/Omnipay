@@ -177,9 +177,10 @@ export async function POST(req: NextRequest): Promise<Response> {
           redirect_uri: `${appUrl}/p2p?tos_done=1`,
         });
         return NextResponse.json({
-          needs_tos: true,
-          tos_url:   tosLink.url,
-          message:   "El receptor debe aceptar los Términos de Bridge antes de continuar.",
+          needs_tos:   true,
+          tos_url:     tosLink.url,
+          customer_id: customer.id,
+          message:     "El receptor debe aceptar los Términos de Bridge antes de continuar.",
         }, { status: 202 });
       } catch { /* ToS link creation failed — proceed; Bridge will reject customer creation if truly required */ }
     }

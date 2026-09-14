@@ -167,9 +167,10 @@ export async function POST(req: NextRequest): Promise<Response> {
           redirect_uri: kycRedirectUri,
         });
         return NextResponse.json({
-          needs_tos: true,
-          tos_url:   tosLink.url,
-          message:   "Debes aceptar los Términos de Bridge antes de continuar.",
+          needs_tos:   true,
+          tos_url:     tosLink.url,
+          customer_id: senderCustomer.id,
+          message:     "Debes aceptar los Términos de Bridge antes de continuar.",
         }, { status: 202 });
       } catch { /* proceed if ToS link fails */ }
     }

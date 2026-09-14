@@ -156,9 +156,10 @@ export async function POST(req: NextRequest): Promise<Response> {
         const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
         const tosLink = await createTosLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
         return NextResponse.json({
-          needs_tos: true,
-          tos_url:   tosLink.url,
-          message:   "La empresa debe aceptar los Términos de Bridge antes de continuar.",
+          needs_tos:   true,
+          tos_url:     tosLink.url,
+          customer_id: customer.id,
+          message:     "La empresa debe aceptar los Términos de Bridge antes de continuar.",
         }, { status: 202 });
       } catch { /* proceed; Bridge will surface error if truly required */ }
     }

@@ -94,7 +94,7 @@ export default function EnviarEmpresaWirePage() {
   const [destinationRail, setDestinationRail]   = useState("");
   const [orderId, setOrderId]             = useState("");
   const [tosUrl, setTosUrl]               = useState("");
-  const tosAccepted  = useRef(false);
+  const [tosCustomerId, setTosCustomerId] = useState("");
   const tosPopup     = useRef<Window | null>(null);
   const tosPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [sandboxDone, setSandboxDone]         = useState(false);
@@ -165,11 +165,21 @@ export default function EnviarEmpresaWirePage() {
 
   // ToS polling — retries every 3 s while popup is open
   useEffect(() => {
-    if (step !== "tos" || !tosUrl) return;
-    tosPollTimer.current = setInterval(() => { setAutoRetry(true); }, 3000);
+    if (step !== "tos" || !tosCustomerId) return;
+    tosPollTimer.current = setInterval(async () => {
+      try {
+        const res  = await fetch(`/api/bridge/tos-status?customer_id=${tosCustomerId}`);
+        const data = await res.json() as { accepted?: boolean };
+        if (data.accepted) {
+          if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
+          if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
+          setAutoRetry(true);
+        }
+      } catch { /* keep polling */ }
+    }, 3000);
     return () => { if (tosPollTimer.current) clearInterval(tosPollTimer.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, tosUrl]);
+  }, [step, tosCustomerId]);
 
   // KYB polling — checks Bridge every 2 s while user does KYB in popup
   useEffect(() => {
@@ -235,6 +245,7 @@ export default function EnviarEmpresaWirePage() {
           recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
         }));
         setTosUrl(data.tos_url);
+        if (data.customer_id) setTosCustomerId(data.customer_id);
         if (!tosPopup.current || tosPopup.current.closed) {
           tosPopup.current = window.open(
             data.tos_url, "bridge_tos",
