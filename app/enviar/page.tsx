@@ -235,8 +235,13 @@ export default function EnviarPage() {
       if (!tosCustomerId) return;
       try {
         const res  = await fetch(`/api/bridge/tos-status?customer_id=${tosCustomerId}`);
-        const data = await res.json() as { accepted?: boolean };
-        if (data.accepted) finish();
+        const data = await res.json() as { accepted?: boolean; not_found?: boolean };
+        if (data.accepted) { finish(); return; }
+        if (data.not_found) {
+          // Stale customer_id — clear it so next handleSubmit creates a fresh customer
+          if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
+          setTosCustomerId("");
+        }
       } catch { /* keep polling */ }
     }, 2000);
     return () => { if (tosPollTimer.current) clearInterval(tosPollTimer.current); };
@@ -262,16 +267,19 @@ export default function EnviarPage() {
 
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
-        const data = await res.json() as { approved?: boolean; status?: string };
+        const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean };
         if (data.approved) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycPolling(false);
           setAutoRetry(true);
         } else if (data.status === "under_review" || data.status === "pending") {
-          // Bridge received the submission — close popup automatically and show review message
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycLongReview(true);
+        } else if (data.not_found) {
+          // Stale customer_id — clear it so next submit creates a fresh customer
+          if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
+          setKycPolling(false); setKycCustomerId(""); setStep("form");
         }
       } catch { /* ignore — keep polling */ }
     }, 2000);

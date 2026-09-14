@@ -17,16 +17,21 @@ export async function GET(req: NextRequest): Promise<Response> {
     const customer  = await getCustomer(customerId);
     const c         = customer as unknown as Record<string, unknown>;
     const tosStatus = c.tos_status as string | undefined;
-    // Bridge uses "accepted", "approved", or "not_required" once ToS is done.
-    // Any value other than "pending" / undefined means we can proceed.
     const tosAccepted = tosStatus !== undefined && tosStatus !== null
       && tosStatus !== "pending" && tosStatus !== "";
     const customerActive = customer.status === "active"
       || customer.status === "approved"
-      || customer.status === "under_review"; // ToS done, KYC in progress
+      || customer.status === "under_review";
     const accepted = tosAccepted || customerActive;
     return NextResponse.json({ accepted, tos_status: tosStatus ?? "pending" });
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    const err = e as Error & { status?: number };
+    // 404 = customer not found (stale ID from a previous session) — return not-accepted
+    // so polling continues gracefully instead of flooding the console with 500s
+    if (err.status === 404 || err.message?.includes("not found") || err.message?.includes("404")) {
+      return NextResponse.json({ accepted: false, tos_status: "pending", not_found: true });
+    }
+    console.error("[tos-status]", err.message);
+    return NextResponse.json({ accepted: false, tos_status: "unknown", error: err.message });
   }
 }

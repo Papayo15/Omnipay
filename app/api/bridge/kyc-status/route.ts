@@ -23,6 +23,11 @@ export async function GET(req: NextRequest): Promise<Response> {
       || kycStatus === "approved" || kybStatus === "approved";
     return NextResponse.json({ approved, status: kycStatus ?? baseStatus ?? "unknown" });
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    const err = e as Error & { status?: number };
+    if (err.status === 404 || err.message?.includes("not found") || err.message?.includes("404")) {
+      return NextResponse.json({ approved: false, status: "not_found", not_found: true });
+    }
+    console.error("[kyc-status]", err.message);
+    return NextResponse.json({ approved: false, status: "unknown", error: err.message });
   }
 }
