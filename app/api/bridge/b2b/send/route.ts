@@ -16,7 +16,7 @@ import { NextRequest, NextResponse }        from "next/server";
 import {
   getOrCreateCustomer, getCustomer, getKycUrlFromCustomer,
   patchCustomerAddress, ensureEndorsements, createKycLink,
-  createTosLink, appendRedirectUri, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
+  createTosLink, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
@@ -181,25 +181,24 @@ export async function POST(req: NextRequest): Promise<Response> {
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyb && !skipKyc && !isSandbox) {
       const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
-      let kybUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(senderCustomer), kybRedirectUri);
-      if (!kybUrl) {
-        try {
-          const kl = await createKycLink({
-            full_name:    sender_business_name,
-            email:        sender_email.toLowerCase(),
-            type:         "business",
-            endorsements: B2B_ENDORSEMENTS,
-            redirect_uri: kybRedirectUri,
-          });
-          kybUrl = kl.url ?? (kl as unknown as Record<string, string>).kyc_link ?? null;
-        } catch (e1) {
-          const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
-          if (err1.type === "duplicate_record") {
-            const ex = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-            kybUrl = appendRedirectUri(ex?.kyc_link ?? ex?.url ?? null, kybRedirectUri);
-          }
+      let kybUrl: string | null = null;
+      try {
+        const kl = await createKycLink({
+          full_name:    sender_business_name,
+          email:        sender_email.toLowerCase(),
+          type:         "business",
+          endorsements: B2B_ENDORSEMENTS,
+          redirect_uri: kybRedirectUri,
+        });
+        kybUrl = kl.url ?? (kl as unknown as Record<string, string>).kyc_link ?? null;
+      } catch (e1) {
+        const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
+        if (err1.type === "duplicate_record") {
+          const ex = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
+          kybUrl = ex?.kyc_link ?? ex?.url ?? null;
         }
       }
+      if (!kybUrl) kybUrl = getKycUrlFromCustomer(senderCustomer);
       return NextResponse.json({
         needs_kyb:   true,
         kyb_url:     kybUrl,

@@ -167,19 +167,24 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (needsKyc && !skipKyc && !isSandbox) {
       // Include the token in the redirect so /pagar can auto-retry without re-filling the form
       const kycRedirectUri = `${appUrl}/pagar?t=${token}&type=p2p&kyc_done=1`;
-      let kycUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(senderCustomer), kycRedirectUri);
-      if (!kycUrl) {
-        try {
-          const kycLink = await createKycLink({
-            full_name:    sender_name,
-            email:        sender_email.toLowerCase(),
-            type:         "individual",
-            endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"],
-            redirect_uri: kycRedirectUri,
-          });
-          kycUrl = kycLink.url ?? kycLink.kyc_link ?? null;
-        } catch { /* best-effort */ }
+      let kycUrl: string | null = null;
+      try {
+        const kycLink = await createKycLink({
+          full_name:    sender_name,
+          email:        sender_email.toLowerCase(),
+          type:         "individual",
+          endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"],
+          redirect_uri: kycRedirectUri,
+        });
+        kycUrl = kycLink.url ?? kycLink.kyc_link ?? null;
+      } catch (e1) {
+        const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
+        if (err1.type === "duplicate_record") {
+          const ex = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
+          kycUrl = ex?.kyc_link ?? ex?.url ?? null;
+        }
       }
+      if (!kycUrl) kycUrl = getKycUrlFromCustomer(senderCustomer);
       return NextResponse.json({
         needs_kyc:   true,
         kyc_url:     kycUrl,

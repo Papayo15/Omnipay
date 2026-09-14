@@ -202,25 +202,24 @@ export async function POST(req: NextRequest): Promise<Response> {
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyc && !skipKyc && !isSandbox) {
       const kycRedirectUri = `${appUrl}/p2p?kyc_done=1`;
-      let kycUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(customer), kycRedirectUri);
-      if (!kycUrl) {
-        try {
-          const kycLink = await createKycLink({
-            full_name:    nombre,
-            email:        email.toLowerCase(),
-            type:         "individual",
-            endorsements,   // include rail-specific endorsements so one KYC approves all
-            redirect_uri: kycRedirectUri,
-          });
-          kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
-        } catch (e1) {
-          const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
-          if (err1.type === "duplicate_record") {
-            const existing = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-            kycUrl = appendRedirectUri(existing?.kyc_link ?? existing?.url ?? null, kycRedirectUri);
-          }
+      let kycUrl: string | null = null;
+      try {
+        const kycLink = await createKycLink({
+          full_name:    nombre,
+          email:        email.toLowerCase(),
+          type:         "individual",
+          endorsements,
+          redirect_uri: kycRedirectUri,
+        });
+        kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
+      } catch (e1) {
+        const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
+        if (err1.type === "duplicate_record") {
+          const existing = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
+          kycUrl = existing?.kyc_link ?? existing?.url ?? null;
         }
       }
+      if (!kycUrl) kycUrl = getKycUrlFromCustomer(customer);
       return NextResponse.json({
         needs_kyc:   true,
         kyc_url:     kycUrl,
@@ -245,22 +244,21 @@ export async function POST(req: NextRequest): Promise<Response> {
         || e2.message?.toLowerCase().includes("endorsement");
       if (isNotActive && !isSandbox) {
         const kycRedirectUri2 = `${appUrl}/p2p?kyc_done=1`;
-        let kycUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(customer), kycRedirectUri2);
-        if (!kycUrl) {
-          try {
-            const kycLink = await createKycLink({
-              full_name: nombre, email: email.toLowerCase(),
-              type: "individual", endorsements, redirect_uri: kycRedirectUri2,
-            });
-            kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
-          } catch (e3) {
-            const err3 = e3 as Error & { type?: string; details?: Record<string, unknown> };
-            if (err3.type === "duplicate_record") {
-              const ex = err3.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-              kycUrl = appendRedirectUri(ex?.kyc_link ?? ex?.url ?? null, kycRedirectUri2);
-            }
+        let kycUrl: string | null = null;
+        try {
+          const kycLink = await createKycLink({
+            full_name: nombre, email: email.toLowerCase(),
+            type: "individual", endorsements, redirect_uri: kycRedirectUri2,
+          });
+          kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
+        } catch (e3) {
+          const err3 = e3 as Error & { type?: string; details?: Record<string, unknown> };
+          if (err3.type === "duplicate_record") {
+            const ex = err3.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
+            kycUrl = ex?.kyc_link ?? ex?.url ?? null;
           }
         }
+        if (!kycUrl) kycUrl = getKycUrlFromCustomer(customer);
         return NextResponse.json({
           needs_kyc:   true,
           kyc_url:     kycUrl,

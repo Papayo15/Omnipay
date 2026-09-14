@@ -167,19 +167,18 @@ export async function POST(req: NextRequest): Promise<Response> {
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyb && !skipKyc && !isSandbox) {
       const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
-      let kybUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(customer), kybRedirectUri);
-      if (!kybUrl) {
-        try {
-          const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
-          kybUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
-        } catch (e1) {
-          const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
-          if (err1.type === "duplicate_record") {
-            const existing = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-            kybUrl = appendRedirectUri(existing?.kyc_link ?? existing?.url ?? null, kybRedirectUri);
-          }
+      let kybUrl: string | null = null;
+      try {
+        const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
+        kybUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
+      } catch (e1) {
+        const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
+        if (err1.type === "duplicate_record") {
+          const existing = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
+          kybUrl = existing?.kyc_link ?? existing?.url ?? null;
         }
       }
+      if (!kybUrl) kybUrl = getKycUrlFromCustomer(customer);
       // Email the RECIPIENT business — they need to complete KYB, not the sender
       if (kybUrl) {
         const emailHtml = `
@@ -229,12 +228,12 @@ export async function POST(req: NextRequest): Promise<Response> {
         || e2.message?.toLowerCase().includes("account_not_active");
       if (isNotActive && !isSandbox) {
         const kybRedirectUri2 = `${appUrl}/enviar-empresa-wire?kyb_done=1&step=checkout`;
-        let kybUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(customer), kybRedirectUri2);
-        if (!kybUrl) {
-          try {
-            const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", endorsements, redirect_uri: kybRedirectUri2 });
-            kybUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
-          } catch { /* best-effort */ }
+        let kybUrl: string | null = null;
+        try {
+          const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", endorsements, redirect_uri: kybRedirectUri2 });
+          kybUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
+        } catch {
+          kybUrl = getKycUrlFromCustomer(customer);
         }
         if (kybUrl) {
           const emailHtml = `
