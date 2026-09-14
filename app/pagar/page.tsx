@@ -133,6 +133,7 @@ export default function PagarPage() {
   const [savedKycForm,     setSavedKycForm]     = useState(false);
   const [kycPolling,       setKycPolling]       = useState(false);
   const [kycLongReview,    setKycLongReview]    = useState(false);
+  const [kycSubmitted,     setKycSubmitted]     = useState(false);
   const kycPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const kycPopup     = useRef<Window | null>(null);
   const kycAutoRetryRef = useRef(false);
@@ -246,6 +247,7 @@ export default function PagarPage() {
       // 202 = KYC or ToS required before VA can be created
       if (res.status === 202) {
         if (data.needs_kyc && data.kyc_url) {
+          setKycSubmitted(false);
           setKycUrl(data.kyc_url);
           if ((data as unknown as Record<string, unknown>).customer_id) setKycCustomerId((data as unknown as Record<string, string>).customer_id);
           if (kycAutoRetryRef.current) {
@@ -320,22 +322,30 @@ export default function PagarPage() {
         if (href && href !== "about:blank" && new URL(href).origin === window.location.origin) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycSubmitted(true);
           setKycPolling(false); kycAutoRetryRef.current = true; handleSubmit(); return;
         }
       } catch { /* cross-origin = still on Bridge/Persona */ }
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
-        const data = await res.json() as { approved?: boolean; status?: string };
+        const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean };
         if (data.approved) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycPolling(false);
           kycAutoRetryRef.current = true;
           handleSubmit();
-        } else if (data.status === "under_review" || data.status === "pending") {
+        } else if (data.status === "rejected") {
+          if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycPolling(false);
+          setErrorMsg(t("kyc_rejected_error"));
+          setStep("error");
+        } else if (data.status === "under_review" || data.status === "pending" || kycSubmitted) {
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycLongReview(true);
         }
+        // not_found: Bridge eventual consistency — keep polling silently
       } catch { /* keep polling */ }
     }, 2000);
     return () => { if (kycPollTimer.current) clearInterval(kycPollTimer.current); };
@@ -440,7 +450,7 @@ export default function PagarPage() {
             <div className="flex flex-col items-center gap-3 py-4">
               <div className="w-8 h-8 border-2 border-[#00C9C8] border-t-transparent rounded-full animate-spin" />
               <p className="text-[#00C9C8] text-sm font-semibold">
-                {kycLongReview ? "Revisión manual en curso, puede tomar unos minutos…" : "Verificando en tiempo real…"}
+                {kycLongReview ? t("kyc_long_review_title") : kycSubmitted ? t("kyc_submitted_title") : t("kyc_polling_title")}
               </p>
             </div>
           ) : kycUrl ? (

@@ -83,6 +83,7 @@ export default function EnviarEmpresaWirePage() {
   const [sandboxSimKyb, setSandboxSimKyb] = useState(false);
   const [kybPolling, setKybPolling]       = useState(false);
   const [kybLongReview, setKybLongReview] = useState(false);
+  const [kybSubmitted, setKybSubmitted]   = useState(false);
   const kybPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const kybPopup     = useRef<Window | null>(null);
 
@@ -201,21 +202,29 @@ export default function EnviarEmpresaWirePage() {
         if (href && href !== "about:blank" && new URL(href).origin === window.location.origin) {
           if (kybPollTimer.current) clearInterval(kybPollTimer.current);
           if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
+          setKybSubmitted(true);
           setKybPolling(false); setAutoRetry(true); return;
         }
       } catch { /* cross-origin */ }
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kybCustomerId}`);
-        const data = await res.json() as { approved?: boolean; status?: string };
+        const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean };
         if (data.approved) {
           if (kybPollTimer.current) clearInterval(kybPollTimer.current);
           if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
           setKybPolling(false);
           setAutoRetry(true);
-        } else if (data.status === "under_review" || data.status === "pending") {
+        } else if (data.status === "rejected") {
+          if (kybPollTimer.current) clearInterval(kybPollTimer.current);
+          if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
+          setKybPolling(false);
+          setError(t("kyb_rejected_error"));
+          setStep("error");
+        } else if (data.status === "under_review" || data.status === "pending" || kybSubmitted) {
           if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
           setKybLongReview(true);
         }
+        // not_found: Bridge eventual consistency — keep polling silently
       } catch { /* keep polling */ }
     }, 2000);
     return () => { if (kybPollTimer.current) clearInterval(kybPollTimer.current); };
@@ -293,6 +302,7 @@ export default function EnviarEmpresaWirePage() {
       if (prePopup && !prePopup.closed) { prePopup.close(); prePopup = null; }
 
       if (data.needs_kyb) {
+        setKybSubmitted(false);
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
           recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
@@ -613,7 +623,7 @@ export default function EnviarEmpresaWirePage() {
               <div className="flex flex-col items-center gap-3 py-4">
                 <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
                 <p className="text-blue-300 text-sm font-semibold">
-                  {kybLongReview ? "Revisión manual en curso, puede tomar unos minutos…" : "Verificando en tiempo real…"}
+                  {kybLongReview ? t("kyb_long_review_title") : kybSubmitted ? t("kyb_submitted_title") : t("kyb_polling_title")}
                 </p>
               </div>
             ) : kybUrl ? (

@@ -279,7 +279,7 @@ export default function EnviarPage() {
           if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycPolling(false);
-          setError("Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos (teléfono o email). Contacta soporte en support@omnipay.solutions");
+          setError(t("kyc_rejected_error"));
           setStep("error");
         } else if (data.status === "under_review" || data.status === "pending" || kycSubmitted) {
           // Show "en validación" if Bridge confirmed under_review/pending,
@@ -757,7 +757,7 @@ export default function EnviarPage() {
             </div>
             <div className="flex items-center gap-2 text-slate-500 text-xs">
               <Loader2 className="w-3 h-3 animate-spin shrink-0" />
-              <span>Verificando automáticamente…</span>
+              <span>{t("tos_verifying")}</span>
             </div>
             {/* Fallback: only shown if popup was blocked by the browser */}
             {(!tosPopup.current || tosPopup.current.closed) && tosUrl && (
@@ -770,7 +770,7 @@ export default function EnviarPage() {
                 }}
                 className="text-blue-400 text-sm underline text-center"
               >
-                ¿El popup fue bloqueado? Haz clic aquí para abrirlo
+                {t("tos_popup_blocked_link")}
               </button>
             )}
             <button
@@ -848,18 +848,16 @@ export default function EnviarPage() {
                   <div className="bg-slate-800/60 border border-slate-600/40 rounded-2xl p-5 text-center space-y-3">
                     <Loader2 className="w-8 h-8 text-[#00C9C8] animate-spin mx-auto" />
                     <p className="text-white font-semibold text-sm">
-                      {kycSubmitted ? "Verificación enviada — esperando confirmación" : "Verifica tu identidad en la ventana abierta"}
+                      {kycSubmitted ? t("kyc_submitted_title") : t("kyc_polling_title")}
                     </p>
                     <p className="text-slate-400 text-xs">
-                      {kycSubmitted
-                        ? "Bridge está procesando tu identidad. Esta pantalla avanzará sola cuando quede aprobado."
-                        : "Completa la verificación en la ventana que se abrió. Esta pantalla avanzará sola cuando Bridge confirme tu identidad."}
+                      {kycSubmitted ? t("kyc_submitted_body") : t("kyc_polling_body")}
                     </p>
                   </div>
                 ) : (
                   <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 text-center space-y-2">
-                    <p className="text-amber-300 font-semibold text-sm">Tu documento está en validación</p>
-                    <p className="text-slate-300 text-xs leading-relaxed">Bridge está revisando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.<br/>No cierres esta pestaña.</p>
+                    <p className="text-amber-300 font-semibold text-sm">{t("kyc_long_review_title")}</p>
+                    <p className="text-slate-300 text-xs leading-relaxed">{t("kyc_long_review_body")}</p>
                   </div>
                 )}
                 <button

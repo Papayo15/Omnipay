@@ -460,7 +460,12 @@
     "error_invalid_account_uk": "Número de cuenta UK debe tener 8 dígitos",
     "bic_required": "BIC / SWIFT (requerido)",
     "share_invite": "Compartir",
-    "calculate_fees_button": "Ver tarifas →"
+    "calculate_fees_button": "Ver tarifas →",
+    "kyc_submitted_title": "Verificación enviada — esperando confirmación",
+    "kyc_submitted_body": "Bridge está procesando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.",
+    "kyc_long_review_title": "Documento en revisión",
+    "kyc_long_review_body": "Puede tomar unos minutos. Esta pantalla avanzará sola.",
+    "kyc_rejected_error": "Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos. Contacta soporte en support@omnipay.solutions"
   },
   "pagar_bridge": {
     "submit": "Realizar envío →",
@@ -550,7 +555,12 @@
     "alchemypay_alt_loading": "Redirigiendo…",
     "tos_required_title": "⚠️ Acepta los Términos de Bridge",
     "tos_required_body": "Debes aceptar los términos de Bridge antes de continuar. Haz clic, acepta, y vuelve a esta página.",
-    "tos_accept_button": "Aceptar Términos de Bridge →"
+    "tos_accept_button": "Aceptar Términos de Bridge →",
+    "kyc_submitted_title": "Verificación enviada — esperando confirmación",
+    "kyc_submitted_body": "Bridge está procesando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.",
+    "kyc_long_review_title": "Documento en revisión",
+    "kyc_long_review_body": "Puede tomar unos minutos. Esta pantalla avanzará sola.",
+    "kyc_rejected_error": "Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos. Contacta soporte en support@omnipay.solutions"
   },
   "seguimiento": {
     "page_title": "Estado del envío",
@@ -741,7 +751,16 @@
     "eta_fps": "~2 horas (Faster Payments UK)",
     "eta_cop": "Mismo día o siguiente día hábil",
     "eta_fednow": "Segundos — FedNow es en tiempo real",
-    "eta_sepa_instant": "~10 segundos (SEPA Instant)"
+    "eta_sepa_instant": "~10 segundos (SEPA Instant)",
+    "kyc_polling_title": "Verifica tu identidad en la ventana abierta",
+    "kyc_polling_body": "Completa la verificación en la ventana que se abrió. Esta pantalla avanzará sola cuando Bridge confirme tu identidad.",
+    "kyc_submitted_title": "Verificación enviada — esperando confirmación",
+    "kyc_submitted_body": "Bridge está procesando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.",
+    "kyc_long_review_title": "Tu documento está en validación",
+    "kyc_long_review_body": "Bridge está revisando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.",
+    "kyc_rejected_error": "Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos (teléfono o email). Contacta soporte en support@omnipay.solutions",
+    "tos_verifying": "Verificando automáticamente…",
+    "tos_popup_blocked_link": "¿El popup fue bloqueado? Haz clic aquí para abrirlo"
   },
   "recibir": {
     "loading": "Verificando tu invitación...",
@@ -938,7 +957,13 @@
     "eta_sepa_instant": "~10 segundos (SEPA Instant)",
     "link_instructions_title": "¿Qué sigue?",
     "link_instructions_body": "La empresa emisora abre este link, llena sus datos y recibe instrucciones de wire transfer (ACH, SEPA, SPEI). El dinero llega a tu banco en 1-2 días hábiles.",
-    "fee_exchange_approx": "≈ tipo de cambio"
+    "fee_exchange_approx": "≈ tipo de cambio",
+    "kyb_submitted_title": "Verificación de empresa enviada — esperando confirmación",
+    "kyb_submitted_body": "Bridge está procesando la verificación de tu empresa. Esta pantalla avanzará sola cuando quede aprobada.",
+    "kyb_long_review_title": "Empresa en revisión",
+    "kyb_long_review_body": "Bridge está revisando la documentación de tu empresa. Esta pantalla avanzará sola.",
+    "kyb_rejected_error": "La verificación de tu empresa fue rechazada por Bridge. Puede ser que ya exista una cuenta con esos datos. Contacta soporte en support@omnipay.solutions",
+    "kyb_polling_title": "Verifica tu empresa en la ventana abierta"
   },
   "recibir_empresa": {
     "title": "Wire Empresarial — Recibir",

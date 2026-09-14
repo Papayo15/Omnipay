@@ -150,6 +150,7 @@ export default function P2PPage() {
   const [savedKycForm,    setSavedKycForm]    = useState(false);
   const [kycPolling,      setKycPolling]      = useState(false);
   const [kycLongReview,   setKycLongReview]   = useState(false);
+  const [kycSubmitted,    setKycSubmitted]    = useState(false);
   const kycPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const kycPopup     = useRef<Window | null>(null);
   // Ref always fresh in callbacks — tracks whether current generateLink call is a KYC retry
@@ -294,22 +295,30 @@ export default function P2PPage() {
         if (href && href !== "about:blank" && new URL(href).origin === window.location.origin) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycSubmitted(true);
           setKycPolling(false); kycAutoRetryRef.current = true; generateLink(); return;
         }
       } catch { /* cross-origin = still on Bridge/Persona */ }
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
-        const data = await res.json() as { approved?: boolean; status?: string };
+        const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean };
         if (data.approved) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycPolling(false);
           kycAutoRetryRef.current = true;
           generateLink();
-        } else if (data.status === "under_review" || data.status === "pending") {
+        } else if (data.status === "rejected") {
+          if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycPolling(false);
+          setErrorMsg(t("kyc_rejected_error"));
+          setStep("error");
+        } else if (data.status === "under_review" || data.status === "pending" || kycSubmitted) {
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycLongReview(true);
         }
+        // not_found: Bridge eventual consistency — keep polling silently
       } catch { /* keep polling */ }
     }, 2000);
     return () => { if (kycPollTimer.current) clearInterval(kycPollTimer.current); };
@@ -419,6 +428,7 @@ export default function P2PPage() {
       const data = await res.json() as CheckoutResponse & { error?: string; message?: string };
       if (res.status !== 202 && (!res.ok || data.error)) throw new Error(data.error ?? "Error");
       if (data.needs_kyc || data.needs_tos || res.status === 202) {
+        setKycSubmitted(false);
         if (data.kyc_url)  setKycUrl(data.kyc_url);
         if (data.tos_url)  setKycUrl(data.tos_url); // reuse same button for ToS acceptance
         if ((data as unknown as Record<string, unknown>).customer_id) setKycCustomerId((data as unknown as Record<string, string>).customer_id);
@@ -512,7 +522,7 @@ export default function P2PPage() {
             <div className="flex flex-col items-center gap-3 py-4">
               <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
               <p className="text-emerald-300 text-sm font-semibold">
-                {kycLongReview ? "Revisión manual en curso, puede tomar unos minutos…" : "Verificando en tiempo real…"}
+                {kycLongReview ? t("kyc_long_review_title") : kycSubmitted ? t("kyc_submitted_title") : t("kyc_polling_title")}
               </p>
             </div>
           ) : kycUrl ? (
