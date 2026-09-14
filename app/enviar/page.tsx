@@ -78,6 +78,7 @@ export default function EnviarPage() {
   const [sandboxSimKyc, setSandboxSimKyc] = useState(false);
   const [kycPolling, setKycPolling]       = useState(false);
   const [kycLongReview, setKycLongReview] = useState(false);
+  const [kycSubmitted, setKycSubmitted]   = useState(false); // true when Persona popup closed after completion
   const kycPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const kycPopup     = useRef<Window | null>(null);
   const [vaInfo, setVaInfo]               = useState<VaInfo | null>(null);
@@ -252,12 +253,13 @@ export default function EnviarPage() {
     if (!kycPolling || !kycCustomerId) return;
     setKycLongReview(false);
     kycPollTimer.current = setInterval(async () => {
-      // Same-origin detection: Bridge redirects popup to our domain after KYC
+      // Same-origin detection: Bridge redirects popup to our domain after KYC completion
       try {
         const href = kycPopup.current?.location?.href ?? "";
         if (href && href !== "about:blank" && new URL(href).origin === window.location.origin) {
           if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycSubmitted(true); // user completed Persona — popup redirected back
           setKycPolling(false);
           setAutoRetry(true);
           return;
@@ -272,7 +274,16 @@ export default function EnviarPage() {
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycPolling(false);
           setAutoRetry(true);
-        } else if (data.status === "under_review" || data.status === "pending") {
+        } else if (data.status === "rejected") {
+          // KYC rejected by Bridge — stop polling and show error
+          if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycPolling(false);
+          setError("Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos (teléfono o email). Contacta soporte en support@omnipay.solutions");
+          setStep("error");
+        } else if (data.status === "under_review" || data.status === "pending" || kycSubmitted) {
+          // Show "en validación" if Bridge confirmed under_review/pending,
+          // OR if the user already completed Persona (kycSubmitted) — Bridge may lag a few minutes
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycLongReview(true);
         } else if (data.not_found) {
@@ -327,6 +338,11 @@ export default function EnviarPage() {
         "about:blank", "bridge_kyc_tos",
         "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
       );
+      // Style the blank popup so it doesn't look like a crash
+      try {
+        prePopup?.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>OmniPay</title><style>*{margin:0;box-sizing:border-box}body{background:#0f172a;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui,sans-serif;color:#fff;text-align:center}.logo{font-size:2rem;margin-bottom:.75rem}.name{color:#00C9C8;font-weight:700;font-size:1.1rem}.sub{color:#94a3b8;font-size:.8rem;margin-top:.5rem}</style></head><body><div><div class="logo">⚡</div><div class="name">OmniPay</div><div class="sub">Cargando verificación…</div></div></body></html>`);
+        prePopup?.document.close();
+      } catch { /* ignore — cross-origin write not allowed after navigation */ }
     }
     try {
       const res = await fetch("/api/bridge/send", {
@@ -373,6 +389,7 @@ export default function EnviarPage() {
           senderName, senderEmail, senderCurrency,
           recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
         }));
+        setKycSubmitted(false); // reset for fresh attempt
         const kycUrl2 = data.kyc_url ?? "";
         setKycUrl(kycUrl2);
         setKycCustomerId((data as Record<string, unknown>).customer_id as string ?? "");
@@ -830,8 +847,14 @@ export default function EnviarPage() {
                 {!kycLongReview ? (
                   <div className="bg-slate-800/60 border border-slate-600/40 rounded-2xl p-5 text-center space-y-3">
                     <Loader2 className="w-8 h-8 text-[#00C9C8] animate-spin mx-auto" />
-                    <p className="text-white font-semibold text-sm">Verificando tu identidad en tiempo real...</p>
-                    <p className="text-slate-400 text-xs">Completa la verificación en la ventana que se abrió. Esta pantalla avanzará sola cuando Bridge confirme tu identidad.</p>
+                    <p className="text-white font-semibold text-sm">
+                      {kycSubmitted ? "Verificación enviada — esperando confirmación" : "Verifica tu identidad en la ventana abierta"}
+                    </p>
+                    <p className="text-slate-400 text-xs">
+                      {kycSubmitted
+                        ? "Bridge está procesando tu identidad. Esta pantalla avanzará sola cuando quede aprobado."
+                        : "Completa la verificación en la ventana que se abrió. Esta pantalla avanzará sola cuando Bridge confirme tu identidad."}
+                    </p>
                   </div>
                 ) : (
                   <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 text-center space-y-2">
