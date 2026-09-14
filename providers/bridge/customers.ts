@@ -284,14 +284,32 @@ export async function createKycLink(params: {
   redirect_uri?:  string;    // URL Bridge redirects the user to after KYC is complete
 }): Promise<BridgeKycLink> {
   const endStr   = (params.endorsements ?? ["base"]).join("-");
+  // Include redirect_uri tag: same params = same key (idempotent); different redirect
+  // = different key to avoid "idempotency key already used" when body differs.
+  const uriTag   = params.redirect_uri
+    ? params.redirect_uri.replace(/[^a-z0-9]/gi, "").slice(-16)
+    : "none";
   // Include type: individual vs business KYC links have different bodies
-  const idempKey = `kyc-link-${params.type}-${params.email.toLowerCase()}-${endStr}-${Math.floor(Date.now() / 3_600_000)}`;
+  const idempKey = `kyc-link-${params.type}-${params.email.toLowerCase()}-${endStr}-${uriTag}-${Math.floor(Date.now() / 3_600_000)}`;
   // Bridge business KYC links use business_name, individual links use full_name
   const { full_name, ...rest } = params;
   const body = params.type === "business"
     ? { ...rest, business_name: full_name }
     : { ...rest, full_name };
-  return bridgeRequest<BridgeKycLink>("POST", "/kyc_links", body, idempKey);
+  try {
+    return await bridgeRequest<BridgeKycLink>("POST", "/kyc_links", body, idempKey);
+  } catch (e) {
+    const err = e as BridgeError & { details?: Record<string, unknown> };
+    // Idempotency conflict (same key, different body) — return existing resource if embedded.
+    const isIdempConflict = err.message?.toLowerCase().includes("idempotency")
+      || err.type?.toLowerCase().includes("idempotency");
+    if (isIdempConflict) {
+      const existing = (err.details?.existing_resource ?? err.details?.kyc_link) as
+        { id?: string; url?: string; kyc_link?: string } | undefined;
+      if (existing?.url ?? existing?.kyc_link) return existing as unknown as BridgeKycLink;
+    }
+    throw e;
+  }
 }
 
 // Get existing KYC link for an already-created customer
@@ -320,15 +338,40 @@ export async function createTosLink(params: {
   redirect_uri?: string;
 }): Promise<{ id: string; url: string }> {
   const day = Math.floor(Date.now() / 86_400_000);
-  // Bridge accepts redirect_uri in the POST body — after the user clicks Accept,
-  // their hosted page redirects to this URI so the user lands back in OmniPay.
-  const res = await bridgeRequest<{ id: string; url: string }>(
-    "POST",
-    "/customers/tos_links",
-    params,
-    `tos-${params.email.toLowerCase()}-${day}`,
-  );
-  return res;
+  // Include a stable tag derived from redirect_uri so that retries with a different
+  // redirect (e.g., different query-string token) get a fresh key — Bridge rejects
+  // the same idempotency key when the request body differs.
+  const uriTag = params.redirect_uri
+    ? params.redirect_uri.replace(/[^a-z0-9]/gi, "").slice(-16)
+    : "none";
+  const idempKey = `tos-${params.email.toLowerCase()}-${day}-${uriTag}`;
+  try {
+    return await bridgeRequest<{ id: string; url: string }>(
+      "POST",
+      "/customers/tos_links",
+      params,
+      idempKey,
+    );
+  } catch (e) {
+    const err = e as BridgeError & { details?: Record<string, unknown> };
+    // Idempotency conflict (same key, different body on a prior call) — Bridge
+    // sometimes embeds the existing resource in the error body so we can return it.
+    const isIdempConflict = err.message?.toLowerCase().includes("idempotency")
+      || err.type?.toLowerCase().includes("idempotency");
+    if (isIdempConflict) {
+      const existing = (err.details?.existing_resource ?? err.details?.tos_link) as
+        { id?: string; url?: string } | undefined;
+      if (existing?.id && existing?.url) return existing as { id: string; url: string };
+      // No embedded resource — rethrow; the caller can continue with existing customer data.
+    }
+    // Duplicate TOS link — customer already has one; extract URL from error details.
+    if (err.type === "duplicate_record") {
+      const existing = (err.details?.existing_tos_link ?? err.details?.existing_resource) as
+        { id?: string; url?: string } | undefined;
+      if (existing?.url) return existing as { id: string; url: string };
+    }
+    throw e;
+  }
 }
 
 /** Append redirect_uri to any Bridge-hosted page URL so the user is sent back to OmniPay after completing the action. */
