@@ -319,19 +319,15 @@ export async function createTosLink(params: {
   type:         "individual" | "business";
   redirect_uri?: string;
 }): Promise<{ id: string; url: string }> {
-  const { redirect_uri, ...body } = params;
   const day = Math.floor(Date.now() / 86_400_000);
+  // Bridge accepts redirect_uri in the POST body — after the user clicks Accept,
+  // their hosted page redirects to this URI so the user lands back in OmniPay.
   const res = await bridgeRequest<{ id: string; url: string }>(
     "POST",
     "/customers/tos_links",
-    body,
+    params,
     `tos-${params.email.toLowerCase()}-${day}`,
   );
-  // redirect_uri goes as query param on the URL Bridge returns, not in the API body
-  if (redirect_uri && res.url) {
-    const sep = res.url.includes("?") ? "&" : "?";
-    res.url = `${res.url}${sep}redirect_uri=${encodeURIComponent(redirect_uri)}`;
-  }
   return res;
 }
 
