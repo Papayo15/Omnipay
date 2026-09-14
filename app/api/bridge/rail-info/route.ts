@@ -22,23 +22,13 @@ const RAIL_ETA_KEY: Record<string, string> = {
   cop:          "eta_cop",
 };
 
-// These two are re-evaluated per-request so env var changes are picked up
-// without relying on the module-level NATIVE_RAILS constant.
+// getUsRail is re-evaluated per-request so env var changes take effect after redeploy.
+// FedNow offramps are invite-only beta at Bridge — only enable once beta access is confirmed.
 function getUsRail(): string {
   if (process.env.BRIDGE_USE_FEDNOW === "true") return "fednow";
   if (process.env.BRIDGE_USE_WIRE    === "true") return "wire";
   return "ach";
 }
-
-function getSepaRail(): string {
-  return process.env.BRIDGE_USE_SEPA_INSTANT === "true" ? "sepa_instant" : "sepa";
-}
-
-const SEPA_COUNTRIES = new Set([
-  "DE","FR","ES","IT","NL","PT","BE","AT","IE","FI","GR","CY","EE","LV","LT",
-  "LU","MT","SK","SI","HR","SE","DK","NO","PL","CZ","HU","RO","BG","CH","IS",
-  "LI","AD","MC","SM","XK","VA",
-]);
 
 export async function GET(req: NextRequest): Promise<Response> {
   const country = req.nextUrl.searchParams.get("country")?.toUpperCase() ?? "";
@@ -48,13 +38,9 @@ export async function GET(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: "Country not supported" }, { status: 404 });
   }
 
-  // Override env-gated rails at request time
-  let rail = info.rail;
-  if (country === "US") {
-    rail = getUsRail();
-  } else if (SEPA_COUNTRIES.has(country)) {
-    rail = getSepaRail();
-  }
+  // US rail is env-gated (fednow/wire/ach). SEPA Instant is automatic on Bridge's side —
+  // no separate rail to set; always send "sepa" and Bridge picks the fastest path.
+  const rail = country === "US" ? getUsRail() : info.rail;
 
   return NextResponse.json({
     country,

@@ -61,14 +61,12 @@ interface B2BSendBody {
 
 const SEPA_SET_B2B = new Set(["DE","FR","ES","IT","NL","PT","BE","AT","IE","FI","GR","CY","EE","LV","LT","LU","MT","SK","SI","HR","SE","DK","NO","PL","CZ","HU","RO","BG","CH","IS","LI","AD","MC","SM","XK","VA"]);
 
+// SEPA Instant is automatic on Bridge's side — no separate rail needed.
 function getRailForCountry(country: string): string {
   if (country === "US") {
     if (process.env.BRIDGE_USE_FEDNOW === "true") return "fednow";
     if (process.env.BRIDGE_USE_WIRE   === "true") return "wire";
     return "ach";
-  }
-  if (SEPA_SET_B2B.has(country)) {
-    return process.env.BRIDGE_USE_SEPA_INSTANT === "true" ? "sepa_instant" : "sepa";
   }
   return NATIVE_RAILS[country]?.rail ?? "ach";
 }

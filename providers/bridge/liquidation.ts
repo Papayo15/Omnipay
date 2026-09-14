@@ -18,12 +18,10 @@ import { bridgeRequest } from "./client";
 import { createExternalAccount } from "./external-accounts";
 import { patchCustomerAddress } from "./customers";
 
-// SEPA rail — standard (1-2 days) or Instant (~10 seconds, 24/7) when approved by Bridge.
-// To enable SEPA Instant: negotiate with Bridge, then set BRIDGE_USE_SEPA_INSTANT=true in Vercel.
-// Note: SEPA Instant falls back to standard SEPA if the recipient's bank doesn't support SCT Inst.
-const SEPA_RAIL = process.env.BRIDGE_USE_SEPA_INSTANT === "true"
-  ? { rail: "sepa_instant", currency: "eur", fields: ["iban"], label: "SEPA Instant" }
-  : { rail: "sepa",         currency: "eur", fields: ["iban"], label: "SEPA (IBAN)" };
+// SEPA rail — always "sepa". Bridge automatically uses SEPA Instant (≤5 min, 24/7) when the
+// recipient bank supports it; falls back to standard SEPA (1-3 days) otherwise.
+// There is no "sepa_instant" API rail to request — Bridge picks the fastest available path.
+const SEPA_RAIL = { rail: "sepa", currency: "eur", fields: ["iban"], label: "SEPA (hasta 5 min)" };
 
 // Countries with native payment rails on Bridge.
 // All other countries → not supported on this platform.

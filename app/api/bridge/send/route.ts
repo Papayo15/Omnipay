@@ -63,15 +63,14 @@ interface SendBody {
 
 const SEPA_SET = new Set(["DE","FR","ES","IT","NL","PT","BE","AT","IE","FI","GR","CY","EE","LV","LT","LU","MT","SK","SI","HR","SE","DK","NO","PL","CZ","HU","RO","BG","CH","IS","LI","AD","MC","SM","XK","VA"]);
 
-// Read env vars at call time (not module load) so Vercel changes take effect after redeploy
+// Read env vars at call time (not module load) so Vercel changes take effect after redeploy.
+// SEPA Instant is not a separate API rail — Bridge auto-selects it when the recipient bank
+// supports it. Always send "sepa"; Bridge picks the fastest path automatically.
 function getRailForCountry(country: string): string {
   if (country === "US") {
     if (process.env.BRIDGE_USE_FEDNOW === "true") return "fednow";
     if (process.env.BRIDGE_USE_WIRE   === "true") return "wire";
     return "ach";
-  }
-  if (SEPA_SET.has(country)) {
-    return process.env.BRIDGE_USE_SEPA_INSTANT === "true" ? "sepa_instant" : "sepa";
   }
   return NATIVE_RAILS[country]?.rail ?? "ach";
 }
