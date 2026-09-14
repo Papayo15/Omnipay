@@ -252,6 +252,7 @@ export default function PagarPage() {
             // Auto-retry after KYC still pending — KYC being processed async on Bridge's side
             kycAutoRetryRef.current = false;
             setKycStillPending(true);
+            setKycPolling(true);
             setStep("kyc_polling");
           } else {
             // First time — save form + show pre-KYC explanation

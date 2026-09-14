@@ -426,6 +426,7 @@ export default function P2PPage() {
           // Auto-retry after KYC still returns needs_kyc — KYC processing async on Bridge's side
           kycAutoRetryRef.current = false;
           setKycStillPending(true);
+          setKycPolling(true);
           setStep("kyc_polling");
         } else {
           // First time needs_kyc — save form + show pre-KYC explanation
