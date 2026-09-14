@@ -89,7 +89,9 @@ export default function EnviarEmpresaWirePage() {
   const [destinationRail, setDestinationRail]   = useState("");
   const [orderId, setOrderId]             = useState("");
   const [tosUrl, setTosUrl]               = useState("");
-  const tosAccepted = useRef(false);
+  const tosAccepted  = useRef(false);
+  const tosPopup     = useRef<Window | null>(null);
+  const tosPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [sandboxDone, setSandboxDone]         = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
   const [showSandboxBtn, setShowSandboxBtn]   = useState(false);
@@ -156,6 +158,14 @@ export default function EnviarEmpresaWirePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRetry]);
 
+  // ToS polling — retries every 3 s while popup is open
+  useEffect(() => {
+    if (step !== "tos" || !tosUrl) return;
+    tosPollTimer.current = setInterval(() => { setAutoRetry(true); }, 3000);
+    return () => { if (tosPollTimer.current) clearInterval(tosPollTimer.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, tosUrl]);
+
   const buildBody = useCallback(() => {
     const base = {
       sender_business_name:    senderBusinessName.trim(),
@@ -192,20 +202,22 @@ export default function EnviarEmpresaWirePage() {
       };
 
       if (data.needs_tos && data.tos_url) {
-        if (tosAccepted.current) {
-          await new Promise(r => setTimeout(r, 2000));
-          setAutoRetry(true);
-          return;
-        }
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
           recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
         }));
         setTosUrl(data.tos_url);
-        window.open(data.tos_url, "_blank");
+        if (!tosPopup.current || tosPopup.current.closed) {
+          tosPopup.current = window.open(
+            data.tos_url, "bridge_tos",
+            "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
+          );
+        }
         setStep("tos");
         return;
       }
+      if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
+      if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
 
       if (data.needs_kyb) {
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
@@ -456,33 +468,35 @@ export default function EnviarEmpresaWirePage() {
           </div>
         )}
 
-        {/* ToS — Bridge terms of service, opens in new tab */}
+        {/* ToS — Bridge terms of service popup, auto-advances when accepted */}
         {step === "tos" && (
           <div className="space-y-6">
-            <div className="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-5 space-y-3">
-              <p className="text-blue-300 font-semibold text-sm">📋 Acepta los Términos de Bridge</p>
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-blue-400 animate-spin shrink-0" />
+                <p className="text-blue-300 font-semibold text-sm">Esperando que aceptes los Términos de Bridge...</p>
+              </div>
               <p className="text-slate-300 text-sm leading-relaxed">
-                Se abrió una ventana con los Términos de Servicio de Bridge. Acéptalos y regresa aquí para continuar.
+                Se abrió una ventana pequeña con los Términos de Servicio. Acéptalos y esta pantalla avanzará sola.
               </p>
-              <p className="text-slate-400 text-xs">Solo se hace una vez por empresa. Bridge es el proveedor financiero regulado que procesa la transferencia.</p>
+              <p className="text-slate-400 text-xs">Solo se hace una vez por empresa. Bridge es el proveedor financiero regulado.</p>
             </div>
             <button
               onClick={() => {
-                tosAccepted.current = true;
-                setStep("submitting");
-                setTimeout(() => setAutoRetry(true), 2000);
+                tosPopup.current = window.open(
+                  tosUrl, "bridge_tos",
+                  "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
+                );
               }}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
+              className="w-full text-blue-400 text-sm hover:text-blue-300 transition-colors py-2 border border-blue-500/20 rounded-xl"
             >
-              Ya acepté los Términos → Continuar
+              Abrir ventana de términos de nuevo
             </button>
-            <button
-              onClick={() => window.open(tosUrl, "_blank")}
-              className="w-full text-blue-400 text-sm hover:text-blue-300 transition-colors py-2"
-            >
-              Abrir términos de nuevo
-            </button>
-            <button onClick={() => { tosAccepted.current = false; setStep("form"); }} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
+            <button onClick={() => {
+              if (tosPollTimer.current) clearInterval(tosPollTimer.current);
+              if (tosPopup.current && !tosPopup.current.closed) tosPopup.current.close();
+              setStep("form");
+            }} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
               ← Volver al formulario
             </button>
           </div>
