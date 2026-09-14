@@ -78,7 +78,6 @@ export default function EnviarPage() {
   const [sandboxSimKyc, setSandboxSimKyc] = useState(false);
   const [kycPolling, setKycPolling]       = useState(false);
   const [kycLongReview, setKycLongReview] = useState(false);
-  const kycPollCount = useRef(0);
   const kycPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const kycPopup     = useRef<Window | null>(null);
   const [vaInfo, setVaInfo]               = useState<VaInfo | null>(null);
@@ -247,12 +246,8 @@ export default function EnviarPage() {
   // KYC polling — checks Bridge every 2 s while user does KYC in a separate tab
   useEffect(() => {
     if (!kycPolling || !kycCustomerId) return;
-    kycPollCount.current = 0;
     setKycLongReview(false);
     kycPollTimer.current = setInterval(async () => {
-      kycPollCount.current += 1;
-      if (kycPollCount.current >= 20) setKycLongReview(true); // ~40 s
-
       // Same-origin detection: Bridge redirects popup to our domain after KYC
       try {
         const href = kycPopup.current?.location?.href ?? "";
@@ -267,12 +262,16 @@ export default function EnviarPage() {
 
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
-        const data = await res.json() as { approved?: boolean };
+        const data = await res.json() as { approved?: boolean; status?: string };
         if (data.approved) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycPolling(false);
           setAutoRetry(true);
+        } else if (data.status === "under_review" || data.status === "pending") {
+          // Only show long-review message when popup is closed (user finished submitting)
+          // If popup is still open, they may still be filling in the Persona form
+          if (!kycPopup.current || kycPopup.current.closed) setKycLongReview(true);
         }
       } catch { /* ignore — keep polling */ }
     }, 2000);
@@ -826,9 +825,21 @@ export default function EnviarPage() {
                     <p className="text-slate-400 text-xs">Completa la verificación en la ventana que se abrió. Esta pantalla avanzará sola cuando Bridge confirme tu identidad.</p>
                   </div>
                 ) : (
-                  <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 text-center space-y-3">
-                    <p className="text-amber-300 font-semibold text-sm">Tu documento está en validación rápida</p>
-                    <p className="text-slate-300 text-xs leading-relaxed">Bridge está revisando tu identidad. Te notificaremos cuando quede listo para continuar tu envío.<br/>No cierres esta pestaña — avanzará automáticamente.</p>
+                  <div className="space-y-3">
+                    <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 text-center space-y-2">
+                      <p className="text-amber-300 font-semibold text-sm">Tu documento está en validación</p>
+                      <p className="text-slate-300 text-xs leading-relaxed">Bridge está revisando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.<br/>No cierres esta pestaña.</p>
+                    </div>
+                    {kycUrl && (
+                      <button
+                        onClick={() => {
+                          kycPopup.current = window.open(kycUrl, "bridge_kyc", "width=520,height=700,left=200,top=80,resizable=yes,scrollbars=yes");
+                        }}
+                        className="w-full text-slate-400 text-sm hover:text-white border border-slate-700/40 rounded-xl py-2 transition-colors"
+                      >
+                        Reabrir verificación →
+                      </button>
+                    )}
                   </div>
                 )}
                 <button
@@ -836,6 +847,16 @@ export default function EnviarPage() {
                   className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2"
                 >
                   ← Volver al formulario
+                </button>
+                <button
+                  onClick={() => {
+                    setKycPolling(false); setKycLongReview(false);
+                    setTosCustomerId(""); setKycCustomerId(""); setKycUrl(""); setTosUrl("");
+                    setSenderEmail(""); setStep("form");
+                  }}
+                  className="w-full text-red-500/60 text-xs hover:text-red-400 transition-colors py-1"
+                >
+                  Reiniciar prueba (nuevo usuario)
                 </button>
               </div>
             ) : kycUrl ? (

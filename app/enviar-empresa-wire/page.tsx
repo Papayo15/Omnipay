@@ -83,7 +83,6 @@ export default function EnviarEmpresaWirePage() {
   const [sandboxSimKyb, setSandboxSimKyb] = useState(false);
   const [kybPolling, setKybPolling]       = useState(false);
   const [kybLongReview, setKybLongReview] = useState(false);
-  const kybPollCount = useRef(0);
   const kybPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const kybPopup     = useRef<Window | null>(null);
 
@@ -194,11 +193,8 @@ export default function EnviarEmpresaWirePage() {
   // also detects same-origin redirect (Bridge sends user back after Persona)
   useEffect(() => {
     if (!kybPolling || !kybCustomerId) return;
-    kybPollCount.current = 0;
     setKybLongReview(false);
     kybPollTimer.current = setInterval(async () => {
-      kybPollCount.current += 1;
-      if (kybPollCount.current >= 20) setKybLongReview(true); // ~40 s
       // Detect same-origin redirect from Bridge after KYB completion
       try {
         const href = kybPopup.current?.location?.href ?? "";
@@ -210,12 +206,14 @@ export default function EnviarEmpresaWirePage() {
       } catch { /* cross-origin */ }
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kybCustomerId}`);
-        const data = await res.json() as { approved?: boolean };
+        const data = await res.json() as { approved?: boolean; status?: string };
         if (data.approved) {
           if (kybPollTimer.current) clearInterval(kybPollTimer.current);
           if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
           setKybPolling(false);
           setAutoRetry(true);
+        } else if (data.status === "under_review" || data.status === "pending") {
+          if (!kybPopup.current || kybPopup.current.closed) setKybLongReview(true);
         }
       } catch { /* keep polling */ }
     }, 2000);
