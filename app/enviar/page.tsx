@@ -238,9 +238,9 @@ export default function EnviarPage() {
         const data = await res.json() as { accepted?: boolean; not_found?: boolean };
         if (data.accepted) { finish(); return; }
         if (data.not_found) {
-          // Stale customer_id — clear it so next handleSubmit creates a fresh customer
+          // Stale customer_id — just stop polling. Keep tosCustomerId so "Ya acepté" button
+          // still sends it to the backend, which uses email-fallback if the ID 404s.
           if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
-          setTosCustomerId("");
         }
       } catch { /* keep polling */ }
     }, 2000);
