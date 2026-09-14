@@ -269,9 +269,9 @@ export default function EnviarPage() {
           setKycPolling(false);
           setAutoRetry(true);
         } else if (data.status === "under_review" || data.status === "pending") {
-          // Only show long-review message when popup is closed (user finished submitting)
-          // If popup is still open, they may still be filling in the Persona form
-          if (!kycPopup.current || kycPopup.current.closed) setKycLongReview(true);
+          // Bridge received the submission — close popup automatically and show review message
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycLongReview(true);
         }
       } catch { /* ignore — keep polling */ }
     }, 2000);
@@ -825,21 +825,9 @@ export default function EnviarPage() {
                     <p className="text-slate-400 text-xs">Completa la verificación en la ventana que se abrió. Esta pantalla avanzará sola cuando Bridge confirme tu identidad.</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 text-center space-y-2">
-                      <p className="text-amber-300 font-semibold text-sm">Tu documento está en validación</p>
-                      <p className="text-slate-300 text-xs leading-relaxed">Bridge está revisando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.<br/>No cierres esta pestaña.</p>
-                    </div>
-                    {kycUrl && (
-                      <button
-                        onClick={() => {
-                          kycPopup.current = window.open(kycUrl, "bridge_kyc", "width=520,height=700,left=200,top=80,resizable=yes,scrollbars=yes");
-                        }}
-                        className="w-full text-slate-400 text-sm hover:text-white border border-slate-700/40 rounded-xl py-2 transition-colors"
-                      >
-                        Reabrir verificación →
-                      </button>
-                    )}
+                  <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 text-center space-y-2">
+                    <p className="text-amber-300 font-semibold text-sm">Tu documento está en validación</p>
+                    <p className="text-slate-300 text-xs leading-relaxed">Bridge está revisando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.<br/>No cierres esta pestaña.</p>
                   </div>
                 )}
                 <button

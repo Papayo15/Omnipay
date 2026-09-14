@@ -332,7 +332,8 @@ export default function PagarPage() {
           kycAutoRetryRef.current = true;
           handleSubmit();
         } else if (data.status === "under_review" || data.status === "pending") {
-          if (!kycPopup.current || kycPopup.current.closed) setKycLongReview(true);
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycLongReview(true);
         }
       } catch { /* keep polling */ }
     }, 2000);

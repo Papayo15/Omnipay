@@ -213,7 +213,8 @@ export default function EnviarEmpresaWirePage() {
           setKybPolling(false);
           setAutoRetry(true);
         } else if (data.status === "under_review" || data.status === "pending") {
-          if (!kybPopup.current || kybPopup.current.closed) setKybLongReview(true);
+          if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
+          setKybLongReview(true);
         }
       } catch { /* keep polling */ }
     }, 2000);
