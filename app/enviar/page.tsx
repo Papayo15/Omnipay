@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Zap, ArrowLeft, Send, Copy, Check, AlertCircle, Loader2, CheckCircle } from "lucide-react";
 import { SEPA_COUNTRIES } from "@/lib/wise-accounts";
 
-type Step = "form" | "sending" | "kyc" | "instructions" | "error";
+type Step = "form" | "sending" | "tos" | "kyc" | "instructions" | "error";
 
 interface VaInfo {
   bank_name?:      string | null;
@@ -68,6 +68,7 @@ export default function EnviarPage() {
   const [amountTarget, setAmountTarget]         = useState("");
 
   // Post-submit state
+  const [tosUrl, setTosUrl]               = useState("");
   const [kycUrl, setKycUrl]               = useState("");
   const [kycCustomerId, setKycCustomerId] = useState("");
   const [isSandboxKyc, setIsSandboxKyc]   = useState(false);
@@ -274,12 +275,13 @@ export default function EnviarPage() {
       };
 
       if (data.needs_tos && data.tos_url) {
-        // Save form state before redirecting to Bridge ToS
         sessionStorage.setItem("enviar_form_state", JSON.stringify({
           senderName, senderEmail, senderCurrency,
           recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
         }));
-        window.location.href = data.tos_url;
+        setTosUrl(data.tos_url);
+        window.open(data.tos_url, "_blank");
+        setStep("tos");
         return;
       }
 
@@ -622,6 +624,34 @@ export default function EnviarPage() {
             <Zap className="w-10 h-10 text-[#00C9C8] animate-pulse" />
             <p className="text-white font-semibold">{t("checking")}</p>
             <p className="text-slate-400 text-sm text-center">{t("checking_sub")}</p>
+          </div>
+        )}
+
+        {/* ToS — Bridge terms of service, opens in new tab */}
+        {step === "tos" && (
+          <div className="space-y-6">
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-5 space-y-3">
+              <p className="text-blue-300 font-semibold text-sm">📋 Acepta los Términos de Bridge</p>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Se abrió una ventana con los Términos de Servicio de Bridge. Acéptalos y regresa aquí para continuar.
+              </p>
+              <p className="text-slate-400 text-xs">Solo se hace una vez. Bridge es el proveedor financiero regulado que procesa la transferencia.</p>
+            </div>
+            <button
+              onClick={() => { setAutoRetry(true); setStep("sending"); }}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
+            >
+              Ya acepté los Términos → Continuar
+            </button>
+            <button
+              onClick={() => window.open(tosUrl, "_blank")}
+              className="w-full text-blue-400 text-sm hover:text-blue-300 transition-colors py-2"
+            >
+              Abrir términos de nuevo
+            </button>
+            <button onClick={() => setStep("form")} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
+              ← Volver al formulario
+            </button>
           </div>
         )}
 

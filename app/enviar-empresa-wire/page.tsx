@@ -24,7 +24,7 @@ const BRIDGE_COUNTRIES = [
   { code: "SE", flag: "🇸🇪", rail: "SEPA" },
 ];
 
-type Step = "form" | "submitting" | "kyb" | "instructions" | "error";
+type Step = "form" | "submitting" | "tos" | "kyb" | "instructions" | "error";
 
 interface VaInfo {
   bank_name?:      string | null;
@@ -88,6 +88,7 @@ export default function EnviarEmpresaWirePage() {
   const [targetCurrency, setTargetCurrency]     = useState("MXN");
   const [destinationRail, setDestinationRail]   = useState("");
   const [orderId, setOrderId]             = useState("");
+  const [tosUrl, setTosUrl]               = useState("");
   const [sandboxDone, setSandboxDone]         = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
   const [showSandboxBtn, setShowSandboxBtn]   = useState(false);
@@ -194,7 +195,9 @@ export default function EnviarEmpresaWirePage() {
           senderBusinessName, senderEmail, sourceCurrency,
           recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
         }));
-        window.location.href = data.tos_url;
+        setTosUrl(data.tos_url);
+        window.open(data.tos_url, "_blank");
+        setStep("tos");
         return;
       }
 
@@ -444,6 +447,34 @@ export default function EnviarEmpresaWirePage() {
             <Zap className="w-10 h-10 text-[#00C9C8] animate-pulse" />
             <p className="text-white font-semibold">{t("creating_account")}</p>
             <p className="text-slate-400 text-sm text-center">{t("creating_account_sub")}</p>
+          </div>
+        )}
+
+        {/* ToS — Bridge terms of service, opens in new tab */}
+        {step === "tos" && (
+          <div className="space-y-6">
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-5 space-y-3">
+              <p className="text-blue-300 font-semibold text-sm">📋 Acepta los Términos de Bridge</p>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Se abrió una ventana con los Términos de Servicio de Bridge. Acéptalos y regresa aquí para continuar.
+              </p>
+              <p className="text-slate-400 text-xs">Solo se hace una vez por empresa. Bridge es el proveedor financiero regulado que procesa la transferencia.</p>
+            </div>
+            <button
+              onClick={() => { setAutoRetry(true); setStep("submitting"); }}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
+            >
+              Ya acepté los Términos → Continuar
+            </button>
+            <button
+              onClick={() => window.open(tosUrl, "_blank")}
+              className="w-full text-blue-400 text-sm hover:text-blue-300 transition-colors py-2"
+            >
+              Abrir términos de nuevo
+            </button>
+            <button onClick={() => setStep("form")} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
+              ← Volver al formulario
+            </button>
           </div>
         )}
 
