@@ -137,7 +137,7 @@ export default function EnviarPage() {
   const quoteReady     = !!feeQuote && !feeLoading && !quoteBelowMin;
 
   const buildBody = useCallback(() => {
-    const base = {
+    const base: Record<string, unknown> = {
       sender_name:       senderName.trim(),
       sender_email:      senderEmail.trim().toLowerCase(),
       source_currency:   senderCurrency.toLowerCase(),
@@ -146,12 +146,16 @@ export default function EnviarPage() {
       amount_target:     parseFloat(amountTarget),
       redirect_uri:      `${window.location.origin}/enviar?kyc_done=1`,
     };
+    // Pass existing customer ID on retries so the route skips Bridge's eventually-consistent
+    // email lookup — prevents a duplicate customer creation that re-triggers the ToS gate.
+    if (tosCustomerId) base.existing_customer_id = tosCustomerId;
+    else if (kycCustomerId) base.existing_customer_id = kycCustomerId;
     if (recipientCountry === "MX") return { ...base, clabe: accountField.trim() };
     if (recipientCountry === "GB") return { ...base, sort_code: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
     if (isSepa) return { ...base, iban: accountField.trim(), bic: bicField.trim() };
     if (recipientCountry === "US") return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
     return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
-  }, [senderName, senderEmail, senderCurrency, recipientName, recipientCountry, accountField, routingField, bicField, amountTarget, isSepa]);
+  }, [senderName, senderEmail, senderCurrency, recipientName, recipientCountry, accountField, routingField, bicField, amountTarget, isSepa, tosCustomerId, kycCustomerId]);
 
   // Fee preview: debounce 600ms — fetch when amount/country/senderCurrency changes
   useEffect(() => {

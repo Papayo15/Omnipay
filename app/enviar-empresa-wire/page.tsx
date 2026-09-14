@@ -205,7 +205,7 @@ export default function EnviarEmpresaWirePage() {
   }, [kybPolling, kybCustomerId]);
 
   const buildBody = useCallback(() => {
-    const base = {
+    const base: Record<string, unknown> = {
       sender_business_name:    senderBusinessName.trim(),
       sender_email:            senderEmail.trim().toLowerCase(),
       source_currency:         sourceCurrency.toLowerCase(),
@@ -214,13 +214,15 @@ export default function EnviarEmpresaWirePage() {
       amount_target:           parseFloat(amount),
       redirect_uri:            `${window.location.origin}/enviar-empresa-wire?kyb_done=1`,
     };
+    if (tosCustomerId) base.existing_customer_id = tosCustomerId;
+    else if (kybCustomerId) base.existing_customer_id = kybCustomerId;
     if (recipientCountry === "MX") return { ...base, clabe: accountField.trim() };
     if (recipientCountry === "GB") return { ...base, sort_code: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
     if (isSepa) return { ...base, iban: accountField.trim(), bic: bicField.trim() };
     if (recipientCountry === "CO") return { ...base, account_number: accountField.trim() };
     if (recipientCountry === "US") return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
     return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
-  }, [senderBusinessName, senderEmail, sourceCurrency, recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount, isSepa]);
+  }, [senderBusinessName, senderEmail, sourceCurrency, recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount, isSepa, tosCustomerId, kybCustomerId]);
 
   const handleSubmit = useCallback(async () => {
     setStep("submitting");

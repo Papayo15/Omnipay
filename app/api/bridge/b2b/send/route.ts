@@ -57,6 +57,7 @@ interface B2BSendBody {
   bank_name?:           string;
   bank_code?:           string;
   amount_target:        number;
+  existing_customer_id?: string;
 }
 
 const SEPA_SET_B2B = new Set(["DE","FR","ES","IT","NL","PT","BE","AT","IE","FI","GR","CY","EE","LV","LT","LU","MT","SK","SI","HR","SE","DK","NO","PL","CZ","HU","RO","BG","CH","IS","LI","AD","MC","SM","XK","VA"]);
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     recipient_business_name, recipient_country,
     clabe, iban, bic, pix_key, routing_number, account_number,
     sort_code, bank_name, bank_code,
-    amount_target,
+    amount_target, existing_customer_id,
   } = body;
 
   if (!sender_business_name || !sender_email || !source_currency || !recipient_business_name || !recipient_country || !amount_target) {
@@ -117,14 +118,30 @@ export async function POST(req: NextRequest): Promise<Response> {
       );
     }
 
-    // 1. Get or create Bridge business customer for the SENDER
-    const { customer: senderCustomer, needsKyc: needsKyb, isNew } = await getOrCreateCustomer({
-      type:          "business",
-      email:         sender_email.toLowerCase(),
-      business_name: sender_business_name,
-      country:       ALPHA2_TO_ALPHA3[CURRENCY_TO_COUNTRY[source_currency] ?? "US"] ?? "USA",
-      endorsements:  B2B_ENDORSEMENTS,
-    });
+    // 1. Get or create Bridge business customer for the SENDER.
+    //    Pass existing_customer_id on retries to bypass Bridge list-endpoint eventual consistency.
+    let senderCustomer: Awaited<ReturnType<typeof getOrCreateCustomer>>["customer"];
+    let needsKyb: boolean;
+    let isNew: boolean;
+    if (existing_customer_id) {
+      const c  = await getCustomer(existing_customer_id);
+      const c2 = c as unknown as Record<string, unknown>;
+      const kybApproved = c2.kyb_status === "approved";
+      senderCustomer = c;
+      needsKyb       = !kybApproved;
+      isNew          = false;
+    } else {
+      const result = await getOrCreateCustomer({
+        type:          "business",
+        email:         sender_email.toLowerCase(),
+        business_name: sender_business_name,
+        country:       ALPHA2_TO_ALPHA3[CURRENCY_TO_COUNTRY[source_currency] ?? "US"] ?? "USA",
+        endorsements:  B2B_ENDORSEMENTS,
+      });
+      senderCustomer = result.customer;
+      needsKyb       = result.needsKyc;
+      isNew          = result.isNew;
+    }
 
     const senderCountry = CURRENCY_TO_COUNTRY[source_currency] ?? "US";
     try {

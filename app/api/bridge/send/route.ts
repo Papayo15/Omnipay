@@ -59,6 +59,8 @@ interface SendBody {
   bank_code?:        string;
   document_number?:  string;
   amount_target:     number;
+  // Optional: sent on retry after ToS/KYC to bypass Bridge list-endpoint eventual consistency
+  existing_customer_id?: string;
 }
 
 const SEPA_SET = new Set(["DE","FR","ES","IT","NL","PT","BE","AT","IE","FI","GR","CY","EE","LV","LT","LU","MT","SK","SI","HR","SE","DK","NO","PL","CZ","HU","RO","BG","CH","IS","LI","AD","MC","SM","XK","VA"]);
@@ -85,7 +87,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     recipient_name, recipient_country,
     clabe, iban, bic, pix_key, routing_number, account_number,
     sort_code, bank_code, document_number,
-    amount_target,
+    amount_target, existing_customer_id,
   } = body;
 
   if (!sender_name || !sender_email || !source_currency || !recipient_name || !recipient_country || !amount_target) {
@@ -119,15 +121,35 @@ export async function POST(req: NextRequest): Promise<Response> {
       return NextResponse.json({ error: "El monto mínimo de envío es $20 USD equivalente." }, { status: 400 });
     }
 
-    // 1. Get or create Bridge individual customer for the SENDER
-    const { customer: senderCustomer, needsKyc, isNew: isSenderNew } = await getOrCreateCustomer({
-      type:        "individual",
-      email:       sender_email.toLowerCase(),
-      first_name:  sender_name.split(" ")[0],
-      last_name:   sender_name.split(" ").slice(1).join(" ") || "-",
-      country:     ALPHA2_TO_ALPHA3[CURRENCY_TO_COUNTRY[source_currency] ?? "US"] ?? "USA",
-      endorsements: ENDORSEMENTS,
-    });
+    // 1. Get or create Bridge individual customer for the SENDER.
+    //    On retry (after ToS/KYC), pass existing_customer_id to bypass Bridge's list-endpoint
+    //    eventual consistency lag — otherwise findCustomerByEmail can return null for a customer
+    //    that was just created, causing getOrCreateCustomer to spin up a duplicate and re-trigger
+    //    the ToS gate.
+    let senderCustomer: Awaited<ReturnType<typeof getOrCreateCustomer>>["customer"];
+    let needsKyc: boolean;
+    let isSenderNew: boolean;
+    if (existing_customer_id) {
+      const c = await getCustomer(existing_customer_id);
+      const c2 = c as unknown as Record<string, unknown>;
+      const kycApproved = c.status === "active" || c.status === "approved"
+        || c2.kyc_status === "approved";
+      senderCustomer = c;
+      needsKyc       = !kycApproved;
+      isSenderNew    = false; // already exists — skip ToS gate
+    } else {
+      const result = await getOrCreateCustomer({
+        type:        "individual",
+        email:       sender_email.toLowerCase(),
+        first_name:  sender_name.split(" ")[0],
+        last_name:   sender_name.split(" ").slice(1).join(" ") || "-",
+        country:     ALPHA2_TO_ALPHA3[CURRENCY_TO_COUNTRY[source_currency] ?? "US"] ?? "USA",
+        endorsements: ENDORSEMENTS,
+      });
+      senderCustomer = result.customer;
+      needsKyc       = result.needsKyc;
+      isSenderNew    = result.isNew;
+    }
 
     const senderCountry = CURRENCY_TO_COUNTRY[source_currency] ?? "US";
     try { await patchCustomerAddress(senderCustomer.id, senderCountry, true); } catch { /* best-effort */ }
