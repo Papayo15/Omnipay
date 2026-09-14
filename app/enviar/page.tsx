@@ -238,9 +238,8 @@ export default function EnviarPage() {
         const data = await res.json() as { accepted?: boolean; not_found?: boolean };
         if (data.accepted) { finish(); return; }
         if (data.not_found) {
-          // Stale customer_id — just stop polling. Keep tosCustomerId so "Ya acepté" button
-          // still sends it to the backend, which uses email-fallback if the ID 404s.
-          if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
+          // Bridge eventual consistency — customer may not be propagated yet; keep polling silently.
+          // Don't clear tosCustomerId — the backend uses email-fallback when this ID 404s.
         }
       } catch { /* keep polling */ }
     }, 2000);
@@ -277,9 +276,7 @@ export default function EnviarPage() {
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycLongReview(true);
         } else if (data.not_found) {
-          // Stale customer_id — clear it so next submit creates a fresh customer
-          if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
-          setKycPolling(false); setKycCustomerId(""); setStep("form");
+          // Bridge eventual consistency — keep polling silently; don't reset to form.
         }
       } catch { /* ignore — keep polling */ }
     }, 2000);
@@ -741,21 +738,24 @@ export default function EnviarPage() {
               </p>
               <p className="text-slate-400 text-xs">Solo se hace una vez. Después de aceptar esta pantalla avanzará sola.</p>
             </div>
-            <button
-              onClick={() => {
-                tosPopup.current = window.open(
-                  tosUrl, "bridge_tos",
-                  "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
-                );
-              }}
-              className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
-            >
-              Abrir Términos de Bridge
-            </button>
             <div className="flex items-center gap-2 text-slate-500 text-xs">
               <Loader2 className="w-3 h-3 animate-spin shrink-0" />
-              <span>Verificando automáticamente cada 3 s…</span>
+              <span>Verificando automáticamente…</span>
             </div>
+            {/* Fallback: only shown if popup was blocked by the browser */}
+            {(!tosPopup.current || tosPopup.current.closed) && tosUrl && (
+              <button
+                onClick={() => {
+                  tosPopup.current = window.open(
+                    tosUrl, "bridge_kyc_tos",
+                    "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
+                  );
+                }}
+                className="text-blue-400 text-sm underline text-center"
+              >
+                ¿El popup fue bloqueado? Haz clic aquí para abrirlo
+              </button>
+            )}
             <button
               onClick={() => {
                 if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
