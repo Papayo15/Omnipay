@@ -205,11 +205,11 @@ export default function EnviarPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-retry after form restore
+  // Auto-retry after form restore or ToS/KYC completion
   useEffect(() => {
     if (!autoRetry) return;
     setAutoRetry(false);
-    handleSubmit();
+    handleSubmit(true); // isAutoRetry=true: no popup opened (no user gesture here)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRetry]);
 
@@ -297,15 +297,14 @@ export default function EnviarPage() {
     return () => { active = false; if (timer) clearTimeout(timer); };
   }, [step, orderId, sandboxDone]);
 
-  // placeholder so the next useEffect block is unchanged
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async (isAutoRetry = false) => {
     setError("");
     setStep("sending");
-    // Open a placeholder popup NOW (synchronous, inside user gesture) so the browser
-    // doesn't block it later when we try to navigate it to the ToS/KYC URL after the fetch.
-    // Only open one if there isn't already an open popup (e.g., retry after form restore).
+    // Open placeholder popup BEFORE the fetch — only when called from a direct user click
+    // (isAutoRetry=false). Auto-retry calls come from useEffect, not a user gesture, so
+    // window.open() would be blocked silently; skip it and let the KYC/ToS step UI handle it.
     let prePopup: Window | null = null;
-    if (!tosPopup.current || tosPopup.current.closed) {
+    if (!isAutoRetry && (!tosPopup.current || tosPopup.current.closed)) {
       prePopup = window.open(
         "about:blank", "bridge_kyc_tos",
         "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
@@ -331,12 +330,13 @@ export default function EnviarPage() {
         }));
         setTosUrl(data.tos_url);
         if (data.customer_id) setTosCustomerId(data.customer_id);
-        // Navigate the pre-popup (already open, not blocked) to the ToS URL
+        // Navigate pre-popup to ToS URL (or open from button if auto-retry — see ToS step JSX)
         if (prePopup && !prePopup.closed) {
           prePopup.location.href = data.tos_url;
           tosPopup.current = prePopup;
           prePopup = null;
         } else if (!tosPopup.current || tosPopup.current.closed) {
+          // This will be blocked on auto-retry — that's OK, the ToS step has a button for it
           tosPopup.current = window.open(
             data.tos_url, "bridge_kyc_tos",
             "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
@@ -359,16 +359,17 @@ export default function EnviarPage() {
         setKycUrl(kycUrl2);
         setKycCustomerId((data as Record<string, unknown>).customer_id as string ?? "");
         setIsSandboxKyc(!!(data as Record<string, unknown>).is_sandbox);
-        // Navigate the pre-popup (already open) to the KYC URL
+        // Navigate pre-popup to KYC URL only if we actually have one open (user gesture context).
+        // On auto-retry there's no pre-popup; the KYC step JSX shows an "Abrir KYC" button instead.
+        let kycPopupOpened = false;
         if (prePopup && !prePopup.closed && kycUrl2) {
           prePopup.location.href = kycUrl2;
           kycPopup.current = prePopup;
           prePopup = null;
-        } else if (kycUrl2) {
-          kycPopup.current = window.open(kycUrl2, "bridge_kyc_tos",
-            "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes");
+          kycPopupOpened = true;
         }
-        setKycPolling(true);
+        // Only start polling if a popup is actually open — otherwise the KYC button starts it
+        if (kycPopupOpened) setKycPolling(true);
         setStep("kyc");
         return;
       }
@@ -737,7 +738,9 @@ export default function EnviarPage() {
               onClick={() => {
                 if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
                 if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
-                setAutoRetry(true);
+                // Direct button click = user gesture → call handleSubmit(false) so KYC popup
+                // can auto-open from this gesture context (avoids the isAutoRetry path)
+                handleSubmit(false);
               }}
               className="w-full text-slate-400 text-sm hover:text-slate-200 transition-colors py-2 border border-slate-700/40 rounded-xl"
             >

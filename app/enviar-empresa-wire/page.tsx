@@ -159,7 +159,7 @@ export default function EnviarEmpresaWirePage() {
   useEffect(() => {
     if (!autoRetry) return;
     setAutoRetry(false);
-    handleSubmit();
+    handleSubmit(true); // isAutoRetry=true: no popup (no user gesture in useEffect)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRetry]);
 
@@ -243,12 +243,12 @@ export default function EnviarEmpresaWirePage() {
     return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
   }, [senderBusinessName, senderEmail, sourceCurrency, recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount, isSepa, tosCustomerId, kybCustomerId]);
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async (isAutoRetry = false) => {
     setStep("submitting");
     setError("");
-    // Open placeholder popup before the fetch (user gesture context) so browser won't block it.
+    // Only open pre-popup from direct user gesture (not auto-retry useEffect — no gesture there)
     let prePopup: Window | null = null;
-    if (!tosPopup.current || tosPopup.current.closed) {
+    if (!isAutoRetry && (!tosPopup.current || tosPopup.current.closed)) {
       prePopup = window.open(
         "about:blank", "bridge_kyc_tos",
         "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
@@ -574,7 +574,8 @@ export default function EnviarEmpresaWirePage() {
               onClick={() => {
                 if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
                 if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
-                setAutoRetry(true);
+                // Button click = user gesture → handleSubmit(false) so KYB popup can auto-open
+                handleSubmit(false);
               }}
               className="w-full text-slate-400 text-sm hover:text-slate-200 transition-colors py-2 border border-slate-700/40 rounded-xl"
             >
