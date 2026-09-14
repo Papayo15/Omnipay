@@ -198,7 +198,7 @@ export default function EnviarEmpresaWirePage() {
     setKybLongReview(false);
     kybPollTimer.current = setInterval(async () => {
       kybPollCount.current += 1;
-      if (kybPollCount.current >= 8) setKybLongReview(true);
+      if (kybPollCount.current >= 20) setKybLongReview(true); // ~40 s
       // Detect same-origin redirect from Bridge after KYB completion
       try {
         const href = kybPopup.current?.location?.href ?? "";
@@ -249,9 +249,8 @@ export default function EnviarEmpresaWirePage() {
     // Only open pre-popup when resuming mid-flow (tosCustomerId or kybCustomerId is set)
     // and when called from a direct user click (not from useEffect — no gesture there).
     // This avoids a blank-popup flash for already-registered users.
-    const isResumingFlow = !!(tosCustomerId || kybCustomerId);
     let prePopup: Window | null = null;
-    if (!isAutoRetry && isResumingFlow && (!tosPopup.current || tosPopup.current.closed)) {
+    if (!isAutoRetry && (!tosPopup.current || tosPopup.current.closed)) {
       prePopup = window.open(
         "about:blank", "bridge_kyc_tos",
         "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",

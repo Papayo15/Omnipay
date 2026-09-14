@@ -251,7 +251,20 @@ export default function EnviarPage() {
     setKycLongReview(false);
     kycPollTimer.current = setInterval(async () => {
       kycPollCount.current += 1;
-      if (kycPollCount.current >= 8) setKycLongReview(true); // ~16 s
+      if (kycPollCount.current >= 20) setKycLongReview(true); // ~40 s
+
+      // Same-origin detection: Bridge redirects popup to our domain after KYC
+      try {
+        const href = kycPopup.current?.location?.href ?? "";
+        if (href && href !== "about:blank" && new URL(href).origin === window.location.origin) {
+          if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycPolling(false);
+          setAutoRetry(true);
+          return;
+        }
+      } catch { /* still cross-origin — ignore */ }
+
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
         const data = await res.json() as { approved?: boolean };
@@ -304,9 +317,8 @@ export default function EnviarPage() {
     // after ToS/KYC — tosCustomerId or kycCustomerId is set). This avoids a blank popup
     // flash for already-registered users whose request succeeds on the first try.
     // Auto-retry calls (isAutoRetry=true) come from useEffect — no user gesture, skip it.
-    const isResumingFlow = !!(tosCustomerId || kycCustomerId);
     let prePopup: Window | null = null;
-    if (!isAutoRetry && isResumingFlow && (!tosPopup.current || tosPopup.current.closed)) {
+    if (!isAutoRetry && (!tosPopup.current || tosPopup.current.closed)) {
       prePopup = window.open(
         "about:blank", "bridge_kyc_tos",
         "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
