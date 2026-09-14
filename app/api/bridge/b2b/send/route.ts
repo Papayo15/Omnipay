@@ -216,12 +216,14 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // 6. Create External Account + Liquidation Address under SENDER's customer.
     //    ownerName = recipient business name for the bank transfer beneficiary on payout.
+    let actualRail = getRailForCountry(country);
     const liqParams: CreateLiquidationParams = {
       customerId:    senderCustomer.id,
       country,
       receiveMethod: "bank",
       ownerName:     recipient_business_name,
       ownerType:     "business",
+      rail:          actualRail,  // explicit — avoids NATIVE_RAILS module-load-time evaluation
       clabe, iban, bic, pixKey: pix_key,
       routingNumber: routing_number, accountNumber: account_number,
       bankName: bank_name, sortCode: sort_code, bankCode: bank_code,
@@ -238,7 +240,6 @@ export async function POST(req: NextRequest): Promise<Response> {
       || JSON.stringify((e as { details?: unknown })?.details ?? "").toLowerCase().includes("unsupported");
 
     let liqAddr: { id: string; address: string };
-    let actualRail = getRailForCountry(country);
     try {
       liqAddr = await createLiquidationAddress(liqParams);
     } catch (e1) {

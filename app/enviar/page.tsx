@@ -72,6 +72,10 @@ export default function EnviarPage() {
   const [kycCustomerId, setKycCustomerId] = useState("");
   const [isSandboxKyc, setIsSandboxKyc]   = useState(false);
   const [sandboxSimKyc, setSandboxSimKyc] = useState(false);
+  const [kycPolling, setKycPolling]       = useState(false);
+  const [kycLongReview, setKycLongReview] = useState(false);
+  const kycPollCount = useRef(0);
+  const kycPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [vaInfo, setVaInfo]               = useState<VaInfo | null>(null);
   const [orderId, setOrderId]             = useState("");
   const [confirmedAmount, setConfirmedAmount]   = useState(0);
@@ -167,6 +171,8 @@ export default function EnviarPage() {
   // Detect KYC return (?kyc_done=1) — restore form from sessionStorage and auto-retry
   useEffect(() => {
     if (searchParams.get("kyc_done") !== "1") return;
+    if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+    setKycPolling(false);
     const saved = sessionStorage.getItem("enviar_form_state");
     if (!saved) return;
     try {
@@ -197,6 +203,28 @@ export default function EnviarPage() {
     handleSubmit();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRetry]);
+
+  // KYC polling — checks Bridge every 2 s while user does KYC in a separate tab
+  useEffect(() => {
+    if (!kycPolling || !kycCustomerId) return;
+    kycPollCount.current = 0;
+    setKycLongReview(false);
+    kycPollTimer.current = setInterval(async () => {
+      kycPollCount.current += 1;
+      if (kycPollCount.current >= 8) setKycLongReview(true); // ~16 s
+      try {
+        const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
+        const data = await res.json() as { approved?: boolean };
+        if (data.approved) {
+          if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+          setKycPolling(false);
+          setAutoRetry(true);
+        }
+      } catch { /* ignore — keep polling */ }
+    }, 2000);
+    return () => { if (kycPollTimer.current) clearInterval(kycPollTimer.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kycPolling, kycCustomerId]);
 
   // Detect sandbox when entering instructions step
   useEffect(() => {
@@ -643,18 +671,42 @@ export default function EnviarPage() {
                 {sandboxSimKyc ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
                 {t("sandbox_simulate_kyc")}
               </button>
+            ) : kycPolling ? (
+              /* Polling screen — shown while user is in Bridge KYC tab */
+              <div className="space-y-4">
+                {!kycLongReview ? (
+                  <div className="bg-slate-800/60 border border-slate-600/40 rounded-2xl p-5 text-center space-y-3">
+                    <Loader2 className="w-8 h-8 text-[#00C9C8] animate-spin mx-auto" />
+                    <p className="text-white font-semibold text-sm">Verificando tu identidad en tiempo real...</p>
+                    <p className="text-slate-400 text-xs">Completa la verificación en la ventana que se abrió. Esta pantalla avanzará sola cuando Bridge confirme tu identidad.</p>
+                  </div>
+                ) : (
+                  <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 text-center space-y-3">
+                    <p className="text-amber-300 font-semibold text-sm">Tu documento está en validación rápida</p>
+                    <p className="text-slate-300 text-xs leading-relaxed">Bridge está revisando tu identidad. Te notificaremos cuando quede listo para continuar tu envío.<br/>No cierres esta pestaña — avanzará automáticamente.</p>
+                  </div>
+                )}
+                <button
+                  onClick={() => { setKycPolling(false); setKycLongReview(false); }}
+                  className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2"
+                >
+                  ← Volver al formulario
+                </button>
+              </div>
             ) : kycUrl ? (
-              <a
-                href={kycUrl}
+              <button
+                onClick={() => { window.open(kycUrl, "_blank"); setKycPolling(true); }}
                 className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
               >
                 {t("kyc_cta")}
-              </a>
+              </button>
             ) : null}
 
+            {!kycPolling && (
             <p className="text-slate-500 text-xs text-center leading-relaxed">
               {t("kyc_after")}
             </p>
+            )}
             <button onClick={() => setStep("form")} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
               ← {t("back")}
             </button>

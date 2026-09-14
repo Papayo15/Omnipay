@@ -710,6 +710,7 @@
     "kyc_title": "Verify your identity to continue",
     "kyc_body": "Our regulated provider (Bridge, FinCEN-registered MSB) needs to verify your identity. Takes 2–3 minutes and never repeats.",
     "kyc_cta": "Verify now →",
+    "kyc_done_fallback": "I already verified my identity — Continue →",
     "kyc_after": "Once verified, return here or wait for the automatic redirect.",
     "sandbox_simulate_kyc": "⚡ Simulate KYC (sandbox)",
     "sandbox_advance": "⚡ Simulate payment (sandbox)",

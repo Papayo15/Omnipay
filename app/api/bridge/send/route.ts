@@ -216,12 +216,14 @@ export async function POST(req: NextRequest): Promise<Response> {
     // 6. Create External Account + Liquidation Address under SENDER's customer.
     //    ownerName = recipient_name — this is the bank transfer beneficiary name on the payout.
     //    Bridge does not require ownerName to match the Bridge customer's KYC name.
+    let actualRail = getRailForCountry(country);
     const liqParams: CreateLiquidationParams = {
       customerId:    senderCustomer.id,
       country,
       receiveMethod: "bank",
       ownerName:     recipient_name,
       ownerType:     "individual",
+      rail:          actualRail,  // explicit — avoids NATIVE_RAILS module-load-time evaluation
       clabe, iban, bic, pixKey: pix_key,
       routingNumber: routing_number, accountNumber: account_number,
       sortCode: sort_code, bankCode: bank_code, documentNumber: document_number,
@@ -238,7 +240,6 @@ export async function POST(req: NextRequest): Promise<Response> {
       || JSON.stringify((e as { details?: unknown })?.details ?? "").toLowerCase().includes("unsupported");
 
     let liqAddr: { id: string; address: string };
-    let actualRail = getRailForCountry(country);
     try {
       liqAddr = await createLiquidationAddress(liqParams);
     } catch (e1) {
