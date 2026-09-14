@@ -300,11 +300,13 @@ export default function EnviarPage() {
   const handleSubmit = useCallback(async (isAutoRetry = false) => {
     setError("");
     setStep("sending");
-    // Open placeholder popup BEFORE the fetch — only when called from a direct user click
-    // (isAutoRetry=false). Auto-retry calls come from useEffect, not a user gesture, so
-    // window.open() would be blocked silently; skip it and let the KYC/ToS step UI handle it.
+    // Open placeholder popup BEFORE the fetch only when we're already mid-flow (resuming
+    // after ToS/KYC — tosCustomerId or kycCustomerId is set). This avoids a blank popup
+    // flash for already-registered users whose request succeeds on the first try.
+    // Auto-retry calls (isAutoRetry=true) come from useEffect — no user gesture, skip it.
+    const isResumingFlow = !!(tosCustomerId || kycCustomerId);
     let prePopup: Window | null = null;
-    if (!isAutoRetry && (!tosPopup.current || tosPopup.current.closed)) {
+    if (!isAutoRetry && isResumingFlow && (!tosPopup.current || tosPopup.current.closed)) {
       prePopup = window.open(
         "about:blank", "bridge_kyc_tos",
         "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
