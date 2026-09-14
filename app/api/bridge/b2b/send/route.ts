@@ -124,12 +124,26 @@ export async function POST(req: NextRequest): Promise<Response> {
     let needsKyb: boolean;
     let isNew: boolean;
     if (existing_customer_id) {
-      const c  = await getCustomer(existing_customer_id);
-      const c2 = c as unknown as Record<string, unknown>;
-      const kybApproved = c2.kyb_status === "approved";
-      senderCustomer = c;
-      needsKyb       = !kybApproved;
-      isNew          = false;
+      try {
+        const c  = await getCustomer(existing_customer_id);
+        const c2 = c as unknown as Record<string, unknown>;
+        const kybApproved = c2.kyb_status === "approved";
+        senderCustomer = c;
+        needsKyb       = !kybApproved;
+        isNew          = false;
+      } catch {
+        // Fallback: ID lookup failed — use email lookup instead
+        const result = await getOrCreateCustomer({
+          type:          "business",
+          email:         sender_email.toLowerCase(),
+          business_name: sender_business_name,
+          country:       ALPHA2_TO_ALPHA3[CURRENCY_TO_COUNTRY[source_currency] ?? "US"] ?? "USA",
+          endorsements:  B2B_ENDORSEMENTS,
+        });
+        senderCustomer = result.customer;
+        needsKyb       = result.needsKyc;
+        isNew          = false; // Known customer — skip ToS gate
+      }
     } else {
       const result = await getOrCreateCustomer({
         type:          "business",

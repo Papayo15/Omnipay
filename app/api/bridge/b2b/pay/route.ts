@@ -99,11 +99,24 @@ export async function POST(req: NextRequest): Promise<Response> {
     let needsKyb: boolean;
     let isNew: boolean;
     if (existing_customer_id) {
-      const c  = await getCustomer(existing_customer_id);
-      const c2 = c as unknown as Record<string, unknown>;
-      senderCustomer = c;
-      needsKyb       = c2.kyb_status !== "approved";
-      isNew          = false;
+      try {
+        const c  = await getCustomer(existing_customer_id);
+        const c2 = c as unknown as Record<string, unknown>;
+        senderCustomer = c;
+        needsKyb       = c2.kyb_status !== "approved";
+        isNew          = false;
+      } catch {
+        // Fallback: ID lookup failed — use email lookup
+        const result = await getOrCreateCustomer({
+          type:          "business",
+          email:         sender_email.toLowerCase(),
+          business_name,
+          endorsements:  ["base", "sepa"],
+        });
+        senderCustomer = result.customer;
+        needsKyb       = result.needsKyc;
+        isNew          = false;
+      }
     } else {
       const result = await getOrCreateCustomer({
         type:          "business",

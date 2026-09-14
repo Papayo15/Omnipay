@@ -213,20 +213,33 @@ export default function EnviarPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRetry]);
 
-  // ToS polling — polls /api/bridge/tos-status every 3 s; when accepted, closes popup and retries
+  // ToS polling — polls /api/bridge/tos-status every 3 s; when accepted, closes popup and retries.
+  // Also detects when the popup navigates back to our domain (Bridge redirects after acceptance).
   useEffect(() => {
-    if (step !== "tos" || !tosCustomerId) return;
+    if (step !== "tos") return;
+    const finish = () => {
+      if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
+      if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
+      setAutoRetry(true);
+    };
     tosPollTimer.current = setInterval(async () => {
+      // Secondary check: if the popup has navigated to our origin (same-origin after Bridge redirect),
+      // we know Bridge accepted the ToS and redirected back. Reading location is safe on same origin.
+      try {
+        const href = tosPopup.current?.location?.href ?? "";
+        if (href && href !== "about:blank" && new URL(href).origin === window.location.origin) {
+          finish(); return;
+        }
+      } catch { /* still on Bridge's cross-origin page — ignore */ }
+
+      // Primary check: poll Bridge's tos_status via our API
+      if (!tosCustomerId) return;
       try {
         const res  = await fetch(`/api/bridge/tos-status?customer_id=${tosCustomerId}`);
         const data = await res.json() as { accepted?: boolean };
-        if (data.accepted) {
-          if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
-          if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
-          setAutoRetry(true);
-        }
+        if (data.accepted) finish();
       } catch { /* keep polling */ }
-    }, 3000);
+    }, 2000);
     return () => { if (tosPollTimer.current) clearInterval(tosPollTimer.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, tosCustomerId]);
@@ -288,6 +301,16 @@ export default function EnviarPage() {
   const handleSubmit = useCallback(async () => {
     setError("");
     setStep("sending");
+    // Open a placeholder popup NOW (synchronous, inside user gesture) so the browser
+    // doesn't block it later when we try to navigate it to the ToS/KYC URL after the fetch.
+    // Only open one if there isn't already an open popup (e.g., retry after form restore).
+    let prePopup: Window | null = null;
+    if (!tosPopup.current || tosPopup.current.closed) {
+      prePopup = window.open(
+        "about:blank", "bridge_kyc_tos",
+        "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
+      );
+    }
     try {
       const res = await fetch("/api/bridge/send", {
         method:  "POST",
@@ -308,10 +331,14 @@ export default function EnviarPage() {
         }));
         setTosUrl(data.tos_url);
         if (data.customer_id) setTosCustomerId(data.customer_id);
-        // Open as small popup so OmniPay stays visible in background
-        if (!tosPopup.current || tosPopup.current.closed) {
+        // Navigate the pre-popup (already open, not blocked) to the ToS URL
+        if (prePopup && !prePopup.closed) {
+          prePopup.location.href = data.tos_url;
+          tosPopup.current = prePopup;
+          prePopup = null;
+        } else if (!tosPopup.current || tosPopup.current.closed) {
           tosPopup.current = window.open(
-            data.tos_url, "bridge_tos",
+            data.tos_url, "bridge_kyc_tos",
             "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
           );
         }
@@ -321,20 +348,35 @@ export default function EnviarPage() {
       // ToS confirmed by tos-status poll — popup already closed by polling useEffect
       if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
       if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
+      if (prePopup && !prePopup.closed) { prePopup.close(); prePopup = null; }
 
       if (data.needs_kyc) {
         sessionStorage.setItem("enviar_form_state", JSON.stringify({
           senderName, senderEmail, senderCurrency,
           recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
         }));
-        setKycUrl(data.kyc_url ?? "");
+        const kycUrl2 = data.kyc_url ?? "";
+        setKycUrl(kycUrl2);
         setKycCustomerId((data as Record<string, unknown>).customer_id as string ?? "");
         setIsSandboxKyc(!!(data as Record<string, unknown>).is_sandbox);
+        // Navigate the pre-popup (already open) to the KYC URL
+        if (prePopup && !prePopup.closed && kycUrl2) {
+          prePopup.location.href = kycUrl2;
+          kycPopup.current = prePopup;
+          prePopup = null;
+        } else if (kycUrl2) {
+          kycPopup.current = window.open(kycUrl2, "bridge_kyc_tos",
+            "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes");
+        }
+        setKycPolling(true);
         setStep("kyc");
         return;
       }
 
-      if (!res.ok || data.error) { setError(data.error ?? "Error desconocido"); setStep("error"); return; }
+      if (!res.ok || data.error) {
+        if (prePopup && !prePopup.closed) prePopup.close();
+        setError(data.error ?? "Error desconocido"); setStep("error"); return;
+      }
 
       // Success — map deposit_instructions to VaInfo shape
       const di = (data.deposit_instructions ?? {}) as Record<string, string | null>;
@@ -356,7 +398,9 @@ export default function EnviarPage() {
       setDestinationRail((data as Record<string, unknown>).destination_rail as string ?? "");
       setOrderId(data.order_id ?? "");
       setStep("instructions");
+      if (prePopup && !prePopup.closed) prePopup.close();
     } catch {
+      if (prePopup && !prePopup.closed) prePopup.close();
       setError("Error de conexión. Verifica tu internet.");
       setStep("error");
     }

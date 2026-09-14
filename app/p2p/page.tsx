@@ -283,7 +283,8 @@ export default function P2PPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingKycRetry, nombre, email, account, amountLocal]);
 
-  // KYC polling — checks Bridge every 2 s while user does KYC in popup
+  // KYC polling — checks Bridge every 2 s while user does KYC in popup;
+  // also detects same-origin redirect (Bridge sends user back after Persona)
   useEffect(() => {
     if (!kycPolling || !kycCustomerId) return;
     kycPollCount.current = 0;
@@ -291,6 +292,15 @@ export default function P2PPage() {
     kycPollTimer.current = setInterval(async () => {
       kycPollCount.current += 1;
       if (kycPollCount.current >= 8) setKycLongReview(true);
+      // Detect same-origin redirect (Bridge/Persona sends user back to our domain)
+      try {
+        const href = kycPopup.current?.location?.href ?? "";
+        if (href && href !== "about:blank" && new URL(href).origin === window.location.origin) {
+          if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycPolling(false); kycAutoRetryRef.current = true; generateLink(); return;
+        }
+      } catch { /* cross-origin = still on Bridge/Persona */ }
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
         const data = await res.json() as { approved?: boolean };

@@ -130,13 +130,28 @@ export async function POST(req: NextRequest): Promise<Response> {
     let needsKyc: boolean;
     let isSenderNew: boolean;
     if (existing_customer_id) {
-      const c = await getCustomer(existing_customer_id);
-      const c2 = c as unknown as Record<string, unknown>;
-      const kycApproved = c.status === "active" || c.status === "approved"
-        || c2.kyc_status === "approved";
-      senderCustomer = c;
-      needsKyc       = !kycApproved;
-      isSenderNew    = false; // already exists — skip ToS gate
+      try {
+        const c = await getCustomer(existing_customer_id);
+        const c2 = c as unknown as Record<string, unknown>;
+        const kycApproved = c.status === "active" || c.status === "approved"
+          || c2.kyc_status === "approved";
+        senderCustomer = c;
+        needsKyc       = !kycApproved;
+        isSenderNew    = false; // already exists — skip ToS gate
+      } catch {
+        // Fallback: ID lookup failed (e.g., wrong env) — use email lookup instead
+        const result = await getOrCreateCustomer({
+          type:        "individual",
+          email:       sender_email.toLowerCase(),
+          first_name:  sender_name.split(" ")[0],
+          last_name:   sender_name.split(" ").slice(1).join(" ") || "-",
+          country:     ALPHA2_TO_ALPHA3[CURRENCY_TO_COUNTRY[source_currency] ?? "US"] ?? "USA",
+          endorsements: ENDORSEMENTS,
+        });
+        senderCustomer = result.customer;
+        needsKyc       = result.needsKyc;
+        isSenderNew    = false; // Known customer — skip ToS gate
+      }
     } else {
       const result = await getOrCreateCustomer({
         type:        "individual",

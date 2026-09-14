@@ -308,8 +308,8 @@ export default function PagarPage() {
     } catch { /* ignore */ }
   }, []);
 
-  // Track: poll Bridge order status every 10s while instructions are open
-  // KYC polling — checks Bridge every 2 s while user does KYC in popup
+  // KYC polling — checks Bridge every 2 s while user does KYC in popup;
+  // also detects same-origin redirect (Bridge/Persona sends user back after completion)
   useEffect(() => {
     if (!kycPolling || !kycCustomerId) return;
     kycPollCount.current = 0;
@@ -317,6 +317,15 @@ export default function PagarPage() {
     kycPollTimer.current = setInterval(async () => {
       kycPollCount.current += 1;
       if (kycPollCount.current >= 8) setKycLongReview(true);
+      // Detect same-origin redirect from Bridge/Persona after KYC completion
+      try {
+        const href = kycPopup.current?.location?.href ?? "";
+        if (href && href !== "about:blank" && new URL(href).origin === window.location.origin) {
+          if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycPolling(false); kycAutoRetryRef.current = true; handleSubmit(); return;
+        }
+      } catch { /* cross-origin = still on Bridge/Persona */ }
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
         const data = await res.json() as { approved?: boolean };

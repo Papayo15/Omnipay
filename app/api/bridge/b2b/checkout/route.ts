@@ -80,13 +80,28 @@ export async function POST(req: NextRequest): Promise<Response> {
     let isNew: boolean;
     let depositsRestricted: boolean | undefined;
     if (existing_customer_id) {
-      const c  = await getCustomer(existing_customer_id);
-      const c2 = c as unknown as Record<string, unknown>;
-      const kybApproved = c2.kyb_status === "approved";
-      customer           = c;
-      needsKyb           = !kybApproved;
-      isNew              = false;
-      depositsRestricted = c.status === "deposits_restricted";
+      try {
+        const c  = await getCustomer(existing_customer_id);
+        const c2 = c as unknown as Record<string, unknown>;
+        const kybApproved = c2.kyb_status === "approved";
+        customer           = c;
+        needsKyb           = !kybApproved;
+        isNew              = false;
+        depositsRestricted = c.status === "deposits_restricted";
+      } catch {
+        // Fallback: ID lookup failed — use email lookup
+        const result = await getOrCreateCustomer({
+          type:          "business",
+          email:         email.toLowerCase(),
+          business_name,
+          country:       ISO3_FROM_ALPHA2[country_upper] ?? "USA",
+          endorsements,
+        });
+        customer           = result.customer;
+        needsKyb           = result.needsKyc;
+        isNew              = false;
+        depositsRestricted = result.depositsRestricted;
+      }
     } else {
       const result = await getOrCreateCustomer({
         type:          "business",

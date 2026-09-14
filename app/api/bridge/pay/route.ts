@@ -111,13 +111,27 @@ export async function POST(req: NextRequest): Promise<Response> {
     let needsKyc: boolean;
     let isSenderNew: boolean;
     if (existing_customer_id) {
-      const c  = await getCustomer(existing_customer_id);
-      const c2 = c as unknown as Record<string, unknown>;
-      const kycApproved = c.status === "active" || c.status === "approved"
-        || c2.kyc_status === "approved";
-      senderCustomer = c;
-      needsKyc       = !kycApproved;
-      isSenderNew    = false;
+      try {
+        const c  = await getCustomer(existing_customer_id);
+        const c2 = c as unknown as Record<string, unknown>;
+        const kycApproved = c.status === "active" || c.status === "approved"
+          || c2.kyc_status === "approved";
+        senderCustomer = c;
+        needsKyc       = !kycApproved;
+        isSenderNew    = false;
+      } catch {
+        // Fallback: ID lookup failed — use email lookup
+        const result = await getOrCreateCustomer({
+          type:        "individual",
+          email:       sender_email.toLowerCase(),
+          first_name:  sender_name.split(" ")[0],
+          last_name:   sender_name.split(" ").slice(1).join(" ") || "-",
+          endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"],
+        });
+        senderCustomer = result.customer;
+        needsKyc       = result.needsKyc;
+        isSenderNew    = false;
+      }
     } else {
       const result = await getOrCreateCustomer({
         type:        "individual",

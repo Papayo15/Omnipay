@@ -103,14 +103,30 @@ export async function POST(req: NextRequest): Promise<Response> {
     let isNew: boolean;
     let depositsRestricted: boolean | undefined;
     if (existing_customer_id) {
-      const c  = await getCustomer(existing_customer_id);
-      const c2 = c as unknown as Record<string, unknown>;
-      const kycApproved = c.status === "active" || c.status === "approved"
-        || c2.kyc_status === "approved" || c.status === "deposits_restricted";
-      customer           = c;
-      needsKyc           = !kycApproved;
-      isNew              = false;
-      depositsRestricted = c.status === "deposits_restricted";
+      try {
+        const c  = await getCustomer(existing_customer_id);
+        const c2 = c as unknown as Record<string, unknown>;
+        const kycApproved = c.status === "active" || c.status === "approved"
+          || c2.kyc_status === "approved" || c.status === "deposits_restricted";
+        customer           = c;
+        needsKyc           = !kycApproved;
+        isNew              = false;
+        depositsRestricted = c.status === "deposits_restricted";
+      } catch {
+        // Fallback: ID lookup failed — use email lookup
+        const result = await getOrCreateCustomer({
+          type:         "individual",
+          email:        email.toLowerCase(),
+          first_name:   nombre.split(" ")[0],
+          last_name:    nombre.split(" ").slice(1).join(" ") || "-",
+          country:      country_iso3,
+          endorsements,
+        });
+        customer           = result.customer;
+        needsKyc           = result.needsKyc;
+        isNew              = false;
+        depositsRestricted = result.depositsRestricted;
+      }
     } else {
       const result = await getOrCreateCustomer({
         type:         "individual",

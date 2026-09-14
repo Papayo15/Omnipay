@@ -163,25 +163,35 @@ export default function EnviarEmpresaWirePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRetry]);
 
-  // ToS polling — retries every 3 s while popup is open
+  // ToS polling — checks Bridge every 2 s; also detects same-origin popup redirect
   useEffect(() => {
-    if (step !== "tos" || !tosCustomerId) return;
+    if (step !== "tos") return;
+    const finish = () => {
+      if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
+      if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
+      setAutoRetry(true);
+    };
     tosPollTimer.current = setInterval(async () => {
+      // Detect if popup navigated back to our origin (Bridge redirect after acceptance)
+      try {
+        const href = tosPopup.current?.location?.href ?? "";
+        if (href && href !== "about:blank" && new URL(href).origin === window.location.origin) {
+          finish(); return;
+        }
+      } catch { /* cross-origin = still on Bridge's page */ }
+      if (!tosCustomerId) return;
       try {
         const res  = await fetch(`/api/bridge/tos-status?customer_id=${tosCustomerId}`);
         const data = await res.json() as { accepted?: boolean };
-        if (data.accepted) {
-          if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
-          if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
-          setAutoRetry(true);
-        }
+        if (data.accepted) finish();
       } catch { /* keep polling */ }
-    }, 3000);
+    }, 2000);
     return () => { if (tosPollTimer.current) clearInterval(tosPollTimer.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, tosCustomerId]);
 
-  // KYB polling — checks Bridge every 2 s while user does KYB in popup
+  // KYB polling — checks Bridge every 2 s while user does KYB in popup;
+  // also detects same-origin redirect (Bridge sends user back after Persona)
   useEffect(() => {
     if (!kybPolling || !kybCustomerId) return;
     kybPollCount.current = 0;
@@ -189,6 +199,15 @@ export default function EnviarEmpresaWirePage() {
     kybPollTimer.current = setInterval(async () => {
       kybPollCount.current += 1;
       if (kybPollCount.current >= 8) setKybLongReview(true);
+      // Detect same-origin redirect from Bridge after KYB completion
+      try {
+        const href = kybPopup.current?.location?.href ?? "";
+        if (href && href !== "about:blank" && new URL(href).origin === window.location.origin) {
+          if (kybPollTimer.current) clearInterval(kybPollTimer.current);
+          if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
+          setKybPolling(false); setAutoRetry(true); return;
+        }
+      } catch { /* cross-origin */ }
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kybCustomerId}`);
         const data = await res.json() as { approved?: boolean };
@@ -227,6 +246,14 @@ export default function EnviarEmpresaWirePage() {
   const handleSubmit = useCallback(async () => {
     setStep("submitting");
     setError("");
+    // Open placeholder popup before the fetch (user gesture context) so browser won't block it.
+    let prePopup: Window | null = null;
+    if (!tosPopup.current || tosPopup.current.closed) {
+      prePopup = window.open(
+        "about:blank", "bridge_kyc_tos",
+        "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
+      );
+    }
     try {
       const res = await fetch("/api/bridge/b2b/send", {
         method:  "POST",
@@ -248,17 +275,21 @@ export default function EnviarEmpresaWirePage() {
         }));
         setTosUrl(data.tos_url);
         if (data.customer_id) setTosCustomerId(data.customer_id);
-        if (!tosPopup.current || tosPopup.current.closed) {
-          tosPopup.current = window.open(
-            data.tos_url, "bridge_tos",
-            "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
-          );
+        // Navigate pre-popup (already open) to ToS URL — no browser blocking
+        if (prePopup && !prePopup.closed) {
+          prePopup.location.href = data.tos_url;
+          tosPopup.current = prePopup;
+          prePopup = null;
+        } else if (!tosPopup.current || tosPopup.current.closed) {
+          tosPopup.current = window.open(data.tos_url, "bridge_kyc_tos",
+            "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes");
         }
         setStep("tos");
         return;
       }
       if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
       if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
+      if (prePopup && !prePopup.closed) { prePopup.close(); prePopup = null; }
 
       if (data.needs_kyb) {
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
@@ -272,7 +303,10 @@ export default function EnviarEmpresaWirePage() {
         return;
       }
 
-      if (!res.ok || data.error) { setError(data.error ?? "Error desconocido"); setStep("error"); return; }
+      if (!res.ok || data.error) {
+        if (prePopup && !prePopup.closed) prePopup.close();
+        setError(data.error ?? "Error desconocido"); setStep("error"); return;
+      }
 
       const di = (data.deposit_instructions ?? {}) as Record<string, string | null>;
       setVaInfo({
@@ -293,7 +327,9 @@ export default function EnviarEmpresaWirePage() {
       setDestinationRail((data as Record<string, unknown>).destination_rail as string ?? "");
       setOrderId(data.order_id ?? "");
       setStep("instructions");
+      if (prePopup && !prePopup.closed) prePopup.close();
     } catch (e) {
+      if (prePopup && !prePopup.closed) prePopup.close();
       setError((e as Error).message ?? "Error de conexión");
       setStep("error");
     }
