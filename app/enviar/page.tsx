@@ -381,8 +381,9 @@ export default function EnviarPage() {
           prePopup = null;
           kycPopupOpened = true;
         }
-        // Only start polling if a popup is actually open — otherwise the KYC button starts it
-        if (kycPopupOpened) setKycPolling(true);
+        // Start polling if popup is open OR if this is an auto-retry (user just finished
+        // Persona — same-origin detection fired, Bridge may take a moment to mark approved)
+        if (kycPopupOpened || isAutoRetry) setKycPolling(true);
         setStep("kyc");
         return;
       }

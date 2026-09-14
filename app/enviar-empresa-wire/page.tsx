@@ -300,6 +300,8 @@ export default function EnviarEmpresaWirePage() {
         setKybUrl(data.kyb_url ?? "");
         setKybCustomerId(data.customer_id ?? "");
         setIsSandboxKyb(!!data.is_sandbox);
+        // Auto-start polling on retry (user just finished Persona — Bridge may take a moment)
+        if (isAutoRetry) setKybPolling(true);
         setStep("kyb");
         return;
       }
