@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse }        from "next/server";
 import {
-  getOrCreateCustomer, getCustomer, getKycUrlFromCustomer,
+  getOrCreateCustomer, getCustomer,
   patchCustomerAddress, ensureEndorsements, createKycLink,
   createTosLink, appendRedirectUri, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
 } from "@/providers/bridge/customers";
@@ -216,23 +216,21 @@ export async function POST(req: NextRequest): Promise<Response> {
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyc && !skipKyc && !isSandbox) {
       const kycRedirectUri = redirect_uri ?? `${appUrl}/enviar?kyc_done=1`;
-      let kycUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(senderCustomer), kycRedirectUri);
-      if (!kycUrl) {
-        try {
-          const kl = await createKycLink({
-            full_name:    sender_name,
-            email:        sender_email.toLowerCase(),
-            type:         "individual",
-            endorsements: ENDORSEMENTS,
-            redirect_uri: kycRedirectUri,
-          });
-          kycUrl = kl.url ?? (kl as unknown as Record<string, string>).kyc_link ?? null;
-        } catch (e1) {
-          const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
-          if (err1.type === "duplicate_record") {
-            const ex = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-            kycUrl = appendRedirectUri(ex?.kyc_link ?? ex?.url ?? null, kycRedirectUri);
-          }
+      let kycUrl: string | null = null;
+      try {
+        const kl = await createKycLink({
+          full_name:    sender_name,
+          email:        sender_email.toLowerCase(),
+          type:         "individual",
+          endorsements: ENDORSEMENTS,
+          redirect_uri: kycRedirectUri,
+        });
+        kycUrl = kl.url ?? (kl as unknown as Record<string, string>).kyc_link ?? null;
+      } catch (e1) {
+        const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
+        if (err1.type === "duplicate_record") {
+          const ex = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
+          kycUrl = appendRedirectUri(ex?.kyc_link ?? ex?.url ?? null, kycRedirectUri);
         }
       }
       return NextResponse.json({

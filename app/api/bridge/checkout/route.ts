@@ -12,7 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, appendRedirectUri, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, appendRedirectUri, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -257,7 +257,6 @@ export async function POST(req: NextRequest): Promise<Response> {
           kycUrl = existing?.kyc_link ?? existing?.url ?? null;
         }
       }
-      if (!kycUrl) kycUrl = getKycUrlFromCustomer(customer);
       return NextResponse.json({
         needs_kyc:   true,
         kyc_url:     kycUrl,
@@ -296,8 +295,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             kycUrl = ex?.kyc_link ?? ex?.url ?? null;
           }
         }
-        if (!kycUrl) kycUrl = getKycUrlFromCustomer(customer);
-        return NextResponse.json({
+          return NextResponse.json({
           needs_kyc:   true,
           kyc_url:     kycUrl,
           customer_id: customer.id,

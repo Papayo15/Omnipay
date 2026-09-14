@@ -12,7 +12,7 @@
 //   5. Returns shareable payment link: ${APP_URL}/b2b-bridge?t={token}&type=b2b
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, appendRedirectUri, RAIL_ENDORSEMENT, ALPHA2_TO_ALPHA3 as ISO3_FROM_ALPHA2 } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, appendRedirectUri, RAIL_ENDORSEMENT, ALPHA2_TO_ALPHA3 as ISO3_FROM_ALPHA2 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -213,7 +213,6 @@ export async function POST(req: NextRequest): Promise<Response> {
           kybUrl = existing?.kyc_link ?? existing?.url ?? null;
         }
       }
-      if (!kybUrl) kybUrl = getKycUrlFromCustomer(customer);
       // Email the RECIPIENT business — they need to complete KYB, not the sender
       if (kybUrl) {
         const emailHtml = `
@@ -267,9 +266,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         try {
           const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", endorsements, redirect_uri: kybRedirectUri2 });
           kybUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
-        } catch {
-          kybUrl = getKycUrlFromCustomer(customer);
-        }
+        } catch { /* createKycLink failed — kybUrl stays null */ }
         if (kybUrl) {
           const emailHtml = `
             <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f172a;color:#e2e8f0;padding:32px;border-radius:16px">

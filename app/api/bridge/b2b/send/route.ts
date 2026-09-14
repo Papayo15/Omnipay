@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse }        from "next/server";
 import {
-  getOrCreateCustomer, getCustomer, getKycUrlFromCustomer,
+  getOrCreateCustomer, getCustomer,
   patchCustomerAddress, ensureEndorsements, createKycLink,
   createTosLink, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
 } from "@/providers/bridge/customers";
@@ -228,7 +228,6 @@ export async function POST(req: NextRequest): Promise<Response> {
           kybUrl = ex?.kyc_link ?? ex?.url ?? null;
         }
       }
-      if (!kybUrl) kybUrl = getKycUrlFromCustomer(senderCustomer);
       return NextResponse.json({
         needs_kyb:   true,
         kyb_url:     kybUrl,

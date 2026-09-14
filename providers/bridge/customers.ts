@@ -323,9 +323,10 @@ export async function getKycLink(customerId: string): Promise<BridgeKycLink> {
   );
 }
 
-// Extract the KYC URL from the customer object itself (Bridge embeds tos_link)
-export function getKycUrlFromCustomer(customer: BridgeCustomer): string | null {
-  return customer.tos_link ?? null;
+// BridgeCustomer has no kyc_link field — tos_link is the ToS acceptance URL, not the Persona KYC URL.
+// Always use createKycLink() to get an actual KYC link.
+export function getKycUrlFromCustomer(_customer: BridgeCustomer): string | null {
+  return null;
 }
 
 // Creates a Bridge ToS link for production — required before new customer creation.

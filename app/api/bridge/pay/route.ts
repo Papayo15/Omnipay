@@ -11,7 +11,7 @@
 //                 liquidation address auto-pays receptor via SPEI/card/ACH etc.
 
 import { NextRequest, NextResponse }              from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink, appendRedirectUri } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, getKycLink, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink, appendRedirectUri } from "@/providers/bridge/customers";
 import { createVirtualAccount, getVirtualAccount } from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
 import { buildDynamicQuote }                      from "@/lib/bridge-fees";
@@ -217,7 +217,6 @@ export async function POST(req: NextRequest): Promise<Response> {
           kycUrl = ex?.kyc_link ?? ex?.url ?? null;
         }
       }
-      if (!kycUrl) kycUrl = getKycUrlFromCustomer(senderCustomer);
       return NextResponse.json({
         needs_kyc:   true,
         kyc_url:     kycUrl,

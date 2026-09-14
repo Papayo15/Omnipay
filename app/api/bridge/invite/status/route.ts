@@ -8,7 +8,6 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   findCustomerByEmail, getOrCreateCustomer, getCustomer,
   createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval,
-  getKycUrlFromCustomer,
 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
@@ -161,21 +160,19 @@ export async function GET(req: NextRequest): Promise<Response> {
       await new Promise(r => setTimeout(r, 3000)); // Bridge sandbox needs ~3s to propagate KYC
     } else if (senderNeedsKyc) {
       // Production: sender needs KYC — return kyc_url so /enviar can show the link
-      let kycUrl: string | null = getKycUrlFromCustomer(senderCustomer);
-      if (!kycUrl) {
-        try {
-          const kl = await createKycLink({
-            full_name: senderName, email: senderEmail, type: "individual",
-            endorsements,
-            redirect_uri: `${appUrl}/enviar?kyc_done=1`,
-          });
-          kycUrl = (kl as unknown as Record<string,string>).kyc_link ?? kl.url ?? null;
-        } catch (e1) {
-          const err1 = e1 as Error & { type?: string; details?: Record<string,unknown> };
-          if (err1.type === "duplicate_record") {
-            const ex = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-            kycUrl = ex?.kyc_link ?? ex?.url ?? null;
-          }
+      let kycUrl: string | null = null;
+      try {
+        const kl = await createKycLink({
+          full_name: senderName, email: senderEmail, type: "individual",
+          endorsements,
+          redirect_uri: `${appUrl}/enviar?kyc_done=1`,
+        });
+        kycUrl = (kl as unknown as Record<string,string>).kyc_link ?? kl.url ?? null;
+      } catch (e1) {
+        const err1 = e1 as Error & { type?: string; details?: Record<string,unknown> };
+        if (err1.type === "duplicate_record") {
+          const ex = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
+          kycUrl = ex?.kyc_link ?? ex?.url ?? null;
         }
       }
       return NextResponse.json({ ready: false, reason: "sender_needs_kyc", kyc_url: kycUrl });

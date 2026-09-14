@@ -11,7 +11,7 @@
 //   4. Return: wire deposit instructions + fee quote + order ID for tracking
 
 import { NextRequest, NextResponse }              from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink } from "@/providers/bridge/customers";
 import { getRate }                               from "@/lib/fx-server";
 import { createVirtualAccount }                   from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
@@ -203,7 +203,6 @@ export async function POST(req: NextRequest): Promise<Response> {
           kybUrl = ex?.kyc_link ?? ex?.url ?? null;
         }
       }
-      if (!kybUrl) kybUrl = getKycUrlFromCustomer(senderCustomer);
       return NextResponse.json({
         needs_kyb:   true,
         kyb_url:     kybUrl,
