@@ -11,7 +11,7 @@
 //   4. Return: wire deposit instructions + fee quote + order ID for tracking
 
 import { NextRequest, NextResponse }              from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink, appendRedirectUri } from "@/providers/bridge/customers";
 import { getRate }                               from "@/lib/fx-server";
 import { createVirtualAccount }                   from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
@@ -148,7 +148,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     // ToS gate for new business customers in production
     if (!isSandbox && isNew) {
       try {
-        const tosLink = await createTosLink({ full_name: business_name, email: sender_email.toLowerCase(), type: "business" });
+        const kybRedirectUri = redirect_uri ?? `${appUrl}/b2b-bridge?t=${encodeURIComponent(token)}&type=b2b&tos_done=1`;
+        const tosLink = await createTosLink({ full_name: business_name, email: sender_email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
         return NextResponse.json({
           needs_tos: true,
           tos_url:   tosLink.url,
@@ -160,16 +161,13 @@ export async function POST(req: NextRequest): Promise<Response> {
     // KYB gate (production)
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyb && !skipKyc && !isSandbox) {
-      let kybUrl: string | null = getKycUrlFromCustomer(senderCustomer);
+      const kybRedirectUri = redirect_uri ?? `${appUrl}/b2b-bridge?t=${encodeURIComponent(token)}&type=b2b&kyb_done=1`;
+      let kybUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(senderCustomer), kybRedirectUri);
       if (!kybUrl) {
         try {
-          const kycLink = await createKycLink({ full_name: business_name, email: sender_email.toLowerCase(), type: "business" });
+          const kycLink = await createKycLink({ full_name: business_name, email: sender_email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
           kybUrl = kycLink.url ?? kycLink.kyc_link ?? null;
         } catch { /* best-effort */ }
-      }
-      if (kybUrl && redirect_uri) {
-        const sep = kybUrl.includes("?") ? "&" : "?";
-        kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirect_uri)}`;
       }
       return NextResponse.json({
         needs_kyb:   true,

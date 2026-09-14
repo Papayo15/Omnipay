@@ -12,7 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, appendRedirectUri, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -202,7 +202,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyc && !skipKyc && !isSandbox) {
       const kycRedirectUri = `${appUrl}/p2p?kyc_done=1`;
-      let kycUrl: string | null = getKycUrlFromCustomer(customer);
+      let kycUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(customer), kycRedirectUri);
       if (!kycUrl) {
         try {
           const kycLink = await createKycLink({
@@ -217,7 +217,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
           if (err1.type === "duplicate_record") {
             const existing = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-            kycUrl = existing?.kyc_link ?? existing?.url ?? null;
+            kycUrl = appendRedirectUri(existing?.kyc_link ?? existing?.url ?? null, kycRedirectUri);
           }
         }
       }
@@ -245,7 +245,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         || e2.message?.toLowerCase().includes("endorsement");
       if (isNotActive && !isSandbox) {
         const kycRedirectUri2 = `${appUrl}/p2p?kyc_done=1`;
-        let kycUrl: string | null = getKycUrlFromCustomer(customer);
+        let kycUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(customer), kycRedirectUri2);
         if (!kycUrl) {
           try {
             const kycLink = await createKycLink({
@@ -257,7 +257,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             const err3 = e3 as Error & { type?: string; details?: Record<string, unknown> };
             if (err3.type === "duplicate_record") {
               const ex = err3.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-              kycUrl = ex?.kyc_link ?? ex?.url ?? null;
+              kycUrl = appendRedirectUri(ex?.kyc_link ?? ex?.url ?? null, kycRedirectUri2);
             }
           }
         }

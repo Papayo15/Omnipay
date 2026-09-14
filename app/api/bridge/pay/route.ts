@@ -11,7 +11,7 @@
 //                 liquidation address auto-pays receptor via SPEI/card/ACH etc.
 
 import { NextRequest, NextResponse }              from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, getKycLink, getKycUrlFromCustomer, patchCustomerAddress, ensureEndorsements, createKycLink, simulateKycApproval, createTosLink, appendRedirectUri } from "@/providers/bridge/customers";
 import { createVirtualAccount, getVirtualAccount } from "@/providers/bridge/virtual-accounts";
 import { decryptPayload }                         from "@/lib/accountcrypto";
 import { buildDynamicQuote }                      from "@/lib/bridge-fees";
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (needsKyc && !skipKyc && !isSandbox) {
       // Include the token in the redirect so /pagar can auto-retry without re-filling the form
       const kycRedirectUri = `${appUrl}/pagar?t=${token}&type=p2p&kyc_done=1`;
-      let kycUrl: string | null = getKycUrlFromCustomer(senderCustomer);
+      let kycUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(senderCustomer), kycRedirectUri);
       if (!kycUrl) {
         try {
           const kycLink = await createKycLink({

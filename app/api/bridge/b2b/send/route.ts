@@ -16,7 +16,7 @@ import { NextRequest, NextResponse }        from "next/server";
 import {
   getOrCreateCustomer, getCustomer, getKycUrlFromCustomer,
   patchCustomerAddress, ensureEndorsements, createKycLink,
-  createTosLink, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
+  createTosLink, appendRedirectUri, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
@@ -181,7 +181,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyb && !skipKyc && !isSandbox) {
       const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
-      let kybUrl: string | null = getKycUrlFromCustomer(senderCustomer);
+      let kybUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(senderCustomer), kybRedirectUri);
       if (!kybUrl) {
         try {
           const kl = await createKycLink({
@@ -196,13 +196,9 @@ export async function POST(req: NextRequest): Promise<Response> {
           const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
           if (err1.type === "duplicate_record") {
             const ex = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-            kybUrl = ex?.kyc_link ?? ex?.url ?? null;
+            kybUrl = appendRedirectUri(ex?.kyc_link ?? ex?.url ?? null, kybRedirectUri);
           }
         }
-      }
-      if (kybUrl) {
-        const sep = kybUrl.includes("?") ? "&" : "?";
-        kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(kybRedirectUri)}`;
       }
       return NextResponse.json({
         needs_kyb:   true,

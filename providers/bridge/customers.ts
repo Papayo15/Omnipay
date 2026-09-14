@@ -331,4 +331,11 @@ export async function createTosLink(params: {
   return res;
 }
 
+/** Append redirect_uri to any Bridge-hosted page URL so the user is sent back to OmniPay after completing the action. */
+export function appendRedirectUri(url: string | null | undefined, redirectUri: string): string | null {
+  if (!url) return null;
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}redirect_uri=${encodeURIComponent(redirectUri)}`;
+}
+
 export { BridgeError };

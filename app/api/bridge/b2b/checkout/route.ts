@@ -12,7 +12,7 @@
 //   5. Returns shareable payment link: ${APP_URL}/b2b-bridge?t={token}&type=b2b
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, RAIL_ENDORSEMENT, ALPHA2_TO_ALPHA3 as ISO3_FROM_ALPHA2 } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, getKycUrlFromCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, appendRedirectUri, RAIL_ENDORSEMENT, ALPHA2_TO_ALPHA3 as ISO3_FROM_ALPHA2 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -153,7 +153,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     // ToS gate for new business customers in production
     if (!isSandbox && isNew) {
       try {
-        const tosLink = await createTosLink({ full_name: business_name, email: email.toLowerCase(), type: "business" });
+        const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
+        const tosLink = await createTosLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
         return NextResponse.json({
           needs_tos: true,
           tos_url:   tosLink.url,
@@ -165,22 +166,19 @@ export async function POST(req: NextRequest): Promise<Response> {
     // KYB gate (production)
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyb && !skipKyc && !isSandbox) {
-      let kybUrl: string | null = getKycUrlFromCustomer(customer);
+      const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
+      let kybUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(customer), kybRedirectUri);
       if (!kybUrl) {
         try {
-          const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business" });
+          const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
           kybUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
         } catch (e1) {
           const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
           if (err1.type === "duplicate_record") {
             const existing = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-            kybUrl = existing?.kyc_link ?? existing?.url ?? null;
+            kybUrl = appendRedirectUri(existing?.kyc_link ?? existing?.url ?? null, kybRedirectUri);
           }
         }
-      }
-      if (kybUrl && redirect_uri) {
-        const sep = kybUrl.includes("?") ? "&" : "?";
-        kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirect_uri)}`;
       }
       // Email the RECIPIENT business — they need to complete KYB, not the sender
       if (kybUrl) {
@@ -230,17 +228,15 @@ export async function POST(req: NextRequest): Promise<Response> {
       const isNotActive = e2.message?.toLowerCase().includes("not active")
         || e2.message?.toLowerCase().includes("account_not_active");
       if (isNotActive && !isSandbox) {
-        let kybUrl: string | null = getKycUrlFromCustomer(customer);
+        const kybRedirectUri2 = `${appUrl}/enviar-empresa-wire?kyb_done=1&step=checkout`;
+        let kybUrl: string | null = appendRedirectUri(getKycUrlFromCustomer(customer), kybRedirectUri2);
         if (!kybUrl) {
           try {
-            const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", endorsements });
+            const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", endorsements, redirect_uri: kybRedirectUri2 });
             kybUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
           } catch { /* best-effort */ }
         }
         if (kybUrl) {
-          const redirectUri = `${appUrl}/enviar-empresa-wire?kyb_done=1&step=checkout`;
-          const sep = kybUrl.includes("?") ? "&" : "?";
-          kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(redirectUri)}`;
           const emailHtml = `
             <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f172a;color:#e2e8f0;padding:32px;border-radius:16px">
               <p style="font-size:22px;font-weight:700;color:#fff;margin:0 0 8px">Hola, ${business_name} 👋</p>
@@ -311,12 +307,8 @@ export async function POST(req: NextRequest): Promise<Response> {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
       let kybUrl: string | null = null;
       try {
-        const kl = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business" });
-        kybUrl = kl.url ?? kl.kyc_link ?? null;
-        if (kybUrl) {
-          const sep = kybUrl.includes("?") ? "&" : "?";
-          kybUrl = `${kybUrl}${sep}redirect_uri=${encodeURIComponent(`${appUrl}/enviar-empresa-wire?kyb_done=1`)}`;
-        }
+        const kl = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: `${appUrl}/enviar-empresa-wire?kyb_done=1` });
+        kybUrl = appendRedirectUri(kl.url ?? kl.kyc_link ?? null, `${appUrl}/enviar-empresa-wire?kyb_done=1`);
       } catch { /* best-effort */ }
       return NextResponse.json({
         needs_kyb: true,
