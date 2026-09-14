@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Zap, ArrowLeft, Building2, Copy, Check, AlertCircle, Loader2, CheckCircle } from "lucide-react";
@@ -89,6 +89,7 @@ export default function EnviarEmpresaWirePage() {
   const [destinationRail, setDestinationRail]   = useState("");
   const [orderId, setOrderId]             = useState("");
   const [tosUrl, setTosUrl]               = useState("");
+  const tosAccepted = useRef(false);
   const [sandboxDone, setSandboxDone]         = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
   const [showSandboxBtn, setShowSandboxBtn]   = useState(false);
@@ -191,6 +192,11 @@ export default function EnviarEmpresaWirePage() {
       };
 
       if (data.needs_tos && data.tos_url) {
+        if (tosAccepted.current) {
+          await new Promise(r => setTimeout(r, 2000));
+          setAutoRetry(true);
+          return;
+        }
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
           recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
@@ -461,7 +467,11 @@ export default function EnviarEmpresaWirePage() {
               <p className="text-slate-400 text-xs">Solo se hace una vez por empresa. Bridge es el proveedor financiero regulado que procesa la transferencia.</p>
             </div>
             <button
-              onClick={() => { setAutoRetry(true); setStep("submitting"); }}
+              onClick={() => {
+                tosAccepted.current = true;
+                setStep("submitting");
+                setTimeout(() => setAutoRetry(true), 2000);
+              }}
               className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
             >
               Ya acepté los Términos → Continuar
@@ -472,7 +482,7 @@ export default function EnviarEmpresaWirePage() {
             >
               Abrir términos de nuevo
             </button>
-            <button onClick={() => setStep("form")} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
+            <button onClick={() => { tosAccepted.current = false; setStep("form"); }} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
               ← Volver al formulario
             </button>
           </div>

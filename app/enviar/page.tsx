@@ -69,6 +69,7 @@ export default function EnviarPage() {
 
   // Post-submit state
   const [tosUrl, setTosUrl]               = useState("");
+  const tosAccepted = useRef(false);
   const [kycUrl, setKycUrl]               = useState("");
   const [kycCustomerId, setKycCustomerId] = useState("");
   const [isSandboxKyc, setIsSandboxKyc]   = useState(false);
@@ -275,6 +276,12 @@ export default function EnviarPage() {
       };
 
       if (data.needs_tos && data.tos_url) {
+        if (tosAccepted.current) {
+          // User already accepted — Bridge hasn't propagated yet; wait 2 s and retry silently
+          await new Promise(r => setTimeout(r, 2000));
+          setAutoRetry(true);
+          return;
+        }
         sessionStorage.setItem("enviar_form_state", JSON.stringify({
           senderName, senderEmail, senderCurrency,
           recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
@@ -638,7 +645,12 @@ export default function EnviarPage() {
               <p className="text-slate-400 text-xs">Solo se hace una vez. Bridge es el proveedor financiero regulado que procesa la transferencia.</p>
             </div>
             <button
-              onClick={() => { setAutoRetry(true); setStep("sending"); }}
+              onClick={() => {
+                tosAccepted.current = true;
+                setStep("sending");
+                // 2 s delay so Bridge can register the acceptance before we retry
+                setTimeout(() => setAutoRetry(true), 2000);
+              }}
               className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
             >
               Ya acepté los Términos → Continuar
@@ -649,7 +661,7 @@ export default function EnviarPage() {
             >
               Abrir términos de nuevo
             </button>
-            <button onClick={() => setStep("form")} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
+            <button onClick={() => { tosAccepted.current = false; setStep("form"); }} className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
               ← Volver al formulario
             </button>
           </div>
