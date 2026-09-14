@@ -660,18 +660,15 @@ export default function EnviarPage() {
           </div>
         )}
 
-        {/* ToS — Bridge terms of service popup, auto-advances when accepted */}
+        {/* ToS — Bridge terms of service */}
         {step === "tos" && (
-          <div className="space-y-6">
-            <div className="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-5 space-y-4">
-              <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 text-blue-400 animate-spin shrink-0" />
-                <p className="text-blue-300 font-semibold text-sm">Esperando que aceptes los Términos de Bridge...</p>
-              </div>
+          <div className="space-y-4">
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-5 space-y-3">
+              <p className="text-blue-300 font-semibold text-sm">📋 Acepta los Términos de Bridge</p>
               <p className="text-slate-300 text-sm leading-relaxed">
-                Se abrió una ventana pequeña con los Términos de Servicio. Acéptalos y esta pantalla avanzará sola.
+                Bridge (el proveedor financiero que procesa la transferencia) requiere que aceptes sus Términos una sola vez.
               </p>
-              <p className="text-slate-400 text-xs">Solo se hace una vez. Bridge es el proveedor financiero regulado que procesa la transferencia.</p>
+              <p className="text-slate-400 text-xs">Solo se hace una vez. Después de aceptar esta pantalla avanzará sola.</p>
             </div>
             <button
               onClick={() => {
@@ -680,9 +677,23 @@ export default function EnviarPage() {
                   "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
                 );
               }}
-              className="w-full text-blue-400 text-sm hover:text-blue-300 transition-colors py-2 border border-blue-500/20 rounded-xl"
+              className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
             >
-              Abrir ventana de términos de nuevo
+              Abrir Términos de Bridge
+            </button>
+            <div className="flex items-center gap-2 text-slate-500 text-xs">
+              <Loader2 className="w-3 h-3 animate-spin shrink-0" />
+              <span>Verificando automáticamente cada 3 s…</span>
+            </div>
+            <button
+              onClick={() => {
+                if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
+                if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
+                setAutoRetry(true);
+              }}
+              className="w-full text-slate-400 text-sm hover:text-slate-200 transition-colors py-2 border border-slate-700/40 rounded-xl"
+            >
+              Ya acepté los términos → Continuar
             </button>
             <button onClick={() => {
               if (tosPollTimer.current) clearInterval(tosPollTimer.current);
