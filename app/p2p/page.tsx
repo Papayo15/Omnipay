@@ -143,10 +143,16 @@ export default function P2PPage() {
   const [submitting,      setSubmitting]      = useState(false);
   const [fxRate,          setFxRate]          = useState<number | null>(null);
   const [kycUrl,          setKycUrl]          = useState<string | null>(null);
+  const [kycCustomerId,   setKycCustomerId]   = useState("");
   const [realSenderTotal, setRealSenderTotal] = useState<string | null>(null);
   const [pendingKycRetry, setPendingKycRetry] = useState(false);
   const [kycStillPending, setKycStillPending] = useState(false);
   const [savedKycForm,    setSavedKycForm]    = useState(false);
+  const [kycPolling,      setKycPolling]      = useState(false);
+  const [kycLongReview,   setKycLongReview]   = useState(false);
+  const kycPollCount = useRef(0);
+  const kycPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const kycPopup     = useRef<Window | null>(null);
   // Ref always fresh in callbacks — tracks whether current generateLink call is a KYC retry
   const kycAutoRetryRef = useRef(false);
 
@@ -277,6 +283,30 @@ export default function P2PPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingKycRetry, nombre, email, account, amountLocal]);
 
+  // KYC polling — checks Bridge every 2 s while user does KYC in popup
+  useEffect(() => {
+    if (!kycPolling || !kycCustomerId) return;
+    kycPollCount.current = 0;
+    setKycLongReview(false);
+    kycPollTimer.current = setInterval(async () => {
+      kycPollCount.current += 1;
+      if (kycPollCount.current >= 8) setKycLongReview(true);
+      try {
+        const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
+        const data = await res.json() as { approved?: boolean };
+        if (data.approved) {
+          if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycPolling(false);
+          kycAutoRetryRef.current = true;
+          generateLink();
+        }
+      } catch { /* keep polling */ }
+    }, 2000);
+    return () => { if (kycPollTimer.current) clearInterval(kycPollTimer.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kycPolling, kycCustomerId]);
+
   // Bridge link generation — gets real fees from Bridge at submit time
   const generateLink = useCallback(async () => {
     const amt = parseFloat(amountLocal);
@@ -381,6 +411,7 @@ export default function P2PPage() {
       if (data.needs_kyc || data.needs_tos || res.status === 202) {
         if (data.kyc_url)  setKycUrl(data.kyc_url);
         if (data.tos_url)  setKycUrl(data.tos_url); // reuse same button for ToS acceptance
+        if ((data as unknown as Record<string, unknown>).customer_id) setKycCustomerId((data as unknown as Record<string, string>).customer_id);
         if (kycAutoRetryRef.current) {
           // Auto-retry after KYC still returns needs_kyc — KYC processing async on Bridge's side
           kycAutoRetryRef.current = false;
@@ -466,9 +497,19 @@ export default function P2PPage() {
               </li>
             ))}
           </ul>
-          {kycUrl ? (
+          {kycPolling ? (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+              <p className="text-emerald-300 text-sm font-semibold">
+                {kycLongReview ? "Revisión manual en curso, puede tomar unos minutos…" : "Verificando en tiempo real…"}
+              </p>
+            </div>
+          ) : kycUrl ? (
             <button
-              onClick={() => { window.location.href = kycUrl; }}
+              onClick={() => {
+                kycPopup.current = window.open(kycUrl, "bridge_kyc", "width=520,height=700,left=200,top=80,resizable=yes,scrollbars=yes");
+                setKycPolling(true);
+              }}
               className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all text-white font-bold py-4 rounded-2xl text-sm mt-2"
             >
               {t("kyc_intro_cta")}

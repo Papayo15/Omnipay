@@ -127,9 +127,15 @@ export default function PagarPage() {
   const [sandboxDone,      setSandboxDone]      = useState(false);
   const [trackStep,        setTrackStep]        = useState(1);
   const [kycUrl,           setKycUrl]           = useState<string | null>(null);
+  const [kycCustomerId,    setKycCustomerId]    = useState("");
   const [pendingKycRetry,  setPendingKycRetry]  = useState(false);
   const [kycStillPending,  setKycStillPending]  = useState(false);
   const [savedKycForm,     setSavedKycForm]     = useState(false);
+  const [kycPolling,       setKycPolling]       = useState(false);
+  const [kycLongReview,    setKycLongReview]    = useState(false);
+  const kycPollCount = useRef(0);
+  const kycPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const kycPopup     = useRef<Window | null>(null);
   const kycAutoRetryRef = useRef(false);
   const router = useRouter();
 
@@ -241,6 +247,7 @@ export default function PagarPage() {
       if (res.status === 202) {
         if (data.needs_kyc && data.kyc_url) {
           setKycUrl(data.kyc_url);
+          if ((data as unknown as Record<string, unknown>).customer_id) setKycCustomerId((data as unknown as Record<string, string>).customer_id);
           if (kycAutoRetryRef.current) {
             // Auto-retry after KYC still pending — KYC being processed async on Bridge's side
             kycAutoRetryRef.current = false;
@@ -301,6 +308,30 @@ export default function PagarPage() {
   }, []);
 
   // Track: poll Bridge order status every 10s while instructions are open
+  // KYC polling — checks Bridge every 2 s while user does KYC in popup
+  useEffect(() => {
+    if (!kycPolling || !kycCustomerId) return;
+    kycPollCount.current = 0;
+    setKycLongReview(false);
+    kycPollTimer.current = setInterval(async () => {
+      kycPollCount.current += 1;
+      if (kycPollCount.current >= 8) setKycLongReview(true);
+      try {
+        const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
+        const data = await res.json() as { approved?: boolean };
+        if (data.approved) {
+          if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+          if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          setKycPolling(false);
+          kycAutoRetryRef.current = true;
+          handleSubmit();
+        }
+      } catch { /* keep polling */ }
+    }, 2000);
+    return () => { if (kycPollTimer.current) clearInterval(kycPollTimer.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kycPolling, kycCustomerId]);
+
   useEffect(() => {
     const orderId = result?.order_id;
     if (step !== "instructions" || !orderId || sandboxDone) return;
@@ -395,9 +426,19 @@ export default function PagarPage() {
               </li>
             ))}
           </ul>
-          {kycUrl ? (
+          {kycPolling ? (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <div className="w-8 h-8 border-2 border-[#00C9C8] border-t-transparent rounded-full animate-spin" />
+              <p className="text-[#00C9C8] text-sm font-semibold">
+                {kycLongReview ? "Revisión manual en curso, puede tomar unos minutos…" : "Verificando en tiempo real…"}
+              </p>
+            </div>
+          ) : kycUrl ? (
             <button
-              onClick={() => { window.location.href = kycUrl; }}
+              onClick={() => {
+                kycPopup.current = window.open(kycUrl, "bridge_kyc", "width=520,height=700,left=200,top=80,resizable=yes,scrollbars=yes");
+                setKycPolling(true);
+              }}
               className="w-full bg-[#00C9C8] hover:bg-[#00b3b2] active:scale-95 transition-all text-black font-bold py-4 rounded-2xl text-sm mt-2"
             >
               {t("kyc_intro_cta")}
@@ -471,10 +512,11 @@ export default function PagarPage() {
           <div className="bg-amber-900/30 border border-amber-500/40 rounded-xl p-4 mb-4">
             <p className="text-amber-400 text-xs font-semibold mb-1">{t("kyc_required_title")}</p>
             <p className="text-slate-400 text-xs mb-2">{t("kyc_required_body")}</p>
-            <a href={result.kyc_url} target="_blank" rel="noopener noreferrer"
-              className="block text-center bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold py-2 px-4 rounded-lg transition-colors">
+            <button
+              onClick={() => { window.open(result.kyc_url!, "bridge_kyc", "width=520,height=700,left=200,top=80,resizable=yes,scrollbars=yes"); }}
+              className="block w-full text-center bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold py-2 px-4 rounded-lg transition-colors">
               {t("kyc_verify_button")}
-            </a>
+            </button>
           </div>
         )}
 
@@ -483,10 +525,11 @@ export default function PagarPage() {
           <div className="bg-blue-900/30 border border-blue-500/40 rounded-xl p-4 mb-4">
             <p className="text-blue-400 text-xs font-semibold mb-1">{t("tos_required_title")}</p>
             <p className="text-slate-400 text-xs mb-2">{t("tos_required_body")}</p>
-            <a href={result.tos_url} target="_blank" rel="noopener noreferrer"
-              className="block text-center bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors">
+            <button
+              onClick={() => { window.open(result.tos_url!, "bridge_tos", "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes"); }}
+              className="block w-full text-center bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors">
               {t("tos_accept_button")}
-            </a>
+            </button>
           </div>
         )}
 

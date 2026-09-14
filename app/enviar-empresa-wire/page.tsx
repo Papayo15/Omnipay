@@ -81,6 +81,11 @@ export default function EnviarEmpresaWirePage() {
   const [kybCustomerId, setKybCustomerId] = useState("");
   const [isSandboxKyb, setIsSandboxKyb]   = useState(false);
   const [sandboxSimKyb, setSandboxSimKyb] = useState(false);
+  const [kybPolling, setKybPolling]       = useState(false);
+  const [kybLongReview, setKybLongReview] = useState(false);
+  const kybPollCount = useRef(0);
+  const kybPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const kybPopup     = useRef<Window | null>(null);
 
   // Instructions state
   const [vaInfo, setVaInfo]               = useState<VaInfo | null>(null);
@@ -165,6 +170,29 @@ export default function EnviarEmpresaWirePage() {
     return () => { if (tosPollTimer.current) clearInterval(tosPollTimer.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, tosUrl]);
+
+  // KYB polling — checks Bridge every 2 s while user does KYB in popup
+  useEffect(() => {
+    if (!kybPolling || !kybCustomerId) return;
+    kybPollCount.current = 0;
+    setKybLongReview(false);
+    kybPollTimer.current = setInterval(async () => {
+      kybPollCount.current += 1;
+      if (kybPollCount.current >= 8) setKybLongReview(true);
+      try {
+        const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kybCustomerId}`);
+        const data = await res.json() as { approved?: boolean };
+        if (data.approved) {
+          if (kybPollTimer.current) clearInterval(kybPollTimer.current);
+          if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
+          setKybPolling(false);
+          setAutoRetry(true);
+        }
+      } catch { /* keep polling */ }
+    }, 2000);
+    return () => { if (kybPollTimer.current) clearInterval(kybPollTimer.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kybPolling, kybCustomerId]);
 
   const buildBody = useCallback(() => {
     const base = {
@@ -517,11 +545,23 @@ export default function EnviarEmpresaWirePage() {
                 {sandboxSimKyb ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
                 {t("sandbox_simulate_kyb")}
               </button>
+            ) : kybPolling ? (
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                <p className="text-blue-300 text-sm font-semibold">
+                  {kybLongReview ? "Revisión manual en curso, puede tomar unos minutos…" : "Verificando en tiempo real…"}
+                </p>
+              </div>
             ) : kybUrl ? (
-              <a href={kybUrl}
-                className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]">
+              <button
+                onClick={() => {
+                  kybPopup.current = window.open(kybUrl, "bridge_kyb", "width=520,height=700,left=200,top=80,resizable=yes,scrollbars=yes");
+                  setKybPolling(true);
+                }}
+                className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
+              >
                 {t("kyb_cta")}
-              </a>
+              </button>
             ) : null}
 
             <p className="text-slate-500 text-xs text-center leading-relaxed">{t("kyb_after")}</p>
