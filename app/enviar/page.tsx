@@ -378,28 +378,17 @@ export default function EnviarPage() {
       };
 
       if (data.needs_tos && data.tos_url) {
+        // Full-page navigation — works on mobile and desktop; no popup needed.
+        // Save customer_id so the kyc_done return can pass it back as existing_customer_id.
         sessionStorage.setItem("enviar_form_state", JSON.stringify({
           senderName, senderEmail, senderCurrency,
           recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
+          kycCustomerId: data.customer_id ?? "",
         }));
-        setTosUrl(data.tos_url);
-        if (data.customer_id) setTosCustomerId(data.customer_id);
-        // Navigate pre-popup to ToS URL (or open from button if auto-retry — see ToS step JSX)
-        if (prePopup && !prePopup.closed) {
-          prePopup.location.href = data.tos_url;
-          tosPopup.current = prePopup;
-          prePopup = null;
-        } else if (!tosPopup.current || tosPopup.current.closed) {
-          // This will be blocked on auto-retry — that's OK, the ToS step has a button for it
-          tosPopup.current = window.open(
-            data.tos_url, "bridge_kyc_tos",
-            "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
-          );
-        }
-        setStep("tos");
+        if (prePopup && !prePopup.closed) prePopup.close();
+        window.location.href = data.tos_url;
         return;
       }
-      // ToS confirmed by tos-status poll — popup already closed by polling useEffect
       if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
       if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
       if (prePopup && !prePopup.closed) { prePopup.close(); prePopup = null; }
