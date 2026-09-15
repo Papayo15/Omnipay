@@ -277,26 +277,12 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch (e1) {
         console.error(`[bridge/checkout] getKycLink error: ${(e1 as Error).message}`);
       }
-      // Fallback: POST /kyc_links when GET returns no URL
-      let createKycError = "";
-      if (!kycUrl) {
-        try {
-          const fallback = await createKycLink({
-            full_name: nombre, email: email.toLowerCase(), type: "individual",
-            endorsements, redirect_uri: kycRedirectUri,
-          });
-          // POST /kyc_links returns { "kyc_link": "...", "tos_link": "..." } — not "url"
-          kycUrl = (fallback as unknown as Record<string, string>).kyc_link ?? fallback.url ?? null;
-          if (kycUrl) console.log(`[bridge/checkout] createKycLink fallback ok: url=${kycUrl}`);
-        } catch (e2) {
-          createKycError = (e2 as Error).message ?? String(e2);
-          console.error(`[bridge/checkout] createKycLink fallback error: ${createKycError}`);
-        }
-      }
+      // POST /kyc_links is for NEW customer creation only — not for existing customers.
+      // For existing customers, GET /customers/{id}/kyc_link is the only correct endpoint.
       console.log(`[bridge/checkout] KYC gate: needsKyc=${needsKyc} kycUrl=${kycUrl}`);
       if (!kycUrl) {
         return NextResponse.json({
-          error: `[KYC] getKycLink returned no URL, createKycLink error: ${createKycError || "no url returned"}`,
+          error: `[KYC] GET /customers/${customer.id}/kyc_link returned no URL. Bridge may still be processing the customer. Please try again.`,
           bridge_type: "kyc_url_unavailable",
           customer_id: customer.id,
         }, { status: 502 });
@@ -333,13 +319,6 @@ export async function POST(req: NextRequest): Promise<Response> {
           console.error(`[bridge/checkout] getKycLink endorsement fallback error: ${(e3 as Error).message}`);
         }
         if (!kycUrl) {
-          try {
-            const fb2 = await createKycLink({
-              full_name: nombre, email: email.toLowerCase(), type: "individual",
-              endorsements, redirect_uri: kycRedirectUri2,
-            });
-            kycUrl = (fb2 as unknown as Record<string, string>).kyc_link ?? fb2.url ?? null;
-          } catch { /* best-effort */ }
         }
           if (!kycUrl) {
             return NextResponse.json({

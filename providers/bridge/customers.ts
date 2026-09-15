@@ -392,18 +392,19 @@ export async function getTosAcceptanceLink(params: {
   customer_id:  string;
   redirect_uri?: string;
 }): Promise<{ url: string }> {
-  // Pass redirect_uri as query param in the API request so Bridge bakes it into the ToS URL.
-  // Bridge then redirects the user back to redirect_uri after ToS acceptance.
-  const qs = params.redirect_uri
-    ? `?redirect_uri=${encodeURIComponent(params.redirect_uri)}`
-    : "";
   const raw = await bridgeRequest<Record<string, unknown>>(
     "GET",
-    `/customers/${params.customer_id}/tos_acceptance_link${qs}`,
+    `/customers/${params.customer_id}/tos_acceptance_link`,
   );
-  const url = (raw.url ?? raw.tos_link ?? raw.link ?? "") as string;
+  let url = (raw.url ?? raw.tos_link ?? raw.link ?? "") as string;
   console.log(`[getTosAcceptanceLink] customer=${params.customer_id} url=${url}`);
   if (!url) throw new Error("Bridge returned no URL for ToS acceptance link");
+  // Per Bridge docs: append redirect_uri to the returned URL as a query param.
+  // Bridge redirects back to redirect_uri with signed_agreement_id appended.
+  if (params.redirect_uri) {
+    const sep = url.includes("?") ? "&" : "?";
+    url = `${url}${sep}redirect_uri=${encodeURIComponent(params.redirect_uri)}`;
+  }
   return { url };
 }
 

@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse }        from "next/server";
 import {
   getOrCreateCustomer, getCustomer,
-  patchCustomerAddress, ensureEndorsements, createKycLink,
+  patchCustomerAddress, ensureEndorsements, getKycLink,
   createTosLink, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
@@ -217,21 +217,12 @@ export async function POST(req: NextRequest): Promise<Response> {
       const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
       let kybUrl: string | null = null;
       try {
-        const kl = await createKycLink({
-          full_name:    sender_business_name,
-          email:        sender_email.toLowerCase(),
-          type:         "business",
-          endorsements: B2B_ENDORSEMENTS,
-          redirect_uri: kybRedirectUri,
-        });
-        // POST /kyc_links returns { "kyc_link": "..." } — not "url"
-        kybUrl = (kl as unknown as Record<string, string>).kyc_link ?? kl.url ?? null;
+        // GET /customers/{id}/kyc_link is the correct endpoint for existing customers.
+        // POST /kyc_links is for new customer creation only.
+        const kl = await getKycLink(senderCustomer.id, { redirect_uri: kybRedirectUri });
+        kybUrl = kl.url ?? (kl as unknown as Record<string, string>).kyc_link ?? null;
       } catch (e1) {
-        const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
-        if (err1.type === "duplicate_record") {
-          const ex = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-          kybUrl = ex?.kyc_link ?? ex?.url ?? null;
-        }
+        console.error(`[b2b/send] getKycLink error: ${(e1 as Error).message}`);
       }
       return NextResponse.json({
         needs_kyb:   true,

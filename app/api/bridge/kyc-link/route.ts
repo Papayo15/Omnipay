@@ -5,7 +5,7 @@
 // bypassing the full checkout flow (which could race on has_accepted_terms_of_service).
 
 import { NextRequest, NextResponse } from "next/server";
-import { getKycLink, getCustomer, createKycLink } from "@/providers/bridge/customers";
+import { getKycLink } from "@/providers/bridge/customers";
 
 export async function GET(req: NextRequest): Promise<Response> {
   const p           = req.nextUrl.searchParams;
@@ -27,22 +27,8 @@ export async function GET(req: NextRequest): Promise<Response> {
     } catch (e1) {
       console.error(`[kyc-link] getKycLink error: ${(e1 as Error).message}`);
     }
-    // Fallback: POST /kyc_links using customer info
-    if (!url) {
-      const customer = await getCustomer(customer_id);
-      const c = customer as unknown as Record<string, string>;
-      const fullName = c.full_name ?? c.business_name ?? "Unknown";
-      const email    = c.email ?? "";
-      const type     = (c.type === "business") ? "business" : "individual";
-      const fb = await createKycLink({
-        full_name: fullName, email, type,
-        endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"],
-        redirect_uri: redirect_uri ?? undefined,
-      });
-      // POST /kyc_links returns { "kyc_link": "...", "tos_link": "..." } — not "url"
-      url = (fb as unknown as Record<string, string>).kyc_link ?? fb.url ?? null;
-      console.log(`[kyc-link] createKycLink fallback customer=${customer_id} url=${url}`);
-    }
+    // POST /kyc_links creates a NEW customer — wrong for existing customers.
+    // Only GET /customers/{id}/kyc_link is correct here.
     if (!url) {
       return NextResponse.json({ error: "Bridge returned no KYC link URL" }, { status: 502 });
     }
