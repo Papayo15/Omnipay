@@ -12,7 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, getTosAcceptanceLink, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, createKycLink, getKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, getTosAcceptanceLink, appendRedirectUri, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -275,13 +275,29 @@ export async function POST(req: NextRequest): Promise<Response> {
           redirect_uri: kycRedirectUri,
         });
         kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
+        console.log(`[bridge/checkout] createKycLink ok: url=${kycUrl}`);
       } catch (e1) {
         const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
+        console.warn(`[bridge/checkout] createKycLink error: type=${err1.type} details=${JSON.stringify(err1.details)}`);
         if (err1.type === "duplicate_record") {
-          const existing = err1.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
+          // Try URL from error details first (Bridge may embed it)
+          const existing = (err1.details?.existing_kyc_link ?? err1.details?.existing_resource) as { kyc_link?: string; url?: string } | undefined;
           kycUrl = existing?.kyc_link ?? existing?.url ?? null;
+          // Fallback: fetch the existing link directly from Bridge
+          if (!kycUrl) {
+            try {
+              const existingLink = await getKycLink(customer.id);
+              const rawUrl = (existingLink as unknown as Record<string, string>).kyc_link ?? existingLink.url ?? null;
+              // Append redirect_uri so Bridge sends user back after KYC
+              kycUrl = rawUrl ? appendRedirectUri(rawUrl, kycRedirectUri) : null;
+              console.log(`[bridge/checkout] getKycLink fallback: url=${kycUrl}`);
+            } catch (e2) {
+              console.error(`[bridge/checkout] getKycLink fallback failed: ${(e2 as Error).message}`);
+            }
+          }
         }
       }
+      console.log(`[bridge/checkout] KYC gate: needsKyc=${needsKyc} kycUrl=${kycUrl}`);
       return NextResponse.json({
         needs_kyc:   true,
         kyc_url:     kycUrl,
