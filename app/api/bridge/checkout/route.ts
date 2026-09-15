@@ -12,7 +12,7 @@
 // The link has NO expiry — amount is always recalculated live when sender opens it.
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, appendRedirectUri, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, getTosAcceptanceLink, RAIL_ENDORSEMENT } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -217,43 +217,32 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch { /* best-effort */ }
     }
 
-    // ToS gate — show for new/never-started customers (isNew=true).
-    // isNew is true for brand-new customers AND for existing customers with status
-    // incomplete/not_started (Bridge kept the record but they never completed ToS+KYC).
-    if (!isSandbox && isNew) {
+    // ToS gate — check has_accepted_terms_of_service from Bridge customer record.
+    // Bridge docs: use GET /customers/{id}/tos_acceptance_link for existing customers.
+    // redirect_uri is appended as a query param on the returned URL (not in the body).
+    const needsTos = !isSandbox && customer.has_accepted_terms_of_service === false;
+    console.log(`[bridge/checkout] tos check: customer=${customer.id} has_accepted=${customer.has_accepted_terms_of_service} needsTos=${needsTos}`);
+    if (needsTos) {
       try {
-        const tosLink = await createTosLink({
-          full_name:    nombre,
-          email:        email.toLowerCase(),
-          type:         "individual",
+        const { url: tosUrl } = await getTosAcceptanceLink({
           customer_id:  customer.id,
           redirect_uri: `${appUrl}/p2p?tos_done=1`,
         });
-        const tosUrl = tosLink.url || null;
-        console.log(`[bridge/checkout] createTosLink ok: url=${tosUrl} id=${tosLink.id}`);
-        if (tosUrl) {
-          return NextResponse.json({
-            needs_tos:   true,
-            tos_url:     tosUrl,
-            customer_id: customer.id,
-            message:     "El receptor debe aceptar los Términos de Bridge antes de continuar.",
-          }, { status: 202 });
-        }
-        // createTosLink returned no URL — customer already accepted ToS, proceed to KYC
-        console.warn("[bridge/checkout] createTosLink returned empty url — assuming ToS already accepted");
+        console.log(`[bridge/checkout] getTosAcceptanceLink ok: url=${tosUrl}`);
+        return NextResponse.json({
+          needs_tos:   true,
+          tos_url:     tosUrl,
+          customer_id: customer.id,
+          message:     "El receptor debe aceptar los Términos de Bridge antes de continuar.",
+        }, { status: 202 });
       } catch (tosErr) {
         const e = tosErr as Error & { type?: string };
-        // duplicate_record without embedded URL → customer already accepted ToS → proceed to KYC
-        if (e.type === "duplicate_record") {
-          console.warn("[bridge/checkout] createTosLink duplicate_record no url — assuming ToS already accepted");
-        } else {
-          // Any other error — surface to client so it's visible instead of silently going to KYC
-          return NextResponse.json({
-            error: "No se pudo generar el link de Términos de Servicio. Por favor intenta de nuevo.",
-            bridge_type: "tos_error",
-            customer_id: customer.id,
-          }, { status: 502 });
-        }
+        console.error(`[bridge/checkout] getTosAcceptanceLink error: ${e.message}`);
+        return NextResponse.json({
+          error: "No se pudo generar el link de Términos de Servicio. Por favor intenta de nuevo.",
+          bridge_type: "tos_error",
+          customer_id: customer.id,
+        }, { status: 502 });
       }
     }
 

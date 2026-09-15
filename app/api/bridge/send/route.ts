@@ -201,6 +201,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           full_name:    sender_name,
           email:        sender_email.toLowerCase(),
           type:         "individual",
+          customer_id:  senderCustomer.id,
           redirect_uri: kycRedirectUri,
         });
         return NextResponse.json({

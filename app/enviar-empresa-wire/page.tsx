@@ -288,16 +288,6 @@ export default function EnviarEmpresaWirePage() {
   const handleSubmit = useCallback(async (isAutoRetry = false) => {
     setStep("submitting");
     setError("");
-    // Only open pre-popup when resuming mid-flow (tosCustomerId or kybCustomerId is set)
-    // and when called from a direct user click (not from useEffect — no gesture there).
-    // This avoids a blank-popup flash for already-registered users.
-    let prePopup: Window | null = null;
-    if (!isAutoRetry && (!tosPopup.current || tosPopup.current.closed)) {
-      prePopup = window.open(
-        "about:blank", "bridge_kyc_tos",
-        "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
-      );
-    }
     try {
       const res = await fetch("/api/bridge/b2b/send", {
         method:  "POST",
@@ -320,21 +310,11 @@ export default function EnviarEmpresaWirePage() {
         }));
         setTosUrl(data.tos_url);
         if (data.customer_id) setTosCustomerId(data.customer_id);
-        // Navigate pre-popup (already open) to ToS URL — no browser blocking
-        if (prePopup && !prePopup.closed) {
-          prePopup.location.href = data.tos_url;
-          tosPopup.current = prePopup;
-          prePopup = null;
-        } else if (!tosPopup.current || tosPopup.current.closed) {
-          tosPopup.current = window.open(data.tos_url, "bridge_kyc_tos",
-            "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes");
-        }
         setStep("tos");
         return;
       }
       if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
       if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
-      if (prePopup && !prePopup.closed) { prePopup.close(); prePopup = null; }
 
       if (data.needs_kyb) {
         if (!isAutoRetry) setKybSubmitted(false);
@@ -353,7 +333,6 @@ export default function EnviarEmpresaWirePage() {
       }
 
       if (!res.ok || data.error) {
-        if (prePopup && !prePopup.closed) prePopup.close();
         setError(data.error ?? "Error desconocido"); setStep("error"); return;
       }
 
@@ -376,9 +355,7 @@ export default function EnviarEmpresaWirePage() {
       setDestinationRail((data as Record<string, unknown>).destination_rail as string ?? "");
       setOrderId(data.order_id ?? "");
       setStep("instructions");
-      if (prePopup && !prePopup.closed) prePopup.close();
     } catch (e) {
-      if (prePopup && !prePopup.closed) prePopup.close();
       setError((e as Error).message ?? "Error de conexión");
       setStep("error");
     }
@@ -630,24 +607,17 @@ export default function EnviarEmpresaWirePage() {
             </div>
             <button
               onClick={() => {
-                tosPopup.current = window.open(
-                  tosUrl, "bridge_tos",
-                  "width=520,height=680,left=200,top=100,resizable=yes,scrollbars=yes",
-                );
+                // Full-page navigation — works on iOS Safari, Android, and desktop.
+                // Bridge redirects back with ?kyb_done=1 (set in redirect_uri).
+                if (tosUrl) window.location.href = tosUrl;
               }}
               className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
             >
               Abrir Términos de Bridge
             </button>
-            <div className="flex items-center gap-2 text-slate-500 text-xs">
-              <Loader2 className="w-3 h-3 animate-spin shrink-0" />
-              <span>Verificando automáticamente cada 3 s…</span>
-            </div>
             <button
               onClick={() => {
                 if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
-                if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
-                // Button click = user gesture → handleSubmit(false) so KYB popup can auto-open
                 handleSubmit(false);
               }}
               className="w-full text-slate-400 text-sm hover:text-slate-200 transition-colors py-2 border border-slate-700/40 rounded-xl"
@@ -720,8 +690,8 @@ export default function EnviarEmpresaWirePage() {
             ) : kybUrl ? (
               <button
                 onClick={() => {
-                  kybPopup.current = window.open(kybUrl, "bridge_kyb", "width=520,height=700,left=200,top=80,resizable=yes,scrollbars=yes");
-                  setKybPolling(true);
+                  // Full-page navigation — works on iOS Safari, Android, and desktop.
+                  window.location.href = kybUrl;
                 }}
                 className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"
               >

@@ -649,8 +649,11 @@ export default function P2PPage() {
           ) : kycUrl ? (
             <button
               onClick={() => {
-                kycPopup.current = window.open(kycUrl, "bridge_kyc", "width=520,height=700,left=200,top=80,resizable=yes,scrollbars=yes");
-                setKycPolling(true);
+                // Full-page navigation — works on iOS Safari, Android, and desktop.
+                // Bridge redirects back to our app with ?tos_done=1 or ?kyc_done=1.
+                // Form state is already saved to sessionStorage; the URL detection
+                // useEffect will restore it and trigger the retry.
+                window.location.href = kycUrl;
               }}
               className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all text-white font-bold py-4 rounded-2xl text-sm mt-2"
             >

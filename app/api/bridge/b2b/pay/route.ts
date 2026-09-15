@@ -178,7 +178,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (!isSandbox && isNew) {
       try {
         const kybRedirectUri = redirect_uri ?? `${appUrl}/b2b-bridge?t=${encodeURIComponent(token)}&type=b2b&tos_done=1`;
-        const tosLink = await createTosLink({ full_name: business_name, email: sender_email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
+        const tosLink = await createTosLink({ full_name: business_name, email: sender_email.toLowerCase(), type: "business", customer_id: senderCustomer.id, redirect_uri: kybRedirectUri });
         return NextResponse.json({
           needs_tos:   true,
           tos_url:     tosLink.url,

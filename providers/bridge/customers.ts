@@ -15,7 +15,8 @@ export interface BridgeCustomer {
   last_name?:  string;
   business_name?: string;
   created_at:  string;
-  tos_link?:   string;  // Bridge-hosted KYC/TOS URL already embedded in customer object
+  tos_link?:   string;
+  has_accepted_terms_of_service?: boolean;  // Bridge field: true after customer accepts ToS
 }
 
 export interface BridgeKycLink {
@@ -371,58 +372,61 @@ export function getKycUrlFromCustomer(_customer: BridgeCustomer): string | null 
 // Creates a Bridge ToS link for production — required before new customer creation.
 // In sandbox, `signed_agreement_id: crypto.randomUUID()` is used instead.
 // Production: call this, get { id, url }, redirect user to url, then retry checkout.
+// Get a ToS acceptance URL for a customer.
+//
+// Bridge has TWO distinct endpoints:
+//   POST /customers/tos_links                      — generic link, NO body (used pre-customer-creation)
+//   GET  /customers/{customer_id}/tos_acceptance_link — customer-scoped link (correct for existing customers)
+//
+// We always have a customer by the time we call this (getOrCreateCustomer ran first),
+// so we always use the customer-scoped GET endpoint.
+//
+// redirect_uri must be appended as a query param on the returned URL, not in the body.
+// Bridge redirects back to that URL with signed_agreement_id appended as a query param.
+export async function getTosAcceptanceLink(params: {
+  customer_id:  string;
+  redirect_uri?: string;
+}): Promise<{ url: string }> {
+  const raw = await bridgeRequest<Record<string, unknown>>(
+    "GET",
+    `/customers/${params.customer_id}/tos_acceptance_link`,
+  );
+  let url = (raw.url ?? raw.tos_link ?? raw.link ?? "") as string;
+  console.log(`[getTosAcceptanceLink] customer=${params.customer_id} url=${url}`);
+  if (!url) throw new Error("Bridge returned no URL for ToS acceptance link");
+  // Append redirect_uri as query param (Bridge appends signed_agreement_id on return)
+  if (params.redirect_uri) {
+    const sep = url.includes("?") ? "&" : "?";
+    url = `${url}${sep}redirect_uri=${encodeURIComponent(params.redirect_uri)}`;
+  }
+  return { url };
+}
+
+// Backward-compatible wrapper used by invite/pay/send routes.
+// When customer_id is provided (the correct path), delegates to getTosAcceptanceLink.
+// For legacy callers without customer_id, uses POST /customers/tos_links (no body).
 export async function createTosLink(params: {
   full_name:    string;
   email:        string;
   type:         "individual" | "business";
-  customer_id?: string;   // pass when customer already exists — Bridge uses it to locate the record
+  customer_id?: string;
   redirect_uri?: string;
 }): Promise<{ id: string; url: string }> {
-  const day = Math.floor(Date.now() / 86_400_000);
-  // Include a stable tag derived from redirect_uri so that retries with a different
-  // redirect (e.g., different query-string token) get a fresh key — Bridge rejects
-  // the same idempotency key when the request body differs.
-  const uriTag = params.redirect_uri
-    ? params.redirect_uri.replace(/[^a-z0-9]/gi, "").slice(-16)
-    : "none";
-  // Include customer_id in key — same email but different customer_id means different body
-  const cidTag = params.customer_id ? params.customer_id.slice(-8) : "none";
-  const idempKey = `tos-${params.email.toLowerCase()}-${cidTag}-${day}-${uriTag}`;
-  // Helper: Bridge may return the ToS URL in either `url` or `tos_link` field.
-  const extractUrl = (obj: Record<string, unknown>): string =>
-    ((obj.url ?? obj.tos_link ?? obj.link ?? "") as string);
-  try {
-    const raw = await bridgeRequest<Record<string, unknown>>(
-      "POST",
-      "/customers/tos_links",
-      params,
-      idempKey,
-    );
-    const url = extractUrl(raw);
-    console.log(`[createTosLink] response fields: ${Object.keys(raw).join(", ")} url=${url}`);
-    return { id: (raw.id ?? "") as string, url };
-  } catch (e) {
-    const err = e as BridgeError & { details?: Record<string, unknown> };
-    console.error(`[createTosLink] error type=${err.type} msg=${err.message} details=${JSON.stringify(err.details)}`);
-    // Idempotency conflict (same key, different body on a prior call) — Bridge
-    // sometimes embeds the existing resource in the error body so we can return it.
-    const isIdempConflict = err.message?.toLowerCase().includes("idempotency")
-      || err.type?.toLowerCase().includes("idempotency");
-    if (isIdempConflict) {
-      const existing = (err.details?.existing_resource ?? err.details?.tos_link) as
-        Record<string, unknown> | undefined;
-      const url = existing ? extractUrl(existing) : "";
-      if (url) return { id: (existing?.id ?? "") as string, url };
-    }
-    // Duplicate TOS link — customer already has one; extract URL from error details.
-    if (err.type === "duplicate_record") {
-      const existing = (err.details?.existing_tos_link ?? err.details?.existing_resource) as
-        Record<string, unknown> | undefined;
-      const url = existing ? extractUrl(existing) : "";
-      if (url) return { id: (existing?.id ?? "") as string, url };
-    }
-    throw e;
+  if (params.customer_id) {
+    const { url } = await getTosAcceptanceLink({
+      customer_id:  params.customer_id,
+      redirect_uri: params.redirect_uri,
+    });
+    return { id: "", url };
   }
+  // Pre-creation path: Bridge returns a generic ToS link (no body per Bridge docs)
+  const raw = await bridgeRequest<Record<string, unknown>>("POST", "/customers/tos_links");
+  let url = (raw.url ?? raw.tos_link ?? "") as string;
+  if (params.redirect_uri && url) {
+    const sep = url.includes("?") ? "&" : "?";
+    url = `${url}${sep}redirect_uri=${encodeURIComponent(params.redirect_uri)}`;
+  }
+  return { id: (raw.id ?? "") as string, url };
 }
 
 /** Append redirect_uri to any Bridge-hosted page URL so the user is sent back to OmniPay after completing the action. */

@@ -12,7 +12,7 @@
 //   5. Returns shareable payment link: ${APP_URL}/b2b-bridge?t={token}&type=b2b
 
 import { NextRequest, NextResponse }       from "next/server";
-import { getOrCreateCustomer, getCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, createTosLink, appendRedirectUri, RAIL_ENDORSEMENT, ALPHA2_TO_ALPHA3 as ISO3_FROM_ALPHA2 } from "@/providers/bridge/customers";
+import { getOrCreateCustomer, getCustomer, createKycLink, patchCustomerAddress, ensureEndorsements, simulateKycApproval, getTosAcceptanceLink, appendRedirectUri, RAIL_ENDORSEMENT, ALPHA2_TO_ALPHA3 as ISO3_FROM_ALPHA2 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
 import type { CreateLiquidationParams } from "@/providers/bridge/liquidation";
 import { encryptPayload }                  from "@/lib/accountcrypto";
@@ -196,42 +196,39 @@ export async function POST(req: NextRequest): Promise<Response> {
       }
     }
 
-    // ToS gate — show for new/never-started customers (isNew=true).
-    // isNew is true for brand-new customers AND for existing customers with status
-    // incomplete/not_started (Bridge kept the record but they never completed ToS+KYB).
-    if (!isSandbox && isNew) {
-      const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
+    // ToS gate — check has_accepted_terms_of_service from Bridge customer record.
+    // Bridge docs: use GET /customers/{id}/tos_acceptance_link for existing customers.
+    // redirect_uri is appended as a query param on the returned URL (not in the body).
+    const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
+    const needsTos = !isSandbox && customer.has_accepted_terms_of_service === false;
+    console.log(`[bridge/b2b/checkout] tos check: customer=${customer.id} has_accepted=${customer.has_accepted_terms_of_service} needsTos=${needsTos}`);
+    if (needsTos) {
       try {
-        const tosLink = await createTosLink({ full_name: business_name, email: email.toLowerCase(), type: "business", customer_id: customer.id, redirect_uri: kybRedirectUri });
-        const tosUrl = tosLink.url || null;
-        console.log(`[bridge/b2b/checkout] createTosLink ok: url=${tosUrl} id=${tosLink.id}`);
-        if (tosUrl) {
-          return NextResponse.json({
-            needs_tos:   true,
-            tos_url:     tosUrl,
-            customer_id: customer.id,
-            message:     "La empresa debe aceptar los Términos de Bridge antes de continuar.",
-          }, { status: 202 });
-        }
-        console.warn("[bridge/b2b/checkout] createTosLink returned empty url — assuming ToS already accepted");
+        const { url: tosUrl } = await getTosAcceptanceLink({
+          customer_id:  customer.id,
+          redirect_uri: kybRedirectUri,
+        });
+        console.log(`[bridge/b2b/checkout] getTosAcceptanceLink ok: url=${tosUrl}`);
+        return NextResponse.json({
+          needs_tos:   true,
+          tos_url:     tosUrl,
+          customer_id: customer.id,
+          message:     "La empresa debe aceptar los Términos de Bridge antes de continuar.",
+        }, { status: 202 });
       } catch (tosErr) {
         const e = tosErr as Error & { type?: string };
-        if (e.type === "duplicate_record") {
-          console.warn("[bridge/b2b/checkout] createTosLink duplicate_record no url — assuming ToS already accepted");
-        } else {
-          return NextResponse.json({
-            error: "No se pudo generar el link de Términos de Servicio. Por favor intenta de nuevo.",
-            bridge_type: "tos_error",
-            customer_id: customer.id,
-          }, { status: 502 });
-        }
+        console.error(`[bridge/b2b/checkout] getTosAcceptanceLink error: ${e.message}`);
+        return NextResponse.json({
+          error: "No se pudo generar el link de Términos de Servicio. Por favor intenta de nuevo.",
+          bridge_type: "tos_error",
+          customer_id: customer.id,
+        }, { status: 502 });
       }
     }
 
     // KYB gate (production)
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyb && !skipKyc && !isSandbox) {
-      const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
       let kybUrl: string | null = null;
       try {
         const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });

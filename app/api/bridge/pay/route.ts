@@ -159,6 +159,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           full_name:    sender_name,
           email:        sender_email.toLowerCase(),
           type:         "individual",
+          customer_id:  senderCustomer.id,
           redirect_uri: `${appUrl}/pagar?t=${token}&type=p2p&tos_done=1`,
         });
         return NextResponse.json({
