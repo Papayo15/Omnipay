@@ -633,6 +633,14 @@ export default function EnviarEmpresaWirePage() {
                 <p className="text-blue-300 text-sm font-semibold">
                   {kybLongReview ? t("kyb_long_review_title") : kybSubmitted ? t("kyb_submitted_title") : t("kyb_polling_title")}
                 </p>
+                {!kybSubmitted && !kybLongReview && (
+                  <button
+                    onClick={() => { setKybSubmitted(true); setKybLongReview(true); }}
+                    className="text-blue-400/70 text-xs underline underline-offset-2 hover:text-blue-300 transition-colors"
+                  >
+                    {t("kyb_already_done")}
+                  </button>
+                )}
               </div>
             ) : kybUrl ? (
               <button

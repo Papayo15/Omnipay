@@ -474,6 +474,7 @@
     "kyc_intro_back": "← العودة إلى النموذج",
     "kyc_polling_title": "جارٍ التحقق من هويتك...",
     "kyc_polling_body": "نحن نراجع تحققك. قد يستغرق هذا لحظة.",
+    "kyc_already_done": "✓ لقد أكملت التحقق بالفعل",
     "kyc_submitted_title": "تم إرسال التحقق — في انتظار التأكيد",
     "kyc_submitted_body": "تقوم Bridge بمعالجة هويتك. ستتقدم هذه الشاشة تلقائيًا عند الموافقة.",
     "kyc_long_review_title": "جاري التحقق من مستندك",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← العودة إلى النموذج",
     "kyc_polling_title": "جارٍ التحقق من هويتك...",
     "kyc_polling_body": "نحن نتحقق من هويتك. قد يستغرق هذا لحظة.",
+    "kyc_already_done": "✓ لقد أكملت التحقق بالفعل",
     "kyc_submitted_title": "تم إرسال التحقق — في انتظار التأكيد",
     "kyc_submitted_body": "تقوم Bridge بمعالجة هويتك. ستتقدم هذه الشاشة تلقائيًا عند الموافقة.",
     "kyc_long_review_title": "جاري التحقق من مستندك",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "تقوم Bridge بمعالجة هويتك. ستتقدم هذه الشاشة تلقائيًا عند الموافقة.",
     "kyc_long_review_title": "المستند قيد المراجعة",
     "kyc_long_review_body": "قد يستغرق هذا بضع دقائق. ستتقدم هذه الشاشة تلقائيًا.",
-    "kyc_rejected_error": "تم رفض تحققك من قبل Bridge. ربما يوجد حساب بياناتك بالفعل. تواصل مع الدعم: support@omnipay.solutions"
+    "kyc_rejected_error": "تم رفض تحققك من قبل Bridge. ربما يوجد حساب بياناتك بالفعل. تواصل مع الدعم: support@omnipay.solutions",
+    "kyc_already_done": "✓ لقد أكملت التحقق بالفعل"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "التحقق من شركتي →",
     "kyb_polling_title": "تحقق من شركتك في النافذة المفتوحة",
+    "kyb_already_done": "✓ لقد أكملت التحقق من الشركة بالفعل",
     "kyb_after": "بعد التحقق من شركتك، عد إلى هنا للمتابعة.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

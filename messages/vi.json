@@ -474,6 +474,7 @@
     "kyc_intro_back": "← Quay lại biểu mẫu",
     "kyc_polling_title": "Đang xác minh danh tính của bạn...",
     "kyc_polling_body": "Chúng tôi đang kiểm tra xác minh của bạn. Có thể mất một chút thời gian.",
+    "kyc_already_done": "✓ Tôi đã hoàn thành xác minh",
     "kyc_submitted_title": "Đã gửi xác minh — đang chờ xác nhận",
     "kyc_submitted_body": "Bridge đang xử lý danh tính của bạn. Màn hình sẽ tự động chuyển tiếp khi được chấp thuận.",
     "kyc_long_review_title": "Tài liệu của bạn đang được xác thực",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← Quay lại biểu mẫu",
     "kyc_polling_title": "Đang xác minh danh tính của bạn...",
     "kyc_polling_body": "Chúng tôi đang xác minh danh tính của bạn. Có thể mất một chút thời gian.",
+    "kyc_already_done": "✓ Tôi đã hoàn thành xác minh",
     "kyc_submitted_title": "Đã gửi xác minh — đang chờ xác nhận",
     "kyc_submitted_body": "Bridge đang xử lý danh tính của bạn. Màn hình sẽ tự động chuyển tiếp khi được chấp thuận.",
     "kyc_long_review_title": "Tài liệu của bạn đang được xác thực",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "Bridge đang xử lý danh tính của bạn. Màn hình sẽ tự động chuyển tiếp khi được chấp thuận.",
     "kyc_long_review_title": "Tài liệu đang được xem xét",
     "kyc_long_review_body": "Có thể mất vài phút. Màn hình sẽ tự động chuyển tiếp.",
-    "kyc_rejected_error": "Xác minh của bạn bị Bridge từ chối. Có thể đã tồn tại tài khoản với thông tin của bạn. Liên hệ hỗ trợ: support@omnipay.solutions"
+    "kyc_rejected_error": "Xác minh của bạn bị Bridge từ chối. Có thể đã tồn tại tài khoản với thông tin của bạn. Liên hệ hỗ trợ: support@omnipay.solutions",
+    "kyc_already_done": "✓ Tôi đã hoàn thành xác minh"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Xác minh công ty của tôi →",
     "kyb_polling_title": "Xác minh doanh nghiệp trong cửa sổ đang mở",
+    "kyb_already_done": "✓ Tôi đã hoàn thành xác minh doanh nghiệp",
     "kyb_after": "Sau khi công ty được xác minh, quay lại đây để tiếp tục.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

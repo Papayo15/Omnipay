@@ -328,6 +328,7 @@
     "kyc_intro_back": "← Volver al formulario",
     "kyc_polling_title": "Verificando tu identidad...",
     "kyc_polling_body": "Estamos revisando tu verificación. Esto puede tomar un momento.",
+    "kyc_already_done": "✓ Ya completé la verificación",
     "kyc_polling_wait": "Si tardas más de 2 minutos, cierra esta ventana y vuelve con el mismo link.",
     "kyc_polling_approved": "✓ Identidad verificada — Generando tu link de cobro...",
     "label_recipient_phone": "Tu teléfono (para aviso de pago, opcional)",
@@ -532,6 +533,7 @@
     "kyc_intro_back": "← Volver al formulario",
     "kyc_polling_title": "Verificando tu identidad...",
     "kyc_polling_body": "Estamos revisando tu verificación de identidad. Esto puede tardar un momento.",
+    "kyc_already_done": "✓ Ya completé la verificación",
     "kyc_polling_wait": "Si tardas más de 2 minutos, cierra esta ventana y vuelve con el mismo link.",
     "kyc_polling_approved": "✓ Identidad verificada — Generando instrucciones de depósito...",
     "form_email_label": "Tu email",
@@ -755,6 +757,7 @@
     "eta_sepa_instant": "~10 segundos (SEPA Instant)",
     "kyc_polling_title": "Verifica tu identidad en la ventana abierta",
     "kyc_polling_body": "Completa la verificación en la ventana que se abrió. Esta pantalla avanzará sola cuando Bridge confirme tu identidad.",
+    "kyc_already_done": "✓ Ya completé la verificación",
     "kyc_submitted_title": "Verificación enviada — esperando confirmación",
     "kyc_submitted_body": "Bridge está procesando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.",
     "kyc_long_review_title": "Tu documento está en validación",
@@ -964,7 +967,8 @@
     "kyb_long_review_title": "Empresa en revisión",
     "kyb_long_review_body": "Bridge está revisando la documentación de tu empresa. Esta pantalla avanzará sola.",
     "kyb_rejected_error": "La verificación de tu empresa fue rechazada por Bridge. Puede ser que ya exista una cuenta con esos datos. Contacta soporte en support@omnipay.solutions",
-    "kyb_polling_title": "Verifica tu empresa en la ventana abierta"
+    "kyb_polling_title": "Verifica tu empresa en la ventana abierta",
+    "kyb_already_done": "✓ Ya completé la verificación de empresa"
   },
   "recibir_empresa": {
     "title": "Wire Empresarial — Recibir",

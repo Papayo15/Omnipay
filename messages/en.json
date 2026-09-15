@@ -332,6 +332,7 @@
     "kyc_intro_back": "← Back to the form",
     "kyc_polling_title": "Verifying your identity...",
     "kyc_polling_body": "We're checking your verification. This may take a moment.",
+    "kyc_already_done": "✓ I already completed verification",
     "kyc_submitted_title": "Verification submitted — awaiting confirmation",
     "kyc_submitted_body": "Bridge is processing your identity. This screen will advance automatically when approved.",
     "kyc_long_review_title": "Your document is being validated",
@@ -551,6 +552,7 @@
     "kyc_intro_back": "← Back to the form",
     "kyc_polling_title": "Verifying your identity...",
     "kyc_polling_body": "We're checking your identity verification. This may take a moment.",
+    "kyc_already_done": "✓ I already completed verification",
     "kyc_submitted_title": "Verification submitted — awaiting confirmation",
     "kyc_submitted_body": "Bridge is processing your identity. This screen will advance automatically when approved.",
     "kyc_long_review_title": "Your document is being validated",
@@ -776,7 +778,8 @@
     "kyc_submitted_body": "Bridge is processing your identity. This screen will advance automatically when approved.",
     "kyc_long_review_title": "Document under review",
     "kyc_long_review_body": "This may take a few minutes. This screen will advance automatically.",
-    "kyc_rejected_error": "Your verification was rejected by Bridge. An account with your details may already exist. Contact support at support@omnipay.solutions"
+    "kyc_rejected_error": "Your verification was rejected by Bridge. An account with your details may already exist. Contact support at support@omnipay.solutions",
+    "kyc_already_done": "✓ I already completed verification"
   },
   "recibir": {
     "loading": "Verifying your invitation...",
@@ -870,6 +873,7 @@
     "kyb_body": "Bridge requires verifying your company before processing the wire. Takes a few minutes and is done only once.",
     "kyb_cta": "Verify my company →",
     "kyb_polling_title": "Verify your business in the open window",
+    "kyb_already_done": "✓ I already completed business verification",
     "kyb_after": "Once your company is verified, return here to continue.",
     "sandbox_simulate_kyb": "⚡ Simulate business KYB (sandbox)",
     "source_currency": "What currency will you deposit in?",

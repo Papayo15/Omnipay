@@ -474,6 +474,7 @@
     "kyc_intro_back": "← फॉर्म पर वापस जाएं",
     "kyc_polling_title": "आपकी पहचान सत्यापित हो रही है...",
     "kyc_polling_body": "हम आपका सत्यापन जांच रहे हैं। इसमें एक पल लग सकता है।",
+    "kyc_already_done": "✓ मैंने सत्यापन पूरा कर लिया है",
     "kyc_submitted_title": "सत्यापन जमा किया गया — पुष्टि की प्रतीक्षा में",
     "kyc_submitted_body": "Bridge आपकी पहचान प्रोसेस कर रहा है। अनुमोदन होने पर यह स्क्रीन स्वतः आगे बढ़ेगी।",
     "kyc_long_review_title": "आपके दस्तावेज़ की जाँच हो रही है",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← फॉर्म पर वापस जाएं",
     "kyc_polling_title": "आपकी पहचान सत्यापित हो रही है...",
     "kyc_polling_body": "हम आपकी पहचान सत्यापन जांच रहे हैं। इसमें एक पल लग सकता है।",
+    "kyc_already_done": "✓ मैंने सत्यापन पूरा कर लिया है",
     "kyc_submitted_title": "सत्यापन जमा किया गया — पुष्टि की प्रतीक्षा में",
     "kyc_submitted_body": "Bridge आपकी पहचान प्रोसेस कर रहा है। अनुमोदन होने पर यह स्क्रीन स्वतः आगे बढ़ेगी।",
     "kyc_long_review_title": "आपके दस्तावेज़ की जाँच हो रही है",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "Bridge आपकी पहचान प्रोसेस कर रहा है। अनुमोदन होने पर यह स्क्रीन स्वतः आगे बढ़ेगी।",
     "kyc_long_review_title": "दस्तावेज़ समीक्षाधीन",
     "kyc_long_review_body": "कुछ मिनट लग सकते हैं। यह स्क्रीन स्वतः आगे बढ़ेगी।",
-    "kyc_rejected_error": "Bridge ने आपका सत्यापन अस्वीकार कर दिया। आपके डेटा से पहले से खाता मौजूद हो सकता है। सहायता से संपर्क करें: support@omnipay.solutions"
+    "kyc_rejected_error": "Bridge ने आपका सत्यापन अस्वीकार कर दिया। आपके डेटा से पहले से खाता मौजूद हो सकता है। सहायता से संपर्क करें: support@omnipay.solutions",
+    "kyc_already_done": "✓ मैंने सत्यापन पूरा कर लिया है"
   },
   "recibir": {
     "loading": "आपका आमंत्रण सत्यापित हो रहा है...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "मेरी कंपनी सत्यापित करें →",
     "kyb_polling_title": "खुली विंडो में अपनी कंपनी सत्यापित करें",
+    "kyb_already_done": "✓ मैंने कंपनी सत्यापन पूरा कर लिया है",
     "kyb_after": "कंपनी सत्यापित होने के बाद, यहाँ वापस आएं।",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

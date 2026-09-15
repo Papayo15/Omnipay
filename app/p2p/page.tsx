@@ -532,6 +532,14 @@ export default function P2PPage() {
               <p className="text-emerald-300 text-sm font-semibold">
                 {kycLongReview ? t("kyc_long_review_title") : kycSubmitted ? t("kyc_submitted_title") : t("kyc_polling_title")}
               </p>
+              {!kycSubmitted && !kycLongReview && (
+                <button
+                  onClick={() => { setKycSubmitted(true); setKycLongReview(true); }}
+                  className="text-emerald-400/70 text-xs underline underline-offset-2 hover:text-emerald-300 transition-colors"
+                >
+                  {t("kyc_already_done")}
+                </button>
+              )}
             </div>
           ) : kycUrl ? (
             <button

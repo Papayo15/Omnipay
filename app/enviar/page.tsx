@@ -866,6 +866,14 @@ export default function EnviarPage() {
                     <p className="text-slate-400 text-xs">
                       {kycSubmitted ? t("kyc_submitted_body") : t("kyc_polling_body")}
                     </p>
+                    {!kycSubmitted && (
+                      <button
+                        onClick={() => { setKycSubmitted(true); setKycLongReview(true); }}
+                        className="text-[#00C9C8] text-xs underline underline-offset-2 hover:text-white transition-colors mt-1"
+                      >
+                        {t("kyc_already_done")}
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 text-center space-y-2">

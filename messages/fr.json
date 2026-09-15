@@ -474,6 +474,7 @@
     "kyc_intro_back": "← Retour au formulaire",
     "kyc_polling_title": "Vérification de votre identité...",
     "kyc_polling_body": "Nous vérifions votre dossier. Cela peut prendre un moment.",
+    "kyc_already_done": "✓ J'ai déjà complété la vérification",
     "kyc_submitted_title": "Vérification soumise — en attente de confirmation",
     "kyc_submitted_body": "Bridge traite votre identité. Cet écran avancera automatiquement dès l'approbation.",
     "kyc_long_review_title": "Votre document est en cours de validation",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← Retour au formulaire",
     "kyc_polling_title": "Vérification de votre identité...",
     "kyc_polling_body": "Nous vérifions votre identité. Cela peut prendre un moment.",
+    "kyc_already_done": "✓ J'ai déjà complété la vérification",
     "kyc_submitted_title": "Vérification soumise — en attente de confirmation",
     "kyc_submitted_body": "Bridge traite votre identité. Cet écran avancera automatiquement dès l'approbation.",
     "kyc_long_review_title": "Votre document est en cours de validation",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "Bridge traite votre identité. Cet écran avancera automatiquement dès l'approbation.",
     "kyc_long_review_title": "Document en cours de vérification",
     "kyc_long_review_body": "Cela peut prendre quelques minutes. Cet écran avancera automatiquement.",
-    "kyc_rejected_error": "Votre vérification a été rejetée par Bridge. Un compte avec vos coordonnées existe peut-être déjà. Contactez le support : support@omnipay.solutions"
+    "kyc_rejected_error": "Votre vérification a été rejetée par Bridge. Un compte avec vos coordonnées existe peut-être déjà. Contactez le support : support@omnipay.solutions",
+    "kyc_already_done": "✓ J'ai déjà complété la vérification"
   },
   "recibir": {
     "loading": "Vérification de votre invitation...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Vérifier mon entreprise →",
     "kyb_polling_title": "Vérifiez votre entreprise dans la fenêtre ouverte",
+    "kyb_already_done": "✓ J'ai déjà complété la vérification d'entreprise",
     "kyb_after": "Après la vérification de votre entreprise, revenez ici pour continuer.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

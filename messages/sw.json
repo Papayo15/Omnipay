@@ -474,6 +474,7 @@
     "kyc_intro_back": "← Rudi kwenye fomu",
     "kyc_polling_title": "Kuthibitisha utambulisho wako...",
     "kyc_polling_body": "Tunakagua uthibitisho wako. Inaweza kuchukua muda kidogo.",
+    "kyc_already_done": "✓ Nimekamilisha uthibitisho",
     "kyc_submitted_title": "Uthibitisho umetumwa — kusubiri uthibitisho",
     "kyc_submitted_body": "Bridge inashughulikia utambulisho wako. Skrini hii itaendelea moja kwa moja baada ya kuidhinishwa.",
     "kyc_long_review_title": "Hati yako inathibitishwa",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← Rudi kwenye fomu",
     "kyc_polling_title": "Kuthibitisha utambulisho wako...",
     "kyc_polling_body": "Tunakagua uthibitisho wako wa utambulisho. Inaweza kuchukua muda kidogo.",
+    "kyc_already_done": "✓ Nimekamilisha uthibitisho",
     "kyc_submitted_title": "Uthibitisho umetumwa — kusubiri uthibitisho",
     "kyc_submitted_body": "Bridge inashughulikia utambulisho wako. Skrini hii itaendelea moja kwa moja baada ya kuidhinishwa.",
     "kyc_long_review_title": "Hati yako inathibitishwa",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "Bridge inashughulikia utambulisho wako. Skrini hii itaendelea moja kwa moja baada ya kuidhinishwa.",
     "kyc_long_review_title": "Hati inapitiwa",
     "kyc_long_review_body": "Inaweza kuchukua dakika chache. Skrini hii itaendelea moja kwa moja.",
-    "kyc_rejected_error": "Uthibitisho wako ulikataliwa na Bridge. Akaunti yenye data yako inaweza kuwepo tayari. Wasiliana na usaidizi: support@omnipay.solutions"
+    "kyc_rejected_error": "Uthibitisho wako ulikataliwa na Bridge. Akaunti yenye data yako inaweza kuwepo tayari. Wasiliana na usaidizi: support@omnipay.solutions",
+    "kyc_already_done": "✓ Nimekamilisha uthibitisho"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Thibitisha kampuni yangu →",
     "kyb_polling_title": "Thibitisha kampuni yako katika dirisha lililofunguliwa",
+    "kyb_already_done": "✓ Nimekamilisha uthibitisho wa kampuni",
     "kyb_after": "Baada ya kuthibitisha kampuni, rudi hapa ili kuendelea.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

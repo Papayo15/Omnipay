@@ -474,6 +474,7 @@
     "kyc_intro_back": "← Zurück zum Formular",
     "kyc_polling_title": "Identität wird verifiziert...",
     "kyc_polling_body": "Wir prüfen Ihre Verifizierung. Das kann einen Moment dauern.",
+    "kyc_already_done": "✓ Ich habe die Verifizierung abgeschlossen",
     "kyc_submitted_title": "Verifizierung eingereicht — warte auf Bestätigung",
     "kyc_submitted_body": "Bridge verarbeitet deine Identität. Diese Seite aktualisiert sich automatisch, sobald du genehmigt bist.",
     "kyc_long_review_title": "Dokument wird überprüft",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← Zurück zum Formular",
     "kyc_polling_title": "Identität wird verifiziert...",
     "kyc_polling_body": "Wir prüfen Ihre Identitätsverifizierung. Das kann einen Moment dauern.",
+    "kyc_already_done": "✓ Ich habe die Verifizierung abgeschlossen",
     "kyc_submitted_title": "Verifizierung eingereicht — warte auf Bestätigung",
     "kyc_submitted_body": "Bridge verarbeitet deine Identität. Diese Seite aktualisiert sich automatisch, sobald du genehmigt bist.",
     "kyc_long_review_title": "Dokument wird überprüft",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "Bridge verarbeitet deine Identität. Diese Seite aktualisiert sich automatisch, sobald du genehmigt bist.",
     "kyc_long_review_title": "Dokument wird geprüft",
     "kyc_long_review_body": "Das kann einige Minuten dauern. Diese Seite aktualisiert sich automatisch.",
-    "kyc_rejected_error": "Deine Verifizierung wurde von Bridge abgelehnt. Möglicherweise existiert bereits ein Konto mit deinen Daten. Kontaktiere den Support: support@omnipay.solutions"
+    "kyc_rejected_error": "Deine Verifizierung wurde von Bridge abgelehnt. Möglicherweise existiert bereits ein Konto mit deinen Daten. Kontaktiere den Support: support@omnipay.solutions",
+    "kyc_already_done": "✓ Ich habe die Verifizierung abgeschlossen"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Mein Unternehmen verifizieren →",
     "kyb_polling_title": "Unternehmen im geöffneten Fenster verifizieren",
+    "kyb_already_done": "✓ Ich habe die Unternehmensverifizierung abgeschlossen",
     "kyb_after": "Nach der Unternehmensverifizierung hier zurückkehren.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

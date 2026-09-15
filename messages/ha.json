@@ -474,6 +474,7 @@
     "kyc_intro_back": "← Koma zuwa fom",
     "kyc_polling_title": "Ana tabbatar da asalinka...",
     "kyc_polling_body": "Muna duba tabbatarwa. Wannan na iya ɗaukar ɗan lokaci.",
+    "kyc_already_done": "✓ Na riga na kammala tabbatarwa",
     "kyc_submitted_title": "An aika tabbatarwa — ana jiran tabbaci",
     "kyc_submitted_body": "Bridge na sarrafa shaida naka. Wannan allon zai ci gaba ta atomatik bayan amincewar.",
     "kyc_long_review_title": "Ana tabbatar da takardarku",
@@ -572,6 +573,7 @@
     "kyc_intro_back": "← Koma zuwa fom",
     "kyc_polling_title": "Ana tabbatar da asalinka...",
     "kyc_polling_body": "Muna tabbatar da asalinka. Wannan na iya ɗaukar ɗan lokaci.",
+    "kyc_already_done": "✓ Na riga na kammala tabbatarwa",
     "kyc_submitted_title": "An aika tabbatarwa — ana jiran tabbaci",
     "kyc_submitted_body": "Bridge na sarrafa shaida naka. Wannan allon zai ci gaba ta atomatik bayan amincewar.",
     "kyc_long_review_title": "Ana tabbatar da takardarku",
@@ -774,7 +776,8 @@
     "kyc_submitted_body": "Bridge na sarrafa shaida naka. Wannan allon zai ci gaba ta atomatik bayan amincewar.",
     "kyc_long_review_title": "Ana duba takarda",
     "kyc_long_review_body": "Zai iya ɗaukar mintuna kaɗan. Wannan allon zai ci gaba ta atomatik.",
-    "kyc_rejected_error": "An ƙi tabbatarwarka daga Bridge. Wataƙila akwai asusun da bayananka. Tuntuɓi tallafi: support@omnipay.solutions"
+    "kyc_rejected_error": "An ƙi tabbatarwarka daga Bridge. Wataƙila akwai asusun da bayananka. Tuntuɓi tallafi: support@omnipay.solutions",
+    "kyc_already_done": "✓ Na riga na kammala tabbatarwa"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",
@@ -871,6 +874,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Tabbatar da kamfanina →",
     "kyb_polling_title": "Tabbatar da kamfaninka a taga mai buɗe",
+    "kyb_already_done": "✓ Na riga na kammala tabbatarwa ta kamfani",
     "kyb_after": "Bayan tabbatar da kamfaninku, dawo nan don ci gaba.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

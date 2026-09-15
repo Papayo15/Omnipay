@@ -474,6 +474,7 @@
     "kyc_intro_back": "← Forma geri dön",
     "kyc_polling_title": "Kimliğiniz doğrulanıyor...",
     "kyc_polling_body": "Doğrulamanızı kontrol ediyoruz. Bu biraz zaman alabilir.",
+    "kyc_already_done": "✓ Doğrulamayı tamamladım",
     "kyc_submitted_title": "Doğrulama gönderildi — onay bekleniyor",
     "kyc_submitted_body": "Bridge kimliğinizi işliyor. Onaylandığında bu ekran otomatik olarak ilerleyecek.",
     "kyc_long_review_title": "Belgeniz doğrulanıyor",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← Forma geri dön",
     "kyc_polling_title": "Kimliğiniz doğrulanıyor...",
     "kyc_polling_body": "Kimlik doğrulamanızı kontrol ediyoruz. Bu biraz zaman alabilir.",
+    "kyc_already_done": "✓ Doğrulamayı tamamladım",
     "kyc_submitted_title": "Doğrulama gönderildi — onay bekleniyor",
     "kyc_submitted_body": "Bridge kimliğinizi işliyor. Onaylandığında bu ekran otomatik olarak ilerleyecek.",
     "kyc_long_review_title": "Belgeniz doğrulanıyor",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "Bridge kimliğinizi işliyor. Onaylandığında bu ekran otomatik olarak ilerleyecek.",
     "kyc_long_review_title": "Belge inceleniyor",
     "kyc_long_review_body": "Bu birkaç dakika sürebilir. Bu ekran otomatik olarak ilerleyecek.",
-    "kyc_rejected_error": "Doğrulamanız Bridge tarafından reddedildi. Bilgilerinizle zaten bir hesap mevcut olabilir. Destek ekibiyle iletişime geçin: support@omnipay.solutions"
+    "kyc_rejected_error": "Doğrulamanız Bridge tarafından reddedildi. Bilgilerinizle zaten bir hesap mevcut olabilir. Destek ekibiyle iletişime geçin: support@omnipay.solutions",
+    "kyc_already_done": "✓ Doğrulamayı tamamladım"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Şirketimi doğrula →",
     "kyb_polling_title": "Açık pencerede şirketinizi doğrulayın",
+    "kyb_already_done": "✓ Şirket doğrulamasını tamamladım",
     "kyb_after": "Şirket doğrulandıktan sonra buraya dönün ve devam edin.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

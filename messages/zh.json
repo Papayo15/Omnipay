@@ -474,6 +474,7 @@
     "kyc_intro_back": "← 返回表单",
     "kyc_polling_title": "正在验证您的身份...",
     "kyc_polling_body": "我们正在检查您的验证状态，请稍候。",
+    "kyc_already_done": "✓ 我已完成验证",
     "kyc_submitted_title": "验证已提交 — 等待确认",
     "kyc_submitted_body": "Bridge 正在处理您的身份。批准后此页面将自动跳转。",
     "kyc_long_review_title": "您的文件正在验证中",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← 返回表单",
     "kyc_polling_title": "正在验证您的身份...",
     "kyc_polling_body": "我们正在验证您的身份，请稍候。",
+    "kyc_already_done": "✓ 我已完成验证",
     "kyc_submitted_title": "验证已提交 — 等待确认",
     "kyc_submitted_body": "Bridge 正在处理您的身份。批准后此页面将自动跳转。",
     "kyc_long_review_title": "您的文件正在验证中",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "Bridge 正在处理您的身份。批准后此页面将自动跳转。",
     "kyc_long_review_title": "文件审核中",
     "kyc_long_review_body": "可能需要几分钟。此页面将自动跳转。",
-    "kyc_rejected_error": "您的验证被 Bridge 拒绝。您的信息可能已存在账户。请联系支持：support@omnipay.solutions"
+    "kyc_rejected_error": "您的验证被 Bridge 拒绝。您的信息可能已存在账户。请联系支持：support@omnipay.solutions",
+    "kyc_already_done": "✓ 我已完成验证"
   },
   "recibir": {
     "loading": "正在验证邀请...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "验证我的公司 →",
     "kyb_polling_title": "请在打开的窗口中验证您的企业",
+    "kyb_already_done": "✓ 我已完成企业验证",
     "kyb_after": "公司验证后，返回此页面继续。",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

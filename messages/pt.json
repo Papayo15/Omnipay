@@ -474,6 +474,7 @@
     "kyc_intro_back": "← Voltar ao formulário",
     "kyc_polling_title": "Verificando sua identidade...",
     "kyc_polling_body": "Estamos verificando seu cadastro. Isso pode levar um momento.",
+    "kyc_already_done": "✓ Já completei a verificação",
     "kyc_submitted_title": "Verificação enviada — aguardando confirmação",
     "kyc_submitted_body": "A Bridge está processando sua identidade. Esta tela avançará automaticamente quando aprovada.",
     "kyc_long_review_title": "Seu documento está sendo validado",
@@ -572,6 +573,7 @@
     "kyc_intro_back": "← Voltar ao formulário",
     "kyc_polling_title": "Verificando sua identidade...",
     "kyc_polling_body": "Estamos verificando sua identidade. Isso pode levar um momento.",
+    "kyc_already_done": "✓ Já completei a verificação",
     "kyc_submitted_title": "Verificação enviada — aguardando confirmação",
     "kyc_submitted_body": "A Bridge está processando sua identidade. Esta tela avançará automaticamente quando aprovada.",
     "kyc_long_review_title": "Seu documento está sendo validado",
@@ -774,7 +776,8 @@
     "kyc_submitted_body": "A Bridge está processando sua identidade. Esta tela avançará automaticamente quando aprovada.",
     "kyc_long_review_title": "Documento em análise",
     "kyc_long_review_body": "Pode levar alguns minutos. Esta tela avançará automaticamente.",
-    "kyc_rejected_error": "Sua verificação foi rejeitada pela Bridge. Pode já existir uma conta com seus dados. Contate o suporte: support@omnipay.solutions"
+    "kyc_rejected_error": "Sua verificação foi rejeitada pela Bridge. Pode já existir uma conta com seus dados. Contate o suporte: support@omnipay.solutions",
+    "kyc_already_done": "✓ Já completei a verificação"
   },
   "recibir": {
     "loading": "Verificando seu convite...",
@@ -871,6 +874,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Verificar minha empresa →",
     "kyb_polling_title": "Verifique sua empresa na janela aberta",
+    "kyb_already_done": "✓ Já completei a verificação da empresa",
     "kyb_after": "Após a verificação da empresa, volte aqui para continuar.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

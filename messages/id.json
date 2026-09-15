@@ -474,6 +474,7 @@
     "kyc_intro_back": "← Kembali ke formulir",
     "kyc_polling_title": "Memverifikasi identitas Anda...",
     "kyc_polling_body": "Kami sedang memeriksa verifikasi Anda. Ini mungkin membutuhkan waktu sebentar.",
+    "kyc_already_done": "✓ Saya sudah menyelesaikan verifikasi",
     "kyc_submitted_title": "Verifikasi terkirim — menunggu konfirmasi",
     "kyc_submitted_body": "Bridge sedang memproses identitas Anda. Layar ini akan otomatis lanjut setelah disetujui.",
     "kyc_long_review_title": "Dokumen Anda sedang divalidasi",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← Kembali ke formulir",
     "kyc_polling_title": "Memverifikasi identitas Anda...",
     "kyc_polling_body": "Kami sedang memverifikasi identitas Anda. Ini mungkin membutuhkan waktu sebentar.",
+    "kyc_already_done": "✓ Saya sudah menyelesaikan verifikasi",
     "kyc_submitted_title": "Verifikasi terkirim — menunggu konfirmasi",
     "kyc_submitted_body": "Bridge sedang memproses identitas Anda. Layar ini akan otomatis lanjut setelah disetujui.",
     "kyc_long_review_title": "Dokumen Anda sedang divalidasi",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "Bridge sedang memproses identitas Anda. Layar ini akan otomatis lanjut setelah disetujui.",
     "kyc_long_review_title": "Dokumen sedang ditinjau",
     "kyc_long_review_body": "Mungkin memerlukan beberapa menit. Layar ini akan otomatis lanjut.",
-    "kyc_rejected_error": "Verifikasi Anda ditolak oleh Bridge. Akun dengan data Anda mungkin sudah ada. Hubungi dukungan: support@omnipay.solutions"
+    "kyc_rejected_error": "Verifikasi Anda ditolak oleh Bridge. Akun dengan data Anda mungkin sudah ada. Hubungi dukungan: support@omnipay.solutions",
+    "kyc_already_done": "✓ Saya sudah menyelesaikan verifikasi"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Verifikasi perusahaan saya →",
     "kyb_polling_title": "Verifikasi perusahaan Anda di jendela yang terbuka",
+    "kyb_already_done": "✓ Saya sudah menyelesaikan verifikasi perusahaan",
     "kyb_after": "Setelah perusahaan terverifikasi, kembali ke sini untuk melanjutkan.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

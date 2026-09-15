@@ -474,6 +474,7 @@
     "kyc_intro_back": "← Terug naar het formulier",
     "kyc_polling_title": "Uw identiteit wordt geverifieerd...",
     "kyc_polling_body": "We controleren uw verificatie. Dit kan even duren.",
+    "kyc_already_done": "✓ Ik heb de verificatie voltooid",
     "kyc_submitted_title": "Verificatie ingediend — wachten op bevestiging",
     "kyc_submitted_body": "Bridge verwerkt uw identiteit. Dit scherm gaat automatisch verder zodra het goedgekeurd is.",
     "kyc_long_review_title": "Uw document wordt gevalideerd",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← Terug naar het formulier",
     "kyc_polling_title": "Uw identiteit wordt geverifieerd...",
     "kyc_polling_body": "We controleren uw identiteitsverificatie. Dit kan even duren.",
+    "kyc_already_done": "✓ Ik heb de verificatie voltooid",
     "kyc_submitted_title": "Verificatie ingediend — wachten op bevestiging",
     "kyc_submitted_body": "Bridge verwerkt uw identiteit. Dit scherm gaat automatisch verder zodra het goedgekeurd is.",
     "kyc_long_review_title": "Uw document wordt gevalideerd",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "Bridge verwerkt uw identiteit. Dit scherm gaat automatisch verder zodra het goedgekeurd is.",
     "kyc_long_review_title": "Document wordt beoordeeld",
     "kyc_long_review_body": "Dit kan enkele minuten duren. Dit scherm gaat automatisch verder.",
-    "kyc_rejected_error": "Uw verificatie is geweigerd door Bridge. Er bestaat mogelijk al een account met uw gegevens. Neem contact op met support: support@omnipay.solutions"
+    "kyc_rejected_error": "Uw verificatie is geweigerd door Bridge. Er bestaat mogelijk al een account met uw gegevens. Neem contact op met support: support@omnipay.solutions",
+    "kyc_already_done": "✓ Ik heb de verificatie voltooid"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Mijn bedrijf verifiëren →",
     "kyb_polling_title": "Verifieer uw bedrijf in het geopende venster",
+    "kyb_already_done": "✓ Ik heb de bedrijfsverificatie voltooid",
     "kyb_after": "Na bedrijfsverificatie hier terugkeren om door te gaan.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",

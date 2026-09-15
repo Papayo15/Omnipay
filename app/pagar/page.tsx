@@ -460,6 +460,14 @@ export default function PagarPage() {
               <p className="text-[#00C9C8] text-sm font-semibold">
                 {kycLongReview ? t("kyc_long_review_title") : kycSubmitted ? t("kyc_submitted_title") : t("kyc_polling_title")}
               </p>
+              {!kycSubmitted && !kycLongReview && (
+                <button
+                  onClick={() => { setKycSubmitted(true); setKycLongReview(true); }}
+                  className="text-[#00C9C8]/70 text-xs underline underline-offset-2 hover:text-[#00C9C8] transition-colors"
+                >
+                  {t("kyc_already_done")}
+                </button>
+              )}
             </div>
           ) : kycUrl ? (
             <button

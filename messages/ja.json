@@ -474,6 +474,7 @@
     "kyc_intro_back": "← フォームに戻る",
     "kyc_polling_title": "本人確認中...",
     "kyc_polling_body": "確認を検証しています。少々お待ちください。",
+    "kyc_already_done": "✓ 確認を完了しました",
     "kyc_submitted_title": "確認書類を提出しました — 承認待ち",
     "kyc_submitted_body": "Bridge が本人確認を処理中です。承認されると自動的に次のステップへ進みます。",
     "kyc_long_review_title": "書類を検証中です",
@@ -573,6 +574,7 @@
     "kyc_intro_back": "← フォームに戻る",
     "kyc_polling_title": "本人確認中...",
     "kyc_polling_body": "本人確認を検証しています。少々お待ちください。",
+    "kyc_already_done": "✓ 確認を完了しました",
     "kyc_submitted_title": "確認書類を提出しました — 承認待ち",
     "kyc_submitted_body": "Bridge が本人確認を処理中です。承認されると自動的に次のステップへ進みます。",
     "kyc_long_review_title": "書類を検証中です",
@@ -775,7 +777,8 @@
     "kyc_submitted_body": "Bridge が本人確認を処理中です。承認されると自動的に次のステップへ進みます。",
     "kyc_long_review_title": "書類審査中",
     "kyc_long_review_body": "数分かかる場合があります。承認後は自動的に進みます。",
-    "kyc_rejected_error": "Bridge による本人確認が拒否されました。すでに同じ情報でアカウントが存在する可能性があります。サポートへ連絡してください：support@omnipay.solutions"
+    "kyc_rejected_error": "Bridge による本人確認が拒否されました。すでに同じ情報でアカウントが存在する可能性があります。サポートへ連絡してください：support@omnipay.solutions",
+    "kyc_already_done": "✓ 確認を完了しました"
   },
   "recibir": {
     "loading": "招待を確認中...",
@@ -872,6 +875,7 @@
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "会社を確認する →",
     "kyb_polling_title": "開いたウィンドウで法人確認を行ってください",
+    "kyb_already_done": "✓ 法人確認を完了しました",
     "kyb_after": "会社確認後、ここに戻って続けてください。",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
