@@ -19,8 +19,9 @@ export async function GET(req: NextRequest): Promise<Response> {
     const kycStatus  = c.kyc_status as string | undefined;
     const kybStatus  = c.kyb_status as string | undefined;
     const baseStatus = customer.status;
-    const approved   = baseStatus === "active" || baseStatus === "approved"
-      || kycStatus === "approved" || kybStatus === "approved";
+    const isApproved = (s?: string) => s === "approved" || s === "granted";
+    const approved   = baseStatus === "active" || isApproved(baseStatus)
+      || isApproved(kycStatus) || isApproved(kybStatus);
     // Extract rejection reasons if Bridge provides them (field varies by API version)
     const rawReasons = (c.rejection_reasons as string[] | undefined)
       ?? (c.reasons as string[] | undefined);
