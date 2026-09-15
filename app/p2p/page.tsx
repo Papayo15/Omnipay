@@ -394,6 +394,7 @@ export default function P2PPage() {
   const generateLink = useCallback(async () => {
     // Capture before any async — used to distinguish ToS→KYC transition from KYC-processing retry
     const fromTosMode = kycAutoRetryRef.current && tosModeRef.current;
+    const inTosMode   = tosModeRef.current; // capture before URL-processing resets it
     const amt = parseFloat(amountLocal);
     if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt) return;
 
@@ -523,7 +524,7 @@ export default function P2PPage() {
             setStep("kyc_polling");
           }
         } else {
-          // First time needs_kyc/tos — save form + customer_id + show explanation step
+          // Save form state for post-KYC/ToS return
           try {
             const cid = (data as unknown as Record<string, string>).customer_id ?? kycCustomerId;
             sessionStorage.setItem("omnipay_p2p_form", JSON.stringify({
@@ -531,6 +532,17 @@ export default function P2PPage() {
               kycCustomerId: cid,
             }));
           } catch { /* ignore */ }
+          // If in ToS-return mode and we have a URL, auto-navigate — never stall on kyc_info
+          // (use inTosMode, not tosModeRef.current — the ref was reset above by the kyc_url branch)
+          if (inTosMode && data.kyc_url) {
+            window.location.href = data.kyc_url;
+            return;
+          }
+          if (inTosMode && data.tos_url) {
+            // Bridge race: ToS not processed yet — send back to ToS automatically
+            window.location.href = data.tos_url;
+            return;
+          }
           setStep("kyc_info");
         }
       } else {
