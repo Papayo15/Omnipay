@@ -223,44 +223,22 @@ export default function P2PPage() {
       const saved = sessionStorage.getItem("omnipay_p2p_form");
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
-        if (tosDone && form.kycCustomerId) {
-          // ToS just accepted — poll /api/bridge/kyc-link with retries.
-          // Bridge may take a few seconds to process ToS before the KYC link is available.
-          const kycRedirectUri = `${window.location.origin}/p2p?kyc_done=1`;
-          const url = `/api/bridge/kyc-link?customer_id=${encodeURIComponent(form.kycCustomerId)}&redirect_uri=${encodeURIComponent(kycRedirectUri)}`;
-          let retries = 0;
-          const restoreAndRetryCheckout = () => {
-            tosModeRef.current = true;
-            if (form.nombre)         setNombre(form.nombre);
-            if (form.email)          setEmail(form.email);
-            if (form.country)        setCountry(form.country);
-            if (form.account)        setAccount(form.account);
-            if (form.bic)            setBic(form.bic);
-            if (form.cpf)            setCpf(form.cpf);
-            if (form.amountLocal)    setAmountLocal(form.amountLocal);
-            if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
-            setKycCustomerId(form.kycCustomerId);
-            setStep("kyc_polling");
-            setPendingKycRetry(true);
-          };
-          const tryLink = () => {
-            fetch(url).then(r => r.json()).then((d: Record<string, string>) => {
-              if (d.kyc_url) {
-                sessionStorage.setItem("omnipay_p2p_form", saved);
-                window.location.href = d.kyc_url;
-              } else if (retries < 5) {
-                retries++;
-                setTimeout(tryLink, 2000); // retry every 2 s — gives Bridge time to update ToS status
-              } else {
-                restoreAndRetryCheckout();
-              }
-            }).catch(() => {
-              if (retries < 5) { retries++; setTimeout(tryLink, 2000); }
-              else restoreAndRetryCheckout();
-            });
-          };
-          tryLink();
+        if (tosDone) {
+          // ToS just accepted — restore form and call checkout with from_tos=true.
+          // from_tos bypasses the ToS gate (avoids race on has_accepted_terms_of_service).
+          // kycAutoRetryRef=true makes generateLink auto-navigate to the returned KYC URL.
+          tosModeRef.current = true;
+          if (form.nombre)         setNombre(form.nombre);
+          if (form.email)          setEmail(form.email);
+          if (form.country)        setCountry(form.country);
+          if (form.account)        setAccount(form.account);
+          if (form.bic)            setBic(form.bic);
+          if (form.cpf)            setCpf(form.cpf);
+          if (form.amountLocal)    setAmountLocal(form.amountLocal);
+          if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
+          if (form.kycCustomerId)  setKycCustomerId(form.kycCustomerId);
           window.history.replaceState({}, "", "/p2p");
+          setPendingKycRetry(true);
         } else if (kycDone) {
           // KYC (or ToS without kycCustomerId) — restore form and let checkout handle final step.
           // If returning from ToS set tosModeRef so auto-retry auto-navigates to KYC.
