@@ -353,14 +353,18 @@ export async function createKycLink(params: {
 }
 
 // Get existing KYC link for an already-created customer
-export async function getKycLink(customerId: string): Promise<BridgeKycLink> {
-  const idempKey = `kyc-link-${customerId}-${Math.floor(Date.now() / 3_600_000)}`;
-  return bridgeRequest<BridgeKycLink>(
-    "POST",
-    `/customers/${customerId}/kyc_links`,
-    {},
-    idempKey,
-  );
+// GET /customers/{id}/kyc_link — customer-scoped KYC link.
+// Bridge docs: pass redirect_uri and endorsement as query params in the request.
+// Bridge incorporates redirect_uri into the link it builds (unlike ToS where we append it ourselves).
+export async function getKycLink(customerId: string, params?: {
+  redirect_uri?: string;
+  endorsement?:  string;   // e.g. "sepa", "spei", "cards"
+}): Promise<BridgeKycLink> {
+  const qs = new URLSearchParams();
+  if (params?.redirect_uri) qs.set("redirect_uri", params.redirect_uri);
+  if (params?.endorsement)  qs.set("endorsement",  params.endorsement);
+  const path = `/customers/${customerId}/kyc_link${qs.toString() ? `?${qs.toString()}` : ""}`;
+  return bridgeRequest<BridgeKycLink>("GET", path);
 }
 
 // BridgeCustomer has no kyc_link field — tos_link is the ToS acceptance URL, not the Persona KYC URL.

@@ -462,10 +462,14 @@ export default function P2PPage() {
         if (kycAutoRetryRef.current) {
           kycAutoRetryRef.current = false;
           if (data.needs_tos) {
-            // ToS still needed — show kyc_info so user can re-open ToS popup
+            // ToS still needed — show kyc_info so user can re-open ToS link
             setStep("kyc_info");
+          } else if (fromTosMode && data.kyc_url) {
+            // Just accepted ToS → navigate directly to KYC (no intermediate step)
+            window.location.href = data.kyc_url;
+            return;
           } else if (fromTosMode) {
-            // Just accepted ToS → now needs KYC: show kyc_info with Verificar button
+            // Accepted ToS but no KYC URL yet — show button
             setStep("kyc_info");
           } else {
             // KYC submitted and processing async on Bridge's side — show polling step

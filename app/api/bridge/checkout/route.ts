@@ -267,35 +267,12 @@ export async function POST(req: NextRequest): Promise<Response> {
       const kycRedirectUri = `${appUrl}/p2p?kyc_done=1`;
       let kycUrl: string | null = null;
       try {
-        const kycLink = await createKycLink({
-          full_name:    nombre,
-          email:        email.toLowerCase(),
-          type:         "individual",
-          endorsements,
-          redirect_uri: kycRedirectUri,
-        });
+        // Use GET /customers/{id}/kyc_link?redirect_uri=... (customer-scoped, redirect_uri as query param).
+        const kycLink = await getKycLink(customer.id, { redirect_uri: kycRedirectUri });
         kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
-        console.log(`[bridge/checkout] createKycLink ok: url=${kycUrl}`);
+        console.log(`[bridge/checkout] getKycLink ok: url=${kycUrl}`);
       } catch (e1) {
-        const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
-        console.warn(`[bridge/checkout] createKycLink error: type=${err1.type} details=${JSON.stringify(err1.details)}`);
-        if (err1.type === "duplicate_record") {
-          // Try URL from error details first (Bridge may embed it)
-          const existing = (err1.details?.existing_kyc_link ?? err1.details?.existing_resource) as { kyc_link?: string; url?: string } | undefined;
-          kycUrl = existing?.kyc_link ?? existing?.url ?? null;
-          // Fallback: fetch the existing link directly from Bridge
-          if (!kycUrl) {
-            try {
-              const existingLink = await getKycLink(customer.id);
-              const rawUrl = (existingLink as unknown as Record<string, string>).kyc_link ?? existingLink.url ?? null;
-              // Append redirect_uri so Bridge sends user back after KYC
-              kycUrl = rawUrl ? appendRedirectUri(rawUrl, kycRedirectUri) : null;
-              console.log(`[bridge/checkout] getKycLink fallback: url=${kycUrl}`);
-            } catch (e2) {
-              console.error(`[bridge/checkout] getKycLink fallback failed: ${(e2 as Error).message}`);
-            }
-          }
-        }
+        console.error(`[bridge/checkout] getKycLink error: ${(e1 as Error).message}`);
       }
       console.log(`[bridge/checkout] KYC gate: needsKyc=${needsKyc} kycUrl=${kycUrl}`);
       return NextResponse.json({
@@ -324,17 +301,10 @@ export async function POST(req: NextRequest): Promise<Response> {
         const kycRedirectUri2 = `${appUrl}/p2p?kyc_done=1`;
         let kycUrl: string | null = null;
         try {
-          const kycLink = await createKycLink({
-            full_name: nombre, email: email.toLowerCase(),
-            type: "individual", endorsements, redirect_uri: kycRedirectUri2,
-          });
+          const kycLink = await getKycLink(customer.id, { redirect_uri: kycRedirectUri2 });
           kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
         } catch (e3) {
-          const err3 = e3 as Error & { type?: string; details?: Record<string, unknown> };
-          if (err3.type === "duplicate_record") {
-            const ex = err3.details?.existing_kyc_link as { kyc_link?: string; url?: string } | undefined;
-            kycUrl = ex?.kyc_link ?? ex?.url ?? null;
-          }
+          console.error(`[bridge/checkout] getKycLink endorsement fallback error: ${(e3 as Error).message}`);
         }
           return NextResponse.json({
           needs_kyc:   true,

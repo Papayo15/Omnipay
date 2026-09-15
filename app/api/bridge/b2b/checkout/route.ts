@@ -233,26 +233,11 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (needsKyb && !skipKyc && !isSandbox) {
       let kybUrl: string | null = null;
       try {
-        const kycLink = await createKycLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
+        const kycLink = await getKycLink(customer.id, { redirect_uri: kybRedirectUri });
         kybUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
-        console.log(`[bridge/b2b/checkout] createKycLink ok: url=${kybUrl}`);
+        console.log(`[bridge/b2b/checkout] getKycLink ok: url=${kybUrl}`);
       } catch (e1) {
-        const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
-        console.warn(`[bridge/b2b/checkout] createKycLink error: type=${err1.type} details=${JSON.stringify(err1.details)}`);
-        if (err1.type === "duplicate_record") {
-          const existing = (err1.details?.existing_kyc_link ?? err1.details?.existing_resource) as { kyc_link?: string; url?: string } | undefined;
-          kybUrl = existing?.kyc_link ?? existing?.url ?? null;
-          if (!kybUrl) {
-            try {
-              const existingLink = await getKycLink(customer.id);
-              const rawUrl = (existingLink as unknown as Record<string, string>).kyc_link ?? existingLink.url ?? null;
-              kybUrl = rawUrl ? appendRedirectUri(rawUrl, kybRedirectUri) : null;
-              console.log(`[bridge/b2b/checkout] getKycLink fallback: url=${kybUrl}`);
-            } catch (e2) {
-              console.error(`[bridge/b2b/checkout] getKycLink fallback failed: ${(e2 as Error).message}`);
-            }
-          }
-        }
+        console.error(`[bridge/b2b/checkout] getKycLink error: ${(e1 as Error).message}`);
       }
       // Email the RECIPIENT business — they need to complete KYB, not the sender
       if (kybUrl) {

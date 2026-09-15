@@ -317,10 +317,18 @@ export default function EnviarEmpresaWirePage() {
         setKybUrl(data.kyb_url ?? "");
         setKybCustomerId(data.customer_id ?? "");
         setIsSandboxKyb(!!data.is_sandbox);
-        // Only start polling if returning from KYB (user submitted identity) — not from ToS.
-        // fromTosReturnRef = true means user just accepted ToS and hasn't done KYB yet.
         const fromTos = fromTosReturnRef.current;
         fromTosReturnRef.current = false;
+        // Just accepted ToS → navigate directly to KYB (no intermediate step)
+        if (fromTos && data.kyb_url) {
+          sessionStorage.setItem("b2b_send_form", JSON.stringify({
+            senderBusinessName, senderEmail, sourceCurrency,
+            recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
+            kybCustomerId: data.customer_id ?? "",
+          }));
+          window.location.href = data.kyb_url;
+          return;
+        }
         if (isAutoRetry && !fromTos) setKybPolling(true);
         setStep("kyb");
         return;
