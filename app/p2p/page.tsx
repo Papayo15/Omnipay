@@ -219,15 +219,54 @@ export default function P2PPage() {
     if (cty && COUNTRY_OPTIONS.some(c => c.code === cty.toUpperCase())) {
       setCountry(cty.toUpperCase());
     }
-    // When returning from ToS (full-page nav), mark tosModeRef so generateLink knows
-    // this retry is a ToS→KYC transition and shows the KYC button instead of polling.
-    if (tosDone) tosModeRef.current = true;
     try {
       const saved = sessionStorage.getItem("omnipay_p2p_form");
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
-        if (kycDone) {
-          // Full-page nav return (tos_done or kyc_done): restore form and auto-retry.
+        if (tosDone && form.kycCustomerId) {
+          // ToS just accepted — go directly to KYC link without full checkout retry.
+          // This avoids the race condition where has_accepted_terms_of_service might
+          // still be false on Bridge's API right after the ToS redirect.
+          const kycRedirectUri = `${window.location.origin}/p2p?kyc_done=1`;
+          void fetch(
+            `/api/bridge/kyc-link?customer_id=${encodeURIComponent(form.kycCustomerId)}&redirect_uri=${encodeURIComponent(kycRedirectUri)}`
+          ).then(r => r.json()).then((d: Record<string, string>) => {
+            if (d.kyc_url) {
+              // Save form (kycCustomerId already there) so kyc_done return can auto-retry checkout
+              sessionStorage.setItem("omnipay_p2p_form", saved);
+              window.location.href = d.kyc_url;
+            } else {
+              // Fallback: restore form and let checkout handle it
+              tosModeRef.current = true;
+              if (form.nombre)         setNombre(form.nombre);
+              if (form.email)          setEmail(form.email);
+              if (form.country)        setCountry(form.country);
+              if (form.account)        setAccount(form.account);
+              if (form.bic)            setBic(form.bic);
+              if (form.cpf)            setCpf(form.cpf);
+              if (form.amountLocal)    setAmountLocal(form.amountLocal);
+              if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
+              setKycCustomerId(form.kycCustomerId);
+              setStep("kyc_polling");
+              setPendingKycRetry(true);
+            }
+          }).catch(() => {
+            tosModeRef.current = true;
+            if (form.nombre)         setNombre(form.nombre);
+            if (form.email)          setEmail(form.email);
+            if (form.country)        setCountry(form.country);
+            if (form.account)        setAccount(form.account);
+            if (form.bic)            setBic(form.bic);
+            if (form.cpf)            setCpf(form.cpf);
+            if (form.amountLocal)    setAmountLocal(form.amountLocal);
+            if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
+            setKycCustomerId(form.kycCustomerId);
+            setStep("kyc_polling");
+            setPendingKycRetry(true);
+          });
+          window.history.replaceState({}, "", "/p2p");
+        } else if (kycDone) {
+          // KYC just done — restore form and let checkout handle final step.
           if (form.nombre)         setNombre(form.nombre);
           if (form.email)          setEmail(form.email);
           if (form.country)        setCountry(form.country);
@@ -239,6 +278,7 @@ export default function P2PPage() {
           if (form.kycCustomerId)  setKycCustomerId(form.kycCustomerId);
           setStep("kyc_polling");
           setPendingKycRetry(true);
+          window.history.replaceState({}, "", "/p2p");
         } else {
           // User returned manually — show banner so they can continue
           setSavedKycForm(true);
@@ -281,13 +321,15 @@ export default function P2PPage() {
     getFXRate(currency, "USD").then(r => { if (r) setFxRate(r); }).catch(() => {});
   }, [currency, country, rail]);
 
-  // Auto-retry after returning from KYC — waits for React to apply all setState calls
+  // Auto-retry after returning from KYC/ToS — waits for React to apply all setState calls.
+  // 2s delay gives Bridge time to process the ToS acceptance before we query has_accepted_terms_of_service.
   useEffect(() => {
     if (!pendingKycRetry) return;
     if (!nombre || !email || !account || !amountLocal) return;
     setPendingKycRetry(false);
     kycAutoRetryRef.current = true;
-    generateLink();
+    const t = setTimeout(generateLink, 2000);
+    return () => clearTimeout(t);
   // generateLink is stable (useCallback) — safe to include
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingKycRetry, nombre, email, account, amountLocal]);
@@ -461,8 +503,11 @@ export default function P2PPage() {
         if ((data as unknown as Record<string, unknown>).customer_id) setKycCustomerId((data as unknown as Record<string, string>).customer_id);
         if (kycAutoRetryRef.current) {
           kycAutoRetryRef.current = false;
-          if (data.needs_tos) {
-            // ToS still needed — show kyc_info so user can re-open ToS link
+          if (data.needs_tos && data.tos_url) {
+            // Bridge hasn't processed ToS acceptance yet — navigate back to ToS automatically
+            window.location.href = data.tos_url;
+            return;
+          } else if (data.needs_tos) {
             setStep("kyc_info");
           } else if (fromTosMode && data.kyc_url) {
             // Just accepted ToS → navigate directly to KYC (no intermediate step)

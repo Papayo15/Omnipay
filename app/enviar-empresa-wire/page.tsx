@@ -140,26 +140,67 @@ export default function EnviarEmpresaWirePage() {
     const tosDone = searchParams.get("tos_done") === "1";
     const kybDone = searchParams.get("kyb_done") === "1";
     if (!tosDone && !kybDone) return;
-    // When returning from ToS (not KYB), mark that so handleSubmit shows the KYB button
-    // instead of the polling spinner (user hasn't done KYB yet — they just accepted ToS).
-    if (tosDone) fromTosReturnRef.current = true;
     const savedRaw = sessionStorage.getItem("b2b_send_form");
     if (!savedRaw) return;
     try {
       const snap = JSON.parse(savedRaw) as FormSnapshot;
-      setSenderBusinessName(snap.senderBusinessName ?? "");
-      setSenderEmail(snap.senderEmail ?? "");
-      setSourceCurrency(snap.sourceCurrency ?? "USD");
-      setRecipientBusinessName(snap.recipientBusinessName ?? "");
-      setRecipientCountry(snap.recipientCountry ?? "MX");
-      setAccountField(snap.accountField ?? "");
-      setRoutingField(snap.routingField ?? "");
-      setBicField(snap.bicField ?? "");
-      setAmount(snap.amount ?? "");
-      if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
-      sessionStorage.removeItem("b2b_send_form");
-      setAutoRetry(true);
-      window.history.replaceState({}, "", "/enviar-empresa-wire");
+      if (tosDone && snap.kybCustomerId) {
+        // ToS just accepted — go directly to KYB link, bypassing full checkout retry.
+        const kybRedirectUri = `${window.location.origin}/enviar-empresa-wire?kyb_done=1`;
+        void fetch(
+          `/api/bridge/kyc-link?customer_id=${encodeURIComponent(snap.kybCustomerId)}&redirect_uri=${encodeURIComponent(kybRedirectUri)}`
+        ).then(r => r.json()).then((d: Record<string, string>) => {
+          if (d.kyc_url) {
+            sessionStorage.setItem("b2b_send_form", savedRaw);
+            window.location.href = d.kyc_url;
+          } else {
+            // Fallback: restore form and let handleSubmit handle it
+            fromTosReturnRef.current = true;
+            setSenderBusinessName(snap.senderBusinessName ?? "");
+            setSenderEmail(snap.senderEmail ?? "");
+            setSourceCurrency(snap.sourceCurrency ?? "USD");
+            setRecipientBusinessName(snap.recipientBusinessName ?? "");
+            setRecipientCountry(snap.recipientCountry ?? "MX");
+            setAccountField(snap.accountField ?? "");
+            setRoutingField(snap.routingField ?? "");
+            setBicField(snap.bicField ?? "");
+            setAmount(snap.amount ?? "");
+            if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
+            sessionStorage.removeItem("b2b_send_form");
+            setAutoRetry(true);
+          }
+        }).catch(() => {
+          fromTosReturnRef.current = true;
+          setSenderBusinessName(snap.senderBusinessName ?? "");
+          setSenderEmail(snap.senderEmail ?? "");
+          setSourceCurrency(snap.sourceCurrency ?? "USD");
+          setRecipientBusinessName(snap.recipientBusinessName ?? "");
+          setRecipientCountry(snap.recipientCountry ?? "MX");
+          setAccountField(snap.accountField ?? "");
+          setRoutingField(snap.routingField ?? "");
+          setBicField(snap.bicField ?? "");
+          setAmount(snap.amount ?? "");
+          if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
+          sessionStorage.removeItem("b2b_send_form");
+          setAutoRetry(true);
+        });
+        window.history.replaceState({}, "", "/enviar-empresa-wire");
+      } else {
+        // KYB done — restore form and let handleSubmit handle final step
+        setSenderBusinessName(snap.senderBusinessName ?? "");
+        setSenderEmail(snap.senderEmail ?? "");
+        setSourceCurrency(snap.sourceCurrency ?? "USD");
+        setRecipientBusinessName(snap.recipientBusinessName ?? "");
+        setRecipientCountry(snap.recipientCountry ?? "MX");
+        setAccountField(snap.accountField ?? "");
+        setRoutingField(snap.routingField ?? "");
+        setBicField(snap.bicField ?? "");
+        setAmount(snap.amount ?? "");
+        if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
+        sessionStorage.removeItem("b2b_send_form");
+        setAutoRetry(true);
+        window.history.replaceState({}, "", "/enviar-empresa-wire");
+      }
     } catch { /* malformed snapshot */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
