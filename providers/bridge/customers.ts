@@ -147,13 +147,19 @@ export async function createCustomer(params: {
     }
     // Business customers only need signed_agreement_id in sandbox — no personal docs
   }
+  // Include a short hash of the endorsements array so that if the list changes
+  // between deploys (same day, same email), the key changes too — Bridge rejects
+  // any key+body mismatch with a 422, so a new key is safer than a conflict.
+  const endHash = params.endorsements?.length
+    ? createHash("sha256").update([...params.endorsements].sort().join(",")).digest("hex").slice(0, 8)
+    : "none";
   return bridgeRequest<BridgeCustomer>(
     "POST",
     "/customers",
     body,
-    // Include type so individual and business customers with the same email
-    // never share an idempotency key (different bodies → Bridge rejects)
-    `customer-${params.type}-${params.email.toLowerCase()}-${day}`,
+    // Include type + endorsements hash so individual and business customers with the
+    // same email, and same-email calls with different endorsements, never share a key.
+    `customer-${params.type}-${params.email.toLowerCase()}-${endHash}-${day}`,
   );
 }
 
@@ -252,9 +258,16 @@ export async function getOrCreateCustomer(params: {
     const isEmailTaken   = msg.includes("already exists");
     const isIdempConflict = msg.includes("idempotency");
     if (isEmailTaken || isIdempConflict) {
-      // Race condition or findCustomerByEmail returned null despite customer existing.
-      // Re-fetch and return the existing customer.
-      const recovered = await findCustomerByEmail(params.email);
+      // Bridge may embed the existing customer in the error body on idempotency conflicts.
+      const embedded = (
+        (e.details as Record<string, unknown>)?.existing_resource ??
+        (e.details as Record<string, unknown>)?.existing_customer
+      ) as BridgeCustomer | undefined;
+      const recovered = embedded?.id
+        ? embedded
+        : await findCustomerByEmail(params.email)
+          // Bridge search is eventually consistent for brand-new customers — retry once.
+          ?? await new Promise<BridgeCustomer | null>(r => setTimeout(() => findCustomerByEmail(params.email).then(r).catch(() => r(null)), 1500));
       if (recovered) {
         const isRestricted = recovered.status === "deposits_restricted";
         const isBlocked    = recovered.status === "paused" || recovered.status === "offboarded";
