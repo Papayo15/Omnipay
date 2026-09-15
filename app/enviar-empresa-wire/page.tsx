@@ -659,8 +659,10 @@ export default function EnviarEmpresaWirePage() {
                           setKybPolling(false);
                           setError(data.rejection_reason ?? t("kyb_rejected_error"));
                           setStep("error");
+                        } else {
+                          // pending / under_review → amber card
+                          setKybLongReview(true);
                         }
-                        // pending: re-enables button; polling continues in background
                       } catch { /* ignore */ }
                       setKybManualChecking(false);
                     }}

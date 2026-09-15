@@ -479,6 +479,9 @@ export default function PagarPage() {
                         setKycPolling(false);
                         setErrorMsg(data.rejection_reason ?? t("kyc_rejected_error"));
                         setStep("error");
+                      } else {
+                        // pending / under_review → amber card
+                        setKycLongReview(true);
                       }
                     } catch { /* ignore */ }
                     setKycManualChecking(false);

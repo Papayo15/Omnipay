@@ -218,12 +218,24 @@ export default function P2PPage() {
     if (cty && COUNTRY_OPTIONS.some(c => c.code === cty.toUpperCase())) {
       setCountry(cty.toUpperCase());
     }
+    if (kycDone) {
+      // On mobile, Bridge redirects the popup/new-tab to ?kyc_done=1 instead of the
+      // original tab. Notify the parent tab via postMessage so it can auto-retry,
+      // then close this tab so the user lands back on the original OmniPay page.
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: "omnipay_kyc_done" }, window.location.origin);
+          window.close();
+          return;
+        }
+      } catch { /* opener cross-origin or unavailable — fall through to direct retry */ }
+    }
     try {
       const saved = sessionStorage.getItem("omnipay_p2p_form");
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
         if (kycDone) {
-          // Auto-retry: Bridge redirected back with ?kyc_done=1 or ?tos_done=1
+          // Direct tab (no opener): Bridge redirected here — restore form and auto-retry
           if (form.nombre)         setNombre(form.nombre);
           if (form.email)          setEmail(form.email);
           if (form.country)        setCountry(form.country);
@@ -242,6 +254,7 @@ export default function P2PPage() {
     } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   // Clear account when country changes
   useEffect(() => {
@@ -492,6 +505,20 @@ export default function P2PPage() {
     }
   }, [nombre, email, country, account, bic, cpf, amountLocal, recipientPhone, fxRate, t]);
 
+  // Listen for postMessage from the KYC popup/tab — fires when Bridge redirects it
+  // to ?kyc_done=1 (the popup notifies us and closes itself).
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if ((e.data as { type?: string })?.type !== "omnipay_kyc_done") return;
+      kycAutoRetryRef.current = true;
+      generateLink();
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generateLink]);
+
   const handleKycReturn = useCallback(() => {
     try {
       const saved = sessionStorage.getItem("omnipay_p2p_form");
@@ -579,8 +606,12 @@ export default function P2PPage() {
                           setKycPolling(false);
                           setErrorMsg(data.rejection_reason ?? t("kyc_rejected_error"));
                           setStep("error");
+                        } else {
+                          // pending / under_review → amber card so user knows we're waiting
+                          setKycStillPending(true);
+                          setKycPolling(true);
+                          setStep("kyc_polling");
                         }
-                        // pending: re-enables button; polling continues in background
                       } catch { /* ignore */ }
                       setKycManualChecking(false);
                     }
