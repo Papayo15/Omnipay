@@ -138,6 +138,11 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
+    // Refresh customer from individual endpoint to ensure has_accepted_terms_of_service is present.
+    if (!isSandbox) {
+      try { customer = await getCustomer(customer.id); } catch { /* use existing record */ }
+    }
+
     const liqParams: CreateLiquidationParams = {
       customerId:    customer.id,
       country:       country_upper,
@@ -200,7 +205,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Bridge docs: use GET /customers/{id}/tos_acceptance_link for existing customers.
     // redirect_uri is appended as a query param on the returned URL (not in the body).
     const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
-    const needsTos = !isSandbox && customer.has_accepted_terms_of_service === false;
+    const needsTos = !isSandbox && !customer.has_accepted_terms_of_service;
     console.log(`[bridge/b2b/checkout] tos check: customer=${customer.id} has_accepted=${customer.has_accepted_terms_of_service} needsTos=${needsTos}`);
     if (needsTos) {
       try {

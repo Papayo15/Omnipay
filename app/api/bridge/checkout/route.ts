@@ -167,6 +167,12 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
+    // Refresh customer from the individual endpoint to ensure has_accepted_terms_of_service
+    // is present — the list endpoint (findCustomerByEmail) may omit boolean fields when false.
+    if (!isSandbox) {
+      try { customer = await getCustomer(customer.id); } catch { /* use existing record */ }
+    }
+
     // Always update customer — sets residential_address (required by Bridge for liquidation).
     // In sandbox: ALSO sets compliance fields (account_purpose, source_of_funds, place_of_birth, etc.)
     // so that base+sepa+spei+pix+fps+cop endorsements reach "pending" state.
@@ -220,7 +226,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     // ToS gate — check has_accepted_terms_of_service from Bridge customer record.
     // Bridge docs: use GET /customers/{id}/tos_acceptance_link for existing customers.
     // redirect_uri is appended as a query param on the returned URL (not in the body).
-    const needsTos = !isSandbox && customer.has_accepted_terms_of_service === false;
+    const needsTos = !isSandbox && !customer.has_accepted_terms_of_service;
     console.log(`[bridge/checkout] tos check: customer=${customer.id} has_accepted=${customer.has_accepted_terms_of_service} needsTos=${needsTos}`);
     if (needsTos) {
       try {
