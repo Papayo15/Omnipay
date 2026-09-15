@@ -79,6 +79,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     let needsKyb: boolean;
     let isNew: boolean;
     let depositsRestricted: boolean | undefined;
+    let accountBlocked: boolean | undefined;
     if (existing_customer_id) {
       try {
         const c  = await getCustomer(existing_customer_id);
@@ -88,6 +89,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         needsKyb           = !kybApproved;
         isNew              = false;
         depositsRestricted = c.status === "deposits_restricted";
+        accountBlocked     = c.status === "paused" || c.status === "offboarded";
       } catch {
         // Fallback: ID lookup failed — use email lookup
         const result = await getOrCreateCustomer({
@@ -101,6 +103,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         needsKyb           = result.needsKyc;
         isNew              = false;
         depositsRestricted = result.depositsRestricted;
+        accountBlocked     = result.accountBlocked;
       }
     } else {
       const result = await getOrCreateCustomer({
@@ -114,12 +117,21 @@ export async function POST(req: NextRequest): Promise<Response> {
       needsKyb           = result.needsKyc;
       isNew              = result.isNew;
       depositsRestricted = result.depositsRestricted;
+      accountBlocked     = result.accountBlocked;
     }
 
     if (depositsRestricted) {
       return NextResponse.json({
         error: "La empresa receptora tiene restricciones de depósito temporales en Bridge (RFI pendiente). Contacta a Bridge para resolverlo.",
         bridge_type: "deposits_restricted",
+        customer_id: customer.id,
+      }, { status: 422 });
+    }
+
+    if (accountBlocked) {
+      return NextResponse.json({
+        error: "Esta cuenta Bridge está desactivada (offboarded o pausada). Contacta a soporte o usa otro email para continuar.",
+        bridge_type: "account_blocked",
         customer_id: customer.id,
       }, { status: 422 });
     }
@@ -186,8 +198,8 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // ToS gate for new business customers in production
     if (!isSandbox && isNew) {
+      const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
       try {
-        const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
         const tosLink = await createTosLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
         return NextResponse.json({
           needs_tos:   true,
@@ -195,7 +207,18 @@ export async function POST(req: NextRequest): Promise<Response> {
           customer_id: customer.id,
           message:     "La empresa debe aceptar los Términos de Bridge antes de continuar.",
         }, { status: 202 });
-      } catch { /* proceed; Bridge will surface error if truly required */ }
+      } catch (tosErr) {
+        const e = tosErr as Error & { type?: string };
+        console.error("[bridge/b2b/checkout] createTosLink failed:", e.message, e.type);
+        // duplicate_record without embedded URL → company already accepted ToS → proceed to KYB
+        if (e.type !== "duplicate_record") {
+          return NextResponse.json({
+            error: "No se pudo generar el link de Términos de Servicio. Por favor intenta de nuevo.",
+            bridge_type: "tos_error",
+            customer_id: customer.id,
+          }, { status: 502 });
+        }
+      }
     }
 
     // KYB gate (production)

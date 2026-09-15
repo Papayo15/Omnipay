@@ -102,6 +102,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     let needsKyc: boolean;
     let isNew: boolean;
     let depositsRestricted: boolean | undefined;
+    let accountBlocked: boolean | undefined;
     if (existing_customer_id) {
       try {
         const c  = await getCustomer(existing_customer_id);
@@ -112,6 +113,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         needsKyc           = !kycApproved;
         isNew              = false;
         depositsRestricted = c.status === "deposits_restricted";
+        accountBlocked     = c.status === "paused" || c.status === "offboarded";
       } catch {
         // Fallback: ID lookup failed — use email lookup
         const result = await getOrCreateCustomer({
@@ -126,6 +128,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         needsKyc           = result.needsKyc;
         isNew              = false;
         depositsRestricted = result.depositsRestricted;
+        accountBlocked     = result.accountBlocked;
       }
     } else {
       const result = await getOrCreateCustomer({
@@ -140,6 +143,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       needsKyc           = result.needsKyc;
       isNew              = result.isNew;
       depositsRestricted = result.depositsRestricted;
+      accountBlocked     = result.accountBlocked;
     }
 
     // deposits_restricted: Bridge has blocked inbound deposits for this customer (RFI pending).
@@ -148,6 +152,15 @@ export async function POST(req: NextRequest): Promise<Response> {
       return NextResponse.json({
         error: "Tu cuenta en Bridge tiene restricciones de depósito temporales. Contacta a Bridge para resolver el RFI pendiente.",
         bridge_type: "deposits_restricted",
+        customer_id: customer.id,
+      }, { status: 422 });
+    }
+
+    // offboarded/paused: account is fully blocked — cannot receive payments or do KYC.
+    if (accountBlocked) {
+      return NextResponse.json({
+        error: "Esta cuenta Bridge está desactivada (offboarded o pausada). Contacta a soporte o usa otro email para continuar.",
+        bridge_type: "account_blocked",
         customer_id: customer.id,
       }, { status: 422 });
     }
@@ -219,7 +232,18 @@ export async function POST(req: NextRequest): Promise<Response> {
           customer_id: customer.id,
           message:     "El receptor debe aceptar los Términos de Bridge antes de continuar.",
         }, { status: 202 });
-      } catch { /* ToS link creation failed — proceed; Bridge will reject customer creation if truly required */ }
+      } catch (tosErr) {
+        const e = tosErr as Error & { type?: string };
+        console.error("[bridge/checkout] createTosLink failed:", e.message, e.type);
+        // duplicate_record without embedded URL → customer already accepted ToS → proceed to KYC
+        if (e.type !== "duplicate_record") {
+          return NextResponse.json({
+            error: "No se pudo generar el link de Términos de Servicio. Por favor intenta de nuevo.",
+            bridge_type: "tos_error",
+            customer_id: customer.id,
+          }, { status: 502 });
+        }
+      }
     }
 
     // After simulate, create the external account so payout_fiat becomes active.
