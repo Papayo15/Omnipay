@@ -84,6 +84,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     sort_code, bank_name, bank_code,
     amount_target, existing_customer_id,
   } = body;
+  const from_tos = !!(body as unknown as { from_tos?: boolean }).from_tos;
 
   if (!sender_business_name || !sender_email || !source_currency || !recipient_business_name || !recipient_country || !amount_target) {
     return NextResponse.json(
@@ -188,8 +189,9 @@ export async function POST(req: NextRequest): Promise<Response> {
       }, { status: 202 });
     }
 
-    // 3. ToS gate — check has_accepted_terms_of_service (same field Bridge returns on both GET and list)
-    const needsTos = !isSandbox && !senderCustomer.has_accepted_terms_of_service;
+    // 3. ToS gate — from_tos=true means user just accepted ToS and was redirected back; skip gate to
+    // avoid Bridge race condition where has_accepted_terms_of_service hasn't updated yet.
+    const needsTos = !isSandbox && !senderCustomer.has_accepted_terms_of_service && !from_tos;
     if (needsTos) {
       const tosRedirectUri = `${appUrl}/enviar-empresa-wire?tos_done=1`;
       try {

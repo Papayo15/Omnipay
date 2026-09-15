@@ -224,33 +224,12 @@ export default function P2PPage() {
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
         if (tosDone && form.kycCustomerId) {
-          // ToS just accepted — go directly to KYC link without full checkout retry.
-          // This avoids the race condition where has_accepted_terms_of_service might
-          // still be false on Bridge's API right after the ToS redirect.
+          // ToS just accepted — poll /api/bridge/kyc-link with retries.
+          // Bridge may take a few seconds to process ToS before the KYC link is available.
           const kycRedirectUri = `${window.location.origin}/p2p?kyc_done=1`;
-          void fetch(
-            `/api/bridge/kyc-link?customer_id=${encodeURIComponent(form.kycCustomerId)}&redirect_uri=${encodeURIComponent(kycRedirectUri)}`
-          ).then(r => r.json()).then((d: Record<string, string>) => {
-            if (d.kyc_url) {
-              // Save form (kycCustomerId already there) so kyc_done return can auto-retry checkout
-              sessionStorage.setItem("omnipay_p2p_form", saved);
-              window.location.href = d.kyc_url;
-            } else {
-              // Fallback: restore form and let checkout handle it
-              tosModeRef.current = true;
-              if (form.nombre)         setNombre(form.nombre);
-              if (form.email)          setEmail(form.email);
-              if (form.country)        setCountry(form.country);
-              if (form.account)        setAccount(form.account);
-              if (form.bic)            setBic(form.bic);
-              if (form.cpf)            setCpf(form.cpf);
-              if (form.amountLocal)    setAmountLocal(form.amountLocal);
-              if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
-              setKycCustomerId(form.kycCustomerId);
-              setStep("kyc_polling");
-              setPendingKycRetry(true);
-            }
-          }).catch(() => {
+          const url = `/api/bridge/kyc-link?customer_id=${encodeURIComponent(form.kycCustomerId)}&redirect_uri=${encodeURIComponent(kycRedirectUri)}`;
+          let retries = 0;
+          const restoreAndRetryCheckout = () => {
             tosModeRef.current = true;
             if (form.nombre)         setNombre(form.nombre);
             if (form.email)          setEmail(form.email);
@@ -263,7 +242,24 @@ export default function P2PPage() {
             setKycCustomerId(form.kycCustomerId);
             setStep("kyc_polling");
             setPendingKycRetry(true);
-          });
+          };
+          const tryLink = () => {
+            fetch(url).then(r => r.json()).then((d: Record<string, string>) => {
+              if (d.kyc_url) {
+                sessionStorage.setItem("omnipay_p2p_form", saved);
+                window.location.href = d.kyc_url;
+              } else if (retries < 5) {
+                retries++;
+                setTimeout(tryLink, 2000); // retry every 2 s — gives Bridge time to update ToS status
+              } else {
+                restoreAndRetryCheckout();
+              }
+            }).catch(() => {
+              if (retries < 5) { retries++; setTimeout(tryLink, 2000); }
+              else restoreAndRetryCheckout();
+            });
+          };
+          tryLink();
           window.history.replaceState({}, "", "/p2p");
         } else if (kycDone) {
           // KYC (or ToS without kycCustomerId) — restore form and let checkout handle final step.
@@ -492,6 +488,7 @@ export default function P2PPage() {
       // body.card_number = ...
 
       if (kycCustomerId) body.existing_customer_id = kycCustomerId;
+      if (tosModeRef.current) body.from_tos = true; // skip ToS gate — user already accepted
       const res  = await fetch("/api/bridge/checkout", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

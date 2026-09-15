@@ -145,31 +145,11 @@ export default function EnviarEmpresaWirePage() {
     try {
       const snap = JSON.parse(savedRaw) as FormSnapshot;
       if (tosDone && snap.kybCustomerId) {
-        // ToS just accepted — go directly to KYB link, bypassing full checkout retry.
+        // ToS just accepted — retry up to 5× (10s) waiting for Bridge to update, then navigate to KYB.
         const kybRedirectUri = `${window.location.origin}/enviar-empresa-wire?kyb_done=1`;
-        void fetch(
-          `/api/bridge/kyc-link?customer_id=${encodeURIComponent(snap.kybCustomerId)}&redirect_uri=${encodeURIComponent(kybRedirectUri)}`
-        ).then(r => r.json()).then((d: Record<string, string>) => {
-          if (d.kyc_url) {
-            sessionStorage.setItem("b2b_send_form", savedRaw);
-            window.location.href = d.kyc_url;
-          } else {
-            // Fallback: restore form and let handleSubmit handle it
-            fromTosReturnRef.current = true;
-            setSenderBusinessName(snap.senderBusinessName ?? "");
-            setSenderEmail(snap.senderEmail ?? "");
-            setSourceCurrency(snap.sourceCurrency ?? "USD");
-            setRecipientBusinessName(snap.recipientBusinessName ?? "");
-            setRecipientCountry(snap.recipientCountry ?? "MX");
-            setAccountField(snap.accountField ?? "");
-            setRoutingField(snap.routingField ?? "");
-            setBicField(snap.bicField ?? "");
-            setAmount(snap.amount ?? "");
-            if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
-            sessionStorage.removeItem("b2b_send_form");
-            setAutoRetry(true);
-          }
-        }).catch(() => {
+        const url = `/api/bridge/kyc-link?customer_id=${encodeURIComponent(snap.kybCustomerId)}&redirect_uri=${encodeURIComponent(kybRedirectUri)}`;
+        let retries = 0;
+        const restoreAndRetry = () => {
           fromTosReturnRef.current = true;
           setSenderBusinessName(snap.senderBusinessName ?? "");
           setSenderEmail(snap.senderEmail ?? "");
@@ -183,7 +163,24 @@ export default function EnviarEmpresaWirePage() {
           if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
           sessionStorage.removeItem("b2b_send_form");
           setAutoRetry(true);
-        });
+        };
+        const tryLink = () => {
+          fetch(url).then(r => r.json()).then((d: Record<string, string>) => {
+            if (d.kyc_url) {
+              sessionStorage.setItem("b2b_send_form", savedRaw);
+              window.location.href = d.kyc_url;
+            } else if (retries < 5) {
+              retries++;
+              setTimeout(tryLink, 2000);
+            } else {
+              restoreAndRetry();
+            }
+          }).catch(() => {
+            if (retries < 5) { retries++; setTimeout(tryLink, 2000); }
+            else restoreAndRetry();
+          });
+        };
+        tryLink();
         window.history.replaceState({}, "", "/enviar-empresa-wire");
       } else {
         // KYB done (or ToS without kybCustomerId) — restore form and let handleSubmit handle final step.
@@ -299,7 +296,7 @@ export default function EnviarEmpresaWirePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kybPolling, kybCustomerId]);
 
-  const buildBody = useCallback(() => {
+  const buildBody = useCallback((opts?: { from_tos?: boolean }) => {
     const base: Record<string, unknown> = {
       sender_business_name:    senderBusinessName.trim(),
       sender_email:            senderEmail.trim().toLowerCase(),
@@ -309,6 +306,7 @@ export default function EnviarEmpresaWirePage() {
       amount_target:           parseFloat(amount),
       redirect_uri:            `${window.location.origin}/enviar-empresa-wire?kyb_done=1`,
     };
+    if (opts?.from_tos) base.from_tos = true; // skip ToS gate — user already accepted
     if (tosCustomerId) base.existing_customer_id = tosCustomerId;
     else if (kybCustomerId) base.existing_customer_id = kybCustomerId;
     if (recipientCountry === "MX") return { ...base, clabe: accountField.trim() };
@@ -326,7 +324,7 @@ export default function EnviarEmpresaWirePage() {
       const res = await fetch("/api/bridge/b2b/send", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(buildBody()),
+        body:    JSON.stringify(buildBody({ from_tos: fromTosReturnRef.current })),
       });
       const data = await res.json() as {
         needs_tos?: boolean; tos_url?: string;

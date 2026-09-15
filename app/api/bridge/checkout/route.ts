@@ -51,6 +51,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     sort_code, bank_name, bank_code, document_number,
     amount_target, recipient_phone, existing_customer_id,
   } = body;
+  const from_tos = !!(body as unknown as { from_tos?: boolean }).from_tos;
 
   if (!nombre || !email || !country || !receive_method || !amount_target) {
     return NextResponse.json(
@@ -221,8 +222,10 @@ export async function POST(req: NextRequest): Promise<Response> {
     // ToS gate — check has_accepted_terms_of_service from Bridge customer record.
     // Bridge docs: use GET /customers/{id}/tos_acceptance_link for existing customers.
     // redirect_uri is appended as a query param on the returned URL (not in the body).
-    const needsTos = !isSandbox && !customer.has_accepted_terms_of_service;
-    console.log(`[bridge/checkout] tos check: customer=${customer.id} has_accepted=${customer.has_accepted_terms_of_service} needsTos=${needsTos}`);
+    // from_tos=true means user just accepted ToS and was redirected back — skip the gate to
+    // avoid the race condition where Bridge hasn't updated has_accepted_terms_of_service yet.
+    const needsTos = !isSandbox && !customer.has_accepted_terms_of_service && !from_tos;
+    console.log(`[bridge/checkout] tos check: customer=${customer.id} has_accepted=${customer.has_accepted_terms_of_service} from_tos=${from_tos} needsTos=${needsTos}`);
     if (needsTos) {
       try {
         const { url: tosUrl } = await getTosAcceptanceLink({
