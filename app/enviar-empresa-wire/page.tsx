@@ -657,7 +657,7 @@ export default function EnviarEmpresaWirePage() {
             <button
               onClick={() => {
                 // Full-page navigation — works on iOS Safari, Android, and desktop.
-                // Bridge redirects back with ?kyb_done=1 (set in redirect_uri).
+                // Bridge redirects back to /enviar-empresa-wire?tos_done=1.
                 if (tosUrl) window.location.href = tosUrl;
               }}
               className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98]"

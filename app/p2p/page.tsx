@@ -620,16 +620,24 @@ export default function P2PPage() {
           </button>
         </div>
         <div className="w-full flex flex-col gap-5">
-          <h2 className="text-white font-bold text-xl">{t("kyc_intro_title")}</h2>
-          <p className="text-slate-400 text-sm leading-relaxed">{t("kyc_intro_why")}</p>
-          <ul className="space-y-3">
-            {(["li1","li2","li3","li4"] as const).map((k) => (
-              <li key={k} className="flex items-start gap-3">
-                <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
-                <span className="text-slate-300 text-sm">{t(`kyc_intro_${k}`)}</span>
-              </li>
-            ))}
-          </ul>
+          <h2 className="text-white font-bold text-xl">
+            {tosModeRef.current ? t("tos_required_title") : t("kyc_intro_title")}
+          </h2>
+          {tosModeRef.current ? (
+            <p className="text-slate-400 text-sm leading-relaxed">{t("tos_required_body")}</p>
+          ) : (
+            <>
+              <p className="text-slate-400 text-sm leading-relaxed">{t("kyc_intro_why")}</p>
+              <ul className="space-y-3">
+                {(["li1","li2","li3","li4"] as const).map((k) => (
+                  <li key={k} className="flex items-start gap-3">
+                    <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
+                    <span className="text-slate-300 text-sm">{t(`kyc_intro_${k}`)}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
           {(kycPolling || kycSubmitted) ? (
             <div className="flex flex-col items-center gap-3 py-4">
               <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
@@ -691,7 +699,7 @@ export default function P2PPage() {
               }}
               className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all text-white font-bold py-4 rounded-2xl text-sm mt-2"
             >
-              {t("kyc_intro_cta")}
+              {tosModeRef.current ? t("tos_accept_button") : t("kyc_intro_cta")}
             </button>
           ) : (
             <p className="text-slate-500 text-sm text-center">Cargando link de verificación…</p>
