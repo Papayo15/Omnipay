@@ -290,6 +290,13 @@ export async function POST(req: NextRequest): Promise<Response> {
         }
       }
       console.log(`[bridge/checkout] KYC gate: needsKyc=${needsKyc} kycUrl=${kycUrl}`);
+      if (!kycUrl) {
+        return NextResponse.json({
+          error: "No se pudo generar el link de verificación de identidad. Por favor intenta de nuevo.",
+          bridge_type: "kyc_url_unavailable",
+          customer_id: customer.id,
+        }, { status: 502 });
+      }
       return NextResponse.json({
         needs_kyc:   true,
         kyc_url:     kycUrl,
@@ -330,6 +337,13 @@ export async function POST(req: NextRequest): Promise<Response> {
             kycUrl = fb2.url ?? (fb2 as unknown as Record<string, string>).kyc_link ?? null;
           } catch { /* best-effort */ }
         }
+          if (!kycUrl) {
+            return NextResponse.json({
+              error: "No se pudo generar el link de verificación adicional. Por favor intenta de nuevo.",
+              bridge_type: "kyc_url_unavailable",
+              customer_id: customer.id,
+            }, { status: 502 });
+          }
           return NextResponse.json({
           needs_kyc:   true,
           kyc_url:     kycUrl,
