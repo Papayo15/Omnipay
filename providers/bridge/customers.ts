@@ -244,7 +244,10 @@ export async function getOrCreateCustomer(params: {
         ? existing.kyb_status === "approved"
         : existing.status === "active" || existing.status === "approved" || isRestricted || existing.kyc_status === "approved"
     );
-    return { customer: existing, isNew: false, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
+    // incomplete/not_started = customer record exists in Bridge but never went through ToS+KYC.
+    // Treat as isNew so the checkout shows the ToS popup before the KYC link.
+    const neverStarted = existing.status === "incomplete" || existing.status === "not_started";
+    return { customer: existing, isNew: neverStarted, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
   }
 
   try {

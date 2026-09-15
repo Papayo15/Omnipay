@@ -217,10 +217,10 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch { /* best-effort */ }
     }
 
-    // ToS gate — show for ANY customer that needs KYC on first visit (not just brand-new ones).
-    // Existing customers with incomplete KYC (e.g. status=incomplete after deletion) also need ToS.
-    // Skip when existing_customer_id is provided — that path means ToS was already shown this session.
-    if (!isSandbox && needsKyc && !existing_customer_id) {
+    // ToS gate — show for new/never-started customers (isNew=true).
+    // isNew is true for brand-new customers AND for existing customers with status
+    // incomplete/not_started (Bridge kept the record but they never completed ToS+KYC).
+    if (!isSandbox && isNew) {
       try {
         const tosLink = await createTosLink({
           full_name:    nombre,
