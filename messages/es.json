@@ -329,6 +329,7 @@
     "kyc_polling_title": "Verificando tu identidad...",
     "kyc_polling_body": "Estamos revisando tu verificación. Esto puede tomar un momento.",
     "kyc_already_done": "✓ Ya completé la verificación",
+    "tos_already_done": "✓ Ya acepté los términos → Continuar",
     "kyc_polling_wait": "Si tardas más de 2 minutos, cierra esta ventana y vuelve con el mismo link.",
     "kyc_polling_approved": "✓ Identidad verificada — Generando tu link de cobro...",
     "label_recipient_phone": "Tu teléfono (para aviso de pago, opcional)",

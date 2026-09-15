@@ -475,6 +475,7 @@
     "kyc_polling_title": "Kimliğiniz doğrulanıyor...",
     "kyc_polling_body": "Doğrulamanızı kontrol ediyoruz. Bu biraz zaman alabilir.",
     "kyc_already_done": "✓ Doğrulamayı tamamladım",
+    "tos_already_done": "✓ Şartları kabul ettim → Devam",
     "kyc_submitted_title": "Doğrulama gönderildi — onay bekleniyor",
     "kyc_submitted_body": "Bridge kimliğinizi işliyor. Onaylandığında bu ekran otomatik olarak ilerleyecek.",
     "kyc_long_review_title": "Belgeniz doğrulanıyor",

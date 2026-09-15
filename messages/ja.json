@@ -475,6 +475,7 @@
     "kyc_polling_title": "本人確認中...",
     "kyc_polling_body": "確認を検証しています。少々お待ちください。",
     "kyc_already_done": "✓ 確認を完了しました",
+    "tos_already_done": "✓ 利用規約に同意しました → 続ける",
     "kyc_submitted_title": "確認書類を提出しました — 承認待ち",
     "kyc_submitted_body": "Bridge が本人確認を処理中です。承認されると自動的に次のステップへ進みます。",
     "kyc_long_review_title": "書類を検証中です",

@@ -475,6 +475,7 @@
     "kyc_polling_title": "Uw identiteit wordt geverifieerd...",
     "kyc_polling_body": "We controleren uw verificatie. Dit kan even duren.",
     "kyc_already_done": "✓ Ik heb de verificatie voltooid",
+    "tos_already_done": "✓ Ik heb de voorwaarden geaccepteerd → Doorgaan",
     "kyc_submitted_title": "Verificatie ingediend — wachten op bevestiging",
     "kyc_submitted_body": "Bridge verwerkt uw identiteit. Dit scherm gaat automatisch verder zodra het goedgekeurd is.",
     "kyc_long_review_title": "Uw document wordt gevalideerd",

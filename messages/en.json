@@ -333,6 +333,7 @@
     "kyc_polling_title": "Verifying your identity...",
     "kyc_polling_body": "We're checking your verification. This may take a moment.",
     "kyc_already_done": "✓ I already completed verification",
+    "tos_already_done": "✓ I already accepted the terms → Continue",
     "kyc_submitted_title": "Verification submitted — awaiting confirmation",
     "kyc_submitted_body": "Bridge is processing your identity. This screen will advance automatically when approved.",
     "kyc_long_review_title": "Your document is being validated",

@@ -475,6 +475,7 @@
     "kyc_polling_title": "Vérification de votre identité...",
     "kyc_polling_body": "Nous vérifions votre dossier. Cela peut prendre un moment.",
     "kyc_already_done": "✓ J'ai déjà complété la vérification",
+    "tos_already_done": "✓ J'ai accepté les conditions → Continuer",
     "kyc_submitted_title": "Vérification soumise — en attente de confirmation",
     "kyc_submitted_body": "Bridge traite votre identité. Cet écran avancera automatiquement dès l'approbation.",
     "kyc_long_review_title": "Votre document est en cours de validation",

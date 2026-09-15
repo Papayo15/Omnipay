@@ -475,6 +475,7 @@
     "kyc_polling_title": "Memverifikasi identitas Anda...",
     "kyc_polling_body": "Kami sedang memeriksa verifikasi Anda. Ini mungkin membutuhkan waktu sebentar.",
     "kyc_already_done": "✓ Saya sudah menyelesaikan verifikasi",
+    "tos_already_done": "✓ Saya sudah menerima syarat → Lanjutkan",
     "kyc_submitted_title": "Verifikasi terkirim — menunggu konfirmasi",
     "kyc_submitted_body": "Bridge sedang memproses identitas Anda. Layar ini akan otomatis lanjut setelah disetujui.",
     "kyc_long_review_title": "Dokumen Anda sedang divalidasi",

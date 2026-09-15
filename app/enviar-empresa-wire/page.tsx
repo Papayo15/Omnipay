@@ -224,7 +224,7 @@ export default function EnviarEmpresaWirePage() {
 
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kybCustomerId}`);
-        const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean };
+        const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean; rejection_reason?: string | null };
         if (data.approved) {
           if (kybPollTimer.current) clearInterval(kybPollTimer.current);
           if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
@@ -234,7 +234,7 @@ export default function EnviarEmpresaWirePage() {
           if (kybPollTimer.current) clearInterval(kybPollTimer.current);
           if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
           setKybPolling(false);
-          setError(t("kyb_rejected_error"));
+          setError(data.rejection_reason ?? t("kyb_rejected_error"));
           setStep("error");
         } else if (data.status === "under_review" || data.status === "pending" || kybSubmitted) {
           if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }

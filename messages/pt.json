@@ -475,6 +475,7 @@
     "kyc_polling_title": "Verificando sua identidade...",
     "kyc_polling_body": "Estamos verificando seu cadastro. Isso pode levar um momento.",
     "kyc_already_done": "✓ Já completei a verificação",
+    "tos_already_done": "✓ Já aceitei os termos → Continuar",
     "kyc_submitted_title": "Verificação enviada — aguardando confirmação",
     "kyc_submitted_body": "A Bridge está processando sua identidade. Esta tela avançará automaticamente quando aprovada.",
     "kyc_long_review_title": "Seu documento está sendo validado",

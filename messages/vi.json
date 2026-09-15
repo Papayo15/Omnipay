@@ -475,6 +475,7 @@
     "kyc_polling_title": "Đang xác minh danh tính của bạn...",
     "kyc_polling_body": "Chúng tôi đang kiểm tra xác minh của bạn. Có thể mất một chút thời gian.",
     "kyc_already_done": "✓ Tôi đã hoàn thành xác minh",
+    "tos_already_done": "✓ Tôi đã chấp nhận điều khoản → Tiếp tục",
     "kyc_submitted_title": "Đã gửi xác minh — đang chờ xác nhận",
     "kyc_submitted_body": "Bridge đang xử lý danh tính của bạn. Màn hình sẽ tự động chuyển tiếp khi được chấp thuận.",
     "kyc_long_review_title": "Tài liệu của bạn đang được xác thực",

@@ -155,6 +155,8 @@ export default function P2PPage() {
   const kycPopup     = useRef<Window | null>(null);
   // Ref always fresh in callbacks — tracks whether current generateLink call is a KYC retry
   const kycAutoRetryRef = useRef(false);
+  // Tracks whether the current kycPopup is showing ToS (vs KYC) — drives popup-close behavior
+  const tosModeRef = useRef(false);
 
   const [apBankCode,      setApBankCode]      = useState("");
   const [alchemyPayEnabled, setAlchemyPayEnabled] = useState(false);
@@ -300,16 +302,24 @@ export default function P2PPage() {
         }
       } catch { /* cross-origin = still on Bridge/Persona */ }
 
-      // Popup closed (Persona shows their own "done" page on their domain — no same-origin redirect)
+      // Popup closed — ToS popup → retry generateLink(); KYC popup → show submitted state
       if (kycPopup.current?.closed) {
         kycPopup.current = null;
+        if (tosModeRef.current) {
+          if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
+          setKycPolling(false);
+          kycAutoRetryRef.current = true;
+          generateLink();
+          return;
+        }
         setKycSubmitted(true);
         setKycLongReview(true);
+        // fall through to kyc-status fetch
       }
 
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
-        const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean };
+        const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean; rejection_reason?: string | null };
         if (data.approved) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
@@ -320,7 +330,7 @@ export default function P2PPage() {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycPolling(false);
-          setErrorMsg(t("kyc_rejected_error"));
+          setErrorMsg(data.rejection_reason ?? t("kyc_rejected_error"));
           setStep("error");
         } else if (data.status === "under_review" || data.status === "pending" || kycSubmitted) {
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
@@ -437,17 +447,22 @@ export default function P2PPage() {
       if (res.status !== 202 && (!res.ok || data.error)) throw new Error(data.error ?? "Error");
       if (data.needs_kyc || data.needs_tos || res.status === 202) {
         if (!kycAutoRetryRef.current) setKycSubmitted(false);
-        if (data.kyc_url)  setKycUrl(data.kyc_url);
-        if (data.tos_url)  setKycUrl(data.tos_url); // reuse same button for ToS acceptance
+        if (data.kyc_url)  { setKycUrl(data.kyc_url); tosModeRef.current = false; }
+        if (data.tos_url)  { setKycUrl(data.tos_url); tosModeRef.current = true; }
         if ((data as unknown as Record<string, unknown>).customer_id) setKycCustomerId((data as unknown as Record<string, string>).customer_id);
         if (kycAutoRetryRef.current) {
-          // Auto-retry after KYC still returns needs_kyc — KYC processing async on Bridge's side
           kycAutoRetryRef.current = false;
-          setKycStillPending(true);
-          setKycPolling(true);
-          setStep("kyc_polling");
+          if (data.needs_tos) {
+            // ToS still needed — show kyc_info so user can re-open ToS popup
+            setStep("kyc_info");
+          } else {
+            // KYC approved but processing async on Bridge's side — show polling step
+            setKycStillPending(true);
+            setKycPolling(true);
+            setStep("kyc_polling");
+          }
         } else {
-          // First time needs_kyc — save form + show pre-KYC explanation
+          // First time needs_kyc/tos — save form + show explanation step
           try {
             sessionStorage.setItem("omnipay_p2p_form", JSON.stringify({
               nombre, email, country, account, bic, cpf, amountLocal, recipientPhone,
@@ -534,10 +549,19 @@ export default function P2PPage() {
               </p>
               {!kycSubmitted && !kycLongReview && (
                 <button
-                  onClick={() => { setKycSubmitted(true); setKycLongReview(true); }}
+                  onClick={() => {
+                    if (tosModeRef.current) {
+                      if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
+                      if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+                      kycAutoRetryRef.current = true;
+                      generateLink();
+                    } else {
+                      setKycSubmitted(true); setKycLongReview(true);
+                    }
+                  }}
                   className="text-emerald-400/70 text-xs underline underline-offset-2 hover:text-emerald-300 transition-colors"
                 >
-                  {t("kyc_already_done")}
+                  {tosModeRef.current ? t("tos_already_done") : t("kyc_already_done")}
                 </button>
               )}
             </div>

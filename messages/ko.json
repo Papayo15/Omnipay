@@ -475,6 +475,7 @@
     "kyc_polling_title": "신원 확인 중...",
     "kyc_polling_body": "확인을 검토하고 있습니다. 잠시 기다려 주세요.",
     "kyc_already_done": "✓ 이미 인증을 완료했습니다",
+    "tos_already_done": "✓ 이용약관에 동의했습니다 → 계속",
     "kyc_submitted_title": "인증 제출됨 — 확인 대기 중",
     "kyc_submitted_body": "Bridge가 신원을 처리 중입니다. 승인되면 자동으로 다음 단계로 이동합니다.",
     "kyc_long_review_title": "서류 검증 중",

@@ -475,6 +475,7 @@
     "kyc_polling_title": "正在验证您的身份...",
     "kyc_polling_body": "我们正在检查您的验证状态，请稍候。",
     "kyc_already_done": "✓ 我已完成验证",
+    "tos_already_done": "✓ 我已接受条款 → 继续",
     "kyc_submitted_title": "验证已提交 — 等待确认",
     "kyc_submitted_body": "Bridge 正在处理您的身份。批准后此页面将自动跳转。",
     "kyc_long_review_title": "您的文件正在验证中",

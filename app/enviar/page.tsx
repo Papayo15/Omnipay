@@ -285,7 +285,7 @@ export default function EnviarPage() {
 
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
-        const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean };
+        const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean; rejection_reason?: string | null };
         if (data.approved) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
@@ -296,7 +296,7 @@ export default function EnviarPage() {
           if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
           setKycPolling(false);
-          setError(t("kyc_rejected_error"));
+          setError(data.rejection_reason ?? t("kyc_rejected_error"));
           setStep("error");
         } else if (data.status === "under_review" || data.status === "pending" || kycSubmitted) {
           // Show "en validación" if Bridge confirmed under_review/pending,
