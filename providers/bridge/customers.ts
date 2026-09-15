@@ -1,6 +1,7 @@
 // Bridge.xyz customer management — KYC (individual P2P) and KYB (business B2B)
 // Bridge stores ALL customer state. We never persist this locally (zero-data policy).
 
+import { createHash } from "crypto";
 import { bridgeRequest, BridgeError } from "./client";
 
 export interface BridgeCustomer {
@@ -111,9 +112,13 @@ export async function createCustomer(params: {
     body.endorsements = params.endorsements;
   }
 
+  const day = Math.floor(Date.now() / 86_400_000);
+
   if (isSandbox) {
-    // signed_agreement_id required in sandbox for all customer types
-    body.signed_agreement_id = crypto.randomUUID();
+    // Deterministic per email+day — avoids "idempotency key already used" when
+    // createCustomer is retried within the same day (Bridge eventual-consistency lag).
+    const h = createHash("sha256").update(`${params.email.toLowerCase()}-${day}`).digest("hex");
+    body.signed_agreement_id = `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20,32)}`;
 
     if (params.type === "individual") {
       // Individual-only sandbox fields — Bridge rejects these for business customers
@@ -142,7 +147,6 @@ export async function createCustomer(params: {
     }
     // Business customers only need signed_agreement_id in sandbox — no personal docs
   }
-  const day = Math.floor(Date.now() / 86_400_000);
   return bridgeRequest<BridgeCustomer>(
     "POST",
     "/customers",
@@ -242,8 +246,12 @@ export async function getOrCreateCustomer(params: {
     const e = err as Error & { details?: unknown };
     // Bridge returns { code:"invalid_parameters", source:{ key:{ email:"A customer with this email already exists" } } }
     // The full response is on e.details; e.message is the generic "Please resubmit..." text.
-    const isEmailTaken = JSON.stringify(e.details ?? e.message ?? "").toLowerCase().includes("already exists");
-    if (isEmailTaken) {
+    const msg = JSON.stringify(e.details ?? e.message ?? "").toLowerCase();
+    // Also recover when Bridge returns an idempotency conflict (same key, different body
+    // due to a prior call that got a different signed_agreement_id before the fix).
+    const isEmailTaken   = msg.includes("already exists");
+    const isIdempConflict = msg.includes("idempotency");
+    if (isEmailTaken || isIdempConflict) {
       // Race condition or findCustomerByEmail returned null despite customer existing.
       // Re-fetch and return the existing customer.
       const recovered = await findCustomerByEmail(params.email);
