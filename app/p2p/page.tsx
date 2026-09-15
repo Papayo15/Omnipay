@@ -9,7 +9,7 @@ import { validateClabe, detectBank, type BankInfo } from "@/lib/clabe";
 import { TrustBanner } from "@/components/TrustBanner";
 import { ALCHEMYPAY_COUNTRIES } from "@/lib/funding-provider";
 
-type Step = "form" | "tos_intro" | "generating" | "kyc_info" | "kyc_polling" | "share" | "error";
+type Step = "form" | "generating" | "kyc_info" | "kyc_polling" | "share" | "error";
 
 // All 41 countries with native Bridge bank rail (SPEI/ACH/PIX/FPS/Bre-B/SEPA)
 const BANK_RAIL_COUNTRIES = new Set([
@@ -616,40 +616,6 @@ export default function P2PPage() {
   const bridgeReady       = !!nombre.trim() && email.includes("@") && accountValid && feeBreakdownShown && rail === "bridge" && !bicRequired && !cpfRequired;
 
   // ── KYC Info — pre-verification explanation ──────────────────────────────────
-  if (step === "tos_intro") {
-    return (
-      <main className="min-h-screen bg-[#0f172a] flex flex-col items-center px-5 pt-10 pb-16 max-w-sm mx-auto w-full">
-        <div className="w-full mb-8">
-          <button onClick={() => setStep("form")} className="flex items-center gap-1 text-slate-400 hover:text-white text-sm transition-colors">
-            <ArrowLeft className="w-4 h-4" /> {t("kyc_intro_back")}
-          </button>
-        </div>
-        <div className="w-full flex flex-col gap-5">
-          <h2 className="text-white font-bold text-xl">{t("tos_required_title")}</h2>
-          <p className="text-slate-400 text-sm leading-relaxed">{t("tos_required_body")}</p>
-          <ul className="space-y-3">
-            {(["li1","li2","li3","li4"] as const).map((k) => (
-              <li key={k} className="flex items-start gap-3">
-                <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
-                <span className="text-slate-300 text-sm">{t(`kyc_intro_${k}`)}</span>
-              </li>
-            ))}
-          </ul>
-          <button
-            onClick={generateLink}
-            disabled={submitting}
-            className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white font-bold py-4 rounded-2xl text-sm mt-2"
-          >
-            {submitting ? `${t("generate_button")}…` : t("tos_accept_button")}
-          </button>
-          <div className="mt-4">
-            <TrustBanner variant="checkout" />
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   if (step === "kyc_info") {
     return (
       <main className="min-h-screen bg-[#0f172a] flex flex-col items-center px-5 pt-10 pb-16 max-w-sm mx-auto w-full">
@@ -1095,9 +1061,9 @@ export default function P2PPage() {
                       {t("fee_fx_rate", { currency, rate: fxRate.toFixed(4) })}
                     </p>
                   </div>
-                  <button onClick={() => setStep("tos_intro")} disabled={!bridgeReady}
+                  <button onClick={generateLink} disabled={submitting || !bridgeReady}
                     className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
-                    {t("pricing_card1_cta")}
+                    {submitting ? `${t("generate_button")}…` : t("pricing_card1_cta")}
                   </button>
                 </>
               );
