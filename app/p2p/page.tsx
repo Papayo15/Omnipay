@@ -223,20 +223,50 @@ export default function P2PPage() {
       const saved = sessionStorage.getItem("omnipay_p2p_form");
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
-        if (tosDone) {
-          // ToS just accepted — restore form and call checkout with from_tos=true.
-          // from_tos bypasses the ToS gate (avoids race on has_accepted_terms_of_service).
-          // kycAutoRetryRef=true makes generateLink auto-navigate to the returned KYC URL.
+        if (tosDone && form.kycCustomerId) {
+          // Per Bridge docs: after ToS acceptance, call GET /customers/{id}/kyc_link directly
+          // to get the Persona KYC URL, then navigate. No need for full checkout.
+          window.history.replaceState({}, "", "/p2p");
+          const kycRedirectUri = `${window.location.origin}/p2p?kyc_done=1`;
+          const endpoint = `/api/bridge/kyc-link?customer_id=${encodeURIComponent(form.kycCustomerId)}&redirect_uri=${encodeURIComponent(kycRedirectUri)}`;
+          fetch(endpoint)
+            .then(r => r.json())
+            .then((d: Record<string, string>) => {
+              if (d.kyc_url) {
+                sessionStorage.setItem("omnipay_p2p_form", saved);
+                window.location.href = d.kyc_url;
+              } else {
+                // kyc-link returned no URL — fall back to full checkout with from_tos=true
+                tosModeRef.current = true;
+                if (form.nombre)         setNombre(form.nombre);
+                if (form.email)          setEmail(form.email);
+                if (form.country)        setCountry(form.country);
+                if (form.account)        setAccount(form.account);
+                if (form.bic)            setBic(form.bic);
+                if (form.cpf)            setCpf(form.cpf);
+                if (form.amountLocal)    setAmountLocal(form.amountLocal);
+                if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
+                if (form.kycCustomerId)  setKycCustomerId(form.kycCustomerId);
+                setPendingKycRetry(true);
+              }
+            })
+            .catch(() => {
+              // Network error — fall back to full checkout
+              tosModeRef.current = true;
+              if (form.nombre)         setNombre(form.nombre);
+              if (form.email)          setEmail(form.email);
+              if (form.country)        setCountry(form.country);
+              if (form.account)        setAccount(form.account);
+              if (form.bic)            setBic(form.bic);
+              if (form.cpf)            setCpf(form.cpf);
+              if (form.amountLocal)    setAmountLocal(form.amountLocal);
+              if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
+              if (form.kycCustomerId)  setKycCustomerId(form.kycCustomerId);
+              setPendingKycRetry(true);
+            });
+        } else if (tosDone) {
+          // tos_done=1 but no kycCustomerId saved — fall back to checkout with from_tos
           tosModeRef.current = true;
-          if (form.nombre)         setNombre(form.nombre);
-          if (form.email)          setEmail(form.email);
-          if (form.country)        setCountry(form.country);
-          if (form.account)        setAccount(form.account);
-          if (form.bic)            setBic(form.bic);
-          if (form.cpf)            setCpf(form.cpf);
-          if (form.amountLocal)    setAmountLocal(form.amountLocal);
-          if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
-          if (form.kycCustomerId)  setKycCustomerId(form.kycCustomerId);
           window.history.replaceState({}, "", "/p2p");
           setPendingKycRetry(true);
         } else if (kycDone) {
@@ -486,7 +516,9 @@ export default function P2PPage() {
             window.location.href = data.tos_url;
             return;
           } else if (data.needs_tos) {
-            setStep("kyc_info");
+            // needs_tos=true but no tos_url — show debug error
+            setErrorMsg(`[DEBUG auto-retry] needs_tos sin URL. fromTosMode=${fromTosMode} raw=${JSON.stringify(data).slice(0,300)}`);
+            setStep("error");
           } else if (fromTosMode && data.kyc_url) {
             // Just accepted ToS → navigate directly to KYC (no intermediate step)
             window.location.href = data.kyc_url;
