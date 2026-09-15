@@ -278,6 +278,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         console.error(`[bridge/checkout] getKycLink error: ${(e1 as Error).message}`);
       }
       // Fallback: POST /kyc_links when GET returns no URL
+      let createKycError = "";
       if (!kycUrl) {
         try {
           const fallback = await createKycLink({
@@ -288,13 +289,14 @@ export async function POST(req: NextRequest): Promise<Response> {
           kycUrl = (fallback as unknown as Record<string, string>).kyc_link ?? fallback.url ?? null;
           if (kycUrl) console.log(`[bridge/checkout] createKycLink fallback ok: url=${kycUrl}`);
         } catch (e2) {
-          console.error(`[bridge/checkout] createKycLink fallback error: ${(e2 as Error).message}`);
+          createKycError = (e2 as Error).message ?? String(e2);
+          console.error(`[bridge/checkout] createKycLink fallback error: ${createKycError}`);
         }
       }
       console.log(`[bridge/checkout] KYC gate: needsKyc=${needsKyc} kycUrl=${kycUrl}`);
       if (!kycUrl) {
         return NextResponse.json({
-          error: "No se pudo generar el link de verificación de identidad. Por favor intenta de nuevo.",
+          error: `[KYC] getKycLink returned no URL, createKycLink error: ${createKycError || "no url returned"}`,
           bridge_type: "kyc_url_unavailable",
           customer_id: customer.id,
         }, { status: 502 });
