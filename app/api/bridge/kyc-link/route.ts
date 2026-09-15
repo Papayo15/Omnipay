@@ -21,7 +21,8 @@ export async function GET(req: NextRequest): Promise<Response> {
     // Try GET /customers/{id}/kyc_link first (customer-scoped)
     try {
       const link = await getKycLink(customer_id, { redirect_uri: redirect_uri ?? undefined });
-      url = (link as unknown as Record<string, string>).kyc_link ?? link.url ?? null;
+      // GET /customers/{id}/kyc_link returns { "url": "..." } — no kyc_link field
+      url = link.url ?? (link as unknown as Record<string, string>).kyc_link ?? null;
       console.log(`[kyc-link] getKycLink customer=${customer_id} url=${url}`);
     } catch (e1) {
       console.error(`[kyc-link] getKycLink error: ${(e1 as Error).message}`);
@@ -38,7 +39,8 @@ export async function GET(req: NextRequest): Promise<Response> {
         endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"],
         redirect_uri: redirect_uri ?? undefined,
       });
-      url = fb.url ?? (fb as unknown as Record<string, string>).kyc_link ?? null;
+      // POST /kyc_links returns { "kyc_link": "...", "tos_link": "..." } — not "url"
+      url = (fb as unknown as Record<string, string>).kyc_link ?? fb.url ?? null;
       console.log(`[kyc-link] createKycLink fallback customer=${customer_id} url=${url}`);
     }
     if (!url) {

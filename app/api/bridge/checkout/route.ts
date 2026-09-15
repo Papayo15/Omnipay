@@ -271,7 +271,8 @@ export async function POST(req: NextRequest): Promise<Response> {
       let kycUrl: string | null = null;
       try {
         const kycLink = await getKycLink(customer.id, { redirect_uri: kycRedirectUri });
-        kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
+        // GET /customers/{id}/kyc_link returns { "url": "..." } — no kyc_link field
+        kycUrl = kycLink.url ?? (kycLink as unknown as Record<string, string>).kyc_link ?? null;
         console.log(`[bridge/checkout] getKycLink ok: url=${kycUrl}`);
       } catch (e1) {
         console.error(`[bridge/checkout] getKycLink error: ${(e1 as Error).message}`);
@@ -283,7 +284,8 @@ export async function POST(req: NextRequest): Promise<Response> {
             full_name: nombre, email: email.toLowerCase(), type: "individual",
             endorsements, redirect_uri: kycRedirectUri,
           });
-          kycUrl = fallback.url ?? (fallback as unknown as Record<string, string>).kyc_link ?? null;
+          // POST /kyc_links returns { "kyc_link": "...", "tos_link": "..." } — not "url"
+          kycUrl = (fallback as unknown as Record<string, string>).kyc_link ?? fallback.url ?? null;
           if (kycUrl) console.log(`[bridge/checkout] createKycLink fallback ok: url=${kycUrl}`);
         } catch (e2) {
           console.error(`[bridge/checkout] createKycLink fallback error: ${(e2 as Error).message}`);
@@ -324,7 +326,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         let kycUrl: string | null = null;
         try {
           const kycLink = await getKycLink(customer.id, { redirect_uri: kycRedirectUri2 });
-          kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
+          kycUrl = kycLink.url ?? (kycLink as unknown as Record<string, string>).kyc_link ?? null;
         } catch (e3) {
           console.error(`[bridge/checkout] getKycLink endorsement fallback error: ${(e3 as Error).message}`);
         }
@@ -334,7 +336,7 @@ export async function POST(req: NextRequest): Promise<Response> {
               full_name: nombre, email: email.toLowerCase(), type: "individual",
               endorsements, redirect_uri: kycRedirectUri2,
             });
-            kycUrl = fb2.url ?? (fb2 as unknown as Record<string, string>).kyc_link ?? null;
+            kycUrl = (fb2 as unknown as Record<string, string>).kyc_link ?? fb2.url ?? null;
           } catch { /* best-effort */ }
         }
           if (!kycUrl) {
