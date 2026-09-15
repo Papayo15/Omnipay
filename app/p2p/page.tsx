@@ -514,7 +514,9 @@ export default function P2PPage() {
           // kyc_info is only the fallback when Bridge returns no URL at all.
           if (data.kyc_url) { window.location.href = data.kyc_url; return; }
           if (data.tos_url) { window.location.href = data.tos_url; return; }
-          setStep("kyc_info"); // fallback: no URL from Bridge yet
+          // DEBUG: show raw API response so we know why no URL was returned
+          setErrorMsg(`[DEBUG] API 202 sin URL. needs_tos=${data.needs_tos} needs_kyc=${data.needs_kyc} tos_url=${data.tos_url} kyc_url=${data.kyc_url} raw=${JSON.stringify(data).slice(0,300)}`);
+          setStep("error");
         }
       } else {
         kycAutoRetryRef.current = false;
