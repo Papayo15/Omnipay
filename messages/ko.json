@@ -474,6 +474,11 @@
     "kyc_intro_back": "← 양식으로 돌아가기",
     "kyc_polling_title": "신원 확인 중...",
     "kyc_polling_body": "확인을 검토하고 있습니다. 잠시 기다려 주세요.",
+    "kyc_submitted_title": "인증 제출됨 — 확인 대기 중",
+    "kyc_submitted_body": "Bridge가 신원을 처리 중입니다. 승인되면 자동으로 다음 단계로 이동합니다.",
+    "kyc_long_review_title": "서류 검증 중",
+    "kyc_long_review_body": "Bridge가 신원을 검토 중입니다. 자동으로 진행됩니다.",
+    "kyc_rejected_error": "Bridge에서 인증이 거부되었습니다. 동일한 정보(전화번호 또는 이메일)로 계정이 이미 존재할 수 있습니다. 지원팀에 문의하세요: support@omnipay.solutions",
     "kyc_polling_wait": "2분 이상 걸리면 이 창을 닫고 같은 링크로 돌아오세요.",
     "kyc_polling_approved": "✓ 신원 확인 완료 — 결제 링크 생성 중...",
     "share_invite": "공유",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← 양식으로 돌아가기",
     "kyc_polling_title": "신원 확인 중...",
     "kyc_polling_body": "귀하의 신원을 확인하고 있습니다. 잠시 기다려 주세요.",
+    "kyc_submitted_title": "인증 제출됨 — 확인 대기 중",
+    "kyc_submitted_body": "Bridge가 신원을 처리 중입니다. 승인되면 자동으로 다음 단계로 이동합니다.",
+    "kyc_long_review_title": "서류 검증 중",
+    "kyc_long_review_body": "Bridge가 신원을 검토 중입니다. 자동으로 진행됩니다.",
+    "kyc_rejected_error": "Bridge에서 인증이 거부되었습니다. 동일한 정보(전화번호 또는 이메일)로 계정이 이미 존재할 수 있습니다. 지원팀에 문의하세요: support@omnipay.solutions",
     "kyc_polling_wait": "2분 이상 걸리면 이 창을 닫고 같은 링크로 돌아오세요.",
     "kyc_polling_approved": "✓ 신원 확인 완료 — 입금 안내 생성 중..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ 수신자 KYC 시뮬레이션 완료 · 폴링이 변경 사항을 감지합니다",
     "va_recipient_gets": "수신자 수령액",
     "va_deposit_currency": "입금 통화",
+    "va_deposit_amount": "입금 금액",
     "fee_calculating": "수수료 계산 중...",
     "fee_recipient_gets": "수신자 수령액",
     "fee_fx_rate": "환율",
@@ -759,7 +770,12 @@
     "eta_fps": "~2시간 (Faster Payments UK)",
     "eta_cop": "당일 또는 다음 영업일",
     "eta_fednow": "초 단위 — FedNow 실시간",
-    "eta_sepa_instant": "~10초 (SEPA Instant)"
+    "eta_sepa_instant": "~10초 (SEPA Instant)",
+    "kyc_submitted_title": "인증 제출됨 — 확인 대기 중",
+    "kyc_submitted_body": "Bridge가 신원을 처리 중입니다. 승인되면 자동으로 다음 단계로 이동합니다.",
+    "kyc_long_review_title": "서류 검토 중",
+    "kyc_long_review_body": "몇 분이 걸릴 수 있습니다. 자동으로 진행됩니다.",
+    "kyc_rejected_error": "Bridge에서 인증이 거부되었습니다. 동일한 정보로 계정이 이미 존재할 수 있습니다. 지원팀에 문의하세요: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "초대장 확인 중...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "내 회사 확인하기 →",
+    "kyb_polling_title": "열린 창에서 기업을 인증하세요",
     "kyb_after": "회사 확인 후 여기로 돌아와 계속하세요.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~2시간 (Faster Payments UK)",
     "eta_cop": "당일 또는 다음 영업일",
     "eta_fednow": "초 단위 — FedNow 실시간",
-    "eta_sepa_instant": "~10초 (SEPA Instant)"
+    "eta_sepa_instant": "~10초 (SEPA Instant)",
+    "kyb_submitted_title": "기업 인증 제출됨 — 확인 대기 중",
+    "kyb_submitted_body": "Bridge가 기업 인증을 처리 중입니다. 자동으로 진행됩니다.",
+    "kyb_long_review_title": "기업 검토 중",
+    "kyb_long_review_body": "Bridge가 기업 서류를 검토 중입니다. 자동으로 진행됩니다.",
+    "kyb_rejected_error": "Bridge에서 기업 인증이 거부되었습니다. 동일한 정보로 계정이 이미 존재할 수 있습니다. 지원팀에 문의하세요: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

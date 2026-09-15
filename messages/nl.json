@@ -474,6 +474,11 @@
     "kyc_intro_back": "← Terug naar het formulier",
     "kyc_polling_title": "Uw identiteit wordt geverifieerd...",
     "kyc_polling_body": "We controleren uw verificatie. Dit kan even duren.",
+    "kyc_submitted_title": "Verificatie ingediend — wachten op bevestiging",
+    "kyc_submitted_body": "Bridge verwerkt uw identiteit. Dit scherm gaat automatisch verder zodra het goedgekeurd is.",
+    "kyc_long_review_title": "Uw document wordt gevalideerd",
+    "kyc_long_review_body": "Bridge controleert uw identiteit. Dit scherm gaat automatisch verder.",
+    "kyc_rejected_error": "Uw verificatie is geweigerd door Bridge. Er bestaat mogelijk al een account met uw gegevens (telefoon of e-mail). Neem contact op met support: support@omnipay.solutions",
     "kyc_polling_wait": "Als het langer dan 2 minuten duurt, sluit dit venster en keer terug met dezelfde link.",
     "kyc_polling_approved": "✓ Identiteit geverifieerd — Uw betaallink wordt gegenereerd...",
     "share_invite": "Delen",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← Terug naar het formulier",
     "kyc_polling_title": "Uw identiteit wordt geverifieerd...",
     "kyc_polling_body": "We controleren uw identiteitsverificatie. Dit kan even duren.",
+    "kyc_submitted_title": "Verificatie ingediend — wachten op bevestiging",
+    "kyc_submitted_body": "Bridge verwerkt uw identiteit. Dit scherm gaat automatisch verder zodra het goedgekeurd is.",
+    "kyc_long_review_title": "Uw document wordt gevalideerd",
+    "kyc_long_review_body": "Bridge controleert uw identiteit. Dit scherm gaat automatisch verder.",
+    "kyc_rejected_error": "Uw verificatie is geweigerd door Bridge. Er bestaat mogelijk al een account met uw gegevens (telefoon of e-mail). Neem contact op met support: support@omnipay.solutions",
     "kyc_polling_wait": "Als het langer dan 2 minuten duurt, sluit dit venster en keer terug met dezelfde link.",
     "kyc_polling_approved": "✓ Identiteit geverifieerd — Uw stortingsinstructies worden gegenereerd..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ KYC ontvanger gesimuleerd · de verificatie detecteert de wijziging",
     "va_recipient_gets": "Ontvanger ontvangt",
     "va_deposit_currency": "Stortingsvaluta",
+    "va_deposit_amount": "Te storten bedrag",
     "fee_calculating": "Tarief berekenen...",
     "fee_recipient_gets": "Ontvanger ontvangt",
     "fee_fx_rate": "Wisselkoers",
@@ -759,7 +770,12 @@
     "eta_fps": "~2 uur (Faster Payments UK)",
     "eta_cop": "Zelfde dag of volgende werkdag",
     "eta_fednow": "Seconden — FedNow is realtime",
-    "eta_sepa_instant": "~10 seconden (SEPA Instant)"
+    "eta_sepa_instant": "~10 seconden (SEPA Instant)",
+    "kyc_submitted_title": "Verificatie ingediend — wachten op bevestiging",
+    "kyc_submitted_body": "Bridge verwerkt uw identiteit. Dit scherm gaat automatisch verder zodra het goedgekeurd is.",
+    "kyc_long_review_title": "Document wordt beoordeeld",
+    "kyc_long_review_body": "Dit kan enkele minuten duren. Dit scherm gaat automatisch verder.",
+    "kyc_rejected_error": "Uw verificatie is geweigerd door Bridge. Er bestaat mogelijk al een account met uw gegevens. Neem contact op met support: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Mijn bedrijf verifiëren →",
+    "kyb_polling_title": "Verifieer uw bedrijf in het geopende venster",
     "kyb_after": "Na bedrijfsverificatie hier terugkeren om door te gaan.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~2 uur (Faster Payments UK)",
     "eta_cop": "Zelfde dag of volgende werkdag",
     "eta_fednow": "Seconden — FedNow is realtime",
-    "eta_sepa_instant": "~10 seconden (SEPA Instant)"
+    "eta_sepa_instant": "~10 seconden (SEPA Instant)",
+    "kyb_submitted_title": "Bedrijfsverificatie ingediend — wachten op bevestiging",
+    "kyb_submitted_body": "Bridge verwerkt de verificatie van uw bedrijf. Dit scherm gaat automatisch verder.",
+    "kyb_long_review_title": "Bedrijf wordt beoordeeld",
+    "kyb_long_review_body": "Bridge controleert de documentatie van uw bedrijf. Dit scherm gaat automatisch verder.",
+    "kyb_rejected_error": "De bedrijfsverificatie is geweigerd door Bridge. Er bestaat mogelijk al een account met deze gegevens. Neem contact op met support: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

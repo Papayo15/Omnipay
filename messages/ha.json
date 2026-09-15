@@ -474,6 +474,11 @@
     "kyc_intro_back": "← Koma zuwa fom",
     "kyc_polling_title": "Ana tabbatar da asalinka...",
     "kyc_polling_body": "Muna duba tabbatarwa. Wannan na iya ɗaukar ɗan lokaci.",
+    "kyc_submitted_title": "An aika tabbatarwa — ana jiran tabbaci",
+    "kyc_submitted_body": "Bridge na sarrafa shaida naka. Wannan allon zai ci gaba ta atomatik bayan amincewar.",
+    "kyc_long_review_title": "Ana tabbatar da takardarku",
+    "kyc_long_review_body": "Bridge na duba shaida naka. Wannan allon zai ci gaba ta atomatik.",
+    "kyc_rejected_error": "An ƙi tabbatarwarka daga Bridge. Wataƙila akwai asusun da bayananka (waya ko imel). Tallafi: support@omnipay.solutions",
     "kyc_polling_wait": "Idan ya ɗauki fiye da minti 2, rufe wannan taga kuma koma ta hanyar haɗi ɗaya.",
     "kyc_polling_approved": "✓ An tabbatar da asali — Ana ƙirƙirar hanyar haɗin biyan kuɗinka...",
     "share_invite": "Raba",
@@ -567,6 +572,11 @@
     "kyc_intro_back": "← Koma zuwa fom",
     "kyc_polling_title": "Ana tabbatar da asalinka...",
     "kyc_polling_body": "Muna tabbatar da asalinka. Wannan na iya ɗaukar ɗan lokaci.",
+    "kyc_submitted_title": "An aika tabbatarwa — ana jiran tabbaci",
+    "kyc_submitted_body": "Bridge na sarrafa shaida naka. Wannan allon zai ci gaba ta atomatik bayan amincewar.",
+    "kyc_long_review_title": "Ana tabbatar da takardarku",
+    "kyc_long_review_body": "Bridge na duba shaida naka. Wannan allon zai ci gaba ta atomatik.",
+    "kyc_rejected_error": "An ƙi tabbatarwarka daga Bridge. Wataƙila akwai asusun da bayananka (waya ko imel). Tallafi: support@omnipay.solutions",
     "kyc_polling_wait": "Idan ya ɗauki fiye da minti 2, rufe wannan taga kuma koma ta hanyar haɗi ɗaya.",
     "kyc_polling_approved": "✓ An tabbatar da asali — Ana ƙirƙirar umarni na saka kuɗi..."
   },
@@ -723,6 +733,7 @@
     "sandbox_recipient_simulated": "✓ An kwaikwayi KYC mai karɓa · binciken zai gano canje-canje",
     "va_recipient_gets": "Mai karɓa yana karɓa",
     "va_deposit_currency": "Kuɗin ajiya",
+    "va_deposit_amount": "Adadin da za a ajiye",
     "fee_calculating": "Ana ƙidaya kuɗin hidimomin...",
     "fee_recipient_gets": "Mai karɓa yana karɓa",
     "fee_fx_rate": "Farashin musanya",
@@ -758,7 +769,12 @@
     "eta_fps": "~Awanni 2 (Faster Payments UK)",
     "eta_cop": "Ranar nan ko ranar aiki mai zuwa",
     "eta_fednow": "Daƙiƙoƙi — FedNow na ainihin lokaci ne",
-    "eta_sepa_instant": "~10 daƙiƙoƙi (SEPA Instant)"
+    "eta_sepa_instant": "~10 daƙiƙoƙi (SEPA Instant)",
+    "kyc_submitted_title": "An aika tabbatarwa — ana jiran tabbaci",
+    "kyc_submitted_body": "Bridge na sarrafa shaida naka. Wannan allon zai ci gaba ta atomatik bayan amincewar.",
+    "kyc_long_review_title": "Ana duba takarda",
+    "kyc_long_review_body": "Zai iya ɗaukar mintuna kaɗan. Wannan allon zai ci gaba ta atomatik.",
+    "kyc_rejected_error": "An ƙi tabbatarwarka daga Bridge. Wataƙila akwai asusun da bayananka. Tuntuɓi tallafi: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",
@@ -854,6 +870,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Tabbatar da kamfanina →",
+    "kyb_polling_title": "Tabbatar da kamfaninka a taga mai buɗe",
     "kyb_after": "Bayan tabbatar da kamfaninku, dawo nan don ci gaba.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -958,7 +975,12 @@
     "eta_fps": "~Awanni 2 (Faster Payments UK)",
     "eta_cop": "Ranar nan ko ranar aiki mai zuwa",
     "eta_fednow": "Daƙiƙoƙi — FedNow na ainihin lokaci ne",
-    "eta_sepa_instant": "~10 daƙiƙoƙi (SEPA Instant)"
+    "eta_sepa_instant": "~10 daƙiƙoƙi (SEPA Instant)",
+    "kyb_submitted_title": "An aika tabbatarwa ta kamfani — ana jiran tabbaci",
+    "kyb_submitted_body": "Bridge na sarrafa tabbatarwa ta kamfaninku. Wannan allon zai ci gaba ta atomatik.",
+    "kyb_long_review_title": "Ana duba kamfani",
+    "kyb_long_review_body": "Bridge na duba takardun kamfaninku. Wannan allon zai ci gaba ta atomatik.",
+    "kyb_rejected_error": "An ƙi tabbatarwa ta kamfaninku daga Bridge. Wataƙila akwai asusun da wannan bayanai. Tallafi: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

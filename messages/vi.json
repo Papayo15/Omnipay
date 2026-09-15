@@ -474,6 +474,11 @@
     "kyc_intro_back": "← Quay lại biểu mẫu",
     "kyc_polling_title": "Đang xác minh danh tính của bạn...",
     "kyc_polling_body": "Chúng tôi đang kiểm tra xác minh của bạn. Có thể mất một chút thời gian.",
+    "kyc_submitted_title": "Đã gửi xác minh — đang chờ xác nhận",
+    "kyc_submitted_body": "Bridge đang xử lý danh tính của bạn. Màn hình sẽ tự động chuyển tiếp khi được chấp thuận.",
+    "kyc_long_review_title": "Tài liệu của bạn đang được xác thực",
+    "kyc_long_review_body": "Bridge đang xem xét danh tính của bạn. Màn hình sẽ tự động chuyển tiếp.",
+    "kyc_rejected_error": "Xác minh của bạn bị Bridge từ chối. Có thể đã tồn tại tài khoản với thông tin của bạn (điện thoại hoặc email). Liên hệ: support@omnipay.solutions",
     "kyc_polling_wait": "Nếu mất hơn 2 phút, hãy đóng cửa sổ này và quay lại bằng cùng liên kết.",
     "kyc_polling_approved": "✓ Danh tính đã xác minh — Đang tạo liên kết thanh toán...",
     "share_invite": "Chia sẻ",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← Quay lại biểu mẫu",
     "kyc_polling_title": "Đang xác minh danh tính của bạn...",
     "kyc_polling_body": "Chúng tôi đang xác minh danh tính của bạn. Có thể mất một chút thời gian.",
+    "kyc_submitted_title": "Đã gửi xác minh — đang chờ xác nhận",
+    "kyc_submitted_body": "Bridge đang xử lý danh tính của bạn. Màn hình sẽ tự động chuyển tiếp khi được chấp thuận.",
+    "kyc_long_review_title": "Tài liệu của bạn đang được xác thực",
+    "kyc_long_review_body": "Bridge đang xem xét danh tính của bạn. Màn hình sẽ tự động chuyển tiếp.",
+    "kyc_rejected_error": "Xác minh của bạn bị Bridge từ chối. Có thể đã tồn tại tài khoản với thông tin của bạn (điện thoại hoặc email). Liên hệ: support@omnipay.solutions",
     "kyc_polling_wait": "Nếu mất hơn 2 phút, hãy đóng cửa sổ này và quay lại bằng cùng liên kết.",
     "kyc_polling_approved": "✓ Danh tính đã xác minh — Đang tạo hướng dẫn nạp tiền..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ KYC người nhận đã mô phỏng · việc thăm dò sẽ phát hiện thay đổi",
     "va_recipient_gets": "Người nhận nhận được",
     "va_deposit_currency": "Tiền tệ nạp",
+    "va_deposit_amount": "Số tiền cần nạp",
     "fee_calculating": "Đang tính phí...",
     "fee_recipient_gets": "Người nhận nhận được",
     "fee_fx_rate": "Tỷ giá",
@@ -759,7 +770,12 @@
     "eta_fps": "~2 giờ (Faster Payments UK)",
     "eta_cop": "Cùng ngày hoặc ngày làm việc tiếp theo",
     "eta_fednow": "Giây — FedNow thời gian thực",
-    "eta_sepa_instant": "~10 giây (SEPA Instant)"
+    "eta_sepa_instant": "~10 giây (SEPA Instant)",
+    "kyc_submitted_title": "Đã gửi xác minh — đang chờ xác nhận",
+    "kyc_submitted_body": "Bridge đang xử lý danh tính của bạn. Màn hình sẽ tự động chuyển tiếp khi được chấp thuận.",
+    "kyc_long_review_title": "Tài liệu đang được xem xét",
+    "kyc_long_review_body": "Có thể mất vài phút. Màn hình sẽ tự động chuyển tiếp.",
+    "kyc_rejected_error": "Xác minh của bạn bị Bridge từ chối. Có thể đã tồn tại tài khoản với thông tin của bạn. Liên hệ hỗ trợ: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Xác minh công ty của tôi →",
+    "kyb_polling_title": "Xác minh doanh nghiệp trong cửa sổ đang mở",
     "kyb_after": "Sau khi công ty được xác minh, quay lại đây để tiếp tục.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~2 giờ (Faster Payments UK)",
     "eta_cop": "Cùng ngày hoặc ngày làm việc tiếp theo",
     "eta_fednow": "Giây — FedNow thời gian thực",
-    "eta_sepa_instant": "~10 giây (SEPA Instant)"
+    "eta_sepa_instant": "~10 giây (SEPA Instant)",
+    "kyb_submitted_title": "Đã gửi xác minh doanh nghiệp — đang chờ xác nhận",
+    "kyb_submitted_body": "Bridge đang xử lý xác minh doanh nghiệp của bạn. Màn hình sẽ tự động chuyển tiếp.",
+    "kyb_long_review_title": "Doanh nghiệp đang được xem xét",
+    "kyb_long_review_body": "Bridge đang xem xét tài liệu doanh nghiệp của bạn. Màn hình sẽ tự động chuyển tiếp.",
+    "kyb_rejected_error": "Xác minh doanh nghiệp của bạn bị Bridge từ chối. Có thể đã tồn tại tài khoản với thông tin này. Liên hệ: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

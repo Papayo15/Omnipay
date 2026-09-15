@@ -474,6 +474,11 @@
     "kyc_intro_back": "← Вернуться к форме",
     "kyc_polling_title": "Проверка вашей личности...",
     "kyc_polling_body": "Мы проверяем вашу верификацию. Это может занять момент.",
+    "kyc_submitted_title": "Верификация отправлена — ожидание подтверждения",
+    "kyc_submitted_body": "Bridge обрабатывает вашу личность. Экран автоматически продолжит работу после одобрения.",
+    "kyc_long_review_title": "Документ проверяется",
+    "kyc_long_review_body": "Bridge проверяет вашу личность. Экран автоматически продолжит работу.",
+    "kyc_rejected_error": "Ваша верификация отклонена Bridge. Возможно, учётная запись с вашими данными (телефон или email) уже существует. Обратитесь в поддержку: support@omnipay.solutions",
     "kyc_polling_wait": "Если это занимает больше 2 минут, закройте это окно и вернитесь по той же ссылке.",
     "kyc_polling_approved": "✓ Личность подтверждена — Генерация вашей платёжной ссылки...",
     "share_invite": "Поделиться",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← Вернуться к форме",
     "kyc_polling_title": "Проверка вашей личности...",
     "kyc_polling_body": "Мы проверяем вашу личность. Это может занять момент.",
+    "kyc_submitted_title": "Верификация отправлена — ожидание подтверждения",
+    "kyc_submitted_body": "Bridge обрабатывает вашу личность. Экран автоматически продолжит работу после одобрения.",
+    "kyc_long_review_title": "Документ проверяется",
+    "kyc_long_review_body": "Bridge проверяет вашу личность. Экран автоматически продолжит работу.",
+    "kyc_rejected_error": "Ваша верификация отклонена Bridge. Возможно, учётная запись с вашими данными (телефон или email) уже существует. Обратитесь в поддержку: support@omnipay.solutions",
     "kyc_polling_wait": "Если это занимает больше 2 минут, закройте это окно и вернитесь по той же ссылке.",
     "kyc_polling_approved": "✓ Личность подтверждена — Генерация инструкций по депозиту..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ KYC получателя симулирован · опрос обнаружит изменение",
     "va_recipient_gets": "Получатель получает",
     "va_deposit_currency": "Валюта депозита",
+    "va_deposit_amount": "Сумма к зачислению",
     "fee_calculating": "Расчёт комиссии...",
     "fee_recipient_gets": "Получатель получает",
     "fee_fx_rate": "Курс обмена",
@@ -759,7 +770,12 @@
     "eta_fps": "~2 часа (Faster Payments UK)",
     "eta_cop": "В тот же день или следующий рабочий",
     "eta_fednow": "Секунды — FedNow в реальном времени",
-    "eta_sepa_instant": "~10 секунд (SEPA Instant)"
+    "eta_sepa_instant": "~10 секунд (SEPA Instant)",
+    "kyc_submitted_title": "Верификация отправлена — ожидание подтверждения",
+    "kyc_submitted_body": "Bridge обрабатывает вашу личность. Экран автоматически продолжит работу после одобрения.",
+    "kyc_long_review_title": "Документ на проверке",
+    "kyc_long_review_body": "Это может занять несколько минут. Экран автоматически продолжит работу.",
+    "kyc_rejected_error": "Ваша верификация отклонена Bridge. Возможно, учётная запись с вашими данными уже существует. Обратитесь в поддержку: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "Проверка вашего приглашения...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Подтвердить мою компанию →",
+    "kyb_polling_title": "Подтвердите компанию в открытом окне",
     "kyb_after": "После подтверждения компании вернитесь сюда для продолжения.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~2 часа (Faster Payments UK)",
     "eta_cop": "В тот же день или следующий рабочий",
     "eta_fednow": "Секунды — FedNow в реальном времени",
-    "eta_sepa_instant": "~10 секунд (SEPA Instant)"
+    "eta_sepa_instant": "~10 секунд (SEPA Instant)",
+    "kyb_submitted_title": "Верификация компании отправлена — ожидание подтверждения",
+    "kyb_submitted_body": "Bridge обрабатывает верификацию вашей компании. Экран автоматически продолжит работу.",
+    "kyb_long_review_title": "Компания на проверке",
+    "kyb_long_review_body": "Bridge проверяет документы вашей компании. Экран автоматически продолжит работу.",
+    "kyb_rejected_error": "Верификация компании отклонена Bridge. Возможно, учётная запись с этими данными уже существует. Обратитесь в поддержку: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

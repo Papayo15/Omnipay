@@ -247,7 +247,7 @@ export default function PagarPage() {
       // 202 = KYC or ToS required before VA can be created
       if (res.status === 202) {
         if (data.needs_kyc && data.kyc_url) {
-          setKycSubmitted(false);
+          if (!kycAutoRetryRef.current) setKycSubmitted(false);
           setKycUrl(data.kyc_url);
           if ((data as unknown as Record<string, unknown>).customer_id) setKycCustomerId((data as unknown as Record<string, string>).customer_id);
           if (kycAutoRetryRef.current) {
@@ -446,7 +446,7 @@ export default function PagarPage() {
               </li>
             ))}
           </ul>
-          {kycPolling ? (
+          {(kycPolling || kycSubmitted) ? (
             <div className="flex flex-col items-center gap-3 py-4">
               <div className="w-8 h-8 border-2 border-[#00C9C8] border-t-transparent rounded-full animate-spin" />
               <p className="text-[#00C9C8] text-sm font-semibold">

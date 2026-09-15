@@ -474,6 +474,11 @@
     "kyc_intro_back": "← Forma geri dön",
     "kyc_polling_title": "Kimliğiniz doğrulanıyor...",
     "kyc_polling_body": "Doğrulamanızı kontrol ediyoruz. Bu biraz zaman alabilir.",
+    "kyc_submitted_title": "Doğrulama gönderildi — onay bekleniyor",
+    "kyc_submitted_body": "Bridge kimliğinizi işliyor. Onaylandığında bu ekran otomatik olarak ilerleyecek.",
+    "kyc_long_review_title": "Belgeniz doğrulanıyor",
+    "kyc_long_review_body": "Bridge kimliğinizi inceliyor. Bu ekran otomatik olarak ilerleyecek.",
+    "kyc_rejected_error": "Doğrulamanız Bridge tarafından reddedildi. Bilgilerinizle (telefon veya e-posta) zaten bir hesap mevcut olabilir. Destek: support@omnipay.solutions",
     "kyc_polling_wait": "2 dakikadan fazla sürerse bu pencereyi kapatın ve aynı bağlantıyla geri dönün.",
     "kyc_polling_approved": "✓ Kimlik doğrulandı — Ödeme bağlantınız oluşturuluyor...",
     "share_invite": "Paylaş",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← Forma geri dön",
     "kyc_polling_title": "Kimliğiniz doğrulanıyor...",
     "kyc_polling_body": "Kimlik doğrulamanızı kontrol ediyoruz. Bu biraz zaman alabilir.",
+    "kyc_submitted_title": "Doğrulama gönderildi — onay bekleniyor",
+    "kyc_submitted_body": "Bridge kimliğinizi işliyor. Onaylandığında bu ekran otomatik olarak ilerleyecek.",
+    "kyc_long_review_title": "Belgeniz doğrulanıyor",
+    "kyc_long_review_body": "Bridge kimliğinizi inceliyor. Bu ekran otomatik olarak ilerleyecek.",
+    "kyc_rejected_error": "Doğrulamanız Bridge tarafından reddedildi. Bilgilerinizle (telefon veya e-posta) zaten bir hesap mevcut olabilir. Destek: support@omnipay.solutions",
     "kyc_polling_wait": "2 dakikadan fazla sürerse bu pencereyi kapatın ve aynı bağlantıyla geri dönün.",
     "kyc_polling_approved": "✓ Kimlik doğrulandı — Para yatırma talimatlarınız oluşturuluyor..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ Alıcı KYC simüle edildi · anket değişikliği algılayacak",
     "va_recipient_gets": "Alıcı alır",
     "va_deposit_currency": "Yatırım para birimi",
+    "va_deposit_amount": "Yatırılacak tutar",
     "fee_calculating": "Ücret hesaplanıyor...",
     "fee_recipient_gets": "Alıcı alır",
     "fee_fx_rate": "Döviz kuru",
@@ -759,7 +770,12 @@
     "eta_fps": "~2 saat (Faster Payments UK)",
     "eta_cop": "Aynı gün veya sonraki iş günü",
     "eta_fednow": "Saniyeler — FedNow gerçek zamanlı",
-    "eta_sepa_instant": "~10 saniye (SEPA Instant)"
+    "eta_sepa_instant": "~10 saniye (SEPA Instant)",
+    "kyc_submitted_title": "Doğrulama gönderildi — onay bekleniyor",
+    "kyc_submitted_body": "Bridge kimliğinizi işliyor. Onaylandığında bu ekran otomatik olarak ilerleyecek.",
+    "kyc_long_review_title": "Belge inceleniyor",
+    "kyc_long_review_body": "Bu birkaç dakika sürebilir. Bu ekran otomatik olarak ilerleyecek.",
+    "kyc_rejected_error": "Doğrulamanız Bridge tarafından reddedildi. Bilgilerinizle zaten bir hesap mevcut olabilir. Destek ekibiyle iletişime geçin: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Şirketimi doğrula →",
+    "kyb_polling_title": "Açık pencerede şirketinizi doğrulayın",
     "kyb_after": "Şirket doğrulandıktan sonra buraya dönün ve devam edin.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~2 saat (Faster Payments UK)",
     "eta_cop": "Aynı gün veya sonraki iş günü",
     "eta_fednow": "Saniyeler — FedNow gerçek zamanlı",
-    "eta_sepa_instant": "~10 saniye (SEPA Instant)"
+    "eta_sepa_instant": "~10 saniye (SEPA Instant)",
+    "kyb_submitted_title": "Şirket doğrulaması gönderildi — onay bekleniyor",
+    "kyb_submitted_body": "Bridge şirketinizin doğrulamasını işliyor. Bu ekran otomatik olarak ilerleyecek.",
+    "kyb_long_review_title": "Şirket inceleniyor",
+    "kyb_long_review_body": "Bridge şirket belgelerinizi inceliyor. Bu ekran otomatik olarak ilerleyecek.",
+    "kyb_rejected_error": "Şirket doğrulamanız Bridge tarafından reddedildi. Bu bilgilerle zaten bir hesap mevcut olabilir. Destek: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

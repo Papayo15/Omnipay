@@ -474,6 +474,11 @@
     "kyc_intro_back": "← フォームに戻る",
     "kyc_polling_title": "本人確認中...",
     "kyc_polling_body": "確認を検証しています。少々お待ちください。",
+    "kyc_submitted_title": "確認書類を提出しました — 承認待ち",
+    "kyc_submitted_body": "Bridge が本人確認を処理中です。承認されると自動的に次のステップへ進みます。",
+    "kyc_long_review_title": "書類を検証中です",
+    "kyc_long_review_body": "Bridge が本人確認を審査中です。承認後は自動的に進みます。",
+    "kyc_rejected_error": "Bridge による本人確認が拒否されました。同じ情報（電話番号またはメール）のアカウントが存在する可能性があります。サポートへ連絡してください：support@omnipay.solutions",
     "kyc_polling_wait": "2分以上かかる場合は、このウィンドウを閉じて同じリンクから戻ってください。",
     "kyc_polling_approved": "✓ 本人確認完了 — 支払いリンクを生成中...",
     "share_invite": "共有",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← フォームに戻る",
     "kyc_polling_title": "本人確認中...",
     "kyc_polling_body": "本人確認を検証しています。少々お待ちください。",
+    "kyc_submitted_title": "確認書類を提出しました — 承認待ち",
+    "kyc_submitted_body": "Bridge が本人確認を処理中です。承認されると自動的に次のステップへ進みます。",
+    "kyc_long_review_title": "書類を検証中です",
+    "kyc_long_review_body": "Bridge が本人確認を審査中です。承認後は自動的に進みます。",
+    "kyc_rejected_error": "Bridge による本人確認が拒否されました。同じ情報（電話番号またはメール）のアカウントが存在する可能性があります。サポートへ連絡してください：support@omnipay.solutions",
     "kyc_polling_wait": "2分以上かかる場合は、このウィンドウを閉じて同じリンクから戻ってください。",
     "kyc_polling_approved": "✓ 本人確認完了 — 入金指示を生成中..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ 受取人 KYC シミュレート完了 · ポーリングが変化を検出します",
     "va_recipient_gets": "受取人が受け取る金額",
     "va_deposit_currency": "入金通貨",
+    "va_deposit_amount": "入金金額",
     "fee_calculating": "手数料計算中...",
     "fee_recipient_gets": "受取人が受け取る",
     "fee_fx_rate": "為替レート",
@@ -759,7 +770,12 @@
     "eta_fps": "約2時間 (Faster Payments UK)",
     "eta_cop": "当日または翌営業日",
     "eta_fednow": "数秒 — FedNowはリアルタイム",
-    "eta_sepa_instant": "~10秒 (SEPA Instant)"
+    "eta_sepa_instant": "~10秒 (SEPA Instant)",
+    "kyc_submitted_title": "確認書類を提出しました — 承認待ち",
+    "kyc_submitted_body": "Bridge が本人確認を処理中です。承認されると自動的に次のステップへ進みます。",
+    "kyc_long_review_title": "書類審査中",
+    "kyc_long_review_body": "数分かかる場合があります。承認後は自動的に進みます。",
+    "kyc_rejected_error": "Bridge による本人確認が拒否されました。すでに同じ情報でアカウントが存在する可能性があります。サポートへ連絡してください：support@omnipay.solutions"
   },
   "recibir": {
     "loading": "招待を確認中...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "会社を確認する →",
+    "kyb_polling_title": "開いたウィンドウで法人確認を行ってください",
     "kyb_after": "会社確認後、ここに戻って続けてください。",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "約2時間 (Faster Payments UK)",
     "eta_cop": "当日または翌営業日",
     "eta_fednow": "数秒 — FedNowはリアルタイム",
-    "eta_sepa_instant": "~10秒 (SEPA Instant)"
+    "eta_sepa_instant": "~10秒 (SEPA Instant)",
+    "kyb_submitted_title": "法人確認を提出しました — 承認待ち",
+    "kyb_submitted_body": "Bridge が法人確認を処理中です。承認されると自動的に進みます。",
+    "kyb_long_review_title": "法人審査中",
+    "kyb_long_review_body": "Bridge が法人書類を審査中です。承認後は自動的に進みます。",
+    "kyb_rejected_error": "Bridge による法人確認が拒否されました。同じ情報のアカウントが存在する可能性があります。サポートへ連絡してください：support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -474,6 +474,11 @@
     "kyc_intro_back": "← फॉर्म पर वापस जाएं",
     "kyc_polling_title": "आपकी पहचान सत्यापित हो रही है...",
     "kyc_polling_body": "हम आपका सत्यापन जांच रहे हैं। इसमें एक पल लग सकता है।",
+    "kyc_submitted_title": "सत्यापन जमा किया गया — पुष्टि की प्रतीक्षा में",
+    "kyc_submitted_body": "Bridge आपकी पहचान प्रोसेस कर रहा है। अनुमोदन होने पर यह स्क्रीन स्वतः आगे बढ़ेगी।",
+    "kyc_long_review_title": "आपके दस्तावेज़ की जाँच हो रही है",
+    "kyc_long_review_body": "Bridge आपकी पहचान की समीक्षा कर रहा है। यह स्क्रीन स्वतः आगे बढ़ेगी।",
+    "kyc_rejected_error": "Bridge ने आपका सत्यापन अस्वीकार कर दिया। आपके डेटा (फोन या ईमेल) से पहले से खाता मौजूद हो सकता है। सहायता: support@omnipay.solutions",
     "kyc_polling_wait": "अगर 2 मिनट से अधिक समय लगे, इस विंडो को बंद करें और उसी लिंक से वापस आएं।",
     "kyc_polling_approved": "✓ पहचान सत्यापित — आपका भुगतान लिंक बनाया जा रहा है...",
     "share_invite": "साझा करें",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← फॉर्म पर वापस जाएं",
     "kyc_polling_title": "आपकी पहचान सत्यापित हो रही है...",
     "kyc_polling_body": "हम आपकी पहचान सत्यापन जांच रहे हैं। इसमें एक पल लग सकता है।",
+    "kyc_submitted_title": "सत्यापन जमा किया गया — पुष्टि की प्रतीक्षा में",
+    "kyc_submitted_body": "Bridge आपकी पहचान प्रोसेस कर रहा है। अनुमोदन होने पर यह स्क्रीन स्वतः आगे बढ़ेगी।",
+    "kyc_long_review_title": "आपके दस्तावेज़ की जाँच हो रही है",
+    "kyc_long_review_body": "Bridge आपकी पहचान की समीक्षा कर रहा है। यह स्क्रीन स्वतः आगे बढ़ेगी।",
+    "kyc_rejected_error": "Bridge ने आपका सत्यापन अस्वीकार कर दिया। आपके डेटा (फोन या ईमेल) से पहले से खाता मौजूद हो सकता है। सहायता: support@omnipay.solutions",
     "kyc_polling_wait": "अगर 2 मिनट से अधिक समय लगे, इस विंडो को बंद करें और उसी लिंक से वापस आएं।",
     "kyc_polling_approved": "✓ पहचान सत्यापित — जमा निर्देश बनाए जा रहे हैं..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ प्राप्तकर्ता KYC सिम्युलेट हुआ · पोलिंग बदलाव का पता लगाएगा",
     "va_recipient_gets": "प्राप्तकर्ता को मिलेगा",
     "va_deposit_currency": "जमा मुद्रा",
+    "va_deposit_amount": "जमा राशि",
     "fee_calculating": "शुल्क गणना हो रही है...",
     "fee_recipient_gets": "प्राप्तकर्ता को मिलेगा",
     "fee_fx_rate": "विनिमय दर",
@@ -759,7 +770,12 @@
     "eta_fps": "~2 घंटे (Faster Payments UK)",
     "eta_cop": "उसी दिन या अगले कार्यदिवस",
     "eta_fednow": "सेकंड — FedNow रियल-टाइम है",
-    "eta_sepa_instant": "~10 सेकंड (SEPA Instant)"
+    "eta_sepa_instant": "~10 सेकंड (SEPA Instant)",
+    "kyc_submitted_title": "सत्यापन जमा किया गया — पुष्टि की प्रतीक्षा में",
+    "kyc_submitted_body": "Bridge आपकी पहचान प्रोसेस कर रहा है। अनुमोदन होने पर यह स्क्रीन स्वतः आगे बढ़ेगी।",
+    "kyc_long_review_title": "दस्तावेज़ समीक्षाधीन",
+    "kyc_long_review_body": "कुछ मिनट लग सकते हैं। यह स्क्रीन स्वतः आगे बढ़ेगी।",
+    "kyc_rejected_error": "Bridge ने आपका सत्यापन अस्वीकार कर दिया। आपके डेटा से पहले से खाता मौजूद हो सकता है। सहायता से संपर्क करें: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "आपका आमंत्रण सत्यापित हो रहा है...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "मेरी कंपनी सत्यापित करें →",
+    "kyb_polling_title": "खुली विंडो में अपनी कंपनी सत्यापित करें",
     "kyb_after": "कंपनी सत्यापित होने के बाद, यहाँ वापस आएं।",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~2 घंटे (Faster Payments UK)",
     "eta_cop": "उसी दिन या अगले कार्यदिवस",
     "eta_fednow": "सेकंड — FedNow रियल-टाइम है",
-    "eta_sepa_instant": "~10 सेकंड (SEPA Instant)"
+    "eta_sepa_instant": "~10 सेकंड (SEPA Instant)",
+    "kyb_submitted_title": "कंपनी सत्यापन जमा किया गया — पुष्टि की प्रतीक्षा में",
+    "kyb_submitted_body": "Bridge आपकी कंपनी का सत्यापन प्रोसेस कर रहा है। यह स्क्रीन स्वतः आगे बढ़ेगी।",
+    "kyb_long_review_title": "कंपनी समीक्षाधीन",
+    "kyb_long_review_body": "Bridge कंपनी दस्तावेज़ों की समीक्षा कर रहा है। यह स्क्रीन स्वतः आगे बढ़ेगी।",
+    "kyb_rejected_error": "Bridge ने कंपनी सत्यापन अस्वीकार किया। इन डेटा से पहले से खाता मौजूद हो सकता है। सहायता: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

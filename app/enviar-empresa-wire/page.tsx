@@ -302,7 +302,7 @@ export default function EnviarEmpresaWirePage() {
       if (prePopup && !prePopup.closed) { prePopup.close(); prePopup = null; }
 
       if (data.needs_kyb) {
-        setKybSubmitted(false);
+        if (!isAutoRetry) setKybSubmitted(false);
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
           recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
@@ -619,7 +619,7 @@ export default function EnviarEmpresaWirePage() {
                 {sandboxSimKyb ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
                 {t("sandbox_simulate_kyb")}
               </button>
-            ) : kybPolling ? (
+            ) : (kybPolling || kybSubmitted) ? (
               <div className="flex flex-col items-center gap-3 py-4">
                 <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
                 <p className="text-blue-300 text-sm font-semibold">

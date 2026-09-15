@@ -474,6 +474,11 @@
     "kyc_intro_back": "← Zurück zum Formular",
     "kyc_polling_title": "Identität wird verifiziert...",
     "kyc_polling_body": "Wir prüfen Ihre Verifizierung. Das kann einen Moment dauern.",
+    "kyc_submitted_title": "Verifizierung eingereicht — warte auf Bestätigung",
+    "kyc_submitted_body": "Bridge verarbeitet deine Identität. Diese Seite aktualisiert sich automatisch, sobald du genehmigt bist.",
+    "kyc_long_review_title": "Dokument wird überprüft",
+    "kyc_long_review_body": "Bridge prüft deine Identität. Diese Seite aktualisiert sich automatisch.",
+    "kyc_rejected_error": "Deine Verifizierung wurde von Bridge abgelehnt. Möglicherweise existiert bereits ein Konto mit deinen Daten (Telefon oder E-Mail). Kontaktiere den Support: support@omnipay.solutions",
     "kyc_polling_wait": "Wenn es mehr als 2 Minuten dauert, schließen Sie dieses Fenster und kehren Sie mit demselben Link zurück.",
     "kyc_polling_approved": "✓ Identität verifiziert — Ihr Zahlungslink wird generiert...",
     "share_invite": "Teilen",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← Zurück zum Formular",
     "kyc_polling_title": "Identität wird verifiziert...",
     "kyc_polling_body": "Wir prüfen Ihre Identitätsverifizierung. Das kann einen Moment dauern.",
+    "kyc_submitted_title": "Verifizierung eingereicht — warte auf Bestätigung",
+    "kyc_submitted_body": "Bridge verarbeitet deine Identität. Diese Seite aktualisiert sich automatisch, sobald du genehmigt bist.",
+    "kyc_long_review_title": "Dokument wird überprüft",
+    "kyc_long_review_body": "Bridge prüft deine Identität. Diese Seite aktualisiert sich automatisch.",
+    "kyc_rejected_error": "Deine Verifizierung wurde von Bridge abgelehnt. Möglicherweise existiert bereits ein Konto mit deinen Daten (Telefon oder E-Mail). Kontaktiere den Support: support@omnipay.solutions",
     "kyc_polling_wait": "Wenn es mehr als 2 Minuten dauert, schließen Sie dieses Fenster und kehren Sie mit demselben Link zurück.",
     "kyc_polling_approved": "✓ Identität verifiziert — Ihre Einzahlungsanweisungen werden generiert..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ Empfänger-KYC simuliert · die Prüfung wird die Änderung erkennen",
     "va_recipient_gets": "Empfänger erhält",
     "va_deposit_currency": "Einzahlungswährung",
+    "va_deposit_amount": "Einzuzahlender Betrag",
     "fee_calculating": "Gebühr wird berechnet...",
     "fee_recipient_gets": "Empfänger erhält",
     "fee_fx_rate": "Wechselkurs",
@@ -759,7 +770,12 @@
     "eta_fps": "~2 Stunden (Faster Payments UK)",
     "eta_cop": "Gleicher Tag oder nächster Werktag",
     "eta_fednow": "Sekunden — FedNow ist Echtzeit",
-    "eta_sepa_instant": "~10 Sekunden (SEPA Instant)"
+    "eta_sepa_instant": "~10 Sekunden (SEPA Instant)",
+    "kyc_submitted_title": "Verifizierung eingereicht — warte auf Bestätigung",
+    "kyc_submitted_body": "Bridge verarbeitet deine Identität. Diese Seite aktualisiert sich automatisch, sobald du genehmigt bist.",
+    "kyc_long_review_title": "Dokument wird geprüft",
+    "kyc_long_review_body": "Das kann einige Minuten dauern. Diese Seite aktualisiert sich automatisch.",
+    "kyc_rejected_error": "Deine Verifizierung wurde von Bridge abgelehnt. Möglicherweise existiert bereits ein Konto mit deinen Daten. Kontaktiere den Support: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Mein Unternehmen verifizieren →",
+    "kyb_polling_title": "Unternehmen im geöffneten Fenster verifizieren",
     "kyb_after": "Nach der Unternehmensverifizierung hier zurückkehren.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~2 Stunden (Faster Payments UK)",
     "eta_cop": "Gleicher Tag oder nächster Werktag",
     "eta_fednow": "Sekunden — FedNow ist Echtzeit",
-    "eta_sepa_instant": "~10 Sekunden (SEPA Instant)"
+    "eta_sepa_instant": "~10 Sekunden (SEPA Instant)",
+    "kyb_submitted_title": "Unternehmensverifizierung eingereicht — warte auf Bestätigung",
+    "kyb_submitted_body": "Bridge verarbeitet die Verifizierung deines Unternehmens. Diese Seite aktualisiert sich automatisch.",
+    "kyb_long_review_title": "Unternehmen wird geprüft",
+    "kyb_long_review_body": "Bridge prüft die Dokumentation deines Unternehmens. Diese Seite aktualisiert sich automatisch.",
+    "kyb_rejected_error": "Die Unternehmensverifizierung wurde von Bridge abgelehnt. Möglicherweise existiert bereits ein Konto mit diesen Daten. Kontaktiere den Support: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -428,7 +428,7 @@ export default function P2PPage() {
       const data = await res.json() as CheckoutResponse & { error?: string; message?: string };
       if (res.status !== 202 && (!res.ok || data.error)) throw new Error(data.error ?? "Error");
       if (data.needs_kyc || data.needs_tos || res.status === 202) {
-        setKycSubmitted(false);
+        if (!kycAutoRetryRef.current) setKycSubmitted(false);
         if (data.kyc_url)  setKycUrl(data.kyc_url);
         if (data.tos_url)  setKycUrl(data.tos_url); // reuse same button for ToS acceptance
         if ((data as unknown as Record<string, unknown>).customer_id) setKycCustomerId((data as unknown as Record<string, string>).customer_id);
@@ -518,7 +518,7 @@ export default function P2PPage() {
               </li>
             ))}
           </ul>
-          {kycPolling ? (
+          {(kycPolling || kycSubmitted) ? (
             <div className="flex flex-col items-center gap-3 py-4">
               <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
               <p className="text-emerald-300 text-sm font-semibold">

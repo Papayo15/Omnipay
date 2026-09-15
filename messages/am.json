@@ -474,6 +474,11 @@
     "kyc_intro_back": "← ወደ ቅጹ ተመለስ",
     "kyc_polling_title": "ማንነትዎ እየተረጋገጠ ነው...",
     "kyc_polling_body": "ማረጋገጫዎን እያረጋገጥን ነው። ጥቂት ደቂቃዎች ሊወስድ ይችላል።",
+    "kyc_submitted_title": "ማረጋገጫ ተልኳል — ማረጋገጫ በመጠበቅ ላይ",
+    "kyc_submitted_body": "Bridge ማንነትዎን እያስተካከለ ነው። ሲፈቀድ ይህ ማያ ገፅ ራሱ ይቀጥላል።",
+    "kyc_long_review_title": "ሰነድዎ እየተረጋገጠ ነው",
+    "kyc_long_review_body": "Bridge ማንነትዎን እያገጋጠ ነው። ይህ ማያ ገፅ ራሱ ይቀጥላል።",
+    "kyc_rejected_error": "ማረጋገጫዎ በ Bridge ተቀባይነት አላገኘም። ከእርስዎ መረጃ (ስልክ ወይም ኢሜይል) ጋር ሌላ አካውንት ሊኖር ይችላል። ድጋፍ: support@omnipay.solutions",
     "kyc_polling_wait": "ከ2 ደቂቃ በላይ ከወሰደ፣ ይህን መስኮት ዝጉ እና በተመሳሳይ ሊንክ ይመለሱ።",
     "kyc_polling_approved": "✓ ማንነት ተረጋግጧል — የክፍያ ሊንክዎ እየተፈጠረ ነው...",
     "share_invite": "አጋራ",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← ወደ ቅጹ ተመለስ",
     "kyc_polling_title": "ማንነትዎ እየተረጋገጠ ነው...",
     "kyc_polling_body": "የማንነት ማረጋገጫዎን እያረጋገጥን ነው። ጥቂት ደቂቃዎች ሊወስድ ይችላል።",
+    "kyc_submitted_title": "ማረጋገጫ ተልኳል — ማረጋገጫ በመጠበቅ ላይ",
+    "kyc_submitted_body": "Bridge ማንነትዎን እያስተካከለ ነው። ሲፈቀድ ይህ ማያ ገፅ ራሱ ይቀጥላል።",
+    "kyc_long_review_title": "ሰነድዎ እየተረጋገጠ ነው",
+    "kyc_long_review_body": "Bridge ማንነትዎን እያገጋጠ ነው። ይህ ማያ ገፅ ራሱ ይቀጥላል።",
+    "kyc_rejected_error": "ማረጋገጫዎ በ Bridge ተቀባይነት አላገኘም። ከእርስዎ መረጃ (ስልክ ወይም ኢሜይል) ጋር ሌላ አካውንት ሊኖር ይችላል። ድጋፍ: support@omnipay.solutions",
     "kyc_polling_wait": "ከ2 ደቂቃ በላይ ከወሰደ፣ ይህን መስኮት ዝጉ እና በተመሳሳይ ሊንክ ይመለሱ።",
     "kyc_polling_approved": "✓ ማንነት ተረጋግጧል — የክፍያ መመሪያዎ እየተፈጠረ ነው..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ ተቀባዩ KYC ምሳሌ ተሠርቷል · ፖሊንግ ለውጡን ያገኛል",
     "va_recipient_gets": "ተቀባዩ ይቀበላል",
     "va_deposit_currency": "የሂሳብ ምንዛሬ",
+    "va_deposit_amount": "ማስቀመጫ መጠን",
     "fee_calculating": "ክፍያ እያሰሉ ነው...",
     "fee_recipient_gets": "ተቀባዩ ይቀበላል",
     "fee_fx_rate": "የምንዛሪ ተመን",
@@ -759,7 +770,12 @@
     "eta_fps": "~2 ሰዓታት (Faster Payments UK)",
     "eta_cop": "ዛሬ ወይም ቀጣይ የሥራ ቀን",
     "eta_fednow": "ሰከንዶች — FedNow ቀጥታ ነው",
-    "eta_sepa_instant": "~10 ሰከንዶች (SEPA Instant)"
+    "eta_sepa_instant": "~10 ሰከንዶች (SEPA Instant)",
+    "kyc_submitted_title": "ማረጋገጫ ተልኳል — ማረጋገጫ በመጠበቅ ላይ",
+    "kyc_submitted_body": "Bridge ማንነትዎን እያስተካከለ ነው። ሲፈቀድ ይህ ማያ ገፅ ራሱ ይቀጥላል።",
+    "kyc_long_review_title": "ሰነድ በቅጥያ ላይ",
+    "kyc_long_review_body": "ጥቂት ደቂቃዎች ሊወስድ ይችላል። ይህ ማያ ገፅ ራሱ ይቀጥላል።",
+    "kyc_rejected_error": "ማረጋገጫዎ በ Bridge ተቀባይነት አላገኘም። ከእርስዎ መረጃ ጋር ሌላ አካውንት ሊኖር ይችላል። ድጋፍ ያነጋግሩ: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "ኩባንያዬን ያረጋግጡ →",
+    "kyb_polling_title": "በተከፈተው መስኮት ድርጅትዎን ያረጋግጡ",
     "kyb_after": "ኩባንያዎ ከተረጋገጠ በኋላ ወደ ዚህ ይመለሱ።",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~2 ሰዓታት (Faster Payments UK)",
     "eta_cop": "ዛሬ ወይም ቀጣይ የሥራ ቀን",
     "eta_fednow": "ሰከንዶች — FedNow ቀጥታ ነው",
-    "eta_sepa_instant": "~10 ሰከንዶች (SEPA Instant)"
+    "eta_sepa_instant": "~10 ሰከንዶች (SEPA Instant)",
+    "kyb_submitted_title": "የድርጅት ማረጋገጫ ተልኳል — ማረጋገጫ በመጠበቅ ላይ",
+    "kyb_submitted_body": "Bridge የድርጅትዎን ማረጋገጫ እያስተካከለ ነው። ይህ ማያ ገፅ ራሱ ይቀጥላል።",
+    "kyb_long_review_title": "ድርጅቱ በቅጥያ ላይ",
+    "kyb_long_review_body": "Bridge የድርጅቱ ሰነዶች እያገጋጠ ነው። ይህ ማያ ገፅ ራሱ ይቀጥላል።",
+    "kyb_rejected_error": "የድርጅትዎ ማረጋገጫ በ Bridge ተቀባይነት አላገኘም። ከዚህ መረጃ ጋር ሌላ አካውንት ሊኖር ይችላል። ድጋፍ: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

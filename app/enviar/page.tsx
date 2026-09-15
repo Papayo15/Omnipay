@@ -85,6 +85,7 @@ export default function EnviarPage() {
   const [orderId, setOrderId]             = useState("");
   const [confirmedAmount, setConfirmedAmount]   = useState(0);
   const [targetCurrency, setTargetCurrency]     = useState("MXN");
+  const [depositAmount, setDepositAmount]       = useState<string | null>(null);
   const [destinationRail, setDestinationRail]   = useState("");
 
   const [feeQuote, setFeeQuote] = useState<{
@@ -389,7 +390,9 @@ export default function EnviarPage() {
           senderName, senderEmail, senderCurrency,
           recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
         }));
-        setKycSubmitted(false); // reset for fresh attempt
+        // Only reset kycSubmitted on manual fresh attempt (isAutoRetry=false).
+        // On auto-retry after Persona completion, keep kycSubmitted=true so polling shows correct state.
+        if (!isAutoRetry) setKycSubmitted(false);
         const kycUrl2 = data.kyc_url ?? "";
         setKycUrl(kycUrl2);
         setKycCustomerId((data as Record<string, unknown>).customer_id as string ?? "");
@@ -432,6 +435,7 @@ export default function EnviarPage() {
       });
       setConfirmedAmount(data.amount_target ?? parseFloat(amountTarget));
       setTargetCurrency(data.target_currency ?? "MXN");
+      setDepositAmount(di.amount_to_deposit ?? null);
       setDestinationRail((data as Record<string, unknown>).destination_rail as string ?? "");
       setOrderId(data.order_id ?? "");
       setStep("instructions");
@@ -841,8 +845,8 @@ export default function EnviarPage() {
                 {sandboxSimKyc ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
                 {t("sandbox_simulate_kyc")}
               </button>
-            ) : kycPolling ? (
-              /* Polling screen — shown while user is in Bridge KYC tab */
+            ) : (kycPolling || kycSubmitted) ? (
+              /* Polling/submitted screen — shown while in Bridge KYC tab OR after Persona completed */
               <div className="space-y-4">
                 {!kycLongReview ? (
                   <div className="bg-slate-800/60 border border-slate-600/40 rounded-2xl p-5 text-center space-y-3">
@@ -861,7 +865,7 @@ export default function EnviarPage() {
                   </div>
                 )}
                 <button
-                  onClick={() => { setKycPolling(false); setKycLongReview(false); }}
+                  onClick={() => { setKycPolling(false); setKycLongReview(false); setKycSubmitted(false); }}
                   className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2"
                 >
                   ← Volver al formulario
@@ -956,6 +960,17 @@ export default function EnviarPage() {
                         {(vaInfo.currency ?? "USD").toUpperCase()}
                       </span>
                     </div>
+                    {depositAmount && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-400 text-xs">{t("va_deposit_amount")}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-bold text-base font-mono">
+                            {depositAmount} {(vaInfo.currency ?? "USD").toUpperCase()}
+                          </span>
+                          <CopyButton text={depositAmount} id="deposit_amount" label={t("copy")} />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

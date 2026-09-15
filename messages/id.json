@@ -474,6 +474,11 @@
     "kyc_intro_back": "← Kembali ke formulir",
     "kyc_polling_title": "Memverifikasi identitas Anda...",
     "kyc_polling_body": "Kami sedang memeriksa verifikasi Anda. Ini mungkin membutuhkan waktu sebentar.",
+    "kyc_submitted_title": "Verifikasi terkirim — menunggu konfirmasi",
+    "kyc_submitted_body": "Bridge sedang memproses identitas Anda. Layar ini akan otomatis lanjut setelah disetujui.",
+    "kyc_long_review_title": "Dokumen Anda sedang divalidasi",
+    "kyc_long_review_body": "Bridge sedang meninjau identitas Anda. Layar ini akan otomatis lanjut.",
+    "kyc_rejected_error": "Verifikasi Anda ditolak oleh Bridge. Akun dengan data Anda (telepon atau email) mungkin sudah ada. Hubungi: support@omnipay.solutions",
     "kyc_polling_wait": "Jika membutuhkan lebih dari 2 menit, tutup jendela ini dan kembali dengan tautan yang sama.",
     "kyc_polling_approved": "✓ Identitas terverifikasi — Membuat tautan pembayaran Anda...",
     "share_invite": "Bagikan",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← Kembali ke formulir",
     "kyc_polling_title": "Memverifikasi identitas Anda...",
     "kyc_polling_body": "Kami sedang memverifikasi identitas Anda. Ini mungkin membutuhkan waktu sebentar.",
+    "kyc_submitted_title": "Verifikasi terkirim — menunggu konfirmasi",
+    "kyc_submitted_body": "Bridge sedang memproses identitas Anda. Layar ini akan otomatis lanjut setelah disetujui.",
+    "kyc_long_review_title": "Dokumen Anda sedang divalidasi",
+    "kyc_long_review_body": "Bridge sedang meninjau identitas Anda. Layar ini akan otomatis lanjut.",
+    "kyc_rejected_error": "Verifikasi Anda ditolak oleh Bridge. Akun dengan data Anda (telepon atau email) mungkin sudah ada. Hubungi: support@omnipay.solutions",
     "kyc_polling_wait": "Jika membutuhkan lebih dari 2 menit, tutup jendela ini dan kembali dengan tautan yang sama.",
     "kyc_polling_approved": "✓ Identitas terverifikasi — Membuat instruksi setoran Anda..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ KYC penerima disimulasikan · polling akan mendeteksi perubahan",
     "va_recipient_gets": "Penerima menerima",
     "va_deposit_currency": "Mata uang setoran",
+    "va_deposit_amount": "Jumlah yang harus disetorkan",
     "fee_calculating": "Menghitung biaya...",
     "fee_recipient_gets": "Penerima mendapat",
     "fee_fx_rate": "Nilai tukar",
@@ -759,7 +770,12 @@
     "eta_fps": "~2 jam (Faster Payments UK)",
     "eta_cop": "Hari yang sama atau hari kerja berikutnya",
     "eta_fednow": "Detik — FedNow real-time",
-    "eta_sepa_instant": "~10 detik (SEPA Instant)"
+    "eta_sepa_instant": "~10 detik (SEPA Instant)",
+    "kyc_submitted_title": "Verifikasi terkirim — menunggu konfirmasi",
+    "kyc_submitted_body": "Bridge sedang memproses identitas Anda. Layar ini akan otomatis lanjut setelah disetujui.",
+    "kyc_long_review_title": "Dokumen sedang ditinjau",
+    "kyc_long_review_body": "Mungkin memerlukan beberapa menit. Layar ini akan otomatis lanjut.",
+    "kyc_rejected_error": "Verifikasi Anda ditolak oleh Bridge. Akun dengan data Anda mungkin sudah ada. Hubungi dukungan: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Verifikasi perusahaan saya →",
+    "kyb_polling_title": "Verifikasi perusahaan Anda di jendela yang terbuka",
     "kyb_after": "Setelah perusahaan terverifikasi, kembali ke sini untuk melanjutkan.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~2 jam (Faster Payments UK)",
     "eta_cop": "Hari yang sama atau hari kerja berikutnya",
     "eta_fednow": "Detik — FedNow real-time",
-    "eta_sepa_instant": "~10 detik (SEPA Instant)"
+    "eta_sepa_instant": "~10 detik (SEPA Instant)",
+    "kyb_submitted_title": "Verifikasi perusahaan terkirim — menunggu konfirmasi",
+    "kyb_submitted_body": "Bridge sedang memproses verifikasi perusahaan Anda. Layar ini akan otomatis lanjut.",
+    "kyb_long_review_title": "Perusahaan sedang ditinjau",
+    "kyb_long_review_body": "Bridge sedang meninjau dokumentasi perusahaan Anda. Layar ini akan otomatis lanjut.",
+    "kyb_rejected_error": "Verifikasi perusahaan Anda ditolak oleh Bridge. Akun dengan data ini mungkin sudah ada. Hubungi: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

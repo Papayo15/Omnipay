@@ -474,6 +474,11 @@
     "kyc_intro_back": "← 返回表单",
     "kyc_polling_title": "正在验证您的身份...",
     "kyc_polling_body": "我们正在检查您的验证状态，请稍候。",
+    "kyc_submitted_title": "验证已提交 — 等待确认",
+    "kyc_submitted_body": "Bridge 正在处理您的身份。批准后此页面将自动跳转。",
+    "kyc_long_review_title": "您的文件正在验证中",
+    "kyc_long_review_body": "Bridge 正在审核您的身份。此页面将自动跳转。",
+    "kyc_rejected_error": "您的验证被 Bridge 拒绝。您的信息（手机或邮箱）可能已存在账户。请联系支持：support@omnipay.solutions",
     "kyc_polling_wait": "如果超过2分钟，请关闭此窗口并使用相同链接返回。",
     "kyc_polling_approved": "✓ 身份已验证 — 正在生成您的收款链接...",
     "share_invite": "分享",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← 返回表单",
     "kyc_polling_title": "正在验证您的身份...",
     "kyc_polling_body": "我们正在验证您的身份，请稍候。",
+    "kyc_submitted_title": "验证已提交 — 等待确认",
+    "kyc_submitted_body": "Bridge 正在处理您的身份。批准后此页面将自动跳转。",
+    "kyc_long_review_title": "您的文件正在验证中",
+    "kyc_long_review_body": "Bridge 正在审核您的身份。此页面将自动跳转。",
+    "kyc_rejected_error": "您的验证被 Bridge 拒绝。您的信息（手机或邮箱）可能已存在账户。请联系支持：support@omnipay.solutions",
     "kyc_polling_wait": "如果超过2分钟，请关闭此窗口并使用相同链接返回。",
     "kyc_polling_approved": "✓ 身份已验证 — 正在生成汇款指令..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ 收款方 KYC 已模拟 · 轮询将检测到变化",
     "va_recipient_gets": "收款方收到",
     "va_deposit_currency": "存款货币",
+    "va_deposit_amount": "存款金额",
     "fee_calculating": "计算费用中...",
     "fee_recipient_gets": "收款方收到",
     "fee_fx_rate": "汇率",
@@ -759,7 +770,12 @@
     "eta_fps": "约2小时 (Faster Payments UK)",
     "eta_cop": "当日或下一工作日",
     "eta_fednow": "秒级 — FedNow 实时到账",
-    "eta_sepa_instant": "~10秒 (SEPA Instant)"
+    "eta_sepa_instant": "~10秒 (SEPA Instant)",
+    "kyc_submitted_title": "验证已提交 — 等待确认",
+    "kyc_submitted_body": "Bridge 正在处理您的身份。批准后此页面将自动跳转。",
+    "kyc_long_review_title": "文件审核中",
+    "kyc_long_review_body": "可能需要几分钟。此页面将自动跳转。",
+    "kyc_rejected_error": "您的验证被 Bridge 拒绝。您的信息可能已存在账户。请联系支持：support@omnipay.solutions"
   },
   "recibir": {
     "loading": "正在验证邀请...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "验证我的公司 →",
+    "kyb_polling_title": "请在打开的窗口中验证您的企业",
     "kyb_after": "公司验证后，返回此页面继续。",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "约2小时 (Faster Payments UK)",
     "eta_cop": "当日或下一工作日",
     "eta_fednow": "秒级 — FedNow 实时到账",
-    "eta_sepa_instant": "~10秒 (SEPA Instant)"
+    "eta_sepa_instant": "~10秒 (SEPA Instant)",
+    "kyb_submitted_title": "企业验证已提交 — 等待确认",
+    "kyb_submitted_body": "Bridge 正在处理您的企业验证。此页面将自动跳转。",
+    "kyb_long_review_title": "企业审核中",
+    "kyb_long_review_body": "Bridge 正在审核您的企业文件。此页面将自动跳转。",
+    "kyb_rejected_error": "您的企业验证被 Bridge 拒绝。该信息可能已存在账户。请联系支持：support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

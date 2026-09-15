@@ -721,6 +721,7 @@
     "sandbox_recipient_simulated": "✓ KYC del receptor simulado · el polling detectará el cambio",
     "va_recipient_gets": "El receptor recibe",
     "va_deposit_currency": "Moneda de depósito",
+    "va_deposit_amount": "Monto a depositar",
     "fee_calculating": "Calculando tarifa...",
     "fee_recipient_gets": "El receptor recibe",
     "fee_fx_rate": "Tipo de cambio",

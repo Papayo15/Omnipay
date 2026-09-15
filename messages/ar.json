@@ -474,6 +474,11 @@
     "kyc_intro_back": "← العودة إلى النموذج",
     "kyc_polling_title": "جارٍ التحقق من هويتك...",
     "kyc_polling_body": "نحن نراجع تحققك. قد يستغرق هذا لحظة.",
+    "kyc_submitted_title": "تم إرسال التحقق — في انتظار التأكيد",
+    "kyc_submitted_body": "تقوم Bridge بمعالجة هويتك. ستتقدم هذه الشاشة تلقائيًا عند الموافقة.",
+    "kyc_long_review_title": "جاري التحقق من مستندك",
+    "kyc_long_review_body": "تقوم Bridge بمراجعة هويتك. ستتقدم هذه الشاشة تلقائيًا.",
+    "kyc_rejected_error": "تم رفض تحققك من قبل Bridge. ربما يوجد حساب بياناتك (هاتف أو بريد إلكتروني) بالفعل. تواصل مع الدعم: support@omnipay.solutions",
     "kyc_polling_wait": "إذا استغرق أكثر من دقيقتين، أغلق هذه النافذة وعد باستخدام نفس الرابط.",
     "kyc_polling_approved": "✓ تم التحقق من الهوية — جارٍ إنشاء رابط الدفع...",
     "share_invite": "مشاركة",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← العودة إلى النموذج",
     "kyc_polling_title": "جارٍ التحقق من هويتك...",
     "kyc_polling_body": "نحن نتحقق من هويتك. قد يستغرق هذا لحظة.",
+    "kyc_submitted_title": "تم إرسال التحقق — في انتظار التأكيد",
+    "kyc_submitted_body": "تقوم Bridge بمعالجة هويتك. ستتقدم هذه الشاشة تلقائيًا عند الموافقة.",
+    "kyc_long_review_title": "جاري التحقق من مستندك",
+    "kyc_long_review_body": "تقوم Bridge بمراجعة هويتك. ستتقدم هذه الشاشة تلقائيًا.",
+    "kyc_rejected_error": "تم رفض تحققك من قبل Bridge. ربما يوجد حساب بياناتك (هاتف أو بريد إلكتروني) بالفعل. تواصل مع الدعم: support@omnipay.solutions",
     "kyc_polling_wait": "إذا استغرق أكثر من دقيقتين، أغلق هذه النافذة وعد باستخدام نفس الرابط.",
     "kyc_polling_approved": "✓ تم التحقق من الهوية — جارٍ إنشاء تعليمات الإيداع..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ تمت محاكاة KYC المستلم · سيكتشف نظام الفحص التغيير",
     "va_recipient_gets": "يستلم المستفيد",
     "va_deposit_currency": "عملة الإيداع",
+    "va_deposit_amount": "المبلغ المراد إيداعه",
     "fee_calculating": "حساب الرسوم...",
     "fee_recipient_gets": "يستلم المستفيد",
     "fee_fx_rate": "سعر الصرف",
@@ -759,7 +770,12 @@
     "eta_fps": "~ساعتان (Faster Payments UK)",
     "eta_cop": "نفس اليوم أو اليوم التالي",
     "eta_fednow": "ثوانٍ — FedNow فوري",
-    "eta_sepa_instant": "~10 ثوانٍ (SEPA Instant)"
+    "eta_sepa_instant": "~10 ثوانٍ (SEPA Instant)",
+    "kyc_submitted_title": "تم إرسال التحقق — في انتظار التأكيد",
+    "kyc_submitted_body": "تقوم Bridge بمعالجة هويتك. ستتقدم هذه الشاشة تلقائيًا عند الموافقة.",
+    "kyc_long_review_title": "المستند قيد المراجعة",
+    "kyc_long_review_body": "قد يستغرق هذا بضع دقائق. ستتقدم هذه الشاشة تلقائيًا.",
+    "kyc_rejected_error": "تم رفض تحققك من قبل Bridge. ربما يوجد حساب بياناتك بالفعل. تواصل مع الدعم: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "التحقق من شركتي →",
+    "kyb_polling_title": "تحقق من شركتك في النافذة المفتوحة",
     "kyb_after": "بعد التحقق من شركتك، عد إلى هنا للمتابعة.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~ساعتان (Faster Payments UK)",
     "eta_cop": "نفس اليوم أو اليوم التالي",
     "eta_fednow": "ثوانٍ — FedNow فوري",
-    "eta_sepa_instant": "~10 ثوانٍ (SEPA Instant)"
+    "eta_sepa_instant": "~10 ثوانٍ (SEPA Instant)",
+    "kyb_submitted_title": "تم إرسال التحقق من الشركة — في انتظار التأكيد",
+    "kyb_submitted_body": "تقوم Bridge بمعالجة التحقق من شركتك. ستتقدم هذه الشاشة تلقائيًا.",
+    "kyb_long_review_title": "الشركة قيد المراجعة",
+    "kyb_long_review_body": "تقوم Bridge بمراجعة وثائق شركتك. ستتقدم هذه الشاشة تلقائيًا.",
+    "kyb_rejected_error": "تم رفض التحقق من شركتك من قبل Bridge. ربما يوجد حساب بهذه البيانات بالفعل. تواصل مع الدعم: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

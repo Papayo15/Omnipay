@@ -474,6 +474,11 @@
     "kyc_intro_back": "← Rudi kwenye fomu",
     "kyc_polling_title": "Kuthibitisha utambulisho wako...",
     "kyc_polling_body": "Tunakagua uthibitisho wako. Inaweza kuchukua muda kidogo.",
+    "kyc_submitted_title": "Uthibitisho umetumwa — kusubiri uthibitisho",
+    "kyc_submitted_body": "Bridge inashughulikia utambulisho wako. Skrini hii itaendelea moja kwa moja baada ya kuidhinishwa.",
+    "kyc_long_review_title": "Hati yako inathibitishwa",
+    "kyc_long_review_body": "Bridge inakagua utambulisho wako. Skrini hii itaendelea moja kwa moja.",
+    "kyc_rejected_error": "Uthibitisho wako ulikataliwa na Bridge. Akaunti yenye data yako (simu au barua pepe) inaweza kuwepo tayari. Usaidizi: support@omnipay.solutions",
     "kyc_polling_wait": "Ikiwa inachukua zaidi ya dakika 2, funga dirisha hili na urudi ukitumia kiungo sawa.",
     "kyc_polling_approved": "✓ Utambulisho umethibitishwa — Kuunda kiungo chako cha malipo...",
     "share_invite": "Shiriki",
@@ -568,6 +573,11 @@
     "kyc_intro_back": "← Rudi kwenye fomu",
     "kyc_polling_title": "Kuthibitisha utambulisho wako...",
     "kyc_polling_body": "Tunakagua uthibitisho wako wa utambulisho. Inaweza kuchukua muda kidogo.",
+    "kyc_submitted_title": "Uthibitisho umetumwa — kusubiri uthibitisho",
+    "kyc_submitted_body": "Bridge inashughulikia utambulisho wako. Skrini hii itaendelea moja kwa moja baada ya kuidhinishwa.",
+    "kyc_long_review_title": "Hati yako inathibitishwa",
+    "kyc_long_review_body": "Bridge inakagua utambulisho wako. Skrini hii itaendelea moja kwa moja.",
+    "kyc_rejected_error": "Uthibitisho wako ulikataliwa na Bridge. Akaunti yenye data yako (simu au barua pepe) inaweza kuwepo tayari. Usaidizi: support@omnipay.solutions",
     "kyc_polling_wait": "Ikiwa inachukua zaidi ya dakika 2, funga dirisha hili na urudi ukitumia kiungo sawa.",
     "kyc_polling_approved": "✓ Utambulisho umethibitishwa — Kuunda maelekezo yako ya amana..."
   },
@@ -724,6 +734,7 @@
     "sandbox_recipient_simulated": "✓ KYC ya mpokeaji imesimuliwa · uchunguzi utaona mabadiliko",
     "va_recipient_gets": "Mpokeaji anapokea",
     "va_deposit_currency": "Sarafu ya amana",
+    "va_deposit_amount": "Kiasi cha kuweka",
     "fee_calculating": "Inahesabu ada...",
     "fee_recipient_gets": "Mpokeaji anapokea",
     "fee_fx_rate": "Kiwango cha ubadilishaji",
@@ -759,7 +770,12 @@
     "eta_fps": "~Masaa 2 (Faster Payments UK)",
     "eta_cop": "Siku hiyo au siku ya kazi inayofuata",
     "eta_fednow": "Sekunde — FedNow ni ya wakati halisi",
-    "eta_sepa_instant": "~10 sekunde (SEPA Instant)"
+    "eta_sepa_instant": "~10 sekunde (SEPA Instant)",
+    "kyc_submitted_title": "Uthibitisho umetumwa — kusubiri uthibitisho",
+    "kyc_submitted_body": "Bridge inashughulikia utambulisho wako. Skrini hii itaendelea moja kwa moja baada ya kuidhinishwa.",
+    "kyc_long_review_title": "Hati inapitiwa",
+    "kyc_long_review_body": "Inaweza kuchukua dakika chache. Skrini hii itaendelea moja kwa moja.",
+    "kyc_rejected_error": "Uthibitisho wako ulikataliwa na Bridge. Akaunti yenye data yako inaweza kuwepo tayari. Wasiliana na usaidizi: support@omnipay.solutions"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",
@@ -855,6 +871,7 @@
     "kyb_or_share_link": "You can also share the link directly with them",
     "kyb_copy_link": "Copy verification link",
     "kyb_cta": "Thibitisha kampuni yangu →",
+    "kyb_polling_title": "Thibitisha kampuni yako katika dirisha lililofunguliwa",
     "kyb_after": "Baada ya kuthibitisha kampuni, rudi hapa ili kuendelea.",
     "wire_title": "Wire transfer instructions",
     "wire_subtitle": "Make the transfer from your bank using these details",
@@ -959,7 +976,12 @@
     "eta_fps": "~Masaa 2 (Faster Payments UK)",
     "eta_cop": "Siku hiyo au siku ya kazi inayofuata",
     "eta_fednow": "Sekunde — FedNow ni ya wakati halisi",
-    "eta_sepa_instant": "~10 sekunde (SEPA Instant)"
+    "eta_sepa_instant": "~10 sekunde (SEPA Instant)",
+    "kyb_submitted_title": "Uthibitisho wa kampuni umetumwa — kusubiri uthibitisho",
+    "kyb_submitted_body": "Bridge inashughulikia uthibitisho wa kampuni yako. Skrini hii itaendelea moja kwa moja.",
+    "kyb_long_review_title": "Kampuni inapitiwa",
+    "kyb_long_review_body": "Bridge inakagua nyaraka za kampuni yako. Skrini hii itaendelea moja kwa moja.",
+    "kyb_rejected_error": "Uthibitisho wa kampuni yako ulikataliwa na Bridge. Akaunti yenye data hizi inaweza kuwepo tayari. Usaidizi: support@omnipay.solutions"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",
