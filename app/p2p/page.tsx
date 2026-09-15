@@ -157,6 +157,7 @@ export default function P2PPage() {
   const kycAutoRetryRef = useRef(false);
   // Tracks whether the current kycPopup is showing ToS (vs KYC) — drives popup-close behavior
   const tosModeRef = useRef(false);
+  const [kycManualChecking, setKycManualChecking] = useState(false);
 
   const [apBankCode,      setApBankCode]      = useState("");
   const [alchemyPayEnabled, setAlchemyPayEnabled] = useState(false);
@@ -345,6 +346,8 @@ export default function P2PPage() {
 
   // Bridge link generation — gets real fees from Bridge at submit time
   const generateLink = useCallback(async () => {
+    // Capture before any async — used to distinguish ToS→KYC transition from KYC-processing retry
+    const fromTosMode = kycAutoRetryRef.current && tosModeRef.current;
     const amt = parseFloat(amountLocal);
     if (!nombre.trim() || !email.includes("@") || !account.trim() || !amt) return;
 
@@ -455,8 +458,11 @@ export default function P2PPage() {
           if (data.needs_tos) {
             // ToS still needed — show kyc_info so user can re-open ToS popup
             setStep("kyc_info");
+          } else if (fromTosMode) {
+            // Just accepted ToS → now needs KYC: show kyc_info with Verificar button
+            setStep("kyc_info");
           } else {
-            // KYC approved but processing async on Bridge's side — show polling step
+            // KYC submitted and processing async on Bridge's side — show polling step
             setKycStillPending(true);
             setKycPolling(true);
             setStep("kyc_polling");
@@ -549,18 +555,40 @@ export default function P2PPage() {
               </p>
               {!kycSubmitted && !kycLongReview && (
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (tosModeRef.current) {
+                      // ToS mode: close popup and retry to advance to KYC
                       if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
                       if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
                       kycAutoRetryRef.current = true;
                       generateLink();
                     } else {
-                      setKycSubmitted(true); setKycLongReview(true);
+                      // KYC mode: check Bridge first — only advance if already approved
+                      if (!kycCustomerId || kycManualChecking) return;
+                      setKycManualChecking(true);
+                      try {
+                        const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
+                        const data = await res.json() as { approved?: boolean; status?: string; rejection_reason?: string | null };
+                        if (data.approved) {
+                          if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+                          setKycPolling(false);
+                          kycAutoRetryRef.current = true;
+                          generateLink();
+                        } else if (data.status === "rejected") {
+                          if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+                          setKycPolling(false);
+                          setErrorMsg(data.rejection_reason ?? t("kyc_rejected_error"));
+                          setStep("error");
+                        }
+                        // pending: re-enables button; polling continues in background
+                      } catch { /* ignore */ }
+                      setKycManualChecking(false);
                     }
                   }}
-                  className="text-emerald-400/70 text-xs underline underline-offset-2 hover:text-emerald-300 transition-colors"
+                  disabled={kycManualChecking}
+                  className="text-emerald-400/70 text-xs underline underline-offset-2 hover:text-emerald-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
                 >
+                  {kycManualChecking && <span className="inline-block w-3 h-3 border border-emerald-400 border-t-transparent rounded-full animate-spin" />}
                   {tosModeRef.current ? t("tos_already_done") : t("kyc_already_done")}
                 </button>
               )}

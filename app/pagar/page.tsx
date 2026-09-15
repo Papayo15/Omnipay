@@ -136,6 +136,7 @@ export default function PagarPage() {
   const [kycSubmitted,     setKycSubmitted]     = useState(false);
   const kycPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const kycPopup     = useRef<Window | null>(null);
+  const [kycManualChecking, setKycManualChecking] = useState(false);
   const kycAutoRetryRef = useRef(false);
   const router = useRouter();
 
@@ -462,9 +463,30 @@ export default function PagarPage() {
               </p>
               {!kycSubmitted && !kycLongReview && (
                 <button
-                  onClick={() => { setKycSubmitted(true); setKycLongReview(true); }}
-                  className="text-[#00C9C8]/70 text-xs underline underline-offset-2 hover:text-[#00C9C8] transition-colors"
+                  onClick={async () => {
+                    if (!kycCustomerId || kycManualChecking) return;
+                    setKycManualChecking(true);
+                    try {
+                      const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
+                      const data = await res.json() as { approved?: boolean; status?: string; rejection_reason?: string | null };
+                      if (data.approved) {
+                        if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+                        setKycPolling(false);
+                        kycAutoRetryRef.current = true;
+                        handleSubmit();
+                      } else if (data.status === "rejected") {
+                        if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+                        setKycPolling(false);
+                        setErrorMsg(data.rejection_reason ?? t("kyc_rejected_error"));
+                        setStep("error");
+                      }
+                    } catch { /* ignore */ }
+                    setKycManualChecking(false);
+                  }}
+                  disabled={kycManualChecking}
+                  className="text-[#00C9C8]/70 text-xs underline underline-offset-2 hover:text-[#00C9C8] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
                 >
+                  {kycManualChecking && <span className="inline-block w-3 h-3 border border-[#00C9C8] border-t-transparent rounded-full animate-spin" />}
                   {t("kyc_already_done")}
                 </button>
               )}

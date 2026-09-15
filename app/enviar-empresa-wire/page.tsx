@@ -86,6 +86,7 @@ export default function EnviarEmpresaWirePage() {
   const [kybSubmitted, setKybSubmitted]   = useState(false);
   const kybPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const kybPopup     = useRef<Window | null>(null);
+  const [kybManualChecking, setKybManualChecking] = useState(false);
 
   // Instructions state
   const [vaInfo, setVaInfo]               = useState<VaInfo | null>(null);
@@ -643,9 +644,30 @@ export default function EnviarEmpresaWirePage() {
                 </p>
                 {!kybSubmitted && !kybLongReview && (
                   <button
-                    onClick={() => { setKybSubmitted(true); setKybLongReview(true); }}
-                    className="text-blue-400/70 text-xs underline underline-offset-2 hover:text-blue-300 transition-colors"
+                    onClick={async () => {
+                      if (!kybCustomerId || kybManualChecking) return;
+                      setKybManualChecking(true);
+                      try {
+                        const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kybCustomerId}`);
+                        const data = await res.json() as { approved?: boolean; status?: string; rejection_reason?: string | null };
+                        if (data.approved) {
+                          if (kybPollTimer.current) clearInterval(kybPollTimer.current);
+                          setKybPolling(false);
+                          setAutoRetry(true);
+                        } else if (data.status === "rejected") {
+                          if (kybPollTimer.current) clearInterval(kybPollTimer.current);
+                          setKybPolling(false);
+                          setError(data.rejection_reason ?? t("kyb_rejected_error"));
+                          setStep("error");
+                        }
+                        // pending: re-enables button; polling continues in background
+                      } catch { /* ignore */ }
+                      setKybManualChecking(false);
+                    }}
+                    disabled={kybManualChecking}
+                    className="text-blue-400/70 text-xs underline underline-offset-2 hover:text-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
                   >
+                    {kybManualChecking && <span className="inline-block w-3 h-3 border border-blue-400 border-t-transparent rounded-full animate-spin" />}
                     {t("kyb_already_done")}
                   </button>
                 )}

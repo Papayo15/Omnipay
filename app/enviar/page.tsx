@@ -81,6 +81,7 @@ export default function EnviarPage() {
   const [kycSubmitted, setKycSubmitted]   = useState(false); // true when Persona popup closed after completion
   const kycPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const kycPopup     = useRef<Window | null>(null);
+  const [kycManualChecking, setKycManualChecking] = useState(false);
   const [vaInfo, setVaInfo]               = useState<VaInfo | null>(null);
   const [orderId, setOrderId]             = useState("");
   const [confirmedAmount, setConfirmedAmount]   = useState(0);
@@ -875,9 +876,29 @@ export default function EnviarPage() {
                     </p>
                     {!kycSubmitted && (
                       <button
-                        onClick={() => { setKycSubmitted(true); setKycLongReview(true); }}
-                        className="text-[#00C9C8] text-xs underline underline-offset-2 hover:text-white transition-colors mt-1"
+                        onClick={async () => {
+                          if (!kycCustomerId || kycManualChecking) return;
+                          setKycManualChecking(true);
+                          try {
+                            const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
+                            const data = await res.json() as { approved?: boolean; status?: string; rejection_reason?: string | null };
+                            if (data.approved) {
+                              if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+                              setKycPolling(false);
+                              setAutoRetry(true);
+                            } else if (data.status === "rejected") {
+                              if (kycPollTimer.current) clearInterval(kycPollTimer.current);
+                              setKycPolling(false);
+                              setError(data.rejection_reason ?? t("kyc_rejected_error"));
+                              setStep("error");
+                            }
+                          } catch { /* ignore */ }
+                          setKycManualChecking(false);
+                        }}
+                        disabled={kycManualChecking}
+                        className="text-[#00C9C8] text-xs underline underline-offset-2 hover:text-white transition-colors mt-1 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 mx-auto"
                       >
+                        {kycManualChecking && <span className="inline-block w-3 h-3 border border-[#00C9C8] border-t-transparent rounded-full animate-spin" />}
                         {t("kyc_already_done")}
                       </button>
                     )}
