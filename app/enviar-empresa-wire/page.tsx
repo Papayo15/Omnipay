@@ -340,33 +340,26 @@ export default function EnviarEmpresaWirePage() {
           recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
           kybCustomerId: data.customer_id ?? "",
         }));
-        setTosUrl(data.tos_url);
-        if (data.customer_id) setTosCustomerId(data.customer_id);
-        setStep("tos");
+        // Auto-navigate directly to Bridge ToS — no intermediate OmniPay screen
+        window.location.href = data.tos_url;
         return;
       }
-      if (tosPollTimer.current) { clearInterval(tosPollTimer.current); tosPollTimer.current = null; }
-      if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
 
       if (data.needs_kyb) {
         if (!isAutoRetry) setKybSubmitted(false);
-        sessionStorage.setItem("b2b_send_form", JSON.stringify({
+        const snap = JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
           recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
           kybCustomerId: data.customer_id ?? "",
-        }));
+        });
+        sessionStorage.setItem("b2b_send_form", snap);
         setKybUrl(data.kyb_url ?? "");
         setKybCustomerId(data.customer_id ?? "");
         setIsSandboxKyb(!!data.is_sandbox);
         const fromTos = fromTosReturnRef.current;
         fromTosReturnRef.current = false;
-        if (fromTos && data.kyb_url) {
-          // Just accepted ToS → navigate directly to KYB
-          sessionStorage.setItem("b2b_send_form", JSON.stringify({
-            senderBusinessName, senderEmail, sourceCurrency,
-            recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
-            kybCustomerId: data.customer_id ?? "",
-          }));
+        // Navigate directly to KYB URL in all non-sandbox cases — no intermediate OmniPay screen
+        if (data.kyb_url && !data.is_sandbox) {
           window.location.href = data.kyb_url;
           return;
         }
