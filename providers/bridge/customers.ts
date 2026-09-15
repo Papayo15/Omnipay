@@ -147,19 +147,21 @@ export async function createCustomer(params: {
     }
     // Business customers only need signed_agreement_id in sandbox — no personal docs
   }
-  // Include a short hash of the endorsements array so that if the list changes
-  // between deploys (same day, same email), the key changes too — Bridge rejects
-  // any key+body mismatch with a 422, so a new key is safer than a conflict.
-  const endHash = params.endorsements?.length
+  // Include hashes of endorsements AND name so that if either changes between
+  // retries (same email, same day), the key changes — Bridge rejects same-key/
+  // different-body with not_truly_idempotent, so a fresh key is always safer.
+  const endHash  = params.endorsements?.length
     ? createHash("sha256").update([...params.endorsements].sort().join(",")).digest("hex").slice(0, 8)
     : "none";
+  const nameStr  = params.type === "business"
+    ? (params.business_name ?? "").toLowerCase().trim()
+    : `${(params.first_name ?? "").toLowerCase().trim()}-${(params.last_name ?? "").toLowerCase().trim()}`;
+  const nameHash = createHash("sha256").update(nameStr).digest("hex").slice(0, 8);
   return bridgeRequest<BridgeCustomer>(
     "POST",
     "/customers",
     body,
-    // Include type + endorsements hash so individual and business customers with the
-    // same email, and same-email calls with different endorsements, never share a key.
-    `customer-${params.type}-${params.email.toLowerCase()}-${endHash}-${day}`,
+    `customer-${params.type}-${params.email.toLowerCase()}-${endHash}-${nameHash}-${day}`,
   );
 }
 
@@ -255,28 +257,41 @@ export async function getOrCreateCustomer(params: {
     const msg = JSON.stringify(e.details ?? e.message ?? "").toLowerCase();
     // Also recover when Bridge returns an idempotency conflict (same key, different body
     // due to a prior call that got a different signed_agreement_id before the fix).
-    const isEmailTaken   = msg.includes("already exists");
-    const isIdempConflict = msg.includes("idempotency");
+    const isEmailTaken    = msg.includes("already exists");
+    const isIdempConflict = msg.includes("idempotency") || msg.includes("not_truly_idempotent");
     if (isEmailTaken || isIdempConflict) {
-      // Bridge may embed the existing customer in the error body on idempotency conflicts.
+      // Bridge may embed the existing customer in the error body — try every known field name.
+      const det = e.details as Record<string, unknown> | undefined;
       const embedded = (
-        (e.details as Record<string, unknown>)?.existing_resource ??
-        (e.details as Record<string, unknown>)?.existing_customer
+        det?.existing_resource ?? det?.existing_customer ?? det?.customer
       ) as BridgeCustomer | undefined;
-      const recovered = embedded?.id
-        ? embedded
-        : await findCustomerByEmail(params.email)
-          // Bridge search is eventually consistent for brand-new customers — retry once.
-          ?? await new Promise<BridgeCustomer | null>(r => setTimeout(() => findCustomerByEmail(params.email).then(r).catch(() => r(null)), 1500));
-      if (recovered) {
-        const isRestricted = recovered.status === "deposits_restricted";
-        const isBlocked    = recovered.status === "paused" || recovered.status === "offboarded";
+
+      if (embedded?.id) {
+        const isRestricted = embedded.status === "deposits_restricted";
+        const isBlocked    = embedded.status === "paused" || embedded.status === "offboarded";
         const kycApproved  = !isBlocked && (
           params.type === "business"
-            ? recovered.kyb_status === "approved"
-            : recovered.status === "active" || recovered.status === "approved" || isRestricted || recovered.kyc_status === "approved"
+            ? embedded.kyb_status === "approved"
+            : embedded.status === "active" || embedded.status === "approved" || isRestricted || embedded.kyc_status === "approved"
         );
-        return { customer: recovered, isNew: false, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
+        return { customer: embedded, isNew: false, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
+      }
+
+      // Bridge search is eventually consistent — retry up to 3 times with increasing delay.
+      const wait = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+      for (const delay of [800, 2000, 4000]) {
+        await wait(delay);
+        const recovered = await findCustomerByEmail(params.email);
+        if (recovered) {
+          const isRestricted = recovered.status === "deposits_restricted";
+          const isBlocked    = recovered.status === "paused" || recovered.status === "offboarded";
+          const kycApproved  = !isBlocked && (
+            params.type === "business"
+              ? recovered.kyb_status === "approved"
+              : recovered.status === "active" || recovered.status === "approved" || isRestricted || recovered.kyc_status === "approved"
+          );
+          return { customer: recovered, isNew: false, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
+        }
       }
     }
     throw err;
