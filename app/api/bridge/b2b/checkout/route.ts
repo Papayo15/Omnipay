@@ -200,13 +200,15 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Bridge docs: use GET /customers/{id}/tos_acceptance_link for existing customers.
     // redirect_uri is appended as a query param on the returned URL (not in the body).
     const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
+    // ToS uses a separate redirect so the b2b page can differentiate ToS return from KYB return.
+    const tosRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?tos_done=1`;
     const needsTos = !isSandbox && !customer.has_accepted_terms_of_service;
     console.log(`[bridge/b2b/checkout] tos check: customer=${customer.id} has_accepted=${customer.has_accepted_terms_of_service} needsTos=${needsTos}`);
     if (needsTos) {
       try {
         const { url: tosUrl } = await getTosAcceptanceLink({
           customer_id:  customer.id,
-          redirect_uri: kybRedirectUri,
+          redirect_uri: tosRedirectUri,
         });
         console.log(`[bridge/b2b/checkout] getTosAcceptanceLink ok: url=${tosUrl}`);
         return NextResponse.json({

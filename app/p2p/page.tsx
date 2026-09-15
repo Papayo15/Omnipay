@@ -213,36 +213,21 @@ export default function P2PPage() {
     const p       = new URLSearchParams(window.location.search);
     const amt     = p.get("amount");
     const cty     = p.get("country");
-    const kycDone = p.get("kyc_done") === "1" || p.get("tos_done") === "1";
+    const tosDone = p.get("tos_done") === "1";
+    const kycDone = p.get("kyc_done") === "1" || tosDone;
     if (amt && !isNaN(parseFloat(amt))) setAmountLocal(amt);
     if (cty && COUNTRY_OPTIONS.some(c => c.code === cty.toUpperCase())) {
       setCountry(cty.toUpperCase());
     }
-    if (kycDone) {
-      // Try postMessage to opener (desktop popups, same-origin tabs)
-      try {
-        if (window.opener && !window.opener.closed) {
-          window.opener.postMessage({ type: "omnipay_kyc_done" }, window.location.origin);
-          window.close();
-          return;
-        }
-      } catch { /* opener unavailable — try BroadcastChannel */ }
-      // iOS Safari: window.opener is cleared after cross-domain redirect.
-      // BroadcastChannel works across same-origin tabs without needing opener.
-      try {
-        const bc = new BroadcastChannel("omnipay_kyc_p2p");
-        bc.postMessage({ type: "omnipay_kyc_done" });
-        bc.close();
-      } catch { /* BroadcastChannel not supported — fall through to direct retry */ }
-      // Attempt tab close (works if tab was opened via window.open)
-      window.close();
-    }
+    // When returning from ToS (full-page nav), mark tosModeRef so generateLink knows
+    // this retry is a ToS→KYC transition and shows the KYC button instead of polling.
+    if (tosDone) tosModeRef.current = true;
     try {
       const saved = sessionStorage.getItem("omnipay_p2p_form");
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
         if (kycDone) {
-          // Direct tab (no opener/BroadcastChannel): restore form and auto-retry in this tab
+          // Full-page nav return (tos_done or kyc_done): restore form and auto-retry.
           if (form.nombre)         setNombre(form.nombre);
           if (form.email)          setEmail(form.email);
           if (form.country)        setCountry(form.country);

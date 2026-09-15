@@ -97,8 +97,9 @@ export default function EnviarEmpresaWirePage() {
   const [orderId, setOrderId]             = useState("");
   const [tosUrl, setTosUrl]               = useState("");
   const [tosCustomerId, setTosCustomerId] = useState("");
-  const tosPopup     = useRef<Window | null>(null);
-  const tosPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tosPopup        = useRef<Window | null>(null);
+  const tosPollTimer    = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fromTosReturnRef = useRef(false); // true when returning from ToS (not KYB) so we show KYB button
   const [sandboxDone, setSandboxDone]         = useState(false);
   const [sandboxAdvancing, setSandboxAdvancing] = useState(false);
   const [showSandboxBtn, setShowSandboxBtn]   = useState(false);
@@ -136,22 +137,12 @@ export default function EnviarEmpresaWirePage() {
 
   // Detect return from Bridge KYB/ToS — restore form + auto-retry
   useEffect(() => {
-    if (searchParams.get("kyb_done") !== "1") return;
-    // Try postMessage to opener first (desktop, Android Chrome)
-    try {
-      if (window.opener && !window.opener.closed) {
-        window.opener.postMessage({ type: "omnipay_kyb_done" }, window.location.origin);
-        window.close();
-        return;
-      }
-    } catch { /* opener unavailable */ }
-    // iOS Safari: window.opener cleared after cross-domain redirect — use BroadcastChannel
-    try {
-      const bc = new BroadcastChannel("omnipay_kyc_b2b");
-      bc.postMessage({ type: "omnipay_kyb_done" });
-      bc.close();
-    } catch { /* not supported */ }
-    window.close(); // attempt close (works if tab was opened via window.open)
+    const tosDone = searchParams.get("tos_done") === "1";
+    const kybDone = searchParams.get("kyb_done") === "1";
+    if (!tosDone && !kybDone) return;
+    // When returning from ToS (not KYB), mark that so handleSubmit shows the KYB button
+    // instead of the polling spinner (user hasn't done KYB yet — they just accepted ToS).
+    if (tosDone) fromTosReturnRef.current = true;
     const savedRaw = sessionStorage.getItem("b2b_send_form");
     if (!savedRaw) return;
     try {
@@ -326,8 +317,11 @@ export default function EnviarEmpresaWirePage() {
         setKybUrl(data.kyb_url ?? "");
         setKybCustomerId(data.customer_id ?? "");
         setIsSandboxKyb(!!data.is_sandbox);
-        // Auto-start polling on retry (user just finished Persona — Bridge may take a moment)
-        if (isAutoRetry) setKybPolling(true);
+        // Only start polling if returning from KYB (user submitted identity) — not from ToS.
+        // fromTosReturnRef = true means user just accepted ToS and hasn't done KYB yet.
+        const fromTos = fromTosReturnRef.current;
+        fromTosReturnRef.current = false;
+        if (isAutoRetry && !fromTos) setKybPolling(true);
         setStep("kyb");
         return;
       }
