@@ -233,6 +233,13 @@ export default function EnviarPage() {
         }
       } catch { /* still on Bridge's cross-origin page — ignore */ }
 
+      // Detect when user closes the popup after accepting ToS (Bridge doesn't auto-close it)
+      if (tosPopup.current?.closed) {
+        tosPopup.current = null;
+        finish();
+        return;
+      }
+
       // Primary check: poll Bridge's tos_status via our API
       if (!tosCustomerId) return;
       try {

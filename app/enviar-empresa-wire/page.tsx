@@ -179,6 +179,14 @@ export default function EnviarEmpresaWirePage() {
           finish(); return;
         }
       } catch { /* cross-origin = still on Bridge's page */ }
+
+      // Detect when user closes the popup after accepting ToS (Bridge doesn't auto-close it)
+      if (tosPopup.current?.closed) {
+        tosPopup.current = null;
+        finish();
+        return;
+      }
+
       if (!tosCustomerId) return;
       try {
         const res  = await fetch(`/api/bridge/tos-status?customer_id=${tosCustomerId}`);
