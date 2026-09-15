@@ -133,9 +133,18 @@ export default function EnviarEmpresaWirePage() {
   };
   const minLocal = minLocalAmount[recipientCurrency] ?? 50;
 
-  // Detect return from Bridge KYB — restore form + auto-retry
+  // Detect return from Bridge KYB/ToS — restore form + auto-retry
   useEffect(() => {
     if (searchParams.get("kyb_done") !== "1") return;
+    // On mobile, Bridge redirects the popup/new-tab to ?kyb_done=1 instead of the
+    // original tab. Notify the parent tab and close this one so the user lands back.
+    try {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage({ type: "omnipay_kyb_done" }, window.location.origin);
+        window.close();
+        return;
+      }
+    } catch { /* opener unavailable — fall through to direct retry */ }
     const savedRaw = sessionStorage.getItem("b2b_send_form");
     if (!savedRaw) return;
     try {
@@ -364,6 +373,18 @@ export default function EnviarEmpresaWirePage() {
       setStep("error");
     }
   }, [buildBody, senderBusinessName, senderEmail, sourceCurrency, recipientBusinessName, recipientCountry, accountField, bicField, amount, recipientCurrency]);
+
+  // Listen for postMessage from ToS/KYB popup/tab on mobile — auto-retry when it closes.
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if ((e.data as { type?: string })?.type !== "omnipay_kyb_done") return;
+      handleSubmit(true);
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleSubmit]);
 
   const simulateKyb = useCallback(async () => {
     if (!kybCustomerId) return;
