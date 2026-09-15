@@ -393,22 +393,32 @@ export default function EnviarPage() {
       if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
       if (prePopup && !prePopup.closed) { prePopup.close(); prePopup = null; }
 
-      if (data.needs_kyc && data.kyc_url) {
-        // Full-page navigation to Bridge/Persona KYC — works on both desktop and mobile (no popup needed).
-        const customerId = (data as Record<string, unknown>).customer_id as string ?? "";
-        sessionStorage.setItem("enviar_form_state", JSON.stringify({
-          senderName, senderEmail, senderCurrency,
-          recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
-          kycCustomerId: customerId,
-        }));
-        if (prePopup && !prePopup.closed) prePopup.close();
-        window.location.href = data.kyc_url;
-        return;
-      }
-      // needs_kyc but no URL returned (unexpected) — fall through to error below
       if (data.needs_kyc) {
+        const customerId = (data as Record<string, unknown>).customer_id as string ?? kycCustomerId;
+        if (customerId) setKycCustomerId(customerId);
+        setIsSandboxKyc(!!(data as Record<string, unknown>).is_sandbox);
+        if (isAutoRetry) {
+          // User just returned from Persona but Bridge hasn't approved yet (eventual consistency).
+          // Show polling screen — kycPolling useEffect will retry handleSubmit when approved.
+          if (prePopup && !prePopup.closed) prePopup.close();
+          setKycSubmitted(true);
+          setKycPolling(true);
+          setStep("kyc");
+          return;
+        }
+        if (data.kyc_url) {
+          // First KYC request — navigate directly to Persona.
+          sessionStorage.setItem("enviar_form_state", JSON.stringify({
+            senderName, senderEmail, senderCurrency,
+            recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
+            kycCustomerId: customerId,
+          }));
+          if (prePopup && !prePopup.closed) prePopup.close();
+          window.location.href = data.kyc_url;
+          return;
+        }
         if (prePopup && !prePopup.closed) prePopup.close();
-        setError(`KYC requerido pero Bridge no devolvió URL. customer_id=${(data as Record<string, unknown>).customer_id ?? "?"}`);
+        setError(`KYC requerido pero Bridge no devolvió URL. customer_id=${customerId || "?"}`);
         setStep("error");
         return;
       }
