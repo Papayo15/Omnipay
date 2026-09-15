@@ -138,11 +138,6 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
-    // Refresh customer from individual endpoint to ensure has_accepted_terms_of_service is present.
-    if (!isSandbox) {
-      try { customer = await getCustomer(customer.id); } catch { /* use existing record */ }
-    }
-
     const liqParams: CreateLiquidationParams = {
       customerId:    customer.id,
       country:       country_upper,

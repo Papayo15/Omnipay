@@ -167,11 +167,6 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const isSandbox = (process.env.BRIDGE_API_BASE ?? "").includes("sandbox");
 
-    // Refresh customer from the individual endpoint to ensure has_accepted_terms_of_service
-    // is present — the list endpoint (findCustomerByEmail) may omit boolean fields when false.
-    if (!isSandbox) {
-      try { customer = await getCustomer(customer.id); } catch { /* use existing record */ }
-    }
 
     // Always update customer — sets residential_address (required by Bridge for liquidation).
     // In sandbox: ALSO sets compliance fields (account_purpose, source_of_funds, place_of_birth, etc.)
