@@ -372,6 +372,7 @@ export async function createTosLink(params: {
   full_name:    string;
   email:        string;
   type:         "individual" | "business";
+  customer_id?: string;   // pass when customer already exists — Bridge uses it to locate the record
   redirect_uri?: string;
 }): Promise<{ id: string; url: string }> {
   const day = Math.floor(Date.now() / 86_400_000);
@@ -381,10 +382,12 @@ export async function createTosLink(params: {
   const uriTag = params.redirect_uri
     ? params.redirect_uri.replace(/[^a-z0-9]/gi, "").slice(-16)
     : "none";
-  const idempKey = `tos-${params.email.toLowerCase()}-${day}-${uriTag}`;
+  // Include customer_id in key — same email but different customer_id means different body
+  const cidTag = params.customer_id ? params.customer_id.slice(-8) : "none";
+  const idempKey = `tos-${params.email.toLowerCase()}-${cidTag}-${day}-${uriTag}`;
   // Helper: Bridge may return the ToS URL in either `url` or `tos_link` field.
   const extractUrl = (obj: Record<string, unknown>): string =>
-    ((obj.url ?? obj.tos_link ?? "") as string);
+    ((obj.url ?? obj.tos_link ?? obj.link ?? "") as string);
   try {
     const raw = await bridgeRequest<Record<string, unknown>>(
       "POST",
@@ -393,9 +396,11 @@ export async function createTosLink(params: {
       idempKey,
     );
     const url = extractUrl(raw);
-    return { id: raw.id as string, url };
+    console.log(`[createTosLink] response fields: ${Object.keys(raw).join(", ")} url=${url}`);
+    return { id: (raw.id ?? "") as string, url };
   } catch (e) {
     const err = e as BridgeError & { details?: Record<string, unknown> };
+    console.error(`[createTosLink] error type=${err.type} msg=${err.message} details=${JSON.stringify(err.details)}`);
     // Idempotency conflict (same key, different body on a prior call) — Bridge
     // sometimes embeds the existing resource in the error body so we can return it.
     const isIdempConflict = err.message?.toLowerCase().includes("idempotency")
@@ -404,8 +409,7 @@ export async function createTosLink(params: {
       const existing = (err.details?.existing_resource ?? err.details?.tos_link) as
         Record<string, unknown> | undefined;
       const url = existing ? extractUrl(existing) : "";
-      if (existing?.id && url) return { id: existing.id as string, url };
-      // No embedded resource — rethrow; the caller can continue with existing customer data.
+      if (url) return { id: (existing?.id ?? "") as string, url };
     }
     // Duplicate TOS link — customer already has one; extract URL from error details.
     if (err.type === "duplicate_record") {

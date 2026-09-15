@@ -196,24 +196,28 @@ export async function POST(req: NextRequest): Promise<Response> {
       }
     }
 
-    // ToS gate for new business customers in production
-    if (!isSandbox && isNew) {
+    // ToS gate — show for ANY business customer that needs KYB on first visit.
+    // Skip when existing_customer_id is provided — that path means ToS was already shown this session.
+    if (!isSandbox && needsKyb && !existing_customer_id) {
       const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
       try {
-        const tosLink = await createTosLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
-        const tosUrl = (tosLink as unknown as Record<string, string>).tos_link ?? tosLink.url ?? null;
+        const tosLink = await createTosLink({ full_name: business_name, email: email.toLowerCase(), type: "business", customer_id: customer.id, redirect_uri: kybRedirectUri });
+        const tosUrl = tosLink.url || null;
         console.log(`[bridge/b2b/checkout] createTosLink ok: url=${tosUrl} id=${tosLink.id}`);
-        return NextResponse.json({
-          needs_tos:   true,
-          tos_url:     tosUrl,
-          customer_id: customer.id,
-          message:     "La empresa debe aceptar los Términos de Bridge antes de continuar.",
-        }, { status: 202 });
+        if (tosUrl) {
+          return NextResponse.json({
+            needs_tos:   true,
+            tos_url:     tosUrl,
+            customer_id: customer.id,
+            message:     "La empresa debe aceptar los Términos de Bridge antes de continuar.",
+          }, { status: 202 });
+        }
+        console.warn("[bridge/b2b/checkout] createTosLink returned empty url — assuming ToS already accepted");
       } catch (tosErr) {
         const e = tosErr as Error & { type?: string };
-        console.error("[bridge/b2b/checkout] createTosLink failed:", e.message, e.type);
-        // duplicate_record without embedded URL → company already accepted ToS → proceed to KYB
-        if (e.type !== "duplicate_record") {
+        if (e.type === "duplicate_record") {
+          console.warn("[bridge/b2b/checkout] createTosLink duplicate_record no url — assuming ToS already accepted");
+        } else {
           return NextResponse.json({
             error: "No se pudo generar el link de Términos de Servicio. Por favor intenta de nuevo.",
             bridge_type: "tos_error",

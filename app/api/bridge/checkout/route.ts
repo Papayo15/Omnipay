@@ -217,28 +217,37 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch { /* best-effort */ }
     }
 
-    // ToS gate for new customers in production — Bridge requires signed ToS before customer creation
-    if (!isSandbox && isNew) {
+    // ToS gate — show for ANY customer that needs KYC on first visit (not just brand-new ones).
+    // Existing customers with incomplete KYC (e.g. status=incomplete after deletion) also need ToS.
+    // Skip when existing_customer_id is provided — that path means ToS was already shown this session.
+    if (!isSandbox && needsKyc && !existing_customer_id) {
       try {
         const tosLink = await createTosLink({
           full_name:    nombre,
           email:        email.toLowerCase(),
           type:         "individual",
+          customer_id:  customer.id,
           redirect_uri: `${appUrl}/p2p?tos_done=1`,
         });
-        const tosUrl = (tosLink as unknown as Record<string, string>).tos_link ?? tosLink.url ?? null;
+        const tosUrl = tosLink.url || null;
         console.log(`[bridge/checkout] createTosLink ok: url=${tosUrl} id=${tosLink.id}`);
-        return NextResponse.json({
-          needs_tos:   true,
-          tos_url:     tosUrl,
-          customer_id: customer.id,
-          message:     "El receptor debe aceptar los Términos de Bridge antes de continuar.",
-        }, { status: 202 });
+        if (tosUrl) {
+          return NextResponse.json({
+            needs_tos:   true,
+            tos_url:     tosUrl,
+            customer_id: customer.id,
+            message:     "El receptor debe aceptar los Términos de Bridge antes de continuar.",
+          }, { status: 202 });
+        }
+        // createTosLink returned no URL — customer already accepted ToS, proceed to KYC
+        console.warn("[bridge/checkout] createTosLink returned empty url — assuming ToS already accepted");
       } catch (tosErr) {
         const e = tosErr as Error & { type?: string };
-        console.error("[bridge/checkout] createTosLink failed:", e.message, e.type);
         // duplicate_record without embedded URL → customer already accepted ToS → proceed to KYC
-        if (e.type !== "duplicate_record") {
+        if (e.type === "duplicate_record") {
+          console.warn("[bridge/checkout] createTosLink duplicate_record no url — assuming ToS already accepted");
+        } else {
+          // Any other error — surface to client so it's visible instead of silently going to KYC
           return NextResponse.json({
             error: "No se pudo generar el link de Términos de Servicio. Por favor intenta de nuevo.",
             bridge_type: "tos_error",
