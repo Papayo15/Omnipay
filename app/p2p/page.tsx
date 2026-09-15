@@ -299,6 +299,14 @@ export default function P2PPage() {
           setKycPolling(false); kycAutoRetryRef.current = true; generateLink(); return;
         }
       } catch { /* cross-origin = still on Bridge/Persona */ }
+
+      // Popup closed (Persona shows their own "done" page on their domain — no same-origin redirect)
+      if (kycPopup.current?.closed) {
+        kycPopup.current = null;
+        setKycSubmitted(true);
+        setKycLongReview(true);
+      }
+
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
         const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean };

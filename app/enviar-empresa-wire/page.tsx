@@ -206,6 +206,14 @@ export default function EnviarEmpresaWirePage() {
           setKybPolling(false); setAutoRetry(true); return;
         }
       } catch { /* cross-origin */ }
+
+      // Popup closed (Persona shows their own "done" page on their domain — no same-origin redirect)
+      if (kybPopup.current?.closed) {
+        kybPopup.current = null;
+        setKybSubmitted(true);
+        setKybLongReview(true);
+      }
+
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kybCustomerId}`);
         const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean };

@@ -267,6 +267,15 @@ export default function EnviarPage() {
         }
       } catch { /* still cross-origin — ignore */ }
 
+      // Popup closed by user (Persona done or dismissed) — Bridge shows their own "done" page
+      // on their domain, so same-origin never fires. Treat closed popup as submitted.
+      if (kycPopup.current?.closed) {
+        kycPopup.current = null;
+        setKycSubmitted(true);
+        setKycLongReview(true);
+        // fall through to kyc-status fetch — if Bridge already approved, advance immediately
+      }
+
       try {
         const res  = await fetch(`/api/bridge/kyc-status?customer_id=${kycCustomerId}`);
         const data = await res.json() as { approved?: boolean; status?: string; not_found?: boolean };
