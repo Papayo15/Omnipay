@@ -219,23 +219,30 @@ export default function P2PPage() {
       setCountry(cty.toUpperCase());
     }
     if (kycDone) {
-      // On mobile, Bridge redirects the popup/new-tab to ?kyc_done=1 instead of the
-      // original tab. Notify the parent tab via postMessage so it can auto-retry,
-      // then close this tab so the user lands back on the original OmniPay page.
+      // Try postMessage to opener (desktop popups, same-origin tabs)
       try {
         if (window.opener && !window.opener.closed) {
           window.opener.postMessage({ type: "omnipay_kyc_done" }, window.location.origin);
           window.close();
           return;
         }
-      } catch { /* opener cross-origin or unavailable — fall through to direct retry */ }
+      } catch { /* opener unavailable — try BroadcastChannel */ }
+      // iOS Safari: window.opener is cleared after cross-domain redirect.
+      // BroadcastChannel works across same-origin tabs without needing opener.
+      try {
+        const bc = new BroadcastChannel("omnipay_kyc_p2p");
+        bc.postMessage({ type: "omnipay_kyc_done" });
+        bc.close();
+      } catch { /* BroadcastChannel not supported — fall through to direct retry */ }
+      // Attempt tab close (works if tab was opened via window.open)
+      window.close();
     }
     try {
       const saved = sessionStorage.getItem("omnipay_p2p_form");
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
         if (kycDone) {
-          // Direct tab (no opener): Bridge redirected here — restore form and auto-retry
+          // Direct tab (no opener/BroadcastChannel): restore form and auto-retry in this tab
           if (form.nombre)         setNombre(form.nombre);
           if (form.email)          setEmail(form.email);
           if (form.country)        setCountry(form.country);
@@ -244,6 +251,7 @@ export default function P2PPage() {
           if (form.cpf)            setCpf(form.cpf);
           if (form.amountLocal)    setAmountLocal(form.amountLocal);
           if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
+          if (form.kycCustomerId)  setKycCustomerId(form.kycCustomerId);
           setStep("kyc_polling");
           setPendingKycRetry(true);
         } else {
@@ -481,10 +489,12 @@ export default function P2PPage() {
             setStep("kyc_polling");
           }
         } else {
-          // First time needs_kyc/tos — save form + show explanation step
+          // First time needs_kyc/tos — save form + customer_id + show explanation step
           try {
+            const cid = (data as unknown as Record<string, string>).customer_id ?? kycCustomerId;
             sessionStorage.setItem("omnipay_p2p_form", JSON.stringify({
               nombre, email, country, account, bic, cpf, amountLocal, recipientPhone,
+              kycCustomerId: cid,
             }));
           } catch { /* ignore */ }
           setStep("kyc_info");
@@ -505,17 +515,29 @@ export default function P2PPage() {
     }
   }, [nombre, email, country, account, bic, cpf, amountLocal, recipientPhone, fxRate, t]);
 
-  // Listen for postMessage from the KYC popup/tab — fires when Bridge redirects it
-  // to ?kyc_done=1 (the popup notifies us and closes itself).
+  // Listen for KYC/ToS completion from popup or new tab.
+  // postMessage: works when window.opener is intact (desktop, Android Chrome).
+  // BroadcastChannel: works on iOS Safari where opener is cleared after cross-domain redirect.
   useEffect(() => {
-    const handler = (e: MessageEvent) => {
+    const retry = () => { kycAutoRetryRef.current = true; generateLink(); };
+    const msgHandler = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
       if ((e.data as { type?: string })?.type !== "omnipay_kyc_done") return;
-      kycAutoRetryRef.current = true;
-      generateLink();
+      retry();
     };
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
+    window.addEventListener("message", msgHandler);
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("omnipay_kyc_p2p");
+      bc.onmessage = (e: MessageEvent) => {
+        if ((e.data as { type?: string })?.type !== "omnipay_kyc_done") return;
+        retry();
+      };
+    } catch { /* BroadcastChannel not supported on this browser */ }
+    return () => {
+      window.removeEventListener("message", msgHandler);
+      bc?.close();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [generateLink]);
 

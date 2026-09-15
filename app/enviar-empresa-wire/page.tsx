@@ -50,6 +50,7 @@ interface FormSnapshot {
   routingField:       string;
   bicField:           string;
   amount:             string;
+  kybCustomerId?:     string;
 }
 
 export default function EnviarEmpresaWirePage() {
@@ -136,15 +137,21 @@ export default function EnviarEmpresaWirePage() {
   // Detect return from Bridge KYB/ToS — restore form + auto-retry
   useEffect(() => {
     if (searchParams.get("kyb_done") !== "1") return;
-    // On mobile, Bridge redirects the popup/new-tab to ?kyb_done=1 instead of the
-    // original tab. Notify the parent tab and close this one so the user lands back.
+    // Try postMessage to opener first (desktop, Android Chrome)
     try {
       if (window.opener && !window.opener.closed) {
         window.opener.postMessage({ type: "omnipay_kyb_done" }, window.location.origin);
         window.close();
         return;
       }
-    } catch { /* opener unavailable — fall through to direct retry */ }
+    } catch { /* opener unavailable */ }
+    // iOS Safari: window.opener cleared after cross-domain redirect — use BroadcastChannel
+    try {
+      const bc = new BroadcastChannel("omnipay_kyc_b2b");
+      bc.postMessage({ type: "omnipay_kyb_done" });
+      bc.close();
+    } catch { /* not supported */ }
+    window.close(); // attempt close (works if tab was opened via window.open)
     const savedRaw = sessionStorage.getItem("b2b_send_form");
     if (!savedRaw) return;
     try {
@@ -158,6 +165,7 @@ export default function EnviarEmpresaWirePage() {
       setRoutingField(snap.routingField ?? "");
       setBicField(snap.bicField ?? "");
       setAmount(snap.amount ?? "");
+      if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
       sessionStorage.removeItem("b2b_send_form");
       setAutoRetry(true);
       window.history.replaceState({}, "", "/enviar-empresa-wire");
@@ -308,6 +316,7 @@ export default function EnviarEmpresaWirePage() {
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
           recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
+          kybCustomerId: data.customer_id ?? "",
         }));
         setTosUrl(data.tos_url);
         if (data.customer_id) setTosCustomerId(data.customer_id);
@@ -332,6 +341,7 @@ export default function EnviarEmpresaWirePage() {
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
           recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
+          kybCustomerId: data.customer_id ?? "",
         }));
         setKybUrl(data.kyb_url ?? "");
         setKybCustomerId(data.customer_id ?? "");
@@ -374,15 +384,27 @@ export default function EnviarEmpresaWirePage() {
     }
   }, [buildBody, senderBusinessName, senderEmail, sourceCurrency, recipientBusinessName, recipientCountry, accountField, bicField, amount, recipientCurrency]);
 
-  // Listen for postMessage from ToS/KYB popup/tab on mobile — auto-retry when it closes.
+  // Listen for KYB/ToS completion — postMessage (desktop) + BroadcastChannel (iOS Safari).
   useEffect(() => {
-    const handler = (e: MessageEvent) => {
+    const retry = () => handleSubmit(true);
+    const msgHandler = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
       if ((e.data as { type?: string })?.type !== "omnipay_kyb_done") return;
-      handleSubmit(true);
+      retry();
     };
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
+    window.addEventListener("message", msgHandler);
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("omnipay_kyc_b2b");
+      bc.onmessage = (e: MessageEvent) => {
+        if ((e.data as { type?: string })?.type !== "omnipay_kyb_done") return;
+        retry();
+      };
+    } catch { /* BroadcastChannel not supported */ }
+    return () => {
+      window.removeEventListener("message", msgHandler);
+      bc?.close();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleSubmit]);
 
