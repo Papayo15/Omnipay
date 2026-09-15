@@ -226,9 +226,11 @@ export async function POST(req: NextRequest): Promise<Response> {
           type:         "individual",
           redirect_uri: `${appUrl}/p2p?tos_done=1`,
         });
+        const tosUrl = (tosLink as unknown as Record<string, string>).tos_link ?? tosLink.url ?? null;
+        console.log(`[bridge/checkout] createTosLink ok: url=${tosUrl} id=${tosLink.id}`);
         return NextResponse.json({
           needs_tos:   true,
-          tos_url:     tosLink.url,
+          tos_url:     tosUrl,
           customer_id: customer.id,
           message:     "El receptor debe aceptar los Términos de Bridge antes de continuar.",
         }, { status: 202 });

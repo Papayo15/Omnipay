@@ -382,13 +382,18 @@ export async function createTosLink(params: {
     ? params.redirect_uri.replace(/[^a-z0-9]/gi, "").slice(-16)
     : "none";
   const idempKey = `tos-${params.email.toLowerCase()}-${day}-${uriTag}`;
+  // Helper: Bridge may return the ToS URL in either `url` or `tos_link` field.
+  const extractUrl = (obj: Record<string, unknown>): string =>
+    ((obj.url ?? obj.tos_link ?? "") as string);
   try {
-    return await bridgeRequest<{ id: string; url: string }>(
+    const raw = await bridgeRequest<Record<string, unknown>>(
       "POST",
       "/customers/tos_links",
       params,
       idempKey,
     );
+    const url = extractUrl(raw);
+    return { id: raw.id as string, url };
   } catch (e) {
     const err = e as BridgeError & { details?: Record<string, unknown> };
     // Idempotency conflict (same key, different body on a prior call) — Bridge
@@ -397,15 +402,17 @@ export async function createTosLink(params: {
       || err.type?.toLowerCase().includes("idempotency");
     if (isIdempConflict) {
       const existing = (err.details?.existing_resource ?? err.details?.tos_link) as
-        { id?: string; url?: string } | undefined;
-      if (existing?.id && existing?.url) return existing as { id: string; url: string };
+        Record<string, unknown> | undefined;
+      const url = existing ? extractUrl(existing) : "";
+      if (existing?.id && url) return { id: existing.id as string, url };
       // No embedded resource — rethrow; the caller can continue with existing customer data.
     }
     // Duplicate TOS link — customer already has one; extract URL from error details.
     if (err.type === "duplicate_record") {
       const existing = (err.details?.existing_tos_link ?? err.details?.existing_resource) as
-        { id?: string; url?: string } | undefined;
-      if (existing?.url) return existing as { id: string; url: string };
+        Record<string, unknown> | undefined;
+      const url = existing ? extractUrl(existing) : "";
+      if (url) return { id: (existing?.id ?? "") as string, url };
     }
     throw e;
   }

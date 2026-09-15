@@ -201,9 +201,11 @@ export async function POST(req: NextRequest): Promise<Response> {
       const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
       try {
         const tosLink = await createTosLink({ full_name: business_name, email: email.toLowerCase(), type: "business", redirect_uri: kybRedirectUri });
+        const tosUrl = (tosLink as unknown as Record<string, string>).tos_link ?? tosLink.url ?? null;
+        console.log(`[bridge/b2b/checkout] createTosLink ok: url=${tosUrl} id=${tosLink.id}`);
         return NextResponse.json({
           needs_tos:   true,
-          tos_url:     tosLink.url,
+          tos_url:     tosUrl,
           customer_id: customer.id,
           message:     "La empresa debe aceptar los Términos de Bridge antes de continuar.",
         }, { status: 202 });
