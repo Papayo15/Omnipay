@@ -346,7 +346,8 @@ export async function createKycLink(params: {
     if (isIdempConflict) {
       const existing = (err.details?.existing_resource ?? err.details?.kyc_link) as
         { id?: string; url?: string; kyc_link?: string } | undefined;
-      if (existing?.url ?? existing?.kyc_link) return existing as unknown as BridgeKycLink;
+      // POST /kyc_links returns kyc_link field — check it first
+      if (existing?.kyc_link ?? existing?.url) return existing as unknown as BridgeKycLink;
     }
     throw e;
   }

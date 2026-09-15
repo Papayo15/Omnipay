@@ -224,7 +224,8 @@ export async function POST(req: NextRequest): Promise<Response> {
           endorsements: B2B_ENDORSEMENTS,
           redirect_uri: kybRedirectUri,
         });
-        kybUrl = kl.url ?? (kl as unknown as Record<string, string>).kyc_link ?? null;
+        // POST /kyc_links returns { "kyc_link": "..." } — not "url"
+        kybUrl = (kl as unknown as Record<string, string>).kyc_link ?? kl.url ?? null;
       } catch (e1) {
         const err1 = e1 as Error & { type?: string; details?: Record<string, unknown> };
         if (err1.type === "duplicate_record") {
