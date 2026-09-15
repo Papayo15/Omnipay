@@ -5,9 +5,7 @@
 // bypassing the full checkout flow (which could race on has_accepted_terms_of_service).
 
 import { NextRequest, NextResponse } from "next/server";
-import { getKycLink } from "@/providers/bridge/customers";
-
-export const runtime = "edge";
+import { getKycLink, getCustomer, createKycLink } from "@/providers/bridge/customers";
 
 export async function GET(req: NextRequest): Promise<Response> {
   const p           = req.nextUrl.searchParams;
@@ -19,11 +17,30 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   try {
-    const link = await getKycLink(customer_id, {
-      redirect_uri: redirect_uri ?? undefined,
-    });
-    const url = (link as unknown as Record<string, string>).kyc_link ?? link.url ?? null;
-    console.log(`[kyc-link] customer=${customer_id} url=${url}`);
+    let url: string | null = null;
+    // Try GET /customers/{id}/kyc_link first (customer-scoped)
+    try {
+      const link = await getKycLink(customer_id, { redirect_uri: redirect_uri ?? undefined });
+      url = (link as unknown as Record<string, string>).kyc_link ?? link.url ?? null;
+      console.log(`[kyc-link] getKycLink customer=${customer_id} url=${url}`);
+    } catch (e1) {
+      console.error(`[kyc-link] getKycLink error: ${(e1 as Error).message}`);
+    }
+    // Fallback: POST /kyc_links using customer info
+    if (!url) {
+      const customer = await getCustomer(customer_id);
+      const c = customer as unknown as Record<string, string>;
+      const fullName = c.full_name ?? c.business_name ?? "Unknown";
+      const email    = c.email ?? "";
+      const type     = (c.type === "business") ? "business" : "individual";
+      const fb = await createKycLink({
+        full_name: fullName, email, type,
+        endorsements: ["base", "sepa", "spei", "pix", "faster_payments", "cop"],
+        redirect_uri: redirect_uri ?? undefined,
+      });
+      url = fb.url ?? (fb as unknown as Record<string, string>).kyc_link ?? null;
+      console.log(`[kyc-link] createKycLink fallback customer=${customer_id} url=${url}`);
+    }
     if (!url) {
       return NextResponse.json({ error: "Bridge returned no KYC link URL" }, { status: 502 });
     }

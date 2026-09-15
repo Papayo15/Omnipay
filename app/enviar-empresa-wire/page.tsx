@@ -186,7 +186,9 @@ export default function EnviarEmpresaWirePage() {
         });
         window.history.replaceState({}, "", "/enviar-empresa-wire");
       } else {
-        // KYB done — restore form and let handleSubmit handle final step
+        // KYB done (or ToS without kybCustomerId) — restore form and let handleSubmit handle final step.
+        // If returning from ToS set fromTosReturnRef so handleSubmit auto-navigates to KYB.
+        if (tosDone) fromTosReturnRef.current = true;
         setSenderBusinessName(snap.senderBusinessName ?? "");
         setSenderEmail(snap.senderEmail ?? "");
         setSourceCurrency(snap.sourceCurrency ?? "USD");
@@ -360,14 +362,20 @@ export default function EnviarEmpresaWirePage() {
         setIsSandboxKyb(!!data.is_sandbox);
         const fromTos = fromTosReturnRef.current;
         fromTosReturnRef.current = false;
-        // Just accepted ToS → navigate directly to KYB (no intermediate step)
         if (fromTos && data.kyb_url) {
+          // Just accepted ToS → navigate directly to KYB
           sessionStorage.setItem("b2b_send_form", JSON.stringify({
             senderBusinessName, senderEmail, sourceCurrency,
             recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
             kybCustomerId: data.customer_id ?? "",
           }));
           window.location.href = data.kyb_url;
+          return;
+        }
+        if (fromTos && !data.kyb_url) {
+          // Accepted ToS but no KYB URL yet — retry once after 1 s
+          fromTosReturnRef.current = true;
+          setTimeout(() => handleSubmit(true), 1000);
           return;
         }
         if (isAutoRetry && !fromTos) setKybPolling(true);

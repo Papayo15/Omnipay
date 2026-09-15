@@ -267,12 +267,24 @@ export async function POST(req: NextRequest): Promise<Response> {
       const kycRedirectUri = `${appUrl}/p2p?kyc_done=1`;
       let kycUrl: string | null = null;
       try {
-        // Use GET /customers/{id}/kyc_link?redirect_uri=... (customer-scoped, redirect_uri as query param).
         const kycLink = await getKycLink(customer.id, { redirect_uri: kycRedirectUri });
         kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
         console.log(`[bridge/checkout] getKycLink ok: url=${kycUrl}`);
       } catch (e1) {
         console.error(`[bridge/checkout] getKycLink error: ${(e1 as Error).message}`);
+      }
+      // Fallback: POST /kyc_links when GET returns no URL
+      if (!kycUrl) {
+        try {
+          const fallback = await createKycLink({
+            full_name: nombre, email: email.toLowerCase(), type: "individual",
+            endorsements, redirect_uri: kycRedirectUri,
+          });
+          kycUrl = fallback.url ?? (fallback as unknown as Record<string, string>).kyc_link ?? null;
+          if (kycUrl) console.log(`[bridge/checkout] createKycLink fallback ok: url=${kycUrl}`);
+        } catch (e2) {
+          console.error(`[bridge/checkout] createKycLink fallback error: ${(e2 as Error).message}`);
+        }
       }
       console.log(`[bridge/checkout] KYC gate: needsKyc=${needsKyc} kycUrl=${kycUrl}`);
       return NextResponse.json({
@@ -305,6 +317,15 @@ export async function POST(req: NextRequest): Promise<Response> {
           kycUrl = (kycLink as unknown as Record<string, string>).kyc_link ?? kycLink.url ?? null;
         } catch (e3) {
           console.error(`[bridge/checkout] getKycLink endorsement fallback error: ${(e3 as Error).message}`);
+        }
+        if (!kycUrl) {
+          try {
+            const fb2 = await createKycLink({
+              full_name: nombre, email: email.toLowerCase(), type: "individual",
+              endorsements, redirect_uri: kycRedirectUri2,
+            });
+            kycUrl = fb2.url ?? (fb2 as unknown as Record<string, string>).kyc_link ?? null;
+          } catch { /* best-effort */ }
         }
           return NextResponse.json({
           needs_kyc:   true,

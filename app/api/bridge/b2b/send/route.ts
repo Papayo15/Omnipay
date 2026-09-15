@@ -188,16 +188,17 @@ export async function POST(req: NextRequest): Promise<Response> {
       }, { status: 202 });
     }
 
-    // 3. ToS gate for new sender business in production
-    if (!isSandbox && isNew) {
-      const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
+    // 3. ToS gate — check has_accepted_terms_of_service (same field Bridge returns on both GET and list)
+    const needsTos = !isSandbox && !senderCustomer.has_accepted_terms_of_service;
+    if (needsTos) {
+      const tosRedirectUri = `${appUrl}/enviar-empresa-wire?tos_done=1`;
       try {
         const tosLink = await createTosLink({
           full_name:    sender_business_name,
           email:        sender_email.toLowerCase(),
           type:         "business",
           customer_id:  senderCustomer.id,
-          redirect_uri: kybRedirectUri,
+          redirect_uri: tosRedirectUri,
         });
         return NextResponse.json({
           needs_tos:   true,
@@ -205,7 +206,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           customer_id: senderCustomer.id,
           message:     "Tu empresa debe aceptar los Términos de Bridge antes de continuar.",
         }, { status: 202 });
-      } catch { /* proceed */ }
+      } catch { /* proceed to KYB gate */ }
     }
 
     // 4. KYB gate (production)

@@ -266,7 +266,9 @@ export default function P2PPage() {
           });
           window.history.replaceState({}, "", "/p2p");
         } else if (kycDone) {
-          // KYC just done — restore form and let checkout handle final step.
+          // KYC (or ToS without kycCustomerId) — restore form and let checkout handle final step.
+          // If returning from ToS set tosModeRef so auto-retry auto-navigates to KYC.
+          if (tosDone) tosModeRef.current = true;
           if (form.nombre)         setNombre(form.nombre);
           if (form.email)          setEmail(form.email);
           if (form.country)        setCountry(form.country);
@@ -514,8 +516,9 @@ export default function P2PPage() {
             window.location.href = data.kyc_url;
             return;
           } else if (fromTosMode) {
-            // Accepted ToS but no KYC URL yet — show button
-            setStep("kyc_info");
+            // Accepted ToS but checkout returned no KYC URL — retry once more after 1 s
+            setTimeout(() => { kycAutoRetryRef.current = true; generateLink(); }, 1000);
+            return;
           } else {
             // KYC submitted and processing async on Bridge's side — show polling step
             setKycStillPending(true);
