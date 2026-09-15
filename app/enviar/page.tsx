@@ -191,6 +191,7 @@ export default function EnviarPage() {
         senderName: string; senderEmail: string; senderCurrency: string;
         recipientName: string; recipientCountry: string;
         accountField: string; routingField: string; bicField: string; amountTarget: string;
+        kycCustomerId?: string;
       };
       setSenderName(snap.senderName ?? "");
       setSenderEmail(snap.senderEmail ?? "");
@@ -201,6 +202,7 @@ export default function EnviarPage() {
       setRoutingField(snap.routingField ?? "");
       setBicField(snap.bicField ?? "");
       setAmountTarget(snap.amountTarget ?? "");
+      if (snap.kycCustomerId) setKycCustomerId(snap.kycCustomerId);
       sessionStorage.removeItem("enviar_form_state");
       setAutoRetry(true);
     } catch { /* malformed snapshot — ignore */ }
@@ -402,31 +404,23 @@ export default function EnviarPage() {
       if (tosPopup.current && !tosPopup.current.closed) { tosPopup.current.close(); tosPopup.current = null; }
       if (prePopup && !prePopup.closed) { prePopup.close(); prePopup = null; }
 
-      if (data.needs_kyc) {
+      if (data.needs_kyc && data.kyc_url) {
+        // Full-page navigation to Bridge/Persona KYC — works on both desktop and mobile (no popup needed).
+        const customerId = (data as Record<string, unknown>).customer_id as string ?? "";
         sessionStorage.setItem("enviar_form_state", JSON.stringify({
           senderName, senderEmail, senderCurrency,
           recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
+          kycCustomerId: customerId,
         }));
-        // Only reset kycSubmitted on manual fresh attempt (isAutoRetry=false).
-        // On auto-retry after Persona completion, keep kycSubmitted=true so polling shows correct state.
-        if (!isAutoRetry) setKycSubmitted(false);
-        const kycUrl2 = data.kyc_url ?? "";
-        setKycUrl(kycUrl2);
-        setKycCustomerId((data as Record<string, unknown>).customer_id as string ?? "");
-        setIsSandboxKyc(!!(data as Record<string, unknown>).is_sandbox);
-        // Navigate pre-popup to KYC URL only if we actually have one open (user gesture context).
-        // On auto-retry there's no pre-popup; the KYC step JSX shows an "Abrir KYC" button instead.
-        let kycPopupOpened = false;
-        if (prePopup && !prePopup.closed && kycUrl2) {
-          prePopup.location.href = kycUrl2;
-          kycPopup.current = prePopup;
-          prePopup = null;
-          kycPopupOpened = true;
-        }
-        // Start polling if popup is open OR if this is an auto-retry (user just finished
-        // Persona — same-origin detection fired, Bridge may take a moment to mark approved)
-        if (kycPopupOpened || isAutoRetry) setKycPolling(true);
-        setStep("kyc");
+        if (prePopup && !prePopup.closed) prePopup.close();
+        window.location.href = data.kyc_url;
+        return;
+      }
+      // needs_kyc but no URL returned (unexpected) — fall through to error below
+      if (data.needs_kyc) {
+        if (prePopup && !prePopup.closed) prePopup.close();
+        setError(`KYC requerido pero Bridge no devolvió URL. customer_id=${(data as Record<string, unknown>).customer_id ?? "?"}`);
+        setStep("error");
         return;
       }
 
