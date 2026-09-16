@@ -489,7 +489,9 @@
     "account_number_label": "Numéro de compte bancaire",
     "email_verifying": "Vérification…",
     "email_verified": "✓ Compte vérifié",
-    "kyc_review_countdown": "Validation avec notre fournisseur… ({seconds}s)"
+    "kyc_review_countdown": "Validation avec notre fournisseur… ({seconds}s)",
+    "sort_code_label": "Code de tri",
+    "uk_account_label": "Numéro de compte"
   },
   "pagar_bridge": {
     "submit": "Effectuer l'envoi →",

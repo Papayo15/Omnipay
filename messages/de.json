@@ -489,7 +489,9 @@
     "account_number_label": "Bankkontonummer",
     "email_verifying": "Überprüfe…",
     "email_verified": "✓ Konto verifiziert",
-    "kyc_review_countdown": "Validierung beim Anbieter… ({seconds}s)"
+    "kyc_review_countdown": "Validierung beim Anbieter… ({seconds}s)",
+    "sort_code_label": "Bankleitzahl",
+    "uk_account_label": "Kontonummer"
   },
   "pagar_bridge": {
     "submit": "Überweisung senden →",

@@ -489,7 +489,9 @@
     "account_number_label": "बैंक खाता संख्या",
     "email_verifying": "जाँच हो रही है…",
     "email_verified": "✓ सत्यापित खाता",
-    "kyc_review_countdown": "हमारे प्रदाता के साथ सत्यापन… ({seconds}s)"
+    "kyc_review_countdown": "हमारे प्रदाता के साथ सत्यापन… ({seconds}s)",
+    "sort_code_label": "सॉर्ट कोड",
+    "uk_account_label": "खाता संख्या"
   },
   "pagar_bridge": {
     "submit": "पैसे भेजें →",

@@ -489,7 +489,9 @@
     "account_number_label": "የባንክ ሂሳብ ቁጥር",
     "email_verifying": "እየተረጋገጠ…",
     "email_verified": "✓ መለያ ተረጋግጧል",
-    "kyc_review_countdown": "ከአቅራቢያችን ጋር እያረጋጠ… ({seconds}ሰ)"
+    "kyc_review_countdown": "ከአቅራቢያችን ጋር እያረጋጠ… ({seconds}ሰ)",
+    "sort_code_label": "Sort Code",
+    "uk_account_label": "Account Number"
   },
   "pagar_bridge": {
     "submit": "ገንዘብ ላክ →",

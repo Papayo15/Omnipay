@@ -489,7 +489,9 @@
     "account_number_label": "銀行口座番号",
     "email_verifying": "確認中…",
     "email_verified": "✓ 確認済みアカウント",
-    "kyc_review_countdown": "プロバイダーで検証中… ({seconds}秒)"
+    "kyc_review_countdown": "プロバイダーで検証中… ({seconds}秒)",
+    "sort_code_label": "ソートコード",
+    "uk_account_label": "口座番号"
   },
   "pagar_bridge": {
     "submit": "送金する →",

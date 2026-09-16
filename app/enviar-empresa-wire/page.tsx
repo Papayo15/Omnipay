@@ -48,6 +48,7 @@ interface FormSnapshot {
   recipientCountry:   string;
   accountField:       string;
   routingField:       string;
+  sortCodeField:      string;
   bicField:           string;
   amount:             string;
   kybCustomerId?:     string;
@@ -75,7 +76,7 @@ function buildSnapBodyB2b(snap: FormSnapshot, origin: string): Record<string, un
     existing_customer_id:    snap.kybCustomerId,
   };
   if (rc === "MX") return { ...base, clabe: snap.accountField?.trim() ?? "" };
-  if (rc === "GB") return { ...base, sort_code: snap.accountField?.split("/")[0]?.trim(), account_number: snap.accountField?.split("/")[1]?.trim() };
+  if (rc === "GB") return { ...base, sort_code: snap.sortCodeField?.trim() ?? "", account_number: snap.accountField?.trim() ?? "" };
   if (isSepaSnap) return { ...base, iban: snap.accountField?.trim() ?? "", bic: snap.bicField?.trim() ?? "" };
   if (rc === "CO") return { ...base, account_number: snap.accountField?.trim() ?? "" };
   return { ...base, routing_number: snap.routingField?.trim() ?? "", account_number: snap.accountField?.trim() ?? "" };
@@ -100,9 +101,10 @@ export default function EnviarEmpresaWirePage() {
   // Recipient bank details (External Account only)
   const [recipientBusinessName, setRecipientBusinessName] = useState("");
   const [recipientCountry, setRecipientCountry]           = useState("MX");
-  const [accountField, setAccountField] = useState("");
-  const [routingField, setRoutingField] = useState("");
-  const [bicField, setBicField]         = useState("");
+  const [accountField, setAccountField]   = useState("");
+  const [routingField, setRoutingField]   = useState("");
+  const [sortCodeField, setSortCodeField] = useState("");
+  const [bicField, setBicField]           = useState("");
   const [amount, setAmount]             = useState("");
 
   // KYB state
@@ -263,6 +265,7 @@ export default function EnviarEmpresaWirePage() {
       setRecipientCountry(snap.recipientCountry ?? "MX");
       setAccountField(snap.accountField ?? "");
       setRoutingField(snap.routingField ?? "");
+      setSortCodeField(snap.sortCodeField ?? "");
       setBicField(snap.bicField ?? "");
       setAmount(snap.amount ?? "");
       if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
@@ -381,12 +384,12 @@ export default function EnviarEmpresaWirePage() {
     if (tosCustomerId) base.existing_customer_id = tosCustomerId;
     else if (kybCustomerId) base.existing_customer_id = kybCustomerId;
     if (recipientCountry === "MX") return { ...base, clabe: accountField.trim() };
-    if (recipientCountry === "GB") return { ...base, sort_code: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
+    if (recipientCountry === "GB") return { ...base, sort_code: sortCodeField.trim(), account_number: accountField.trim() };
     if (isSepa) return { ...base, iban: accountField.trim(), bic: bicField.trim() };
     if (recipientCountry === "CO") return { ...base, account_number: accountField.trim() };
     if (recipientCountry === "US") return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
     return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
-  }, [senderBusinessName, senderEmail, sourceCurrency, recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount, isSepa, tosCustomerId, kybCustomerId]);
+  }, [senderBusinessName, senderEmail, sourceCurrency, recipientBusinessName, recipientCountry, accountField, routingField, sortCodeField, bicField, amount, isSepa, tosCustomerId, kybCustomerId]);
 
   // Phase A: fire prefetch when user is verified + form complete (1500ms debounce)
   useEffect(() => {
@@ -427,7 +430,7 @@ export default function EnviarEmpresaWirePage() {
       if (data.needs_tos && data.tos_url) {
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
-          recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
+          recipientBusinessName, recipientCountry, accountField, routingField, sortCodeField, bicField, amount,
           kybCustomerId: data.customer_id ?? "",
         }));
         // Auto-navigate directly to Bridge ToS — no intermediate OmniPay screen
@@ -439,7 +442,7 @@ export default function EnviarEmpresaWirePage() {
         if (!isAutoRetry) setKybSubmitted(false);
         const snap = JSON.stringify({
           senderBusinessName, senderEmail, sourceCurrency,
-          recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount,
+          recipientBusinessName, recipientCountry, accountField, routingField, sortCodeField, bicField, amount,
           kybCustomerId: data.customer_id ?? "",
         });
         sessionStorage.setItem("b2b_send_form", snap);
@@ -635,7 +638,7 @@ export default function EnviarEmpresaWirePage() {
     </div>
   );
 
-  const isValid = senderBusinessName && senderEmail.includes("@") && recipientBusinessName && accountField
+  const isValid = senderBusinessName && senderEmail.includes("@") && recipientBusinessName && accountField && (recipientCountry !== "GB" || sortCodeField)
     && amount && parseFloat(amount) >= minLocal
     && (recipientCountry !== "US" || !!routingField);
 
@@ -691,7 +694,7 @@ export default function EnviarEmpresaWirePage() {
               <input type="text" placeholder={t("recipient_business")} value={recipientBusinessName}
                 onChange={e => setRecipientBusinessName(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60" />
-              <select value={recipientCountry} onChange={e => { setRecipientCountry(e.target.value); setAccountField(""); setRoutingField(""); setBicField(""); }}
+              <select value={recipientCountry} onChange={e => { setRecipientCountry(e.target.value); setAccountField(""); setRoutingField(""); setSortCodeField(""); setBicField(""); }}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#00C9C8]/60">
                 {BRIDGE_COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {tF(`country_${c.code}`)}</option>)}
               </select>
@@ -708,6 +711,13 @@ export default function EnviarEmpresaWirePage() {
                   <input type="text" placeholder={tF("routing_label")} value={routingField} onChange={e => setRoutingField(e.target.value)}
                     className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
                   <input type="text" placeholder={tF("account_number_label")} value={accountField} onChange={e => setAccountField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+                </>
+              ) : recipientCountry === "GB" ? (
+                <>
+                  <input type="text" placeholder={`${tF("sort_code_label")} (e.g. 20-00-00)`} value={sortCodeField} onChange={e => setSortCodeField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
+                  <input type="text" placeholder={`${tF("uk_account_label")} (8 digits)`} value={accountField} onChange={e => setAccountField(e.target.value)}
                     className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono" />
                 </>
               ) : (

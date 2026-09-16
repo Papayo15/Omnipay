@@ -489,7 +489,9 @@
     "account_number_label": "Số tài khoản ngân hàng",
     "email_verifying": "Đang kiểm tra…",
     "email_verified": "✓ Tài khoản đã xác minh",
-    "kyc_review_countdown": "Đang xác minh với nhà cung cấp… ({seconds}s)"
+    "kyc_review_countdown": "Đang xác minh với nhà cung cấp… ({seconds}s)",
+    "sort_code_label": "Mã Sort",
+    "uk_account_label": "Số tài khoản"
   },
   "pagar_bridge": {
     "submit": "Gửi tiền →",

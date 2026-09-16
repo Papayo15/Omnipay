@@ -489,7 +489,9 @@
     "account_number_label": "Banka hesap numarası",
     "email_verifying": "Doğrulanıyor…",
     "email_verified": "✓ Hesap doğrulandı",
-    "kyc_review_countdown": "Sağlayıcımızla doğrulanıyor… ({seconds}s)"
+    "kyc_review_countdown": "Sağlayıcımızla doğrulanıyor… ({seconds}s)",
+    "sort_code_label": "Sort Kodu",
+    "uk_account_label": "Hesap Numarası"
   },
   "pagar_bridge": {
     "submit": "Para gönder →",

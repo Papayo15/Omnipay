@@ -489,7 +489,9 @@
     "account_number_label": "Nomor rekening bank",
     "email_verifying": "Memeriksa…",
     "email_verified": "✓ Akun terverifikasi",
-    "kyc_review_countdown": "Memvalidasi dengan penyedia kami… ({seconds}d)"
+    "kyc_review_countdown": "Memvalidasi dengan penyedia kami… ({seconds}d)",
+    "sort_code_label": "Sort Code",
+    "uk_account_label": "Nomor Rekening"
   },
   "pagar_bridge": {
     "submit": "Kirim uang →",

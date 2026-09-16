@@ -489,7 +489,9 @@
     "account_number_label": "Nambari ya akaunti ya benki",
     "email_verifying": "Kuthibitisha…",
     "email_verified": "✓ Akaunti imethibitishwa",
-    "kyc_review_countdown": "Kuthibitisha na mtoa huduma wetu… ({seconds}s)"
+    "kyc_review_countdown": "Kuthibitisha na mtoa huduma wetu… ({seconds}s)",
+    "sort_code_label": "Sort Code",
+    "uk_account_label": "Account Number"
   },
   "pagar_bridge": {
     "submit": "Tuma pesa →",

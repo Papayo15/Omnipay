@@ -489,7 +489,9 @@
     "account_number_label": "Bankrekeningnummer",
     "email_verifying": "Controleren…",
     "email_verified": "✓ Geverifieerd account",
-    "kyc_review_countdown": "Valideren bij onze aanbieder… ({seconds}s)"
+    "kyc_review_countdown": "Valideren bij onze aanbieder… ({seconds}s)",
+    "sort_code_label": "Sorteercode",
+    "uk_account_label": "Rekeningnummer"
   },
   "pagar_bridge": {
     "submit": "Verzending uitvoeren →",

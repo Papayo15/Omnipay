@@ -470,7 +470,9 @@
     "kyc_rejected_error": "Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos. Contacta soporte.",
     "email_verifying": "Verificando…",
     "email_verified": "✓ Cuenta verificada",
-    "kyc_review_countdown": "Validando verificación con nuestro proveedor… ({seconds}s)"
+    "kyc_review_countdown": "Validando verificación con nuestro proveedor… ({seconds}s)",
+    "sort_code_label": "Sort Code",
+    "uk_account_label": "Número de cuenta"
   },
   "pagar_bridge": {
     "submit": "Realizar envío →",

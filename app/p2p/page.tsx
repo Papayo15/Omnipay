@@ -142,7 +142,7 @@ function buildP2pSnapBody(form: Record<string, string>): Record<string, unknown>
   if (rc === "MX")                    body.clabe = form.account;
   else if (SEPA_COUNTRIES.has(rc)) { body.iban = form.account; if (form.bic?.trim()) body.bic = form.bic.trim().toUpperCase(); }
   else if (rc === "BR")             { body.pix_key = form.account; body.document_number = form.cpf?.replace(/\D/g, "") ?? ""; }
-  else if (rc === "GB")             { const p = (form.account ?? "").split("/"); body.sort_code = p[0]?.trim(); body.account_number = p[1]?.trim(); }
+  else if (rc === "GB")             { body.sort_code = form.sortCode?.trim() ?? ""; body.account_number = form.account?.trim() ?? ""; }
   else if (rc === "US")             { const p = (form.account ?? "").split("/"); body.routing_number = p[0]?.trim(); body.account_number = p[1]?.trim(); }
   else                                body.account_number = form.account;
   return body;
@@ -157,6 +157,7 @@ export default function P2PPage() {
   const [email,           setEmail]           = useState("");
   const [country,         setCountry]         = useState("MX");
   const [account,         setAccount]         = useState("");
+  const [sortCode,        setSortCode]        = useState("");
   const [bic,             setBic]             = useState("");
   const [cpf,             setCpf]             = useState("");
   const [bankInfo,        setBankInfo]        = useState<BankInfo | null>(null);
@@ -330,6 +331,7 @@ export default function P2PPage() {
           if (form.email)          setEmail(form.email);
           if (form.country)        setCountry(form.country);
           if (form.account)        setAccount(form.account);
+          if (form.sortCode)       setSortCode(form.sortCode);
           if (form.bic)            setBic(form.bic);
           if (form.cpf)            setCpf(form.cpf);
           if (form.amountLocal)    setAmountLocal(form.amountLocal);
@@ -347,6 +349,7 @@ export default function P2PPage() {
           if (form.email)          setEmail(form.email);
           if (form.country)        setCountry(form.country);
           if (form.account)        setAccount(form.account);
+          if (form.sortCode)       setSortCode(form.sortCode);
           if (form.bic)            setBic(form.bic);
           if (form.cpf)            setCpf(form.cpf);
           if (form.amountLocal)    setAmountLocal(form.amountLocal);
@@ -368,6 +371,7 @@ export default function P2PPage() {
   // Clear account when country changes
   useEffect(() => {
     setAccount("");
+    setSortCode("");
     setCpf("");
     setBic("");
     setApBankCode("");
@@ -483,7 +487,7 @@ export default function P2PPage() {
     if (country === "MX")                    body.clabe          = account;
     else if (SEPA_COUNTRIES.has(country)) { body.iban = account; if (bic.trim()) body.bic = bic.trim().toUpperCase(); }
     else if (country === "BR")             { body.pix_key = account; body.document_number = cpf.replace(/\D/g, ""); }
-    else if (country === "GB")             { const p = account.split("/"); body.sort_code = p[0]?.trim(); body.account_number = p[1]?.trim(); }
+    else if (country === "GB")             { body.sort_code = sortCode.trim(); body.account_number = account.trim(); }
     else if (country === "US")             { const p = account.split("/"); body.routing_number = p[0]?.trim(); body.account_number = p[1]?.trim(); }
     else                                     body.account_number = account;
     if (kycCustomerId) body.existing_customer_id = kycCustomerId;
@@ -496,6 +500,7 @@ export default function P2PPage() {
     if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current);
     if (emailStatus !== "verified" || !fxRate) return;
     if (!nombre.trim() || !email.includes("@") || !account.trim() || parseFloat(amountLocal) < 20) return;
+    if (country === "GB" && !sortCode.trim()) return;
     prefetchDebounce.current = setTimeout(() => {
       const body    = buildCheckoutBody();
       const bodyKey = JSON.stringify(body);
@@ -528,11 +533,13 @@ export default function P2PPage() {
       }
     }
     if (country === "GB") {
-      const p = account.split("/");
-      const sc = (p[0] ?? "").replace(/\D/g, "");
-      const an = (p[1] ?? "").replace(/\D/g, "");
-      if (sc.length !== 6 || an.length !== 8) {
+      const sc = sortCode.replace(/\D/g, "");
+      const an = account.replace(/\D/g, "");
+      if (sc.length !== 6) {
         setErrorMsg(t("error_invalid_sort_code")); setStep("error"); return;
+      }
+      if (an.length !== 8) {
+        setErrorMsg(t("error_invalid_account_uk")); setStep("error"); return;
       }
     }
     if (country === "US") {
@@ -626,7 +633,7 @@ export default function P2PPage() {
           try {
             const cid = (data as unknown as Record<string, string>).customer_id ?? kycCustomerId;
             sessionStorage.setItem("omnipay_p2p_form", JSON.stringify({
-              nombre, email, country, account, bic, cpf, amountLocal, recipientPhone,
+              nombre, email, country, account, sortCode, bic, cpf, amountLocal, recipientPhone,
               kycCustomerId: cid,
             }));
           } catch { /* ignore */ }
@@ -695,6 +702,7 @@ export default function P2PPage() {
       if (form.email)          setEmail(form.email);
       if (form.country)        setCountry(form.country);
       if (form.account)        setAccount(form.account);
+      if (form.sortCode)       setSortCode(form.sortCode);
       if (form.bic)            setBic(form.bic);
       if (form.cpf)            setCpf(form.cpf);
       if (form.amountLocal)    setAmountLocal(form.amountLocal);
@@ -919,7 +927,7 @@ export default function P2PPage() {
           <button
             onClick={() => {
               try { localStorage.removeItem("omnipay_active_transfer"); } catch { /* ignore */ }
-              setStep("form"); setNombre(""); setEmail(""); setAccount(""); setAmountLocal("");
+              setStep("form"); setNombre(""); setEmail(""); setAccount(""); setSortCode(""); setAmountLocal("");
               setRecipientPhone(""); setRealSenderTotal(null); setKycUrl(null); setKycStillPending(false);
             }}
             className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
@@ -1023,31 +1031,44 @@ export default function P2PPage() {
           <>
             {/* Cuenta bancaria */}
             <div>
-              <label className="block text-xs text-slate-400 mb-1">
-                {country === "MX" ? t("clabe_label")
-                  : SEPA_COUNTRIES.has(country) ? t("iban_label")
-                  : country === "BR" ? t("pix_label")
-                  : country === "GB" ? `${t("uk_label")} (00-00-00 / 12345678)`
-                  : country === "US" ? `${t("us_label")} (021000021 / 12345678)`
-                  : country === "CO" ? t("co_label")
-                  : t("account_label")}
-              </label>
-              <input type="text" inputMode={country === "MX" ? "numeric" : "text"}
-                value={account}
-                onChange={(e) => setAccount(country === "MX" ? e.target.value.replace(/\D/g, "").slice(0, 18) : e.target.value)}
-                placeholder={
-                  country === "MX" ? t("clabe_placeholder")
-                  : SEPA_COUNTRIES.has(country) ? "DE89 3704 0044 0532 0130 00"
-                  : country === "BR" ? t("pix_placeholder")
-                  : country === "GB" ? "20-00-00 / 55779911"
-                  : country === "US" ? "021000021 / 12345678"
-                  : country === "CO" ? t("co_label") : ""}
-                className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors ${
-                  country === "MX" && account.length > 0
-                    ? clabeValid === false ? "border-red-500" : clabeValid === true ? "border-emerald-500" : "border-slate-700"
-                    : "border-slate-700 focus:border-emerald-500"
-                }`}
-              />
+              {country === "GB" ? (
+                <div className="space-y-2">
+                  <label className="block text-xs text-slate-400 mb-1">{t("sort_code_label")} (e.g. 20-00-00)</label>
+                  <input type="text" value={sortCode} onChange={e => setSortCode(e.target.value)}
+                    placeholder="20-00-00"
+                    className="w-full bg-slate-800 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors" />
+                  <label className="block text-xs text-slate-400 mb-1">{t("uk_account_label")} (8 digits)</label>
+                  <input type="text" value={account} onChange={e => setAccount(e.target.value)}
+                    placeholder="55779911"
+                    className="w-full bg-slate-800 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors" />
+                </div>
+              ) : (
+                <>
+                  <label className="block text-xs text-slate-400 mb-1">
+                    {country === "MX" ? t("clabe_label")
+                      : SEPA_COUNTRIES.has(country) ? t("iban_label")
+                      : country === "BR" ? t("pix_label")
+                      : country === "US" ? `${t("us_label")} (021000021 / 12345678)`
+                      : country === "CO" ? t("co_label")
+                      : t("account_label")}
+                  </label>
+                  <input type="text" inputMode={country === "MX" ? "numeric" : "text"}
+                    value={account}
+                    onChange={(e) => setAccount(country === "MX" ? e.target.value.replace(/\D/g, "").slice(0, 18) : e.target.value)}
+                    placeholder={
+                      country === "MX" ? t("clabe_placeholder")
+                      : SEPA_COUNTRIES.has(country) ? "DE89 3704 0044 0532 0130 00"
+                      : country === "BR" ? t("pix_placeholder")
+                      : country === "US" ? "021000021 / 12345678"
+                      : country === "CO" ? t("co_label") : ""}
+                    className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm font-mono transition-colors ${
+                      country === "MX" && account.length > 0
+                        ? clabeValid === false ? "border-red-500" : clabeValid === true ? "border-emerald-500" : "border-slate-700"
+                        : "border-slate-700 focus:border-emerald-500"
+                    }`}
+                  />
+                </>
+              )}
               {country === "MX" && bankInfo && (
                 <div className="flex items-center gap-2 mt-2">
                   <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold text-white" style={{ backgroundColor: bankInfo.color }}>

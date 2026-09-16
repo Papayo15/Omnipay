@@ -64,7 +64,7 @@ function buildSnapBodyEnviar(snap: Record<string, string>, origin: string): Reco
     existing_customer_id: snap.kycCustomerId,
   };
   if (rc === "MX") return { ...base, clabe: snap.accountField?.trim() ?? "" };
-  if (rc === "GB") return { ...base, sort_code: snap.accountField?.split("/")[0]?.trim(), account_number: snap.accountField?.split("/")[1]?.trim() };
+  if (rc === "GB") return { ...base, sort_code: snap.sortCodeField?.trim() ?? "", account_number: snap.accountField?.trim() ?? "" };
   if (isSepaSnap) return { ...base, iban: snap.accountField?.trim() ?? "", bic: snap.bicField?.trim() ?? "" };
   return { ...base, routing_number: snap.routingField?.trim() ?? "", account_number: snap.accountField?.trim() ?? "" };
 }
@@ -91,6 +91,7 @@ export default function EnviarPage() {
   const [recipientCountry, setRecipientCountry] = useState("MX");
   const [accountField, setAccountField]         = useState("");
   const [routingField, setRoutingField]         = useState("");
+  const [sortCodeField, setSortCodeField]       = useState("");
   const [bicField, setBicField]                 = useState("");
   const [amountTarget, setAmountTarget]         = useState("");
 
@@ -198,11 +199,11 @@ export default function EnviarPage() {
     if (tosCustomerId) base.existing_customer_id = tosCustomerId;
     else if (kycCustomerId) base.existing_customer_id = kycCustomerId;
     if (recipientCountry === "MX") return { ...base, clabe: accountField.trim() };
-    if (recipientCountry === "GB") return { ...base, sort_code: accountField.split("/")[0]?.trim(), account_number: accountField.split("/")[1]?.trim() };
+    if (recipientCountry === "GB") return { ...base, sort_code: sortCodeField.trim(), account_number: accountField.trim() };
     if (isSepa) return { ...base, iban: accountField.trim(), bic: bicField.trim() };
     if (recipientCountry === "US") return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
     return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
-  }, [senderName, senderEmail, senderCurrency, recipientName, recipientCountry, accountField, routingField, bicField, amountTarget, isSepa, tosCustomerId, kycCustomerId]);
+  }, [senderName, senderEmail, senderCurrency, recipientName, recipientCountry, accountField, routingField, sortCodeField, bicField, amountTarget, isSepa, tosCustomerId, kycCustomerId]);
 
   // Fee preview: debounce 600ms — fetch when amount/country/senderCurrency changes
   useEffect(() => {
@@ -245,6 +246,7 @@ export default function EnviarPage() {
     if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current);
     if (emailStatus !== "verified" || !quoteReady) return;
     if (!senderName.trim() || !senderEmail.trim() || !recipientName.trim() || !accountField.trim()) return;
+    if (recipientCountry === "GB" && !sortCodeField.trim()) return;
     prefetchDebounce.current = setTimeout(() => {
       const body    = buildBody();
       const bodyKey = JSON.stringify(body);
@@ -319,7 +321,7 @@ export default function EnviarPage() {
       setSenderName(snap.senderName ?? ""); setSenderEmail(snap.senderEmail ?? "");
       setSenderCurrency(snap.senderCurrency ?? "USD"); setRecipientName(snap.recipientName ?? "");
       setRecipientCountry(snap.recipientCountry ?? "MX"); setAccountField(snap.accountField ?? "");
-      setRoutingField(snap.routingField ?? ""); setBicField(snap.bicField ?? "");
+      setRoutingField(snap.routingField ?? ""); setSortCodeField(snap.sortCodeField ?? ""); setBicField(snap.bicField ?? "");
       setAmountTarget(snap.amountTarget ?? "");
       if (snap.kycCustomerId) setKycCustomerId(snap.kycCustomerId);
       // Mantener sessionStorage hasta llegar a kyc_done (el kyc_done handler lo elimina)
@@ -339,7 +341,7 @@ export default function EnviarPage() {
       const snap = JSON.parse(saved) as {
         senderName: string; senderEmail: string; senderCurrency: string;
         recipientName: string; recipientCountry: string;
-        accountField: string; routingField: string; bicField: string; amountTarget: string;
+        accountField: string; routingField: string; sortCodeField: string; bicField: string; amountTarget: string;
         kycCustomerId?: string;
       };
       setSenderName(snap.senderName ?? "");
@@ -349,6 +351,7 @@ export default function EnviarPage() {
       setRecipientCountry(snap.recipientCountry ?? "MX");
       setAccountField(snap.accountField ?? "");
       setRoutingField(snap.routingField ?? "");
+      setSortCodeField(snap.sortCodeField ?? "");
       setBicField(snap.bicField ?? "");
       setAmountTarget(snap.amountTarget ?? "");
       if (snap.kycCustomerId) setKycCustomerId(snap.kycCustomerId);
@@ -558,7 +561,7 @@ export default function EnviarPage() {
         // Save customer_id so the kyc_done return can pass it back as existing_customer_id.
         sessionStorage.setItem("enviar_form_state", JSON.stringify({
           senderName, senderEmail, senderCurrency,
-          recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
+          recipientName, recipientCountry, accountField, routingField, sortCodeField, bicField, amountTarget,
           kycCustomerId: data.customer_id ?? "",
         }));
         if (prePopup && !prePopup.closed) prePopup.close();
@@ -586,7 +589,7 @@ export default function EnviarPage() {
         if (data.kyc_url) {
           sessionStorage.setItem("enviar_form_state", JSON.stringify({
             senderName, senderEmail, senderCurrency,
-            recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,
+            recipientName, recipientCountry, accountField, routingField, sortCodeField, bicField, amountTarget,
             kycCustomerId: customerId,
           }));
           if (prePopup && !prePopup.closed) prePopup.close();
@@ -800,7 +803,7 @@ export default function EnviarPage() {
               />
               <select
                 value={recipientCountry}
-                onChange={e => { setRecipientCountry(e.target.value); setAccountField(""); setRoutingField(""); setBicField(""); }}
+                onChange={e => { setRecipientCountry(e.target.value); setAccountField(""); setRoutingField(""); setSortCodeField(""); setBicField(""); }}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#00C9C8]/60"
               >
                 {BRIDGE_COUNTRIES.map(c => (
@@ -830,6 +833,23 @@ export default function EnviarPage() {
                   <input
                     type="text"
                     placeholder={tF("account_number_label")}
+                    value={accountField}
+                    onChange={e => setAccountField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono"
+                  />
+                </>
+              ) : recipientCountry === "GB" ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder={tF("sort_code_label") + " (e.g. 20-00-00)"}
+                    value={sortCodeField}
+                    onChange={e => setSortCodeField(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono"
+                  />
+                  <input
+                    type="text"
+                    placeholder={tF("uk_account_label") + " (8 digits)"}
                     value={accountField}
                     onChange={e => setAccountField(e.target.value)}
                     className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#00C9C8]/60 font-mono"
@@ -953,7 +973,7 @@ export default function EnviarPage() {
             {quoteReady && (
               <button
                 onClick={() => handleSubmit(false)}
-                disabled={!senderName || !senderEmail || !recipientName || !accountField || !amountTarget || (recipientCountry === "US" && !routingField)}
+                disabled={!senderName || !senderEmail || !recipientName || !accountField || !amountTarget || (recipientCountry === "US" && !routingField) || (recipientCountry === "GB" && !sortCodeField)}
                 className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
               >
                 <Send className="w-4 h-4" />

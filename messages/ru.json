@@ -489,7 +489,9 @@
     "account_number_label": "Номер банковского счёта",
     "email_verifying": "Проверка…",
     "email_verified": "✓ Аккаунт подтверждён",
-    "kyc_review_countdown": "Проверка у провайдера… ({seconds}с)"
+    "kyc_review_countdown": "Проверка у провайдера… ({seconds}с)",
+    "sort_code_label": "Сортировочный код",
+    "uk_account_label": "Номер счёта"
   },
   "pagar_bridge": {
     "submit": "Отправить деньги →",

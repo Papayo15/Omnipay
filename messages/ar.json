@@ -489,7 +489,9 @@
     "account_number_label": "رقم الحساب البنكي",
     "email_verifying": "جارٍ التحقق…",
     "email_verified": "✓ حساب موثق",
-    "kyc_review_countdown": "التحقق مع مزودنا… ({seconds}ث)"
+    "kyc_review_countdown": "التحقق مع مزودنا… ({seconds}ث)",
+    "sort_code_label": "رمز الفرز",
+    "uk_account_label": "رقم الحساب"
   },
   "pagar_bridge": {
     "submit": "إرسال التحويل →",

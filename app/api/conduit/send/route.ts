@@ -35,7 +35,7 @@ interface SendBody {
   pix_key?:          string;
   routing_number?:   string;
   account_number?:   string;
-  sort_code?:        string;
+  sort_code?:        string;   // UK only — separate from account_number
   amount_target:     number;
 }
 

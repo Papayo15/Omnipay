@@ -489,7 +489,9 @@
     "calculate_fees_button": "Calculate fees →",
     "email_verifying": "Checking…",
     "email_verified": "✓ Verified account",
-    "kyc_review_countdown": "Validating with our provider… ({seconds}s)"
+    "kyc_review_countdown": "Validating with our provider… ({seconds}s)",
+    "sort_code_label": "Sort Code",
+    "uk_account_label": "Account Number"
   },
   "pagar_bridge": {
     "submit": "Send money →",

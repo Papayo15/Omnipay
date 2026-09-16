@@ -489,7 +489,9 @@
     "account_number_label": "银行账号",
     "email_verifying": "检查中…",
     "email_verified": "✓ 账户已验证",
-    "kyc_review_countdown": "正在与提供商验证… ({seconds}秒)"
+    "kyc_review_countdown": "正在与提供商验证… ({seconds}秒)",
+    "sort_code_label": "排序代码",
+    "uk_account_label": "账号"
   },
   "pagar_bridge": {
     "submit": "发送汇款 →",
