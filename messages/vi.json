@@ -786,7 +786,8 @@
     "email_verifying": "Đang kiểm tra…",
     "email_verified": "✓ Tài khoản đã xác minh",
     "kyc_review_countdown": "Đang xác minh với nhà cung cấp… ({seconds}s)",
-    "new_transfer": "Chuyển khoản khác"
+    "new_transfer": "Chuyển khoản khác",
+    "cancel_transfer": "Huỷ chuyển khoản này"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",

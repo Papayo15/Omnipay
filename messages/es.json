@@ -772,7 +772,8 @@
     "email_verifying": "Verificando…",
     "email_verified": "✓ Cuenta verificada",
     "kyc_review_countdown": "Validando verificación con nuestro proveedor… ({seconds}s)",
-    "new_transfer": "Realizar otro envío"
+    "new_transfer": "Realizar otro envío",
+    "cancel_transfer": "Cancelar este envío"
   },
   "recibir": {
     "loading": "Verificando tu invitación...",

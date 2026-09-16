@@ -786,7 +786,8 @@
     "email_verifying": "Überprüfe…",
     "email_verified": "✓ Konto verifiziert",
     "kyc_review_countdown": "Validierung beim Anbieter… ({seconds}s)",
-    "new_transfer": "Weitere Überweisung"
+    "new_transfer": "Weitere Überweisung",
+    "cancel_transfer": "Überweisung abbrechen"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",

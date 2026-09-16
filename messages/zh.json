@@ -786,7 +786,8 @@
     "email_verifying": "检查中…",
     "email_verified": "✓ 账户已验证",
     "kyc_review_countdown": "正在与提供商验证… ({seconds}秒)",
-    "new_transfer": "再次转账"
+    "new_transfer": "再次转账",
+    "cancel_transfer": "取消此次转账"
   },
   "recibir": {
     "loading": "正在验证邀请...",

@@ -786,7 +786,8 @@
     "email_verifying": "Controleren…",
     "email_verified": "✓ Geverifieerd account",
     "kyc_review_countdown": "Valideren bij onze aanbieder… ({seconds}s)",
-    "new_transfer": "Nog een overschrijving"
+    "new_transfer": "Nog een overschrijving",
+    "cancel_transfer": "Deze overboeking annuleren"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",

@@ -786,7 +786,8 @@
     "email_verifying": "जाँच हो रही है…",
     "email_verified": "✓ सत्यापित खाता",
     "kyc_review_countdown": "हमारे प्रदाता के साथ सत्यापन… ({seconds}s)",
-    "new_transfer": "और ट्रांसफर करें"
+    "new_transfer": "और ट्रांसफर करें",
+    "cancel_transfer": "यह स्थानांतरण रद्द करें"
   },
   "recibir": {
     "loading": "आपका आमंत्रण सत्यापित हो रहा है...",

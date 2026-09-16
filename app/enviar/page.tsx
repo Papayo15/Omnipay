@@ -1236,6 +1236,16 @@ export default function EnviarPage() {
                 {error}
               </div>
             )}
+
+            <button
+              onClick={() => {
+                try { localStorage.removeItem("omnipay_active_transfer"); } catch { /* ignore */ }
+                setStep("form");
+              }}
+              className="w-full text-slate-600 hover:text-slate-400 text-xs transition-colors py-2"
+            >
+              ✕ {t("cancel_transfer")}
+            </button>
           </div>
         )}
 

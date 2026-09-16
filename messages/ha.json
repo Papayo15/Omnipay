@@ -785,7 +785,8 @@
     "email_verifying": "Duba…",
     "email_verified": "✓ Asusu tabbatacce",
     "kyc_review_countdown": "Tabbatarwa tare da mai ba da sabis… ({seconds}s)",
-    "new_transfer": "Wani canjin kudi"
+    "new_transfer": "Wani canjin kudi",
+    "cancel_transfer": "Soke wannan canja wurin"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",

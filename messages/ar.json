@@ -786,7 +786,8 @@
     "email_verifying": "جارٍ التحقق…",
     "email_verified": "✓ حساب موثق",
     "kyc_review_countdown": "التحقق مع مزودنا… ({seconds}ث)",
-    "new_transfer": "إرسال آخر"
+    "new_transfer": "إرسال آخر",
+    "cancel_transfer": "إلغاء هذا التحويل"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",

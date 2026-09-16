@@ -786,7 +786,8 @@
     "email_verifying": "Memeriksa…",
     "email_verified": "✓ Akun terverifikasi",
     "kyc_review_countdown": "Memvalidasi dengan penyedia kami… ({seconds}d)",
-    "new_transfer": "Transfer lagi"
+    "new_transfer": "Transfer lagi",
+    "cancel_transfer": "Batalkan transfer ini"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",

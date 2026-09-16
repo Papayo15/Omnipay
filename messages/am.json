@@ -786,7 +786,8 @@
     "email_verifying": "እየተረጋገጠ…",
     "email_verified": "✓ መለያ ተረጋግጧል",
     "kyc_review_countdown": "ከአቅራቢያችን ጋር እያረጋጠ… ({seconds}ሰ)",
-    "new_transfer": "ሌላ ዝውውር አድርግ"
+    "new_transfer": "ሌላ ዝውውር አድርግ",
+    "cancel_transfer": "ይህን ዝውውር ሰርዝ"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",

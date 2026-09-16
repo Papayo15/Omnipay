@@ -786,7 +786,8 @@
     "email_verifying": "Verifica…",
     "email_verified": "✓ Account verificato",
     "kyc_review_countdown": "Validazione con il fornitore… ({seconds}s)",
-    "new_transfer": "Altro trasferimento"
+    "new_transfer": "Altro trasferimento",
+    "cancel_transfer": "Annulla questo trasferimento"
   },
   "recibir": {
     "loading": "Verifica del tuo invito...",

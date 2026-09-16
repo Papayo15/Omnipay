@@ -786,7 +786,8 @@
     "email_verifying": "Проверка…",
     "email_verified": "✓ Аккаунт подтверждён",
     "kyc_review_countdown": "Проверка у провайдера… ({seconds}с)",
-    "new_transfer": "Ещё один перевод"
+    "new_transfer": "Ещё один перевод",
+    "cancel_transfer": "Отменить этот перевод"
   },
   "recibir": {
     "loading": "Проверка вашего приглашения...",

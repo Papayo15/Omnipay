@@ -786,7 +786,8 @@
     "email_verifying": "Kuthibitisha…",
     "email_verified": "✓ Akaunti imethibitishwa",
     "kyc_review_countdown": "Kuthibitisha na mtoa huduma wetu… ({seconds}s)",
-    "new_transfer": "Uhamisho mwingine"
+    "new_transfer": "Uhamisho mwingine",
+    "cancel_transfer": "Ghairi uhamisho huu"
   },
   "recibir": {
     "loading": "Inathibitisha mwaliko wako...",
