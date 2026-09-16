@@ -54,9 +54,14 @@ export async function GET(req: NextRequest): Promise<Response> {
   const usdToFrom = from === "USD" ? 1 : (ratesFromUSD[from] ?? 1);
   const toFrom = (n: number) => parseFloat((n * usdToFrom).toFixed(2));
 
-  // SPEI corridor: add fixed-MXN breakdown when recipient currency is MXN
-  const speiBreakdown = to === "MXN"
-    ? (calculatePayout(amount, parseFloat((1 / usdToTo).toFixed(6))) ?? undefined)
+  // SPEI corridor: sender deposits MXN (Mexico → World), show fixed-fee breakdown
+  // amountMxn = principal MXN equivalent of the recipient amount before fees
+  const speiBreakdown = from === "MXN"
+    ? (() => {
+        const amountMxn       = parseFloat((amountUSD * usdToFrom).toFixed(2)); // MXN principal
+        const bridgeFxRate    = parseFloat((fromToUSD).toFixed(6));              // USDC per MXN
+        return calculatePayout(amountMxn, bridgeFxRate) ?? undefined;
+      })()
     : undefined;
 
   return NextResponse.json({

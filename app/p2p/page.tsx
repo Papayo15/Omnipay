@@ -8,7 +8,6 @@ import { getFXRate } from "@/lib/fx";
 import { validateClabe, detectBank, type BankInfo } from "@/lib/clabe";
 import { TrustBanner } from "@/components/TrustBanner";
 import { ALCHEMYPAY_COUNTRIES } from "@/lib/funding-provider";
-import { calculatePayout }      from "@/lib/bridge-fees";
 
 type Step = "form" | "generating" | "kyc_info" | "kyc_polling" | "share" | "error";
 
@@ -1177,31 +1176,6 @@ export default function P2PPage() {
                     <p className="text-[10px] text-slate-600 text-center mt-1">
                       {t("fee_fx_rate", { currency, rate: fxRate.toFixed(4) })}
                     </p>
-                    {currency === "MXN" && (() => {
-                      const sp = calculatePayout(parseFloat(amountLocal), fxRate);
-                      if (!sp) return null;
-                      return (
-                        <div className="border-t border-slate-800 pt-2 space-y-1 mt-1">
-                          <p className="text-slate-500 text-[10px] uppercase tracking-widest mb-1">Desglose SPEI</p>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-slate-500">Costo procesador (SPEI)</span>
-                            <span className="text-slate-400 font-mono">−${sp.bridgeFee.toFixed(2)} MXN</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-slate-500">Tarifa OmniPay (0.6%)</span>
-                            <span className="text-slate-400 font-mono">−${sp.omnipayFee.toFixed(2)} MXN</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-slate-500">Tipo de cambio garantizado</span>
-                            <span className="text-slate-300 font-mono">1 MXN = {sp.finalFxRate.toFixed(6)} USDC</span>
-                          </div>
-                          <div className="flex justify-between text-xs font-medium">
-                            <span className="text-slate-400">Neto al destinatario (USDC)</span>
-                            <span className="text-emerald-400 font-mono">{sp.netPayoutUsdc.toFixed(6)} USDC</span>
-                          </div>
-                        </div>
-                      );
-                    })()}
                   </div>
                   <button onClick={generateLink} disabled={submitting || !bridgeReady}
                     className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-white py-4 rounded-2xl font-semibold text-lg mt-2">
