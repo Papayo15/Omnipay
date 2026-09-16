@@ -180,6 +180,40 @@ export default function EnviarPage() {
   }, [amountTarget, recipientCountry, currency, senderCurrency]);
 
   // Detect KYC return (?kyc_done=1) — restore form from sessionStorage and auto-retry
+  // tos_done=1: Bridge accepted ToS — call kyc-link directly, navigate to Persona
+  useEffect(() => {
+    if (searchParams.get("tos_done") !== "1") return;
+    const saved = sessionStorage.getItem("enviar_form_state");
+    if (!saved) return;
+    try {
+      const snap = JSON.parse(saved) as { kycCustomerId?: string } & Record<string, string>;
+      if (!snap.kycCustomerId) { sessionStorage.removeItem("enviar_form_state"); return; }
+      window.history.replaceState({}, "", "/enviar");
+      const kycRedirectUri = `${window.location.origin}/enviar?kyc_done=1`;
+      fetch(`/api/bridge/kyc-link?customer_id=${encodeURIComponent(snap.kycCustomerId)}&redirect_uri=${encodeURIComponent(kycRedirectUri)}`)
+        .then(r => r.json())
+        .then((d: Record<string, string>) => {
+          if (d.kyc_url) {
+            // Keep sessionStorage so kyc_done handler can restore the form
+            window.location.href = d.kyc_url;
+          } else {
+            // kyc-link returned no URL — restore form and retry checkout
+            setSenderName(snap.senderName ?? ""); setSenderEmail(snap.senderEmail ?? "");
+            setSenderCurrency(snap.senderCurrency ?? "USD"); setRecipientName(snap.recipientName ?? "");
+            setRecipientCountry(snap.recipientCountry ?? "MX"); setAccountField(snap.accountField ?? "");
+            setRoutingField(snap.routingField ?? ""); setBicField(snap.bicField ?? "");
+            setAmountTarget(snap.amountTarget ?? "");
+            if (snap.kycCustomerId) setKycCustomerId(snap.kycCustomerId);
+            sessionStorage.removeItem("enviar_form_state");
+            setAutoRetry(true);
+          }
+        })
+        .catch(() => { sessionStorage.removeItem("enviar_form_state"); });
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // kyc_done=1: Persona completed — restore form and poll until Bridge approves
   useEffect(() => {
     if (searchParams.get("kyc_done") !== "1") return;
     if (kycPollTimer.current) clearInterval(kycPollTimer.current);

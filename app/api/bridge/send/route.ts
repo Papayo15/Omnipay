@@ -195,14 +195,16 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // 3. ToS gate for new sender in production
     if (!isSandbox && isSenderNew) {
-      const kycRedirectUri = redirect_uri ?? `${appUrl}/enviar?kyc_done=1`;
+      // ToS redirects to ?tos_done=1 so the app calls kyc-link directly (not full checkout).
+      // KYC redirects to ?kyc_done=1 so the app polls approval then retries checkout.
+      const tosRedirectUri = `${appUrl}/enviar?tos_done=1`;
       try {
         const tosLink = await createTosLink({
           full_name:    sender_name,
           email:        sender_email.toLowerCase(),
           type:         "individual",
           customer_id:  senderCustomer.id,
-          redirect_uri: kycRedirectUri,
+          redirect_uri: tosRedirectUri,
         });
         return NextResponse.json({
           needs_tos:   true,
