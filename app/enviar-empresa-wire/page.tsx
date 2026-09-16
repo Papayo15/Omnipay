@@ -319,10 +319,10 @@ export default function EnviarEmpresaWirePage() {
         setIsSandboxKyb(!!data.is_sandbox);
         const fromTos = fromTosReturnRef.current;
         fromTosReturnRef.current = false;
-        // Navigate directly to KYB on first request — no intermediate OmniPay screen.
-        // On auto-retry (user just returned from Persona), Bridge may not have approved yet:
-        // show polling screen instead of re-navigating.
-        if (data.kyb_url && !data.is_sandbox && !isAutoRetry) {
+        // Navigate directly to KYB on first request OR when returning from ToS.
+        // On auto-retry from Persona (isAutoRetry=true, fromTos=false), Bridge may not have
+        // approved KYB yet — show polling screen instead of re-navigating.
+        if (data.kyb_url && !data.is_sandbox && (!isAutoRetry || fromTos)) {
           window.location.href = data.kyb_url;
           return;
         }
