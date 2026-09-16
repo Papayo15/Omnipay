@@ -271,22 +271,28 @@ export async function POST(req: NextRequest): Promise<Response> {
       let kycUrl: string | null = null;
       try {
         const kycLink = await getKycLink(customer.id, { redirect_uri: kycRedirectUri });
-        // GET /customers/{id}/kyc_link returns { "url": "..." } — no kyc_link field
-        kycUrl = kycLink.url ?? (kycLink as unknown as Record<string, string>).kyc_link ?? null;
+        kycUrl = kycLink.url ?? kycLink.kyc_link ?? null;
         console.log(`[bridge/checkout] getKycLink ok: url=${kycUrl}`);
       } catch (e1) {
         console.error(`[bridge/checkout] getKycLink error: ${(e1 as Error).message}`);
       }
-      // POST /kyc_links is for NEW customer creation only — not for existing customers.
-      // For existing customers, GET /customers/{id}/kyc_link is the only correct endpoint.
-      console.log(`[bridge/checkout] KYC gate: needsKyc=${needsKyc} kycUrl=${kycUrl}`);
+      // Fallback: POST /kyc_links if GET returned no URL
       if (!kycUrl) {
-        return NextResponse.json({
-          error: `[KYC] GET /customers/${customer.id}/kyc_link returned no URL. Bridge may still be processing the customer. Please try again.`,
-          bridge_type: "kyc_url_unavailable",
-          customer_id: customer.id,
-        }, { status: 502 });
+        try {
+          const kl2 = await createKycLink({
+            full_name:    nombre,
+            email:        email.toLowerCase(),
+            type:         "individual",
+            endorsements,
+            redirect_uri: kycRedirectUri,
+          });
+          kycUrl = kl2.url ?? kl2.kyc_link ?? null;
+          console.log(`[bridge/checkout] createKycLink fallback customer=${customer.id} url=${kycUrl}`);
+        } catch (e2) {
+          console.error(`[bridge/checkout] createKycLink fallback error: ${(e2 as Error).message}`);
+        }
       }
+      console.log(`[bridge/checkout] KYC gate: needsKyc=${needsKyc} kycUrl=${kycUrl}`);
       return NextResponse.json({
         needs_kyc:   true,
         kyc_url:     kycUrl,
@@ -314,20 +320,25 @@ export async function POST(req: NextRequest): Promise<Response> {
         let kycUrl: string | null = null;
         try {
           const kycLink = await getKycLink(customer.id, { redirect_uri: kycRedirectUri2 });
-          kycUrl = kycLink.url ?? (kycLink as unknown as Record<string, string>).kyc_link ?? null;
+          kycUrl = kycLink.url ?? kycLink.kyc_link ?? null;
         } catch (e3) {
           console.error(`[bridge/checkout] getKycLink endorsement fallback error: ${(e3 as Error).message}`);
         }
         if (!kycUrl) {
-        }
-          if (!kycUrl) {
-            return NextResponse.json({
-              error: "No se pudo generar el link de verificación adicional. Por favor intenta de nuevo.",
-              bridge_type: "kyc_url_unavailable",
-              customer_id: customer.id,
-            }, { status: 502 });
+          try {
+            const kl2 = await createKycLink({
+              full_name:    nombre,
+              email:        email.toLowerCase(),
+              type:         "individual",
+              endorsements,
+              redirect_uri: kycRedirectUri2,
+            });
+            kycUrl = kl2.url ?? kl2.kyc_link ?? null;
+          } catch (e4) {
+            console.error(`[bridge/checkout] createKycLink endorsement fallback error: ${(e4 as Error).message}`);
           }
-          return NextResponse.json({
+        }
+        return NextResponse.json({
           needs_kyc:   true,
           kyc_url:     kycUrl,
           customer_id: customer.id,

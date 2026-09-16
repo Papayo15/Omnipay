@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse }        from "next/server";
 import {
   getOrCreateCustomer, getCustomer,
-  patchCustomerAddress, ensureEndorsements, getKycLink,
+  patchCustomerAddress, ensureEndorsements, getKycLink, createKycLink,
   createTosLink, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
@@ -216,17 +216,35 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
 
     // 4. KYC gate (production)
-    // Use GET /customers/{id}/kyc_link — Bridge embeds redirect_uri into the Persona URL properly.
-    // POST /kyc_links ignores redirect_uri in the body and Persona won't redirect back.
+    // Try GET /customers/{id}/kyc_link first — Bridge embeds redirect_uri into Persona URL.
+    // If that fails (e.g. customer just created, Bridge not yet propagated), fall back to
+    // POST /kyc_links which also embeds redirect_uri.
     const skipKyc = process.env.BRIDGE_SKIP_KYC === "true";
     if (needsKyc && !skipKyc && !isSandbox) {
       const kycRedirectUri = redirect_uri ?? `${appUrl}/enviar?kyc_done=1`;
       let kycUrl: string | null = null;
       try {
         const kl = await getKycLink(senderCustomer.id, { redirect_uri: kycRedirectUri });
-        kycUrl = kl.url ?? (kl as unknown as Record<string, string>).kyc_link ?? null;
+        kycUrl = kl.url ?? kl.kyc_link ?? null;
+        console.log(`[send] getKycLink customer=${senderCustomer.id} url=${kycUrl} raw=${JSON.stringify(kl).slice(0, 200)}`);
       } catch (e1) {
         console.error(`[send] getKycLink error: ${(e1 as Error).message}`);
+      }
+      // Fallback: POST /kyc_links for customers where GET returned no URL
+      if (!kycUrl) {
+        try {
+          const kl2 = await createKycLink({
+            full_name:   sender_name,
+            email:       sender_email.toLowerCase(),
+            type:        "individual",
+            endorsements: ENDORSEMENTS,
+            redirect_uri: kycRedirectUri,
+          });
+          kycUrl = kl2.url ?? kl2.kyc_link ?? null;
+          console.log(`[send] createKycLink fallback customer=${senderCustomer.id} url=${kycUrl}`);
+        } catch (e2) {
+          console.error(`[send] createKycLink fallback error: ${(e2 as Error).message}`);
+        }
       }
       return NextResponse.json({
         needs_kyc:   true,

@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse }        from "next/server";
 import {
   getOrCreateCustomer, getCustomer,
-  patchCustomerAddress, ensureEndorsements, getKycLink,
+  patchCustomerAddress, ensureEndorsements, getKycLink, createKycLink,
   createTosLink, ALPHA2_TO_ALPHA3, RAIL_ENDORSEMENT,
 } from "@/providers/bridge/customers";
 import { createLiquidationAddress, ensureExternalAccount, NATIVE_RAILS } from "@/providers/bridge/liquidation";
@@ -218,12 +218,27 @@ export async function POST(req: NextRequest): Promise<Response> {
       const kybRedirectUri = redirect_uri ?? `${appUrl}/enviar-empresa-wire?kyb_done=1`;
       let kybUrl: string | null = null;
       try {
-        // GET /customers/{id}/kyc_link is the correct endpoint for existing customers.
-        // POST /kyc_links is for new customer creation only.
         const kl = await getKycLink(senderCustomer.id, { redirect_uri: kybRedirectUri });
-        kybUrl = kl.url ?? (kl as unknown as Record<string, string>).kyc_link ?? null;
+        kybUrl = kl.url ?? kl.kyc_link ?? null;
+        console.log(`[b2b/send] getKycLink customer=${senderCustomer.id} url=${kybUrl}`);
       } catch (e1) {
         console.error(`[b2b/send] getKycLink error: ${(e1 as Error).message}`);
+      }
+      // Fallback: POST /kyc_links if GET returned no URL
+      if (!kybUrl) {
+        try {
+          const kl2 = await createKycLink({
+            full_name:    sender_business_name,
+            email:        sender_email.toLowerCase(),
+            type:         "business",
+            endorsements: B2B_ENDORSEMENTS,
+            redirect_uri: kybRedirectUri,
+          });
+          kybUrl = kl2.url ?? kl2.kyc_link ?? null;
+          console.log(`[b2b/send] createKycLink fallback customer=${senderCustomer.id} url=${kybUrl}`);
+        } catch (e2) {
+          console.error(`[b2b/send] createKycLink fallback error: ${(e2 as Error).message}`);
+        }
       }
       return NextResponse.json({
         needs_kyb:   true,

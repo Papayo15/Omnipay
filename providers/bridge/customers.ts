@@ -9,8 +9,8 @@ export interface BridgeCustomer {
   type:        "individual" | "business";
   email:       string;
   status?:     "active" | "approved" | "inactive" | "incomplete" | "not_started" | "rejected" | "under_review" | "awaiting_questionnaire" | "awaiting_ubo" | "deposits_restricted" | "paused" | "offboarded";
-  kyc_status?: "approved" | "pending" | "incomplete" | "not_started" | "rejected" | "under_review" | "awaiting_ubo";
-  kyb_status?: "approved" | "pending" | "incomplete" | "not_started" | "rejected" | "under_review" | "awaiting_ubo";
+  kyc_status?: "approved" | "granted" | "pending" | "incomplete" | "not_started" | "rejected" | "under_review" | "awaiting_ubo";
+  kyb_status?: "approved" | "granted" | "pending" | "incomplete" | "not_started" | "rejected" | "under_review" | "awaiting_ubo";
   first_name?: string;
   last_name?:  string;
   business_name?: string;
@@ -240,10 +240,12 @@ export async function getOrCreateCustomer(params: {
     // paused/offboarded: fully blocked — surface as needsKyc so caller shows an error.
     const isRestricted = existing.status === "deposits_restricted";
     const isBlocked    = existing.status === "paused" || existing.status === "offboarded";
+    // Bridge API returns "approved" per spec; "granted" observed in production dashboard.
+    const isKycOk = (s?: string) => s === "approved" || s === "granted";
     const kycApproved  = !isBlocked && (
       params.type === "business"
-        ? existing.kyb_status === "approved"
-        : existing.status === "active" || existing.status === "approved" || isRestricted || existing.kyc_status === "approved"
+        ? isKycOk(existing.kyb_status)
+        : existing.status === "active" || existing.status === "approved" || isRestricted || isKycOk(existing.kyc_status)
     );
     // incomplete/not_started = customer record exists in Bridge but never went through ToS+KYC.
     // Treat as isNew so the checkout shows the ToS popup before the KYC link.
@@ -273,10 +275,11 @@ export async function getOrCreateCustomer(params: {
       if (embedded?.id) {
         const isRestricted = embedded.status === "deposits_restricted";
         const isBlocked    = embedded.status === "paused" || embedded.status === "offboarded";
+        const isKycOk2 = (s?: string) => s === "approved" || s === "granted";
         const kycApproved  = !isBlocked && (
           params.type === "business"
-            ? embedded.kyb_status === "approved"
-            : embedded.status === "active" || embedded.status === "approved" || isRestricted || embedded.kyc_status === "approved"
+            ? isKycOk2(embedded.kyb_status)
+            : embedded.status === "active" || embedded.status === "approved" || isRestricted || isKycOk2(embedded.kyc_status)
         );
         return { customer: embedded, isNew: false, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
       }
@@ -289,10 +292,11 @@ export async function getOrCreateCustomer(params: {
         if (recovered) {
           const isRestricted = recovered.status === "deposits_restricted";
           const isBlocked    = recovered.status === "paused" || recovered.status === "offboarded";
+          const isKycOk3 = (s?: string) => s === "approved" || s === "granted";
           const kycApproved  = !isBlocked && (
             params.type === "business"
-              ? recovered.kyb_status === "approved"
-              : recovered.status === "active" || recovered.status === "approved" || isRestricted || recovered.kyc_status === "approved"
+              ? isKycOk3(recovered.kyb_status)
+              : recovered.status === "active" || recovered.status === "approved" || isRestricted || isKycOk3(recovered.kyc_status)
           );
           return { customer: recovered, isNew: false, needsKyc: !kycApproved, depositsRestricted: isRestricted, accountBlocked: isBlocked };
         }
