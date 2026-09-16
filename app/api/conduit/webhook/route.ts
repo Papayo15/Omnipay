@@ -1,20 +1,20 @@
 // POST /api/conduit/webhook
 //
 // Receives Conduit webhook events.
-// Events handled:
-//   transaction.completed           — fiat deposit received in VA
-//   transaction.failed              — deposit failed
-//   transaction.awaiting_sender_information — Travel Rule gate
-//   order.succeeded                 — terminal: payout delivered to recipient's bank
-//   order.failed                    — order failed (reasonCode in data)
-//   order.cancelled                 — order cancelled
+// Signature header: X-Conduit-Signature (format: "v1=<hex>")
+//
+// Terminal events for fiat bank payouts: payout.completed / payout.failed
+// Deposit events: transaction.created / transaction.completed / transaction.failed
+//
+// NOTE: order.succeeded / order.failed are for CRYPTO conversion Orders —
+// not for bank payouts. Do not confuse them.
 
-import { NextRequest, NextResponse }                from "next/server";
-import { getRedis }                                 from "@/lib/redis";
+import { NextRequest, NextResponse }                      from "next/server";
+import { getRedis }                                       from "@/lib/redis";
 import { verifyConduitWebhook, parseConduitWebhookEvent } from "@/lib/conduit/webhooks";
-import { sendAdminWhatsApp, sendEmailNotification } from "@/lib/notify";
-import { buildReceiptURL }                          from "@/lib/link";
-import { emailStrings }                             from "@/lib/email-i18n";
+import { sendAdminWhatsApp, sendEmailNotification }       from "@/lib/notify";
+import { buildReceiptURL }                                from "@/lib/link";
+import { emailStrings }                                   from "@/lib/email-i18n";
 
 export const runtime = "nodejs";
 
@@ -41,10 +41,9 @@ async function markEventProcessed(eventId: string): Promise<boolean> {
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
-  const rawBody    = await req.text();
-  // Conduit sends signature in x-conduit-signature; confirm exact header name with their docs
-  const sigHeader  = req.headers.get("x-conduit-signature")
-                  ?? req.headers.get("x-webhook-signature");
+  const rawBody   = await req.text();
+  // Conduit signature header: X-Conduit-Signature (value: "v1=<hex>")
+  const sigHeader = req.headers.get("x-conduit-signature");
 
   let valid: boolean;
   try {
@@ -74,32 +73,36 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
   }
 
-  // ── Transaction: fiat deposit received in VA ──────────────────────────────
+  // ── Deposit: fiat received in VA ──────────────────────────────────────────
 
   if (type === "transaction.completed") {
-    const vaId  = String(data.virtualAccountId ?? data.virtual_account_id ?? "");
-    const amount = String(data.amount ?? "");
-    const currency = String(data.currency ?? "USD");
-    await sendAdminWhatsApp(
-      `💰 OmniPay Conduit — Depósito recibido\n` +
-      `VA: ${vaId}\n` +
-      `Monto: ${amount} ${currency}\n` +
-      `Procesando conversión y envío al banco destino...`,
-    );
+    const txType  = String((data as { type?: unknown }).type ?? "");
+    if (txType === "deposit") {
+      const amount   = String((data as { assetAmount?: { amount?: unknown } }).assetAmount?.amount ?? "");
+      const currency = String((data as { assetAmount?: { code?: unknown } }).assetAmount?.code ?? "USD");
+      const vaId     = String((data as { virtualAccountId?: unknown }).virtualAccountId ?? "");
+      await sendAdminWhatsApp(
+        `💰 OmniPay Conduit — Depósito recibido\n` +
+        `VA: ${vaId}\n` +
+        `Monto: ${amount} ${currency}\n` +
+        `Procesando conversión y envío al banco destino...`,
+      );
+    }
   }
 
   if (type === "transaction.failed") {
-    const vaId    = String(data.virtualAccountId ?? data.virtual_account_id ?? "");
-    const reason  = String(data.reasonCode ?? data.reason ?? "unknown");
+    const txType  = String((data as { type?: unknown }).type ?? "");
+    const reason  = String((data as { failureCode?: unknown }).failureCode ?? "unknown");
+    const vaId    = String((data as { virtualAccountId?: unknown }).virtualAccountId ?? "");
     await sendAdminWhatsApp(
-      `❌ OmniPay Conduit — Depósito FALLIDO\n` +
-      `VA: ${vaId}\n` +
+      `❌ OmniPay Conduit — Transacción FALLIDA\n` +
+      `VA: ${vaId} · Tipo: ${txType}\n` +
       `Motivo: ${reason}`,
     );
   }
 
   if (type === "transaction.awaiting_sender_information") {
-    const vaId = String(data.virtualAccountId ?? data.virtual_account_id ?? "");
+    const vaId = String((data as { virtualAccountId?: unknown }).virtualAccountId ?? "");
     await sendAdminWhatsApp(
       `⚠️ OmniPay Conduit — Travel Rule Gate\n` +
       `VA: ${vaId}\n` +
@@ -107,41 +110,37 @@ export async function POST(req: NextRequest): Promise<Response> {
     );
   }
 
-  // ── Order: OFFRAMP completed ──────────────────────────────────────────────
+  // ── Payout: bank transfer terminal events ─────────────────────────────────
+  // These are the CORRECT terminal events for fiat bank payouts (POST /payouts).
+  // payout.completed = funds reached recipient's bank.
+  // payout.failed    = payout could not be delivered.
 
-  if (type === "order.succeeded") {
+  if (type === "payout.completed") {
     const orderId = String(
-      (data as { externalReference?: string }).externalReference
-      ?? (data as { external_reference?: string }).external_reference
-      ?? (data as { id?: string }).id
-      ?? "",
+      (data as { clientReferenceId?: unknown }).clientReferenceId ?? "",
     );
     if (orderId.startsWith("OPC-")) {
       await handleConduitCompletion(orderId, data);
     }
   }
 
-  // ── Order: OFFRAMP failed ─────────────────────────────────────────────────
-
-  if (type === "order.failed" || type === "order.cancelled") {
-    const orderId   = String(
-      (data as { externalReference?: string }).externalReference
-      ?? (data as { external_reference?: string }).external_reference
-      ?? "",
-    );
-    const reasonCode = String((data as { reasonCode?: string }).reasonCode ?? type);
-    const label = type === "order.cancelled" ? "CANCELADA" : "FALLIDA";
+  if (type === "payout.failed") {
+    const orderId    = String((data as { clientReferenceId?: unknown }).clientReferenceId ?? "");
+    const reasonCode = String((data as { failureCode?: unknown }).failureCode ?? "unknown");
     await sendAdminWhatsApp(
-      `🚨 OmniPay Conduit — Orden ${label}\n` +
+      `🚨 OmniPay Conduit — Pago FALLIDO\n` +
       (orderId ? `Orden: ${orderId}\n` : "") +
       `Motivo: ${reasonCode}`,
     );
   }
 
+  // NOTE: order.succeeded / order.failed are for crypto Orders — not bank payouts.
+  // Left here for completeness if OmniPay ever adds crypto conversion flows.
+
   return NextResponse.json({ received: true });
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+// ── Completion helper ──────────────────────────────────────────────────────
 
 async function handleConduitCompletion(
   orderId: string,
@@ -155,8 +154,8 @@ async function handleConduitCompletion(
     receiptUrl = await buildReceiptURL(
       {
         id:  orderId,
-        a:   Number((data as { amount?: unknown }).amount ?? 0),
-        c:   String((data as { currency?: unknown }).currency ?? "USD").toUpperCase(),
+        a:   Number((data as { assetAmount?: { amount?: unknown } }).assetAmount?.amount ?? 0),
+        c:   String((data as { assetAmount?: { code?: unknown } }).assetAmount?.code ?? "USD").toUpperCase(),
         n:   "OmniPay Transfer",
         ts:  Date.now(),
         tt:  "conduit",
@@ -166,27 +165,22 @@ async function handleConduitCompletion(
     );
   } catch { /* use fallback URL */ }
 
-  const destAmount   = String((data as { destinationAmount?: unknown }).destinationAmount ?? "");
-  const destCurrency = String((data as { destinationCurrency?: unknown }).destinationCurrency ?? "").toUpperCase();
-  const fechaHora    = new Date().toLocaleString("es-MX", { timeZone: "America/Mexico_City", hour12: false });
+  const fechaHora = new Date().toLocaleString("es-MX", { timeZone: "America/Mexico_City", hour12: false });
 
   await sendAdminWhatsApp(
     `✅ OmniPay Conduit — Pago COMPLETADO\n` +
     `Orden: ${orderId}\n` +
     `Fecha: ${fechaHora}\n` +
-    (destAmount ? `Recibió: ${destAmount} ${destCurrency}\n` : "") +
     `Comprobante: ${receiptUrl}`,
   );
 
-  // Send email to sender if contact info available from order data
   const senderEmail = String((data as { senderEmail?: unknown }).senderEmail ?? "");
   if (senderEmail) {
-    const eT = emailStrings("es");
+    const eT  = emailStrings("es");
     const html = `
       <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
         <h2 style="color:#16a34a;margin:0 0 16px">${eT.completed_h2}</h2>
         <p>${eT.completed_sender("el destinatario")}</p>
-        ${destAmount ? `<p>${eT.amount_received(destAmount, destCurrency)}</p>` : ""}
         <p><a href="${receiptUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold">${eT.receipt_cta}</a></p>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
         <p style="color:#9ca3af;font-size:11px">OmniPay · ${eT.ref} ${orderId}</p>

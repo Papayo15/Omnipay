@@ -1,20 +1,52 @@
 // Conduit Virtual Account management
-// VAs are created on-demand (stateless) — result goes back to client → localStorage.
-// Mirrors providers/bridge/virtual-accounts.ts polling pattern.
+// Correct endpoint: POST /customers/{id}/features (not /virtual-accounts)
+// Returns 202 Accepted — creation is async; poll GET until deposit instructions appear.
 
 import { conduitRequest } from "./client";
 import type { ConduitVirtualAccount } from "./types";
 
+interface FeatureResponse {
+  id:     string;
+  type:   string;
+  status: string;
+}
+
+interface VirtualAccountListResponse {
+  data: ConduitVirtualAccount[];
+}
+
+// Creates a VA under OmniPay's platform customer.
+// idempotency-key prevents duplicates on retry.
 export async function createConduitVA(
   customerId: string,
-  assetType = "USD",
+  assetCode   = "USD",
 ): Promise<ConduitVirtualAccount> {
-  return conduitRequest<ConduitVirtualAccount>(
+  // POST /customers/{id}/features — Conduit's feature-provisioning endpoint
+  await conduitRequest<FeatureResponse>(
     "POST",
-    `/customers/${customerId}/virtual-accounts`,
-    { assetType },
-    `va-${customerId}-${assetType}`,
+    `/customers/${customerId}/features`,
+    {
+      type:        "virtual_account",
+      asset:       { code: assetCode },
+      fields:      {},
+      documentIds: [],
+    },
+    // Idempotency key scoped to customer + asset + timestamp (new VA per transfer)
+    `va-${customerId}-${assetCode}-${Date.now()}`,
   );
+
+  // Feature creation is async — poll until a VA with deposit instructions is returned
+  return waitForVAActivation(customerId, assetCode);
+}
+
+export async function getConduitVAs(
+  customerId: string,
+): Promise<ConduitVirtualAccount[]> {
+  const res = await conduitRequest<VirtualAccountListResponse>(
+    "GET",
+    `/customers/${customerId}/virtual-accounts`,
+  );
+  return res.data ?? [];
 }
 
 export async function getConduitVA(
@@ -28,19 +60,23 @@ export async function getConduitVA(
 }
 
 export async function waitForVAActivation(
-  customerId: string,
-  vaId:       string,
-  maxAttempts = 12,
-  delayMs     = 1500,
+  customerId:  string,
+  assetCode    = "USD",
+  maxAttempts  = 12,
+  delayMs      = 1500,
 ): Promise<ConduitVirtualAccount> {
   for (let i = 0; i < maxAttempts; i++) {
-    const va = await getConduitVA(customerId, vaId);
-    if (va.status === "active") return va;
-    if (va.status === "disabled") throw new Error(`Conduit VA ${vaId} is disabled`);
-    if (i < maxAttempts - 1) {
-      await new Promise(r => setTimeout(r, delayMs));
-    }
+    const accounts = await getConduitVAs(customerId);
+    // Find the most recently created active VA with deposit instructions
+    const active = accounts
+      .filter(va =>
+        va.status === "active" &&
+        va.assetType?.toUpperCase() === assetCode.toUpperCase() &&
+        va.depositInstructions?.length > 0,
+      )
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    if (active.length > 0) return active[0];
+    if (i < maxAttempts - 1) await new Promise(r => setTimeout(r, delayMs));
   }
-  // Return last known state rather than throwing — caller can proceed and let webhook confirm
-  return getConduitVA(customerId, vaId);
+  throw new Error(`Conduit VA did not activate within ${maxAttempts * delayMs / 1000}s`);
 }

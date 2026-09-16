@@ -1,9 +1,7 @@
-// POST /api/conduit/sandbox/simulate-deposit
-// Simulates a fiat deposit into a Conduit VA — sandbox only.
-// Body: { customerId, vaId, amount, currency? }
-//
-// After simulating a deposit, Conduit fires transaction.created → transaction.completed
-// and the payout can then be settled via /api/conduit/sandbox/simulate-payout-settled.
+// POST /api/conduit/sandbox/simulate-payout-settled
+// Drives a sandbox payout to its terminal settlement state.
+// Body: { payoutId, utr? }
+// Fires: payout.completed webhook → handleConduitCompletion()
 
 import { NextRequest, NextResponse } from "next/server";
 import { conduitRequest, isConduitSandbox } from "@/lib/conduit/client";
@@ -11,10 +9,8 @@ import { conduitRequest, isConduitSandbox } from "@/lib/conduit/client";
 export const runtime = "nodejs";
 
 interface SimulateBody {
-  customerId: string;
-  vaId:       string;
-  amount:     number;
-  currency?:  string;
+  payoutId: string;
+  utr?:     string;  // optional unique transaction reference
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
@@ -26,16 +22,16 @@ export async function POST(req: NextRequest): Promise<Response> {
   try { body = await req.json() as SimulateBody; }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  const { customerId, vaId, amount, currency = "USD" } = body;
-  if (!customerId || !vaId || !amount) {
-    return NextResponse.json({ error: "customerId, vaId and amount are required" }, { status: 400 });
+  const { payoutId, utr } = body;
+  if (!payoutId) {
+    return NextResponse.json({ error: "payoutId is required" }, { status: 400 });
   }
 
   try {
     const result = await conduitRequest(
       "POST",
-      `/sandbox/customers/${customerId}/virtual-accounts/${vaId}/deposits/simulate`,
-      { amount: amount.toFixed(2), currency },
+      `/sandbox/payouts/${payoutId}/simulate/settled`,
+      utr ? { utr } : {},
     );
     return NextResponse.json({ success: true, result });
   } catch (e) {

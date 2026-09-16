@@ -1,26 +1,26 @@
 // POST /api/conduit/send
 //
-// Conduit payment initiation — stateless VA + OFFRAMP Order pattern.
-// OmniPay operates under KYC Reliance (platform approval) — no Persona link needed.
+// Conduit payment initiation — stateless VA + Payout pattern.
+// OmniPay is a PLATFORM customer on Conduit (one CONDUIT_CUSTOMER_ID covers all transfers).
+// Individual senders are NOT Conduit customers — no per-user onboarding needed.
 //
 // Flow:
-//   1. Find or create Conduit customer for the SENDER (by email, no KYC link)
-//   2. Create Virtual Account on-demand (USD, returns deposit instructions)
-//   3. Poll until VA is active (≤ 18 s)
-//   4. Create OFFRAMP Order: VA → FX → recipient's bank
-//   5. Return deposit instructions to client — stored in localStorage, NOT in DB
+//   1. Create a Virtual Account under OmniPay's platform customer ID
+//   2. Poll until VA is active (deposit instructions available)
+//   3. Create a Payout from VA → recipient's bank (POST /payouts)
+//   4. Return VA deposit instructions to client → stored in localStorage (stateless)
 
-import { NextRequest, NextResponse }            from "next/server";
-import { findOrCreateConduitCustomer }          from "@/lib/conduit/customers";
-import { createConduitVA, waitForVAActivation } from "@/lib/conduit/virtual-accounts";
-import { createOfframpOrder }                   from "@/lib/conduit/orders";
-import { isConduitSandbox }                     from "@/lib/conduit/client";
-import type { ConduitOfframpDestination }       from "@/lib/conduit/types";
-import { calcStaticQuote }                      from "@/lib/bridge-fees";
-import { getRate }                              from "@/lib/fx-server";
-import { getTargetCurrency }                    from "@/lib/routing";
+import { NextRequest, NextResponse }             from "next/server";
+import { getConduitCustomerId }                  from "@/lib/conduit/customers";
+import { createConduitVA }                       from "@/lib/conduit/virtual-accounts";
+import { createConduitPayout }                   from "@/lib/conduit/payouts";
+import type { ConduitRecipient }                 from "@/lib/conduit/payouts";
+import { isConduitSandbox }                      from "@/lib/conduit/client";
+import { calcStaticQuote }                       from "@/lib/bridge-fees";
+import { getRate }                               from "@/lib/fx-server";
+import { getTargetCurrency }                     from "@/lib/routing";
 
-export const runtime = "nodejs"; // needs setTimeout for VA activation poll
+export const runtime = "nodejs"; // setTimeout for VA polling
 
 interface SendBody {
   sender_name:       string;
@@ -28,50 +28,41 @@ interface SendBody {
   source_currency:   string;
   recipient_name:    string;
   recipient_country: string;
-  // Recipient bank details (one of: clabe, iban+bic, routing+account, sort_code+account, pix_key)
-  clabe?:            string;
-  iban?:             string;
-  bic?:              string;
-  pix_key?:          string;
-  routing_number?:   string;
+  // Recipient bank (one of these combos):
+  clabe?:            string;   // SPEI — Mexico
+  iban?:             string;   // SEPA — EU
+  bic?:              string;   // SEPA
+  pix_key?:          string;   // PIX — Brazil
+  routing_number?:   string;   // ACH / Fedwire — US
   account_number?:   string;
-  sort_code?:        string;   // UK only — separate from account_number
+  sort_code?:        string;   // FPS — UK
   amount_target:     number;
 }
 
-// Maps country code → Conduit offramp rail + target currency
+// Country → rail mapping
+// TODO: Confirm SPEI support with Conduit before activating Mexico corridor
 const RAIL_MAP: Record<string, { rail: string; currency: string }> = {
-  MX: { rail: "spei",          currency: "MXN" },
-  US: { rail: "ach",           currency: "USD" },
-  BR: { rail: "pix",           currency: "BRL" },
-  CO: { rail: "local",         currency: "COP" },
-  GB: { rail: "fps",           currency: "GBP" },
-  // SEPA zone — add countries as needed
-  DE: { rail: "sepa",          currency: "EUR" },
-  FR: { rail: "sepa",          currency: "EUR" },
-  ES: { rail: "sepa",          currency: "EUR" },
-  IT: { rail: "sepa",          currency: "EUR" },
-  NL: { rail: "sepa",          currency: "EUR" },
-  PT: { rail: "sepa",          currency: "EUR" },
+  MX: { rail: "spei",  currency: "MXN" },
+  US: { rail: "ach",   currency: "USD" },
+  BR: { rail: "pix",   currency: "BRL" },
+  GB: { rail: "fps",   currency: "GBP" },
+  DE: { rail: "sepa",  currency: "EUR" },
+  FR: { rail: "sepa",  currency: "EUR" },
+  ES: { rail: "sepa",  currency: "EUR" },
+  IT: { rail: "sepa",  currency: "EUR" },
+  NL: { rail: "sepa",  currency: "EUR" },
+  PT: { rail: "sepa",  currency: "EUR" },
+  CO: { rail: "local", currency: "COP" },
 };
 
-function buildDestination(body: SendBody, country: string): ConduitOfframpDestination {
-  const railInfo = RAIL_MAP[country];
-  if (!railInfo) throw new Error(`País ${country} no soportado en Conduit`);
-
-  const base: ConduitOfframpDestination = {
-    type:               "bank_account",
-    rail:               railInfo.rail,
-    currency:           railInfo.currency,
-    beneficiaryName:    body.recipient_name,
-    beneficiaryCountry: country,
-  };
-
-  if (railInfo.rail === "spei")  return { ...base, clabe: body.clabe };
-  if (railInfo.rail === "pix")   return { ...base, pixKey: body.pix_key };
-  if (railInfo.rail === "fps")   return { ...base, sortCode: body.sort_code, accountNumber: body.account_number };
-  if (railInfo.rail === "sepa")  return { ...base, iban: body.iban, bic: body.bic };
-  // ach / local / fedwire
+function buildRecipient(body: SendBody, country: string): ConduitRecipient {
+  const rail = RAIL_MAP[country]?.rail;
+  const base  = { name: body.recipient_name };
+  if (rail === "spei")  return { ...base, clabe: body.clabe };
+  if (rail === "pix")   return { ...base, pixKey: body.pix_key };
+  if (rail === "fps")   return { ...base, sortCode: body.sort_code, accountNumber: body.account_number };
+  if (rail === "sepa")  return { ...base, iban: body.iban, bic: body.bic };
+  // ACH / local / fedwire
   return { ...base, routingNumber: body.routing_number, accountNumber: body.account_number };
 }
 
@@ -104,6 +95,9 @@ export async function POST(req: NextRequest): Promise<Response> {
   const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? "https://omnipay.solutions";
 
   try {
+    // OmniPay's platform customer ID (pre-provisioned in Conduit dashboard)
+    const customerId = getConduitCustomerId();
+
     // Convert recipient amount → USD for fee engine
     const targetCurrency = getTargetCurrency(country);
     let amountUSD = amount_target;
@@ -116,21 +110,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       return NextResponse.json({ error: "El monto mínimo de envío es $20 USD equivalente." }, { status: 400 });
     }
 
-    // 1. Find or create Conduit customer (no KYC gate — OmniPay has platform approval)
-    const [firstName, ...rest] = sender_name.split(" ");
-    const customer = await findOrCreateConduitCustomer(
-      sender_email.toLowerCase(),
-      firstName,
-      rest.join(" ") || "-",
-    );
-
-    // 2. Create VA on-demand — returned to client, stored in localStorage (stateless)
-    const va = await createConduitVA(customer.id, "USD");
-
-    // 3. Poll until VA is active (up to ~18 s)
-    const activeVA = await waitForVAActivation(customer.id, va.id);
-
-    // 4. Build fee quote (reuse existing OmniPay engine)
+    // Build fee quote
     let quote;
     try {
       quote = calcStaticQuote(amountUSD, country, "p2p", true);
@@ -138,20 +118,28 @@ export async function POST(req: NextRequest): Promise<Response> {
       return NextResponse.json({ error: "Country not supported" }, { status: 422 });
     }
 
-    // 5. Build OFFRAMP destination from recipient bank details
-    const destination = buildDestination(body, country);
+    // 1. Create Virtual Account under OmniPay's platform customer (on-demand, stateless)
+    // 2. Poll until VA is active (deposit instructions available)
+    const activeVA = await createConduitVA(customerId, "USD");
 
-    // 6. Create OFFRAMP Order — OPC- prefix identifies Conduit orders in webhooks
-    const orderId = `OPC-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    await createOfframpOrder({
-      customerId:        customer.id,
-      sourceVaId:        activeVA.id,
+    // 3. Create Payout: VA → recipient's bank
+    // POST /payouts — this is the correct endpoint for fiat bank payouts (not POST /orders)
+    const orderId    = `OPC-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const recipient  = buildRecipient(body, country);
+    const railInfo   = RAIL_MAP[country];
+
+    await createConduitPayout({
+      customerId,
+      virtualAccountId:  activeVA.id,
+      rail:              railInfo.rail,
       amount:            quote.total_sender_pays,
-      destination,
-      externalReference: orderId,
+      assetCode:         "USD",
+      recipient,
+      purpose:           "personal_transfer",
+      clientReferenceId: orderId,  // OPC- ID for webhook correlation
     });
 
-    // 7. Convert deposit amount to source currency for display
+    // 4. Convert deposit amount to source currency for display
     const usdToSource = source_currency.toLowerCase() === "usd"
       ? 1
       : (await getRate("USD", source_currency.toUpperCase()).catch(() => null)) ?? 1;
@@ -162,7 +150,6 @@ export async function POST(req: NextRequest): Promise<Response> {
     const usDomestic = di.find(i => i.type === "us_domestic");
     const sepa       = di.find(i => i.type === "sepa");
     const swift      = di.find(i => i.type === "swift");
-    const ukDomestic = di.find(i => i.type === "uk_domestic");
 
     const railLabel = source_currency.toLowerCase() === "eur" ? "SEPA"
       : source_currency.toLowerCase() === "gbp" ? "Faster Payments"
@@ -176,16 +163,12 @@ export async function POST(req: NextRequest): Promise<Response> {
       deposit_instructions: {
         rail:              railLabel,
         currency:          source_currency.toUpperCase(),
-        // US domestic (ACH / Wire)
         routing_number:    usDomestic?.routingNumber,
         account_number:    usDomestic?.accountNumber,
         beneficiary_name:  usDomestic?.beneficiaryName ?? swift?.beneficiaryName,
-        // SEPA / SWIFT
+        bank_name:         usDomestic?.bankName ?? swift?.bankName,
         iban:              sepa?.iban ?? swift?.iban,
         bic:               sepa?.bic  ?? swift?.bic,
-        // UK domestic
-        sort_code:         ukDomestic?.sortCode,
-        // Payment reference (required for some VA types)
         payment_reference: di.find(i => i.paymentReferenceRequired)?.paymentReference,
         amount_to_deposit: depositAmountInSource.toFixed(2),
         instructions:      `Deposita exactamente ${depositAmountInSource.toFixed(2)} ${source_currency.toUpperCase()} a esta cuenta.`,
@@ -201,13 +184,12 @@ export async function POST(req: NextRequest): Promise<Response> {
         name:    recipient_name,
         country,
         method:  "bank",
-        rail:    RAIL_MAP[country].rail,
+        rail:    railInfo.rail,
       },
       target_currency: targetCurrency,
       amount_target,
       is_sandbox:      isSandbox,
       va_id:           activeVA.id,
-      customer_id:     customer.id,
       track_url:       `${appUrl}/resultado?order_id=${orderId}`,
     });
   } catch (e) {

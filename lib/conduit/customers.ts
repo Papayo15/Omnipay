@@ -1,55 +1,19 @@
-// Conduit customer management
-// OmniPay operates under KYC Reliance — platform approval covers individual users.
-// No Persona / KYC link needed; just create a customer record by email.
+// Conduit — Platform customer access
+//
+// OmniPay operates as a PLATFORM customer on Conduit.
+// One pre-provisioned customer ID covers all operations — no per-sender customers.
+// Set CONDUIT_CUSTOMER_ID in env after onboarding OmniPay through the Conduit dashboard.
+//
+// If per-user customers are ever needed, use POST /onboarding (application-based,
+// async — requires application.approved webhook before the customer ID is usable).
 
-import { conduitRequest } from "./client";
-import type { ConduitCustomer } from "./types";
-
-interface CreateCustomerParams {
-  email:     string;
-  firstName: string;
-  lastName:  string;
-  type?:     "individual" | "business";
-}
-
-interface ConduitCustomerListResponse {
-  data:     ConduitCustomer[];
-  nextPage?: string;
-}
-
-export async function findConduitCustomer(email: string): Promise<ConduitCustomer | null> {
-  try {
-    const res = await conduitRequest<ConduitCustomerListResponse>(
-      "GET",
-      `/customers?email=${encodeURIComponent(email)}&limit=1`,
+export function getConduitCustomerId(): string {
+  const id = process.env.CONDUIT_CUSTOMER_ID;
+  if (!id) {
+    throw new Error(
+      "CONDUIT_CUSTOMER_ID is not set. " +
+      "Add OmniPay's Conduit customer ID (from the Conduit dashboard) to your env vars.",
     );
-    return res.data?.[0] ?? null;
-  } catch {
-    return null;
   }
-}
-
-export async function createConduitCustomer(params: CreateCustomerParams): Promise<ConduitCustomer> {
-  return conduitRequest<ConduitCustomer>(
-    "POST",
-    "/customers",
-    {
-      type:      params.type ?? "individual",
-      email:     params.email,
-      firstName: params.firstName,
-      lastName:  params.lastName,
-    },
-    // Idempotency key derived from email so concurrent requests don't create duplicates
-    `cust-${Buffer.from(params.email).toString("base64url").slice(0, 40)}`,
-  );
-}
-
-export async function findOrCreateConduitCustomer(
-  email:     string,
-  firstName: string,
-  lastName:  string,
-): Promise<ConduitCustomer> {
-  const existing = await findConduitCustomer(email);
-  if (existing) return existing;
-  return createConduitCustomer({ email, firstName, lastName });
+  return id;
 }

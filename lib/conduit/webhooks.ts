@@ -1,7 +1,7 @@
 // Conduit Webhook Signature Verification — HMAC-SHA256
-// Conduit signs payloads with HMAC-SHA256 using CONDUIT_WEBHOOK_SECRET.
-// Signature header: x-conduit-signature (format: "sha256=<hex>")
-// Mirrors providers/bridge/webhooks.ts HMAC branch.
+// Header: X-Conduit-Signature
+// Format: "v1=<hex>" — possibly multiple segments during key rotation grace periods:
+//   "v1=<hex1> v1=<hex2>" — accept if ANY segment matches.
 
 import type { ConduitWebhookEvent } from "./types";
 
@@ -21,11 +21,7 @@ export async function verifyConduitWebhook(
 
   if (!signatureHeader) return false;
 
-  // Accept both "sha256=<hex>" and bare hex
-  const hex = signatureHeader.startsWith("sha256=")
-    ? signatureHeader.slice(7)
-    : signatureHeader;
-
+  // Compute HMAC-SHA256 of the raw body
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -37,10 +33,17 @@ export async function verifyConduitWebhook(
   const computed = Array.from(new Uint8Array(sig))
     .map(b => b.toString(16).padStart(2, "0")).join("");
 
-  if (computed.length !== hex.length) return false;
-  let diff = 0;
-  for (let i = 0; i < computed.length; i++) diff |= computed.charCodeAt(i) ^ hex.charCodeAt(i);
-  return diff === 0;
+  // Header format: "v1=<hex>" — extract hex portion(s)
+  // During secret rotation, Conduit sends multiple segments: "v1=<a> v1=<b>"
+  const segments = signatureHeader.split(/\s+/);
+  for (const seg of segments) {
+    const hex = seg.startsWith("v1=") ? seg.slice(3) : seg;
+    if (hex.length !== computed.length) continue;
+    let diff = 0;
+    for (let i = 0; i < computed.length; i++) diff |= computed.charCodeAt(i) ^ hex.charCodeAt(i);
+    if (diff === 0) return true;
+  }
+  return false;
 }
 
 export function parseConduitWebhookEvent(rawBody: string): ConduitWebhookEvent {

@@ -4,15 +4,18 @@
 // ── Virtual Accounts ──────────────────────────────────────────────────────────
 
 export interface ConduitDepositInstruction {
+  // Conduit returns a union type per instruction — common fields:
   type: "us_domestic" | "uk_domestic" | "swift" | "sepa";
   currency: string;
   beneficiaryName: string;
   paymentReferenceRequired: boolean;
   paymentReference?: string;
   rails: string[];
-  // us_domestic
+  // us_domestic / swift
   routingNumber?: string;
   accountNumber?: string;
+  bankName?: string;
+  bankAddress?: string;
   // sepa / swift
   iban?: string;
   bic?: string;
@@ -29,65 +32,37 @@ export interface ConduitVirtualAccount {
   updatedAt: string;
 }
 
-// ── Customers ─────────────────────────────────────────────────────────────────
+// ── Payouts ───────────────────────────────────────────────────────────────────
+// POST /payouts — sends fiat from a VA to a bank account.
+// (Orders are for crypto conversion — separate concept.)
 
-export interface ConduitCustomer {
-  id: string;
-  email: string;
-  status: "pending" | "approved" | "rejected";
-  type: "individual" | "business";
-  createdAt: string;
-}
-
-// ── Orders ────────────────────────────────────────────────────────────────────
-
-export interface ConduitOrderSource {
-  assetAmount: string;
-  assetType: string;
-  virtualAccountId?: string;
-}
-
-export interface ConduitOrderDestination {
-  assetAmount: string;
-  assetType: string;
-  type?: string;
-  rail?: string;
-  currency?: string;
-}
-
-export interface ConduitOrder {
+export interface ConduitPayout {
   id: string;
   status: "pending" | "processing" | "completed" | "failed" | "cancelled";
-  type: "ONRAMP" | "OFFRAMP";
-  externalReference?: string;
-  source: ConduitOrderSource;
-  destination: ConduitOrderDestination;
-  reasonCode?: string;
-  failureMessage?: string;
+  clientReferenceId?: string;     // OPC- orderId for webhook correlation
+  assetAmount: { code: string; amount: string };
   createdAt: string;
   updatedAt: string;
 }
 
-export interface ConduitOfframpDestination {
-  type: "bank_account";
-  rail: string;           // "ach" | "fedwire" | "sepa" | "spei" | "pix" | "fps"
-  currency: string;
-  accountNumber?: string;
-  routingNumber?: string; // ACH / Fedwire
-  iban?: string;          // SEPA
-  bic?: string;           // SEPA
-  clabe?: string;         // SPEI
-  pixKey?: string;        // PIX
-  sortCode?: string;      // FPS
-  beneficiaryName: string;
-  beneficiaryCountry: string;
+// ── Orders (crypto conversion — not used for bank payouts) ────────────────────
+
+export interface ConduitOrder {
+  id: string;
+  status: "pending" | "succeeded" | "failed" | "cancelled";
+  clientReferenceId?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ── Webhook events ────────────────────────────────────────────────────────────
+// Terminal events for bank payouts: payout.completed / payout.failed
+// Deposit events: transaction.created / transaction.completed / transaction.failed
+// See: https://docs.conduit.financial (webhook event types catalog)
 
 export interface ConduitWebhookEvent {
-  id: string;
-  type: string;           // "transaction.completed", "order.succeeded", etc.
+  id:         string;
+  type:       string;  // "payout.completed" | "payout.failed" | "transaction.completed" | ...
   created_at: string;
-  data: Record<string, unknown>;
+  data:       Record<string, unknown>;
 }
