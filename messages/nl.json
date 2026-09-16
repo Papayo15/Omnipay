@@ -785,7 +785,8 @@
     "kyc_already_done": "✓ Ik heb de verificatie voltooid",
     "email_verifying": "Controleren…",
     "email_verified": "✓ Geverifieerd account",
-    "kyc_review_countdown": "Valideren bij onze aanbieder… ({seconds}s)"
+    "kyc_review_countdown": "Valideren bij onze aanbieder… ({seconds}s)",
+    "new_transfer": "Nog een overschrijving"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",

@@ -785,7 +785,8 @@
     "kyc_already_done": "✓ Doğrulamayı tamamladım",
     "email_verifying": "Doğrulanıyor…",
     "email_verified": "✓ Hesap doğrulandı",
-    "kyc_review_countdown": "Sağlayıcımızla doğrulanıyor… ({seconds}s)"
+    "kyc_review_countdown": "Sağlayıcımızla doğrulanıyor… ({seconds}s)",
+    "new_transfer": "Başka bir transfer"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",

@@ -784,7 +784,8 @@
     "kyc_already_done": "✓ Já completei a verificação",
     "email_verifying": "Verificando…",
     "email_verified": "✓ Conta verificada",
-    "kyc_review_countdown": "Validando com nosso provedor… ({seconds}s)"
+    "kyc_review_countdown": "Validando com nosso provedor… ({seconds}s)",
+    "new_transfer": "Outra transferência"
   },
   "recibir": {
     "loading": "Verificando seu convite...",

@@ -785,7 +785,8 @@
     "kyc_already_done": "✓ 이미 인증을 완료했습니다",
     "email_verifying": "확인 중…",
     "email_verified": "✓ 인증된 계정",
-    "kyc_review_countdown": "제공업체와 검증 중… ({seconds}초)"
+    "kyc_review_countdown": "제공업체와 검증 중… ({seconds}초)",
+    "new_transfer": "다른 송금하기"
   },
   "recibir": {
     "loading": "초대장 확인 중...",

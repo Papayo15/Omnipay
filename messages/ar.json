@@ -785,7 +785,8 @@
     "kyc_already_done": "✓ لقد أكملت التحقق بالفعل",
     "email_verifying": "جارٍ التحقق…",
     "email_verified": "✓ حساب موثق",
-    "kyc_review_countdown": "التحقق مع مزودنا… ({seconds}ث)"
+    "kyc_review_countdown": "التحقق مع مزودنا… ({seconds}ث)",
+    "new_transfer": "إرسال آخر"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",

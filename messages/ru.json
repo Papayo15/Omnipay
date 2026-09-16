@@ -785,7 +785,8 @@
     "kyc_already_done": "✓ Я уже завершил верификацию",
     "email_verifying": "Проверка…",
     "email_verified": "✓ Аккаунт подтверждён",
-    "kyc_review_countdown": "Проверка у провайдера… ({seconds}с)"
+    "kyc_review_countdown": "Проверка у провайдера… ({seconds}с)",
+    "new_transfer": "Ещё один перевод"
   },
   "recibir": {
     "loading": "Проверка вашего приглашения...",

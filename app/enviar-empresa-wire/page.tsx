@@ -207,6 +207,29 @@ export default function EnviarEmpresaWirePage() {
     return () => { if (countdownTimer.current) clearInterval(countdownTimer.current); };
   }, [kybLongReview]);
 
+  // Restore active transfer from localStorage on page load
+  useEffect(() => {
+    if (searchParams.get("tos_done") === "1" || searchParams.get("kyb_done") === "1") return;
+    try {
+      const raw = localStorage.getItem("omnipay_active_transfer");
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        page?: string; vaInfo?: VaInfo; confirmedAmount?: number; targetCurrency?: string;
+        orderId?: string; destinationRail?: string; savedAt?: number;
+      };
+      if (saved.page !== "b2b") return;
+      if (Date.now() - (saved.savedAt ?? 0) > 86_400_000) { localStorage.removeItem("omnipay_active_transfer"); return; }
+      if (!saved.vaInfo) return;
+      setVaInfo(saved.vaInfo);
+      setConfirmedAmount(saved.confirmedAmount ?? 0);
+      setTargetCurrency(saved.targetCurrency ?? "MXN");
+      setOrderId(saved.orderId ?? "");
+      setDestinationRail(saved.destinationRail ?? "");
+      setStep("instructions");
+    } catch { try { localStorage.removeItem("omnipay_active_transfer"); } catch { /* ignore */ } }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Detect return from Bridge KYB/ToS — restore form + auto-retry
   useEffect(() => {
     const tosDone = searchParams.get("tos_done") === "1";
@@ -444,7 +467,7 @@ export default function EnviarEmpresaWirePage() {
       }
 
       const di = (data.deposit_instructions ?? {}) as Record<string, string | null>;
-      setVaInfo({
+      const newVaInfo: VaInfo = {
         bank_name:      di.bank_name ?? null,
         beneficiary:    di.beneficiary_name ?? null,
         routing_number: di.routing_number ?? null,
@@ -456,11 +479,23 @@ export default function EnviarEmpresaWirePage() {
         pix:            di.br_code ?? null,
         currency:       di.currency ?? sourceCurrency,
         payment_rail:   di.rail ?? null,
-      });
-      setConfirmedAmount(data.amount_target ?? parseFloat(amount));
-      setTargetCurrency(data.target_currency ?? recipientCurrency);
-      setDestinationRail((data as Record<string, unknown>).destination_rail as string ?? "");
-      setOrderId(data.order_id ?? "");
+      };
+      const newAmount    = data.amount_target ?? parseFloat(amount);
+      const newTargetCcy = data.target_currency ?? recipientCurrency;
+      const newRail      = (data as Record<string, unknown>).destination_rail as string ?? "";
+      const newOrderId   = data.order_id ?? "";
+      setVaInfo(newVaInfo);
+      setConfirmedAmount(newAmount);
+      setTargetCurrency(newTargetCcy);
+      setDestinationRail(newRail);
+      setOrderId(newOrderId);
+      try {
+        localStorage.setItem("omnipay_active_transfer", JSON.stringify({
+          page: "b2b", vaInfo: newVaInfo, confirmedAmount: newAmount,
+          targetCurrency: newTargetCcy, orderId: newOrderId,
+          destinationRail: newRail, savedAt: Date.now(),
+        }));
+      } catch { /* localStorage unavailable */ }
       setStep("instructions");
     } catch (e) {
       setError((e as Error).message ?? "Error de conexión");
@@ -922,8 +957,13 @@ export default function EnviarEmpresaWirePage() {
               </div>
             )}
 
-            <button onClick={() => setStep("form")}
-              className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2">
+            <button
+              onClick={() => {
+                try { localStorage.removeItem("omnipay_active_transfer"); } catch { /* ignore */ }
+                setStep("form");
+              }}
+              className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2"
+            >
               {t("new_link")}
             </button>
           </div>

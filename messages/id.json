@@ -785,7 +785,8 @@
     "kyc_already_done": "✓ Saya sudah menyelesaikan verifikasi",
     "email_verifying": "Memeriksa…",
     "email_verified": "✓ Akun terverifikasi",
-    "kyc_review_countdown": "Memvalidasi dengan penyedia kami… ({seconds}d)"
+    "kyc_review_countdown": "Memvalidasi dengan penyedia kami… ({seconds}d)",
+    "new_transfer": "Transfer lagi"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",

@@ -786,7 +786,8 @@
     "kyc_already_done": "✓ I already completed verification",
     "email_verifying": "Checking…",
     "email_verified": "✓ Verified account",
-    "kyc_review_countdown": "Validating with our provider… ({seconds}s)"
+    "kyc_review_countdown": "Validating with our provider… ({seconds}s)",
+    "new_transfer": "Send another transfer"
   },
   "recibir": {
     "loading": "Verifying your invitation...",

@@ -785,7 +785,8 @@
     "kyc_already_done": "✓ Tôi đã hoàn thành xác minh",
     "email_verifying": "Đang kiểm tra…",
     "email_verified": "✓ Tài khoản đã xác minh",
-    "kyc_review_countdown": "Đang xác minh với nhà cung cấp… ({seconds}s)"
+    "kyc_review_countdown": "Đang xác minh với nhà cung cấp… ({seconds}s)",
+    "new_transfer": "Chuyển khoản khác"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",

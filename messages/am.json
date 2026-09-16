@@ -785,7 +785,8 @@
     "kyc_already_done": "✓ ማረጋገጫ አጠናቅቄያለሁ",
     "email_verifying": "እየተረጋገጠ…",
     "email_verified": "✓ መለያ ተረጋግጧል",
-    "kyc_review_countdown": "ከአቅራቢያችን ጋር እያረጋጠ… ({seconds}ሰ)"
+    "kyc_review_countdown": "ከአቅራቢያችን ጋር እያረጋጠ… ({seconds}ሰ)",
+    "new_transfer": "ሌላ ዝውውር አድርግ"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",

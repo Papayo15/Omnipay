@@ -771,7 +771,8 @@
     "tos_popup_blocked_link": "¿El popup fue bloqueado? Haz clic aquí para abrirlo",
     "email_verifying": "Verificando…",
     "email_verified": "✓ Cuenta verificada",
-    "kyc_review_countdown": "Validando verificación con nuestro proveedor… ({seconds}s)"
+    "kyc_review_countdown": "Validando verificación con nuestro proveedor… ({seconds}s)",
+    "new_transfer": "Realizar otro envío"
   },
   "recibir": {
     "loading": "Verificando tu invitación...",

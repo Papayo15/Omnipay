@@ -785,7 +785,8 @@
     "kyc_already_done": "✓ Ich habe die Verifizierung abgeschlossen",
     "email_verifying": "Überprüfe…",
     "email_verified": "✓ Konto verifiziert",
-    "kyc_review_countdown": "Validierung beim Anbieter… ({seconds}s)"
+    "kyc_review_countdown": "Validierung beim Anbieter… ({seconds}s)",
+    "new_transfer": "Weitere Überweisung"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",

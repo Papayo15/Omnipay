@@ -265,6 +265,30 @@ export default function EnviarPage() {
     return () => { if (countdownTimer.current) clearInterval(countdownTimer.current); };
   }, [kycLongReview]);
 
+  // Restore active transfer from localStorage on page load (e.g. mobile browser reload)
+  useEffect(() => {
+    if (searchParams.get("tos_done") === "1" || searchParams.get("kyc_done") === "1") return;
+    try {
+      const raw = localStorage.getItem("omnipay_active_transfer");
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        page?: string; vaInfo?: VaInfo; confirmedAmount?: number; targetCurrency?: string;
+        depositAmount?: string | null; orderId?: string; destinationRail?: string; savedAt?: number;
+      };
+      if (saved.page !== "enviar") return;
+      if (Date.now() - (saved.savedAt ?? 0) > 86_400_000) { localStorage.removeItem("omnipay_active_transfer"); return; }
+      if (!saved.vaInfo) return;
+      setVaInfo(saved.vaInfo);
+      setConfirmedAmount(saved.confirmedAmount ?? 0);
+      setTargetCurrency(saved.targetCurrency ?? "MXN");
+      setDepositAmount(saved.depositAmount ?? null);
+      setOrderId(saved.orderId ?? "");
+      setDestinationRail(saved.destinationRail ?? "");
+      setStep("instructions");
+    } catch { try { localStorage.removeItem("omnipay_active_transfer"); } catch { /* ignore */ } }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // tos_done=1: Bridge aceptó ToS — restaurar form y llamar /send directamente.
   // NO llamamos /kyc-link por separado: el send route ya tiene getKycLink + createKycLink fallback.
   // Usamos autoRetryFromTos (no autoRetry) para que handleSubmit sepa navegar a Persona,
@@ -563,7 +587,7 @@ export default function EnviarPage() {
 
       // Success — map deposit_instructions to VaInfo shape
       const di = (data.deposit_instructions ?? {}) as Record<string, string | null>;
-      setVaInfo({
+      const newVaInfo: VaInfo = {
         bank_name:      di.bank_name ?? null,
         beneficiary:    di.beneficiary_name ?? null,
         routing_number: di.routing_number ?? null,
@@ -575,12 +599,25 @@ export default function EnviarPage() {
         pix:            di.br_code ?? null,
         currency:       di.currency ?? senderCurrency,
         payment_rail:   di.rail ?? null,
-      });
-      setConfirmedAmount(data.amount_target ?? parseFloat(amountTarget));
-      setTargetCurrency(data.target_currency ?? "MXN");
-      setDepositAmount(di.amount_to_deposit ?? null);
-      setDestinationRail((data as Record<string, unknown>).destination_rail as string ?? "");
-      setOrderId(data.order_id ?? "");
+      };
+      const newAmount       = data.amount_target ?? parseFloat(amountTarget);
+      const newTargetCcy    = data.target_currency ?? "MXN";
+      const newDepositAmt   = di.amount_to_deposit ?? null;
+      const newOrderId      = data.order_id ?? "";
+      const newRail         = (data as Record<string, unknown>).destination_rail as string ?? "";
+      setVaInfo(newVaInfo);
+      setConfirmedAmount(newAmount);
+      setTargetCurrency(newTargetCcy);
+      setDepositAmount(newDepositAmt);
+      setDestinationRail(newRail);
+      setOrderId(newOrderId);
+      try {
+        localStorage.setItem("omnipay_active_transfer", JSON.stringify({
+          page: "enviar", vaInfo: newVaInfo, confirmedAmount: newAmount,
+          targetCurrency: newTargetCcy, depositAmount: newDepositAmt,
+          orderId: newOrderId, destinationRail: newRail, savedAt: Date.now(),
+        }));
+      } catch { /* localStorage unavailable */ }
       setStep("instructions");
       if (prePopup && !prePopup.closed) prePopup.close();
     } catch {
@@ -1236,6 +1273,16 @@ export default function EnviarPage() {
                 </button>
               </div>
             )}
+
+            <button
+              onClick={() => {
+                try { localStorage.removeItem("omnipay_active_transfer"); } catch { /* ignore */ }
+                setStep("form");
+              }}
+              className="w-full text-slate-500 text-sm hover:text-slate-300 transition-colors py-2"
+            >
+              ← {t("new_transfer")}
+            </button>
 
             {error && (
               <div className="bg-red-900/20 border border-red-500/30 rounded-xl px-4 py-3 text-red-300 text-sm">

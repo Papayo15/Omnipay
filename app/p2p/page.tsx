@@ -275,6 +275,29 @@ export default function P2PPage() {
     }
   }, [nombre, email, country, currency, account, apBankCode, amountLocal]);
 
+  // Restore active share link from localStorage on page load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tos_done") === "1" || params.get("kyc_done") === "1") return;
+    try {
+      const raw = localStorage.getItem("omnipay_active_transfer");
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        page?: string; shareLink?: string; nombre?: string; amountLocal?: string;
+        currency?: string; realSenderTotal?: string | null; savedAt?: number;
+      };
+      if (saved.page !== "p2p") return;
+      if (Date.now() - (saved.savedAt ?? 0) > 86_400_000) { localStorage.removeItem("omnipay_active_transfer"); return; }
+      if (!saved.shareLink) return;
+      setShareLink(saved.shareLink);
+      if (saved.nombre)          setNombre(saved.nombre);
+      if (saved.amountLocal)     setAmountLocal(saved.amountLocal);
+      if (saved.realSenderTotal) setRealSenderTotal(saved.realSenderTotal);
+      setStep("share");
+    } catch { try { localStorage.removeItem("omnipay_active_transfer"); } catch { /* ignore */ } }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Pre-populate from URL query params — also detects post-KYC return
   useEffect(() => {
     const p       = new URLSearchParams(window.location.search);
@@ -617,10 +640,16 @@ export default function P2PPage() {
         }
       } else {
         kycAutoRetryRef.current = false;
-        setShareLink(data.pay_link);
+        setShareLink(data.pay_link ?? "");
         setKycStillPending(false);
         setSavedKycForm(false);
         try { sessionStorage.removeItem("omnipay_p2p_form"); } catch { /* ignore */ }
+        try {
+          localStorage.setItem("omnipay_active_transfer", JSON.stringify({
+            page: "p2p", shareLink: data.pay_link ?? "",
+            nombre, amountLocal, realSenderTotal, savedAt: Date.now(),
+          }));
+        } catch { /* localStorage unavailable */ }
         setStep("share");
       }
     } catch (err) {
@@ -887,8 +916,14 @@ export default function P2PPage() {
               {copied ? "✓" : t("share_copy")}
             </button>
           </div>}
-          <button onClick={() => { setStep("form"); setNombre(""); setEmail(""); setAccount(""); setAmountLocal(""); setRecipientPhone(""); setRealSenderTotal(null); setKycUrl(null); setKycStillPending(false); }}
-            className="text-slate-500 hover:text-slate-300 text-xs transition-colors">
+          <button
+            onClick={() => {
+              try { localStorage.removeItem("omnipay_active_transfer"); } catch { /* ignore */ }
+              setStep("form"); setNombre(""); setEmail(""); setAccount(""); setAmountLocal("");
+              setRecipientPhone(""); setRealSenderTotal(null); setKycUrl(null); setKycStillPending(false);
+            }}
+            className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
+          >
             + {t("new_transfer")}
           </button>
         </div>

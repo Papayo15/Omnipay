@@ -785,7 +785,8 @@
     "kyc_already_done": "✓ 確認を完了しました",
     "email_verifying": "確認中…",
     "email_verified": "✓ 確認済みアカウント",
-    "kyc_review_countdown": "プロバイダーで検証中… ({seconds}秒)"
+    "kyc_review_countdown": "プロバイダーで検証中… ({seconds}秒)",
+    "new_transfer": "別の送金をする"
   },
   "recibir": {
     "loading": "招待を確認中...",
