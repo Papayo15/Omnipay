@@ -486,7 +486,10 @@
     "share_invite": "分享",
     "calculate_fees_button": "查看费率 →",
     "routing_label": "路由号码（9位数字）",
-    "account_number_label": "银行账号"
+    "account_number_label": "银行账号",
+    "email_verifying": "检查中…",
+    "email_verified": "✓ 账户已验证",
+    "kyc_review_countdown": "正在与提供商验证… ({seconds}秒)"
   },
   "pagar_bridge": {
     "submit": "发送汇款 →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "文件审核中",
     "kyc_long_review_body": "可能需要几分钟。此页面将自动跳转。",
     "kyc_rejected_error": "您的验证被 Bridge 拒绝。您的信息可能已存在账户。请联系支持：support@omnipay.solutions",
-    "kyc_already_done": "✓ 我已完成验证"
+    "kyc_already_done": "✓ 我已完成验证",
+    "email_verifying": "检查中…",
+    "email_verified": "✓ 账户已验证",
+    "kyc_review_countdown": "正在与提供商验证… ({seconds}秒)"
   },
   "recibir": {
     "loading": "正在验证邀请...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge 正在处理您的企业验证。此页面将自动跳转。",
     "kyb_long_review_title": "企业审核中",
     "kyb_long_review_body": "Bridge 正在审核您的企业文件。此页面将自动跳转。",
-    "kyb_rejected_error": "您的企业验证被 Bridge 拒绝。该信息可能已存在账户。请联系支持：support@omnipay.solutions"
+    "kyb_rejected_error": "您的企业验证被 Bridge 拒绝。该信息可能已存在账户。请联系支持：support@omnipay.solutions",
+    "email_verifying": "检查中…",
+    "email_verified": "✓ 账户已验证",
+    "kyb_review_countdown": "正在与提供商验证… ({seconds}秒)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

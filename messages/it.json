@@ -486,7 +486,10 @@
     "share_invite": "Condividi",
     "calculate_fees_button": "Calcola tariffe →",
     "routing_label": "Numero di routing (9 cifre)",
-    "account_number_label": "Numero di conto bancario"
+    "account_number_label": "Numero di conto bancario",
+    "email_verifying": "Verifica…",
+    "email_verified": "✓ Account verificato",
+    "kyc_review_countdown": "Validazione con il fornitore… ({seconds}s)"
   },
   "pagar_bridge": {
     "submit": "Effettua invio →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "Documento in revisione",
     "kyc_long_review_body": "Potrebbero volerci alcuni minuti. La schermata avanzerà automaticamente.",
     "kyc_rejected_error": "La tua verifica è stata rifiutata da Bridge. Potrebbe già esistere un account con i tuoi dati. Contatta il supporto: support@omnipay.solutions",
-    "kyc_already_done": "✓ Ho già completato la verifica"
+    "kyc_already_done": "✓ Ho già completato la verifica",
+    "email_verifying": "Verifica…",
+    "email_verified": "✓ Account verificato",
+    "kyc_review_countdown": "Validazione con il fornitore… ({seconds}s)"
   },
   "recibir": {
     "loading": "Verifica del tuo invito...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge sta elaborando la verifica della tua azienda. La schermata avanzerà automaticamente.",
     "kyb_long_review_title": "Azienda in revisione",
     "kyb_long_review_body": "Bridge sta esaminando la documentazione della tua azienda. La schermata avanzerà automaticamente.",
-    "kyb_rejected_error": "La verifica della tua azienda è stata rifiutata da Bridge. Potrebbe già esistere un account con questi dati. Contatta il supporto: support@omnipay.solutions"
+    "kyb_rejected_error": "La verifica della tua azienda è stata rifiutata da Bridge. Potrebbe già esistere un account con questi dati. Contatta il supporto: support@omnipay.solutions",
+    "email_verifying": "Verifica…",
+    "email_verified": "✓ Account verificato",
+    "kyb_review_countdown": "Validazione con il fornitore… ({seconds}s)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

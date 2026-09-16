@@ -486,7 +486,10 @@
     "share_invite": "Bagikan",
     "calculate_fees_button": "Lihat biaya →",
     "routing_label": "Nomor routing (9 digit)",
-    "account_number_label": "Nomor rekening bank"
+    "account_number_label": "Nomor rekening bank",
+    "email_verifying": "Memeriksa…",
+    "email_verified": "✓ Akun terverifikasi",
+    "kyc_review_countdown": "Memvalidasi dengan penyedia kami… ({seconds}d)"
   },
   "pagar_bridge": {
     "submit": "Kirim uang →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "Dokumen sedang ditinjau",
     "kyc_long_review_body": "Mungkin memerlukan beberapa menit. Layar ini akan otomatis lanjut.",
     "kyc_rejected_error": "Verifikasi Anda ditolak oleh Bridge. Akun dengan data Anda mungkin sudah ada. Hubungi dukungan: support@omnipay.solutions",
-    "kyc_already_done": "✓ Saya sudah menyelesaikan verifikasi"
+    "kyc_already_done": "✓ Saya sudah menyelesaikan verifikasi",
+    "email_verifying": "Memeriksa…",
+    "email_verified": "✓ Akun terverifikasi",
+    "kyc_review_countdown": "Memvalidasi dengan penyedia kami… ({seconds}d)"
   },
   "recibir": {
     "loading": "Memverifikasi undangan Anda...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge sedang memproses verifikasi perusahaan Anda. Layar ini akan otomatis lanjut.",
     "kyb_long_review_title": "Perusahaan sedang ditinjau",
     "kyb_long_review_body": "Bridge sedang meninjau dokumentasi perusahaan Anda. Layar ini akan otomatis lanjut.",
-    "kyb_rejected_error": "Verifikasi perusahaan Anda ditolak oleh Bridge. Akun dengan data ini mungkin sudah ada. Hubungi: support@omnipay.solutions"
+    "kyb_rejected_error": "Verifikasi perusahaan Anda ditolak oleh Bridge. Akun dengan data ini mungkin sudah ada. Hubungi: support@omnipay.solutions",
+    "email_verifying": "Memeriksa…",
+    "email_verified": "✓ Akun terverifikasi",
+    "kyb_review_countdown": "Memvalidasi dengan penyedia kami… ({seconds}d)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

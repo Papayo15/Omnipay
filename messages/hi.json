@@ -486,7 +486,10 @@
     "share_invite": "साझा करें",
     "calculate_fees_button": "शुल्क देखें →",
     "routing_label": "रूटिंग नंबर (9 अंक)",
-    "account_number_label": "बैंक खाता संख्या"
+    "account_number_label": "बैंक खाता संख्या",
+    "email_verifying": "जाँच हो रही है…",
+    "email_verified": "✓ सत्यापित खाता",
+    "kyc_review_countdown": "हमारे प्रदाता के साथ सत्यापन… ({seconds}s)"
   },
   "pagar_bridge": {
     "submit": "पैसे भेजें →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "दस्तावेज़ समीक्षाधीन",
     "kyc_long_review_body": "कुछ मिनट लग सकते हैं। यह स्क्रीन स्वतः आगे बढ़ेगी।",
     "kyc_rejected_error": "Bridge ने आपका सत्यापन अस्वीकार कर दिया। आपके डेटा से पहले से खाता मौजूद हो सकता है। सहायता से संपर्क करें: support@omnipay.solutions",
-    "kyc_already_done": "✓ मैंने सत्यापन पूरा कर लिया है"
+    "kyc_already_done": "✓ मैंने सत्यापन पूरा कर लिया है",
+    "email_verifying": "जाँच हो रही है…",
+    "email_verified": "✓ सत्यापित खाता",
+    "kyc_review_countdown": "हमारे प्रदाता के साथ सत्यापन… ({seconds}s)"
   },
   "recibir": {
     "loading": "आपका आमंत्रण सत्यापित हो रहा है...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge आपकी कंपनी का सत्यापन प्रोसेस कर रहा है। यह स्क्रीन स्वतः आगे बढ़ेगी।",
     "kyb_long_review_title": "कंपनी समीक्षाधीन",
     "kyb_long_review_body": "Bridge कंपनी दस्तावेज़ों की समीक्षा कर रहा है। यह स्क्रीन स्वतः आगे बढ़ेगी।",
-    "kyb_rejected_error": "Bridge ने कंपनी सत्यापन अस्वीकार किया। इन डेटा से पहले से खाता मौजूद हो सकता है। सहायता: support@omnipay.solutions"
+    "kyb_rejected_error": "Bridge ने कंपनी सत्यापन अस्वीकार किया। इन डेटा से पहले से खाता मौजूद हो सकता है। सहायता: support@omnipay.solutions",
+    "email_verifying": "जाँच हो रही है…",
+    "email_verified": "✓ सत्यापित खाता",
+    "kyb_review_countdown": "हमारे प्रदाता के साथ सत्यापन… ({seconds}s)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

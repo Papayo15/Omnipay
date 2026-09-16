@@ -486,7 +486,10 @@
     "share_invite": "Partager",
     "calculate_fees_button": "Calculer les frais →",
     "routing_label": "Numéro de routage (9 chiffres)",
-    "account_number_label": "Numéro de compte bancaire"
+    "account_number_label": "Numéro de compte bancaire",
+    "email_verifying": "Vérification…",
+    "email_verified": "✓ Compte vérifié",
+    "kyc_review_countdown": "Validation avec notre fournisseur… ({seconds}s)"
   },
   "pagar_bridge": {
     "submit": "Effectuer l'envoi →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "Document en cours de vérification",
     "kyc_long_review_body": "Cela peut prendre quelques minutes. Cet écran avancera automatiquement.",
     "kyc_rejected_error": "Votre vérification a été rejetée par Bridge. Un compte avec vos coordonnées existe peut-être déjà. Contactez le support : support@omnipay.solutions",
-    "kyc_already_done": "✓ J'ai déjà complété la vérification"
+    "kyc_already_done": "✓ J'ai déjà complété la vérification",
+    "email_verifying": "Vérification…",
+    "email_verified": "✓ Compte vérifié",
+    "kyc_review_countdown": "Validation avec notre fournisseur… ({seconds}s)"
   },
   "recibir": {
     "loading": "Vérification de votre invitation...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge traite la vérification de votre entreprise. Cet écran avancera automatiquement.",
     "kyb_long_review_title": "Entreprise en cours de vérification",
     "kyb_long_review_body": "Bridge examine la documentation de votre entreprise. Cet écran avancera automatiquement.",
-    "kyb_rejected_error": "La vérification de votre entreprise a été rejetée par Bridge. Un compte avec ces données existe peut-être déjà. Contactez le support : support@omnipay.solutions"
+    "kyb_rejected_error": "La vérification de votre entreprise a été rejetée par Bridge. Un compte avec ces données existe peut-être déjà. Contactez le support : support@omnipay.solutions",
+    "email_verifying": "Vérification…",
+    "email_verified": "✓ Compte vérifié",
+    "kyb_review_countdown": "Validation avec notre fournisseur… ({seconds}s)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -486,7 +486,10 @@
     "share_invite": "Raba",
     "calculate_fees_button": "Lissafa kuɗin →",
     "routing_label": "Lambar routing (lamba 9)",
-    "account_number_label": "Lambar asusun banki"
+    "account_number_label": "Lambar asusun banki",
+    "email_verifying": "Duba…",
+    "email_verified": "✓ Asusu tabbatacce",
+    "kyc_review_countdown": "Tabbatarwa tare da mai ba da sabis… ({seconds}s)"
   },
   "pagar_bridge": {
     "submit": "Aika kuɗi →",
@@ -778,7 +781,10 @@
     "kyc_long_review_title": "Ana duba takarda",
     "kyc_long_review_body": "Zai iya ɗaukar mintuna kaɗan. Wannan allon zai ci gaba ta atomatik.",
     "kyc_rejected_error": "An ƙi tabbatarwarka daga Bridge. Wataƙila akwai asusun da bayananka. Tuntuɓi tallafi: support@omnipay.solutions",
-    "kyc_already_done": "✓ Na riga na kammala tabbatarwa"
+    "kyc_already_done": "✓ Na riga na kammala tabbatarwa",
+    "email_verifying": "Duba…",
+    "email_verified": "✓ Asusu tabbatacce",
+    "kyc_review_countdown": "Tabbatarwa tare da mai ba da sabis… ({seconds}s)"
   },
   "recibir": {
     "loading": "Ana tabbatar da gayyatarka...",
@@ -985,7 +991,10 @@
     "kyb_submitted_body": "Bridge na sarrafa tabbatarwa ta kamfaninku. Wannan allon zai ci gaba ta atomatik.",
     "kyb_long_review_title": "Ana duba kamfani",
     "kyb_long_review_body": "Bridge na duba takardun kamfaninku. Wannan allon zai ci gaba ta atomatik.",
-    "kyb_rejected_error": "An ƙi tabbatarwa ta kamfaninku daga Bridge. Wataƙila akwai asusun da wannan bayanai. Tallafi: support@omnipay.solutions"
+    "kyb_rejected_error": "An ƙi tabbatarwa ta kamfaninku daga Bridge. Wataƙila akwai asusun da wannan bayanai. Tallafi: support@omnipay.solutions",
+    "email_verifying": "Duba…",
+    "email_verified": "✓ Asusu tabbatacce",
+    "kyb_review_countdown": "Tabbatarwa tare da mai ba da sabis… ({seconds}s)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

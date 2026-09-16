@@ -486,7 +486,10 @@
     "share_invite": "Teilen",
     "calculate_fees_button": "Gebühren berechnen →",
     "routing_label": "Routing-Nummer (9 Stellen)",
-    "account_number_label": "Bankkontonummer"
+    "account_number_label": "Bankkontonummer",
+    "email_verifying": "Überprüfe…",
+    "email_verified": "✓ Konto verifiziert",
+    "kyc_review_countdown": "Validierung beim Anbieter… ({seconds}s)"
   },
   "pagar_bridge": {
     "submit": "Überweisung senden →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "Dokument wird geprüft",
     "kyc_long_review_body": "Das kann einige Minuten dauern. Diese Seite aktualisiert sich automatisch.",
     "kyc_rejected_error": "Deine Verifizierung wurde von Bridge abgelehnt. Möglicherweise existiert bereits ein Konto mit deinen Daten. Kontaktiere den Support: support@omnipay.solutions",
-    "kyc_already_done": "✓ Ich habe die Verifizierung abgeschlossen"
+    "kyc_already_done": "✓ Ich habe die Verifizierung abgeschlossen",
+    "email_verifying": "Überprüfe…",
+    "email_verified": "✓ Konto verifiziert",
+    "kyc_review_countdown": "Validierung beim Anbieter… ({seconds}s)"
   },
   "recibir": {
     "loading": "Einladung wird geprüft...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge verarbeitet die Verifizierung deines Unternehmens. Diese Seite aktualisiert sich automatisch.",
     "kyb_long_review_title": "Unternehmen wird geprüft",
     "kyb_long_review_body": "Bridge prüft die Dokumentation deines Unternehmens. Diese Seite aktualisiert sich automatisch.",
-    "kyb_rejected_error": "Die Unternehmensverifizierung wurde von Bridge abgelehnt. Möglicherweise existiert bereits ein Konto mit diesen Daten. Kontaktiere den Support: support@omnipay.solutions"
+    "kyb_rejected_error": "Die Unternehmensverifizierung wurde von Bridge abgelehnt. Möglicherweise existiert bereits ein Konto mit diesen Daten. Kontaktiere den Support: support@omnipay.solutions",
+    "email_verifying": "Überprüfe…",
+    "email_verified": "✓ Konto verifiziert",
+    "kyb_review_countdown": "Validierung beim Anbieter… ({seconds}s)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

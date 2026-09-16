@@ -486,7 +486,10 @@
     "share_invite": "Compartilhar",
     "calculate_fees_button": "Calcular tarifas →",
     "routing_label": "Número de roteamento (9 dígitos)",
-    "account_number_label": "Número de conta bancária"
+    "account_number_label": "Número de conta bancária",
+    "email_verifying": "Verificando…",
+    "email_verified": "✓ Conta verificada",
+    "kyc_review_countdown": "Validando com nosso provedor… ({seconds}s)"
   },
   "pagar_bridge": {
     "submit": "Realizar envio →",
@@ -778,7 +781,10 @@
     "kyc_long_review_title": "Documento em análise",
     "kyc_long_review_body": "Pode levar alguns minutos. Esta tela avançará automaticamente.",
     "kyc_rejected_error": "Sua verificação foi rejeitada pela Bridge. Pode já existir uma conta com seus dados. Contate o suporte: support@omnipay.solutions",
-    "kyc_already_done": "✓ Já completei a verificação"
+    "kyc_already_done": "✓ Já completei a verificação",
+    "email_verifying": "Verificando…",
+    "email_verified": "✓ Conta verificada",
+    "kyc_review_countdown": "Validando com nosso provedor… ({seconds}s)"
   },
   "recibir": {
     "loading": "Verificando seu convite...",
@@ -985,7 +991,10 @@
     "kyb_submitted_body": "A Bridge está processando a verificação da sua empresa. Esta tela avançará automaticamente.",
     "kyb_long_review_title": "Empresa em análise",
     "kyb_long_review_body": "A Bridge está revisando a documentação da sua empresa. Esta tela avançará automaticamente.",
-    "kyb_rejected_error": "A verificação da sua empresa foi rejeitada pela Bridge. Pode já existir uma conta com esses dados. Contate o suporte: support@omnipay.solutions"
+    "kyb_rejected_error": "A verificação da sua empresa foi rejeitada pela Bridge. Pode já existir uma conta com esses dados. Contate o suporte: support@omnipay.solutions",
+    "email_verifying": "Verificando…",
+    "email_verified": "✓ Conta verificada",
+    "kyb_review_countdown": "Validando com nosso provedor… ({seconds}s)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

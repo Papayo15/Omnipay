@@ -486,7 +486,10 @@
     "share_invite": "Paylaş",
     "calculate_fees_button": "Ücretleri hesapla →",
     "routing_label": "Yönlendirme numarası (9 basamak)",
-    "account_number_label": "Banka hesap numarası"
+    "account_number_label": "Banka hesap numarası",
+    "email_verifying": "Doğrulanıyor…",
+    "email_verified": "✓ Hesap doğrulandı",
+    "kyc_review_countdown": "Sağlayıcımızla doğrulanıyor… ({seconds}s)"
   },
   "pagar_bridge": {
     "submit": "Para gönder →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "Belge inceleniyor",
     "kyc_long_review_body": "Bu birkaç dakika sürebilir. Bu ekran otomatik olarak ilerleyecek.",
     "kyc_rejected_error": "Doğrulamanız Bridge tarafından reddedildi. Bilgilerinizle zaten bir hesap mevcut olabilir. Destek ekibiyle iletişime geçin: support@omnipay.solutions",
-    "kyc_already_done": "✓ Doğrulamayı tamamladım"
+    "kyc_already_done": "✓ Doğrulamayı tamamladım",
+    "email_verifying": "Doğrulanıyor…",
+    "email_verified": "✓ Hesap doğrulandı",
+    "kyc_review_countdown": "Sağlayıcımızla doğrulanıyor… ({seconds}s)"
   },
   "recibir": {
     "loading": "Davetiniz doğrulanıyor...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge şirketinizin doğrulamasını işliyor. Bu ekran otomatik olarak ilerleyecek.",
     "kyb_long_review_title": "Şirket inceleniyor",
     "kyb_long_review_body": "Bridge şirket belgelerinizi inceliyor. Bu ekran otomatik olarak ilerleyecek.",
-    "kyb_rejected_error": "Şirket doğrulamanız Bridge tarafından reddedildi. Bu bilgilerle zaten bir hesap mevcut olabilir. Destek: support@omnipay.solutions"
+    "kyb_rejected_error": "Şirket doğrulamanız Bridge tarafından reddedildi. Bu bilgilerle zaten bir hesap mevcut olabilir. Destek: support@omnipay.solutions",
+    "email_verifying": "Doğrulanıyor…",
+    "email_verified": "✓ Hesap doğrulandı",
+    "kyb_review_countdown": "Sağlayıcımızla doğrulanıyor… ({seconds}s)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

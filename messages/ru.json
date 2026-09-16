@@ -486,7 +486,10 @@
     "share_invite": "Поделиться",
     "calculate_fees_button": "Рассчитать комиссии →",
     "routing_label": "Маршрутный номер (9 цифр)",
-    "account_number_label": "Номер банковского счёта"
+    "account_number_label": "Номер банковского счёта",
+    "email_verifying": "Проверка…",
+    "email_verified": "✓ Аккаунт подтверждён",
+    "kyc_review_countdown": "Проверка у провайдера… ({seconds}с)"
   },
   "pagar_bridge": {
     "submit": "Отправить деньги →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "Документ на проверке",
     "kyc_long_review_body": "Это может занять несколько минут. Экран автоматически продолжит работу.",
     "kyc_rejected_error": "Ваша верификация отклонена Bridge. Возможно, учётная запись с вашими данными уже существует. Обратитесь в поддержку: support@omnipay.solutions",
-    "kyc_already_done": "✓ Я уже завершил верификацию"
+    "kyc_already_done": "✓ Я уже завершил верификацию",
+    "email_verifying": "Проверка…",
+    "email_verified": "✓ Аккаунт подтверждён",
+    "kyc_review_countdown": "Проверка у провайдера… ({seconds}с)"
   },
   "recibir": {
     "loading": "Проверка вашего приглашения...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge обрабатывает верификацию вашей компании. Экран автоматически продолжит работу.",
     "kyb_long_review_title": "Компания на проверке",
     "kyb_long_review_body": "Bridge проверяет документы вашей компании. Экран автоматически продолжит работу.",
-    "kyb_rejected_error": "Верификация компании отклонена Bridge. Возможно, учётная запись с этими данными уже существует. Обратитесь в поддержку: support@omnipay.solutions"
+    "kyb_rejected_error": "Верификация компании отклонена Bridge. Возможно, учётная запись с этими данными уже существует. Обратитесь в поддержку: support@omnipay.solutions",
+    "email_verifying": "Проверка…",
+    "email_verified": "✓ Аккаунт подтверждён",
+    "kyb_review_countdown": "Проверка у провайдера… ({seconds}с)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

@@ -486,7 +486,10 @@
     "share_invite": "مشاركة",
     "calculate_fees_button": "احسب الرسوم →",
     "routing_label": "رقم التوجيه (9 أرقام)",
-    "account_number_label": "رقم الحساب البنكي"
+    "account_number_label": "رقم الحساب البنكي",
+    "email_verifying": "جارٍ التحقق…",
+    "email_verified": "✓ حساب موثق",
+    "kyc_review_countdown": "التحقق مع مزودنا… ({seconds}ث)"
   },
   "pagar_bridge": {
     "submit": "إرسال التحويل →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "المستند قيد المراجعة",
     "kyc_long_review_body": "قد يستغرق هذا بضع دقائق. ستتقدم هذه الشاشة تلقائيًا.",
     "kyc_rejected_error": "تم رفض تحققك من قبل Bridge. ربما يوجد حساب بياناتك بالفعل. تواصل مع الدعم: support@omnipay.solutions",
-    "kyc_already_done": "✓ لقد أكملت التحقق بالفعل"
+    "kyc_already_done": "✓ لقد أكملت التحقق بالفعل",
+    "email_verifying": "جارٍ التحقق…",
+    "email_verified": "✓ حساب موثق",
+    "kyc_review_countdown": "التحقق مع مزودنا… ({seconds}ث)"
   },
   "recibir": {
     "loading": "جارٍ التحقق من دعوتك...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "تقوم Bridge بمعالجة التحقق من شركتك. ستتقدم هذه الشاشة تلقائيًا.",
     "kyb_long_review_title": "الشركة قيد المراجعة",
     "kyb_long_review_body": "تقوم Bridge بمراجعة وثائق شركتك. ستتقدم هذه الشاشة تلقائيًا.",
-    "kyb_rejected_error": "تم رفض التحقق من شركتك من قبل Bridge. ربما يوجد حساب بهذه البيانات بالفعل. تواصل مع الدعم: support@omnipay.solutions"
+    "kyb_rejected_error": "تم رفض التحقق من شركتك من قبل Bridge. ربما يوجد حساب بهذه البيانات بالفعل. تواصل مع الدعم: support@omnipay.solutions",
+    "email_verifying": "جارٍ التحقق…",
+    "email_verified": "✓ حساب موثق",
+    "kyb_review_countdown": "التحقق مع مزودنا… ({seconds}ث)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

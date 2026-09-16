@@ -163,12 +163,47 @@ export default function P2PPage() {
   const [alchemyPayEnabled, setAlchemyPayEnabled] = useState(false);
   const [apSubmitting,      setApSubmitting]      = useState(false);
 
+  // Email prefetch (Patch 1)
+  const [emailStatus, setEmailStatus] = useState<"idle" | "loading" | "verified" | "unknown">("idle");
+  const emailDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Polling countdown (Patch 2)
+  const [reviewCountdown, setReviewCountdown] = useState(10);
+  const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
     fetch("/api/alchemypay/status")
       .then((r) => r.json())
       .then((d: { onrampEnabled?: boolean }) => setAlchemyPayEnabled(!!d.onrampEnabled))
       .catch(() => setAlchemyPayEnabled(false));
   }, []);
+
+  // Email prefetch: silent 800ms debounce check (Patch 1)
+  useEffect(() => {
+    if (emailDebounce.current) clearTimeout(emailDebounce.current);
+    const addr = email.trim().toLowerCase();
+    if (!addr.includes("@") || !addr.includes(".")) { setEmailStatus("idle"); return; }
+    setEmailStatus("loading");
+    emailDebounce.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/bridge/customer/status?email=${encodeURIComponent(addr)}`);
+        const d = await res.json() as { status: string };
+        setEmailStatus(d.status === "active" ? "verified" : "unknown");
+      } catch { setEmailStatus("unknown"); }
+    }, 800);
+    return () => { if (emailDebounce.current) clearTimeout(emailDebounce.current); };
+  }, [email]);
+
+  // Review countdown: 10s loop while kycLongReview is active (Patch 2)
+  useEffect(() => {
+    if (countdownTimer.current) clearInterval(countdownTimer.current);
+    if (!kycLongReview) { setReviewCountdown(10); return; }
+    setReviewCountdown(10);
+    countdownTimer.current = setInterval(() => {
+      setReviewCountdown(prev => (prev <= 1 ? 10 : prev - 1));
+    }, 1000);
+    return () => { if (countdownTimer.current) clearInterval(countdownTimer.current); };
+  }, [kycLongReview]);
 
   const ALL_COUNTRIES   = [...COUNTRY_OPTIONS, ...ALCHEMYPAY_COUNTRIES];
   const selectedCountry = ALL_COUNTRIES.find((c) => c.code === country) ?? ALL_COUNTRIES[0];
@@ -351,12 +386,14 @@ export default function P2PPage() {
         if (data.approved) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          if (countdownTimer.current) { clearInterval(countdownTimer.current); countdownTimer.current = null; }
           setKycPolling(false);
           kycAutoRetryRef.current = true;
           generateLink();
         } else if (data.status === "rejected") {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          if (countdownTimer.current) { clearInterval(countdownTimer.current); countdownTimer.current = null; }
           setKycPolling(false);
           setErrorMsg(data.rejection_reason ?? t("kyc_rejected_error"));
           setStep("error");
@@ -634,6 +671,7 @@ export default function P2PPage() {
               <p className="text-emerald-300 text-sm font-semibold">
                 {kycLongReview ? t("kyc_long_review_title") : kycSubmitted ? t("kyc_submitted_title") : t("kyc_polling_title")}
               </p>
+              {kycLongReview && <p className="text-amber-300/70 text-xs text-center">{t("kyc_review_countdown", { seconds: reviewCountdown })}</p>}
               {!kycSubmitted && !kycLongReview && (
                 <button
                   onClick={async () => {
@@ -860,6 +898,8 @@ export default function P2PPage() {
           <input type="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm" />
+          {emailStatus === "loading" && <p className="text-slate-500 text-[10px] mt-1">{t("email_verifying")}</p>}
+          {emailStatus === "verified" && <p className="text-emerald-400 text-[10px] mt-1">{t("email_verified")}</p>}
         </div>
 
         {/* País destino */}

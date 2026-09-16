@@ -89,6 +89,14 @@ export default function EnviarEmpresaWirePage() {
   const kybPopup     = useRef<Window | null>(null);
   const [kybManualChecking, setKybManualChecking] = useState(false);
 
+  // Email prefetch (Patch 1)
+  const [emailStatus, setEmailStatus] = useState<"idle" | "loading" | "verified" | "unknown">("idle");
+  const emailDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Polling countdown (Patch 2)
+  const [reviewCountdown, setReviewCountdown] = useState(10);
+  const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
   // Instructions state
   const [vaInfo, setVaInfo]               = useState<VaInfo | null>(null);
   const [confirmedAmount, setConfirmedAmount]   = useState(0);
@@ -134,6 +142,33 @@ export default function EnviarEmpresaWirePage() {
     USD: 50, MXN: 900, EUR: 47, GBP: 40, COP: 210000, BRL: 280,
   };
   const minLocal = minLocalAmount[recipientCurrency] ?? 50;
+
+  // Email prefetch: silent 800ms debounce check (Patch 1)
+  useEffect(() => {
+    if (emailDebounce.current) clearTimeout(emailDebounce.current);
+    const addr = senderEmail.trim().toLowerCase();
+    if (!addr.includes("@") || !addr.includes(".")) { setEmailStatus("idle"); return; }
+    setEmailStatus("loading");
+    emailDebounce.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/bridge/customer/status?email=${encodeURIComponent(addr)}`);
+        const d = await res.json() as { status: string };
+        setEmailStatus(d.status === "active" ? "verified" : "unknown");
+      } catch { setEmailStatus("unknown"); }
+    }, 800);
+    return () => { if (emailDebounce.current) clearTimeout(emailDebounce.current); };
+  }, [senderEmail]);
+
+  // Review countdown: 10s loop while kybLongReview is active (Patch 2)
+  useEffect(() => {
+    if (countdownTimer.current) clearInterval(countdownTimer.current);
+    if (!kybLongReview) { setReviewCountdown(10); return; }
+    setReviewCountdown(10);
+    countdownTimer.current = setInterval(() => {
+      setReviewCountdown(prev => (prev <= 1 ? 10 : prev - 1));
+    }, 1000);
+    return () => { if (countdownTimer.current) clearInterval(countdownTimer.current); };
+  }, [kybLongReview]);
 
   // Detect return from Bridge KYB/ToS — restore form + auto-retry
   useEffect(() => {
@@ -238,11 +273,13 @@ export default function EnviarEmpresaWirePage() {
         if (data.approved) {
           if (kybPollTimer.current) clearInterval(kybPollTimer.current);
           if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
+          if (countdownTimer.current) { clearInterval(countdownTimer.current); countdownTimer.current = null; }
           setKybPolling(false);
           setAutoRetry(true);
         } else if (data.status === "rejected") {
           if (kybPollTimer.current) clearInterval(kybPollTimer.current);
           if (kybPopup.current && !kybPopup.current.closed) { kybPopup.current.close(); kybPopup.current = null; }
+          if (countdownTimer.current) { clearInterval(countdownTimer.current); countdownTimer.current = null; }
           setKybPolling(false);
           setError(data.rejection_reason ?? t("kyb_rejected_error"));
           setStep("error");
@@ -517,6 +554,8 @@ export default function EnviarEmpresaWirePage() {
               <input type="email" placeholder={t("sender_email")} value={senderEmail}
                 onChange={e => setSenderEmail(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500/60" />
+              {emailStatus === "loading" && <p className="text-slate-500 text-[10px] px-1">{t("email_verifying")}</p>}
+              {emailStatus === "verified" && <p className="text-emerald-400 text-[10px] px-1">{t("email_verified")}</p>}
               <div>
                 <p className="text-slate-500 text-[10px] px-1 mb-1">{t("source_currency")}</p>
                 <select value={sourceCurrency} onChange={e => setSourceCurrency(e.target.value)}
@@ -660,6 +699,7 @@ export default function EnviarEmpresaWirePage() {
                 <p className="text-blue-300 text-sm font-semibold">
                   {kybLongReview ? t("kyb_long_review_title") : kybSubmitted ? t("kyb_submitted_title") : t("kyb_polling_title")}
                 </p>
+                {kybLongReview && <p className="text-amber-300/70 text-xs text-center">{t("kyb_review_countdown", { seconds: reviewCountdown })}</p>}
                 {!kybSubmitted && !kybLongReview && (
                   <button
                     onClick={async () => {

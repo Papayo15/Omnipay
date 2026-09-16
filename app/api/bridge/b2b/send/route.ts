@@ -345,6 +345,12 @@ export async function POST(req: NextRequest): Promise<Response> {
       : source_currency === "cop" ? "COP"
       : "ACH / Wire";
 
+    // Convert deposit amount from USD to source currency
+    const usdToSource = source_currency === "usd"
+      ? 1
+      : (await getRate("USD", source_currency.toUpperCase()).catch(() => null)) ?? 1;
+    const depositAmountInSource = parseFloat((quote.total_sender_pays * usdToSource).toFixed(2));
+
     return NextResponse.json({
       order_id: orderId,
       status:   "PENDING_PAYIN",
@@ -365,8 +371,8 @@ export async function POST(req: NextRequest): Promise<Response> {
         br_code:             di.br_code,
         sort_code:           di.sort_code,
         payment_rails:       di.payment_rails,
-        amount_to_deposit:   quote.total_sender_pays.toFixed(2),
-        instructions:        `Deposita exactamente ${quote.total_sender_pays.toFixed(2)} ${source_currency.toUpperCase()} a esta cuenta.`,
+        amount_to_deposit:   depositAmountInSource.toFixed(2),
+        instructions:        `Deposita exactamente ${depositAmountInSource.toFixed(2)} ${source_currency.toUpperCase()} a esta cuenta.`,
       },
       fee_breakdown: {
         amount_principal: quote.amount_principal,

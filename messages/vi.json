@@ -486,7 +486,10 @@
     "share_invite": "Chia sẻ",
     "calculate_fees_button": "Xem phí →",
     "routing_label": "Số định tuyến (9 chữ số)",
-    "account_number_label": "Số tài khoản ngân hàng"
+    "account_number_label": "Số tài khoản ngân hàng",
+    "email_verifying": "Đang kiểm tra…",
+    "email_verified": "✓ Tài khoản đã xác minh",
+    "kyc_review_countdown": "Đang xác minh với nhà cung cấp… ({seconds}s)"
   },
   "pagar_bridge": {
     "submit": "Gửi tiền →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "Tài liệu đang được xem xét",
     "kyc_long_review_body": "Có thể mất vài phút. Màn hình sẽ tự động chuyển tiếp.",
     "kyc_rejected_error": "Xác minh của bạn bị Bridge từ chối. Có thể đã tồn tại tài khoản với thông tin của bạn. Liên hệ hỗ trợ: support@omnipay.solutions",
-    "kyc_already_done": "✓ Tôi đã hoàn thành xác minh"
+    "kyc_already_done": "✓ Tôi đã hoàn thành xác minh",
+    "email_verifying": "Đang kiểm tra…",
+    "email_verified": "✓ Tài khoản đã xác minh",
+    "kyc_review_countdown": "Đang xác minh với nhà cung cấp… ({seconds}s)"
   },
   "recibir": {
     "loading": "Đang xác minh lời mời...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge đang xử lý xác minh doanh nghiệp của bạn. Màn hình sẽ tự động chuyển tiếp.",
     "kyb_long_review_title": "Doanh nghiệp đang được xem xét",
     "kyb_long_review_body": "Bridge đang xem xét tài liệu doanh nghiệp của bạn. Màn hình sẽ tự động chuyển tiếp.",
-    "kyb_rejected_error": "Xác minh doanh nghiệp của bạn bị Bridge từ chối. Có thể đã tồn tại tài khoản với thông tin này. Liên hệ: support@omnipay.solutions"
+    "kyb_rejected_error": "Xác minh doanh nghiệp của bạn bị Bridge từ chối. Có thể đã tồn tại tài khoản với thông tin này. Liên hệ: support@omnipay.solutions",
+    "email_verifying": "Đang kiểm tra…",
+    "email_verified": "✓ Tài khoản đã xác minh",
+    "kyb_review_countdown": "Đang xác minh với nhà cung cấp… ({seconds}s)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

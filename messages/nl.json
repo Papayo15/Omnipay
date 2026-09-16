@@ -486,7 +486,10 @@
     "share_invite": "Delen",
     "calculate_fees_button": "Kosten berekenen →",
     "routing_label": "Routeringsnummer (9 cijfers)",
-    "account_number_label": "Bankrekeningnummer"
+    "account_number_label": "Bankrekeningnummer",
+    "email_verifying": "Controleren…",
+    "email_verified": "✓ Geverifieerd account",
+    "kyc_review_countdown": "Valideren bij onze aanbieder… ({seconds}s)"
   },
   "pagar_bridge": {
     "submit": "Verzending uitvoeren →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "Document wordt beoordeeld",
     "kyc_long_review_body": "Dit kan enkele minuten duren. Dit scherm gaat automatisch verder.",
     "kyc_rejected_error": "Uw verificatie is geweigerd door Bridge. Er bestaat mogelijk al een account met uw gegevens. Neem contact op met support: support@omnipay.solutions",
-    "kyc_already_done": "✓ Ik heb de verificatie voltooid"
+    "kyc_already_done": "✓ Ik heb de verificatie voltooid",
+    "email_verifying": "Controleren…",
+    "email_verified": "✓ Geverifieerd account",
+    "kyc_review_countdown": "Valideren bij onze aanbieder… ({seconds}s)"
   },
   "recibir": {
     "loading": "Je uitnodiging verifiëren...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge verwerkt de verificatie van uw bedrijf. Dit scherm gaat automatisch verder.",
     "kyb_long_review_title": "Bedrijf wordt beoordeeld",
     "kyb_long_review_body": "Bridge controleert de documentatie van uw bedrijf. Dit scherm gaat automatisch verder.",
-    "kyb_rejected_error": "De bedrijfsverificatie is geweigerd door Bridge. Er bestaat mogelijk al een account met deze gegevens. Neem contact op met support: support@omnipay.solutions"
+    "kyb_rejected_error": "De bedrijfsverificatie is geweigerd door Bridge. Er bestaat mogelijk al een account met deze gegevens. Neem contact op met support: support@omnipay.solutions",
+    "email_verifying": "Controleren…",
+    "email_verified": "✓ Geverifieerd account",
+    "kyb_review_countdown": "Valideren bij onze aanbieder… ({seconds}s)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

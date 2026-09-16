@@ -486,7 +486,10 @@
     "share_invite": "አጋራ",
     "calculate_fees_button": "ወጪዎችን ያሰሉ →",
     "routing_label": "Routing (9 አሃዞች)",
-    "account_number_label": "የባንክ ሂሳብ ቁጥር"
+    "account_number_label": "የባንክ ሂሳብ ቁጥር",
+    "email_verifying": "እየተረጋገጠ…",
+    "email_verified": "✓ መለያ ተረጋግጧል",
+    "kyc_review_countdown": "ከአቅራቢያችን ጋር እያረጋጠ… ({seconds}ሰ)"
   },
   "pagar_bridge": {
     "submit": "ገንዘብ ላክ →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "ሰነድ በቅጥያ ላይ",
     "kyc_long_review_body": "ጥቂት ደቂቃዎች ሊወስድ ይችላል። ይህ ማያ ገፅ ራሱ ይቀጥላል።",
     "kyc_rejected_error": "ማረጋገጫዎ በ Bridge ተቀባይነት አላገኘም። ከእርስዎ መረጃ ጋር ሌላ አካውንት ሊኖር ይችላል። ድጋፍ ያነጋግሩ: support@omnipay.solutions",
-    "kyc_already_done": "✓ ማረጋገጫ አጠናቅቄያለሁ"
+    "kyc_already_done": "✓ ማረጋገጫ አጠናቅቄያለሁ",
+    "email_verifying": "እየተረጋገጠ…",
+    "email_verified": "✓ መለያ ተረጋግጧል",
+    "kyc_review_countdown": "ከአቅራቢያችን ጋር እያረጋጠ… ({seconds}ሰ)"
   },
   "recibir": {
     "loading": "ጋብዣዎን እያረጋገጥን...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge የድርጅትዎን ማረጋገጫ እያስተካከለ ነው። ይህ ማያ ገፅ ራሱ ይቀጥላል።",
     "kyb_long_review_title": "ድርጅቱ በቅጥያ ላይ",
     "kyb_long_review_body": "Bridge የድርጅቱ ሰነዶች እያገጋጠ ነው። ይህ ማያ ገፅ ራሱ ይቀጥላል።",
-    "kyb_rejected_error": "የድርጅትዎ ማረጋገጫ በ Bridge ተቀባይነት አላገኘም። ከዚህ መረጃ ጋር ሌላ አካውንት ሊኖር ይችላል። ድጋፍ: support@omnipay.solutions"
+    "kyb_rejected_error": "የድርጅትዎ ማረጋገጫ በ Bridge ተቀባይነት አላገኘም። ከዚህ መረጃ ጋር ሌላ አካውንት ሊኖር ይችላል። ድጋፍ: support@omnipay.solutions",
+    "email_verifying": "እየተረጋገጠ…",
+    "email_verified": "✓ መለያ ተረጋግጧል",
+    "kyb_review_countdown": "ከአቅራቢያችን ጋር እያረጋጠ… ({seconds}ሰ)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

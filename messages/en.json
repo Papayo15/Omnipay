@@ -486,7 +486,10 @@
     "error_invalid_account_uk": "UK account number must be 8 digits",
     "bic_required": "BIC / SWIFT (required)",
     "share_invite": "Share",
-    "calculate_fees_button": "Calculate fees →"
+    "calculate_fees_button": "Calculate fees →",
+    "email_verifying": "Checking…",
+    "email_verified": "✓ Verified account",
+    "kyc_review_countdown": "Validating with our provider… ({seconds}s)"
   },
   "pagar_bridge": {
     "submit": "Send money →",
@@ -780,7 +783,10 @@
     "kyc_long_review_title": "Document under review",
     "kyc_long_review_body": "This may take a few minutes. This screen will advance automatically.",
     "kyc_rejected_error": "Your verification was rejected by Bridge. An account with your details may already exist. Contact support at support@omnipay.solutions",
-    "kyc_already_done": "✓ I already completed verification"
+    "kyc_already_done": "✓ I already completed verification",
+    "email_verifying": "Checking…",
+    "email_verified": "✓ Verified account",
+    "kyc_review_countdown": "Validating with our provider… ({seconds}s)"
   },
   "recibir": {
     "loading": "Verifying your invitation...",
@@ -984,7 +990,10 @@
     "kyb_submitted_body": "Bridge is processing your business verification. This screen will advance automatically when approved.",
     "kyb_long_review_title": "Business under review",
     "kyb_long_review_body": "Bridge is reviewing your business documentation. This screen will advance automatically.",
-    "kyb_rejected_error": "Your business verification was rejected by Bridge. An account with those details may already exist. Contact support at support@omnipay.solutions"
+    "kyb_rejected_error": "Your business verification was rejected by Bridge. An account with those details may already exist. Contact support at support@omnipay.solutions",
+    "email_verifying": "Checking…",
+    "email_verified": "✓ Verified account",
+    "kyb_review_countdown": "Validating with our provider… ({seconds}s)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

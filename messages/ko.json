@@ -486,7 +486,10 @@
     "share_invite": "공유",
     "calculate_fees_button": "수수료 확인 →",
     "routing_label": "라우팅 번호 (9자리)",
-    "account_number_label": "은행 계좌 번호"
+    "account_number_label": "은행 계좌 번호",
+    "email_verifying": "확인 중…",
+    "email_verified": "✓ 인증된 계정",
+    "kyc_review_countdown": "제공업체와 검증 중… ({seconds}초)"
   },
   "pagar_bridge": {
     "submit": "송금하기 →",
@@ -779,7 +782,10 @@
     "kyc_long_review_title": "서류 검토 중",
     "kyc_long_review_body": "몇 분이 걸릴 수 있습니다. 자동으로 진행됩니다.",
     "kyc_rejected_error": "Bridge에서 인증이 거부되었습니다. 동일한 정보로 계정이 이미 존재할 수 있습니다. 지원팀에 문의하세요: support@omnipay.solutions",
-    "kyc_already_done": "✓ 이미 인증을 완료했습니다"
+    "kyc_already_done": "✓ 이미 인증을 완료했습니다",
+    "email_verifying": "확인 중…",
+    "email_verified": "✓ 인증된 계정",
+    "kyc_review_countdown": "제공업체와 검증 중… ({seconds}초)"
   },
   "recibir": {
     "loading": "초대장 확인 중...",
@@ -986,7 +992,10 @@
     "kyb_submitted_body": "Bridge가 기업 인증을 처리 중입니다. 자동으로 진행됩니다.",
     "kyb_long_review_title": "기업 검토 중",
     "kyb_long_review_body": "Bridge가 기업 서류를 검토 중입니다. 자동으로 진행됩니다.",
-    "kyb_rejected_error": "Bridge에서 기업 인증이 거부되었습니다. 동일한 정보로 계정이 이미 존재할 수 있습니다. 지원팀에 문의하세요: support@omnipay.solutions"
+    "kyb_rejected_error": "Bridge에서 기업 인증이 거부되었습니다. 동일한 정보로 계정이 이미 존재할 수 있습니다. 지원팀에 문의하세요: support@omnipay.solutions",
+    "email_verifying": "확인 중…",
+    "email_verified": "✓ 인증된 계정",
+    "kyb_review_countdown": "제공업체와 검증 중… ({seconds}초)"
   },
   "recibir_empresa": {
     "title": "Business Wire — Receive",

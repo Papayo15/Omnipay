@@ -103,6 +103,14 @@ export default function EnviarPage() {
   const [showSandboxBtn, setShowSandboxBtn]   = useState(false);
   const [railInfo, setRailInfo]               = useState<{ rail: string; eta_key: string } | null>(null);
 
+  // Email prefetch (Patch 1)
+  const [emailStatus, setEmailStatus] = useState<"idle" | "loading" | "verified" | "unknown">("idle");
+  const emailDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Polling countdown (Patch 2)
+  const [reviewCountdown, setReviewCountdown] = useState(10);
+  const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
   // Fetch active rail for selected destination country (respects BRIDGE_USE_FEDNOW etc.)
   useEffect(() => {
     if (!recipientCountry) return;
@@ -179,6 +187,33 @@ export default function EnviarPage() {
     }, 600);
     return () => { if (feeDebounce.current) clearTimeout(feeDebounce.current); };
   }, [amountTarget, recipientCountry, currency, senderCurrency]);
+
+  // Email prefetch: silent 800ms debounce check (Patch 1)
+  useEffect(() => {
+    if (emailDebounce.current) clearTimeout(emailDebounce.current);
+    const addr = senderEmail.trim().toLowerCase();
+    if (!addr.includes("@") || !addr.includes(".")) { setEmailStatus("idle"); return; }
+    setEmailStatus("loading");
+    emailDebounce.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/bridge/customer/status?email=${encodeURIComponent(addr)}`);
+        const d = await res.json() as { status: string };
+        setEmailStatus(d.status === "active" ? "verified" : "unknown");
+      } catch { setEmailStatus("unknown"); }
+    }, 800);
+    return () => { if (emailDebounce.current) clearTimeout(emailDebounce.current); };
+  }, [senderEmail]);
+
+  // Review countdown: 10s loop while kycLongReview is active (Patch 2)
+  useEffect(() => {
+    if (countdownTimer.current) clearInterval(countdownTimer.current);
+    if (!kycLongReview) { setReviewCountdown(10); return; }
+    setReviewCountdown(10);
+    countdownTimer.current = setInterval(() => {
+      setReviewCountdown(prev => (prev <= 1 ? 10 : prev - 1));
+    }, 1000);
+    return () => { if (countdownTimer.current) clearInterval(countdownTimer.current); };
+  }, [kycLongReview]);
 
   // tos_done=1: Bridge aceptó ToS — restaurar form y llamar /send directamente.
   // NO llamamos /kyc-link por separado: el send route ya tiene getKycLink + createKycLink fallback.
@@ -325,12 +360,14 @@ export default function EnviarPage() {
         if (data.approved) {
           if (kycPollTimer.current) clearInterval(kycPollTimer.current);
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          if (countdownTimer.current) { clearInterval(countdownTimer.current); countdownTimer.current = null; }
           setKycPolling(false);
           setAutoRetry(true);
         } else if (data.status === "rejected") {
           // KYC rejected by Bridge — stop polling and show error
           if (kycPollTimer.current) { clearInterval(kycPollTimer.current); kycPollTimer.current = null; }
           if (kycPopup.current && !kycPopup.current.closed) { kycPopup.current.close(); kycPopup.current = null; }
+          if (countdownTimer.current) { clearInterval(countdownTimer.current); countdownTimer.current = null; }
           setKycPolling(false);
           setError(data.rejection_reason ?? t("kyc_rejected_error"));
           setStep("error");
@@ -610,6 +647,8 @@ export default function EnviarPage() {
                 onChange={e => setSenderEmail(e.target.value)}
                 className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500/60"
               />
+              {emailStatus === "loading" && <p className="text-slate-500 text-[10px] px-1">{t("email_verifying")}</p>}
+              {emailStatus === "verified" && <p className="text-emerald-400 text-[10px] px-1">{t("email_verified")}</p>}
               {/* Moneda de origen — en qué moneda depositará el emisor */}
               <div>
                 <p className="text-slate-500 text-[10px] px-1 mb-1">{t("sender_currency_label")}</p>
@@ -936,6 +975,7 @@ export default function EnviarPage() {
                   <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 text-center space-y-2">
                     <p className="text-amber-300 font-semibold text-sm">{t("kyc_long_review_title")}</p>
                     <p className="text-slate-300 text-xs leading-relaxed">{t("kyc_long_review_body")}</p>
+                    <p className="text-amber-300/70 text-xs mt-1">{t("kyc_review_countdown", { seconds: reviewCountdown })}</p>
                   </div>
                 )}
                 <button
