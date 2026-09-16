@@ -400,7 +400,7 @@ export default function EnviarEmpresaWirePage() {
       prefetchPromise.current = fetch("/api/bridge/b2b/send", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       }).then(r => r.json() as Promise<B2bApiData>).catch((): null => null);
-    }, 1500);
+    }, 200);
     return () => { if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emailStatus, formReady, buildBody]);

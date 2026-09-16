@@ -7,7 +7,7 @@
 // `amount` = monto en moneda del receptor
 
 import { NextRequest, NextResponse } from "next/server";
-import { calcStaticQuote }  from "@/lib/bridge-fees";
+import { calcStaticQuote, calculatePayout } from "@/lib/bridge-fees";
 import { fetchRatesFrom }   from "@/lib/fx-server";
 
 export const runtime = "edge";
@@ -54,6 +54,11 @@ export async function GET(req: NextRequest): Promise<Response> {
   const usdToFrom = from === "USD" ? 1 : (ratesFromUSD[from] ?? 1);
   const toFrom = (n: number) => parseFloat((n * usdToFrom).toFixed(2));
 
+  // SPEI corridor: add fixed-MXN breakdown when recipient currency is MXN
+  const speiBreakdown = to === "MXN"
+    ? (calculatePayout(amount, parseFloat((1 / usdToTo).toFixed(6))) ?? undefined)
+    : undefined;
+
   return NextResponse.json({
     from_currency:        from,
     target_currency:      to,
@@ -63,6 +68,7 @@ export async function GET(req: NextRequest): Promise<Response> {
     omnipay_fee:          toFrom(omnipayFeeUSD),
     total_fee:            toFrom(bridgeFeeUSD + omnipayFeeUSD),
     sender_deposits:      toFrom(totalUSD), // in FROM currency
+    ...(speiBreakdown ? { spei_breakdown: speiBreakdown } : {}),
     note: "Estimate — final rate locked at deposit time by Bridge",
   });
 }

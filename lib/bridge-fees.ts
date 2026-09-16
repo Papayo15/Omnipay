@@ -33,7 +33,7 @@ export const STRIPE_PCT  = 0.029;  // 2.9%
 export const STRIPE_FLAT = 0.30;   // $0.30 fixed
 
 // OmniPay margin
-export const OMNIPAY_SERVICE_PCT = 0.0035; // 0.35% OmniPay net revenue
+export const OMNIPAY_SERVICE_PCT = 0.006;  // 0.60% OmniPay net revenue (all corridors)
 export const OMNIPAY_FLAT_P2P    = 0.00;   // no flat — simpler pricing
 export const OMNIPAY_FLAT_B2B    = 1.99;   // covers Bridge VA $2/month in B2B
 
@@ -119,6 +119,36 @@ export async function buildDynamicQuote(params: {
 
   const provider: QuoteProvider = type === "b2b" ? "b2b" : "bridge";
   return _buildQuote(amount, provider, type, isNew);
+}
+
+// ── SPEI corridor — fixed MXN fee from real Bridge transaction ───────────────
+
+export const BRIDGE_SPEI_FEE_MXN    = 1.77;  // Bridge SPEI service charge (MXN, fixed)
+export const OMNIPAY_MARGIN_PERCENT = 0.006;  // 0.6% OmniPay transparent spread
+
+export interface SpeiPayout {
+  grossAmount:             number; // MXN deposited via SPEI
+  bridgeFee:               number; // 1.77 MXN fixed
+  omnipayFee:              number; // 0.6% of (gross - bridgeFee)
+  netAmountForConversion:  number; // grossAmount - bridgeFee - omnipayFee
+  finalFxRate:             number; // USDC per MXN (e.g. 0.058044)
+  netPayoutUsdc:           number; // netAmountForConversion * finalFxRate
+}
+
+export function calculatePayout(amountMxn: number, bridgeFxRate: number): SpeiPayout | null {
+  if ((amountMxn - BRIDGE_SPEI_FEE_MXN) <= 0) return null;
+  const bridgeFee   = BRIDGE_SPEI_FEE_MXN;
+  const afterBridge = amountMxn - bridgeFee;
+  const omnipayFee  = parseFloat((afterBridge * OMNIPAY_MARGIN_PERCENT).toFixed(2));
+  const netAmount   = parseFloat((afterBridge - omnipayFee).toFixed(2));
+  return {
+    grossAmount:            amountMxn,
+    bridgeFee,
+    omnipayFee,
+    netAmountForConversion: netAmount,
+    finalFxRate:            bridgeFxRate,
+    netPayoutUsdc:          parseFloat((netAmount * bridgeFxRate).toFixed(6)),
+  };
 }
 
 // ── Internal ─────────────────────────────────────────────────────────────────

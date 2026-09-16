@@ -120,6 +120,10 @@ export default function EnviarPage() {
     fx_rate: number; from_currency: string; target_currency: string;
     recipient_gets: number; bridge_fee: number; omnipay_fee: number;
     total_fee: number; sender_deposits: number;
+    spei_breakdown?: {
+      grossAmount: number; bridgeFee: number; omnipayFee: number;
+      netAmountForConversion: number; finalFxRate: number; netPayoutUsdc: number;
+    };
   } | null>(null);
   const [feeLoading, setFeeLoading] = useState(false);
   const feeDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -236,7 +240,7 @@ export default function EnviarPage() {
     return () => { if (emailDebounce.current) clearTimeout(emailDebounce.current); };
   }, [senderEmail]);
 
-  // Phase A: fire prefetch when user is verified + form complete + quote ready (1500ms debounce)
+  // Phase A: fire prefetch when user is verified + form complete + quote ready (200ms debounce)
   useEffect(() => {
     if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current);
     if (emailStatus !== "verified" || !quoteReady) return;
@@ -249,7 +253,7 @@ export default function EnviarPage() {
       prefetchPromise.current = fetch("/api/bridge/send", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       }).then(r => r.json() as Promise<EnviarApiData>).catch((): null => null);
-    }, 1500);
+    }, 200);
     return () => { if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emailStatus, quoteReady, senderName, senderEmail, recipientName, accountField, buildBody]);
@@ -920,6 +924,27 @@ export default function EnviarPage() {
                       {feeQuote.sender_deposits.toFixed(2)} {feeQuote.from_currency}
                     </span>
                   </div>
+                  {feeQuote.spei_breakdown && (
+                    <div className="border-t border-slate-700/50 pt-2 space-y-1">
+                      <p className="text-slate-500 text-[10px] uppercase tracking-widest mb-1">Desglose SPEI</p>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-500">Costo procesador (SPEI)</span>
+                        <span className="text-slate-400 font-mono">−${feeQuote.spei_breakdown.bridgeFee.toFixed(2)} MXN</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-500">Tarifa OmniPay (0.6%)</span>
+                        <span className="text-slate-400 font-mono">−${feeQuote.spei_breakdown.omnipayFee.toFixed(2)} MXN</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-500">Tipo de cambio garantizado</span>
+                        <span className="text-slate-300 font-mono">1 MXN = {feeQuote.spei_breakdown.finalFxRate.toFixed(6)} USDC</span>
+                      </div>
+                      <div className="flex justify-between text-xs font-medium">
+                        <span className="text-slate-400">Neto al destinatario (USDC)</span>
+                        <span className="text-emerald-400 font-mono">{feeQuote.spei_breakdown.netPayoutUsdc.toFixed(6)} USDC</span>
+                      </div>
+                    </div>
+                  )}
                   <p className="text-slate-600 text-[10px] leading-snug">{t("fee_note")}</p>
                 </div>
               )}
