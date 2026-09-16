@@ -52,7 +52,8 @@ export default function EnviarPage() {
   const [step, setStep] = useState<Step>("form");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
-  const [autoRetry, setAutoRetry] = useState(false);
+  const [autoRetry, setAutoRetry]           = useState(false);
+  const [autoRetryFromTos, setAutoRetryFromTos] = useState(false);
 
   // Datos del emisor
   const [senderName, setSenderName]       = useState("");
@@ -179,8 +180,10 @@ export default function EnviarPage() {
     return () => { if (feeDebounce.current) clearTimeout(feeDebounce.current); };
   }, [amountTarget, recipientCountry, currency, senderCurrency]);
 
-  // Detect KYC return (?kyc_done=1) — restore form from sessionStorage and auto-retry
-  // tos_done=1: Bridge accepted ToS — call kyc-link directly, navigate to Persona
+  // tos_done=1: Bridge aceptó ToS — restaurar form y llamar /send directamente.
+  // NO llamamos /kyc-link por separado: el send route ya tiene getKycLink + createKycLink fallback.
+  // Usamos autoRetryFromTos (no autoRetry) para que handleSubmit sepa navegar a Persona,
+  // no mostrar la pantalla de polling que corresponde al retorno de KYC.
   useEffect(() => {
     if (searchParams.get("tos_done") !== "1") return;
     const saved = sessionStorage.getItem("enviar_form_state");
@@ -189,27 +192,15 @@ export default function EnviarPage() {
       const snap = JSON.parse(saved) as { kycCustomerId?: string } & Record<string, string>;
       if (!snap.kycCustomerId) { sessionStorage.removeItem("enviar_form_state"); return; }
       window.history.replaceState({}, "", "/enviar");
-      const kycRedirectUri = `${window.location.origin}/enviar?kyc_done=1`;
-      fetch(`/api/bridge/kyc-link?customer_id=${encodeURIComponent(snap.kycCustomerId)}&redirect_uri=${encodeURIComponent(kycRedirectUri)}`)
-        .then(r => r.json())
-        .then((d: Record<string, string>) => {
-          if (d.kyc_url) {
-            // Keep sessionStorage so kyc_done handler can restore the form
-            window.location.href = d.kyc_url;
-          } else {
-            // kyc-link returned no URL — restore form and retry checkout
-            setSenderName(snap.senderName ?? ""); setSenderEmail(snap.senderEmail ?? "");
-            setSenderCurrency(snap.senderCurrency ?? "USD"); setRecipientName(snap.recipientName ?? "");
-            setRecipientCountry(snap.recipientCountry ?? "MX"); setAccountField(snap.accountField ?? "");
-            setRoutingField(snap.routingField ?? ""); setBicField(snap.bicField ?? "");
-            setAmountTarget(snap.amountTarget ?? "");
-            if (snap.kycCustomerId) setKycCustomerId(snap.kycCustomerId);
-            sessionStorage.removeItem("enviar_form_state");
-            setAutoRetry(true);
-          }
-        })
-        .catch(() => { sessionStorage.removeItem("enviar_form_state"); });
-    } catch { /* ignore */ }
+      setSenderName(snap.senderName ?? ""); setSenderEmail(snap.senderEmail ?? "");
+      setSenderCurrency(snap.senderCurrency ?? "USD"); setRecipientName(snap.recipientName ?? "");
+      setRecipientCountry(snap.recipientCountry ?? "MX"); setAccountField(snap.accountField ?? "");
+      setRoutingField(snap.routingField ?? ""); setBicField(snap.bicField ?? "");
+      setAmountTarget(snap.amountTarget ?? "");
+      if (snap.kycCustomerId) setKycCustomerId(snap.kycCustomerId);
+      // Mantener sessionStorage hasta llegar a kyc_done (el kyc_done handler lo elimina)
+      setAutoRetryFromTos(true);
+    } catch { sessionStorage.removeItem("enviar_form_state"); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -243,13 +234,21 @@ export default function EnviarPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-retry after form restore or ToS/KYC completion
+  // Auto-retry después de volver de KYC (Persona) — mostrar polling si Bridge no aprobó aún
   useEffect(() => {
     if (!autoRetry) return;
     setAutoRetry(false);
-    handleSubmit(true); // isAutoRetry=true: no popup opened (no user gesture here)
+    handleSubmit(true, false); // isAutoRetry=true, fromTos=false → polling si needs_kyc
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRetry]);
+
+  // Auto-retry después de volver de ToS — navegar a Persona (no mostrar polling)
+  useEffect(() => {
+    if (!autoRetryFromTos) return;
+    setAutoRetryFromTos(false);
+    handleSubmit(true, true); // isAutoRetry=true, fromTos=true → navegar a Persona si needs_kyc
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRetryFromTos]);
 
   // ToS polling — polls /api/bridge/tos-status every 3 s; when accepted, closes popup and retries.
   // Also detects when the popup navigates back to our domain (Bridge redirects after acceptance).
@@ -379,7 +378,7 @@ export default function EnviarPage() {
     return () => { active = false; if (timer) clearTimeout(timer); };
   }, [step, orderId, sandboxDone]);
 
-  const handleSubmit = useCallback(async (isAutoRetry = false) => {
+  const handleSubmit = useCallback(async (isAutoRetry = false, fromTos = false) => {
     setError("");
     setStep("sending");
     // Open placeholder popup BEFORE the fetch only when we're already mid-flow (resuming
@@ -431,17 +430,17 @@ export default function EnviarPage() {
         const customerId = (data as Record<string, unknown>).customer_id as string ?? kycCustomerId;
         if (customerId) setKycCustomerId(customerId);
         setIsSandboxKyc(!!(data as Record<string, unknown>).is_sandbox);
-        if (isAutoRetry) {
-          // User just returned from Persona but Bridge hasn't approved yet (eventual consistency).
-          // Show polling screen — kycPolling useEffect will retry handleSubmit when approved.
+        if (isAutoRetry && !fromTos) {
+          // Usuario regresó de Persona pero Bridge aún no aprobó (eventual consistency).
+          // Mostrar pantalla de polling — el polling useEffect reintentará cuando Bridge apruebe.
           if (prePopup && !prePopup.closed) prePopup.close();
           setKycSubmitted(true);
           setKycPolling(true);
           setStep("kyc");
           return;
         }
+        // Primera solicitud de KYC o retry post-ToS (fromTos=true) → navegar a Persona
         if (data.kyc_url) {
-          // First KYC request — navigate directly to Persona.
           sessionStorage.setItem("enviar_form_state", JSON.stringify({
             senderName, senderEmail, senderCurrency,
             recipientName, recipientCountry, accountField, routingField, bicField, amountTarget,

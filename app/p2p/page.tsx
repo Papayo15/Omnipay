@@ -224,55 +224,28 @@ export default function P2PPage() {
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
         if (tosDone && form.kycCustomerId) {
-          // Per Bridge docs: after ToS acceptance, call GET /customers/{id}/kyc_link directly
-          // to get the Persona KYC URL, then navigate. No need for full checkout.
+          // ToS accepted — call checkout directly with from_tos=true (via tosModeRef).
+          // Bypassing /api/bridge/kyc-link avoids failures for brand-new customers
+          // and ensures checkout navigates straight to Persona.
           window.history.replaceState({}, "", "/p2p");
-          const kycRedirectUri = `${window.location.origin}/p2p?kyc_done=1`;
-          const endpoint = `/api/bridge/kyc-link?customer_id=${encodeURIComponent(form.kycCustomerId)}&redirect_uri=${encodeURIComponent(kycRedirectUri)}`;
-          fetch(endpoint)
-            .then(r => r.json())
-            .then((d: Record<string, string>) => {
-              if (d.kyc_url) {
-                sessionStorage.setItem("omnipay_p2p_form", saved);
-                window.location.href = d.kyc_url;
-              } else {
-                // kyc-link returned no URL — fall back to full checkout with from_tos=true
-                tosModeRef.current = true;
-                if (form.nombre)         setNombre(form.nombre);
-                if (form.email)          setEmail(form.email);
-                if (form.country)        setCountry(form.country);
-                if (form.account)        setAccount(form.account);
-                if (form.bic)            setBic(form.bic);
-                if (form.cpf)            setCpf(form.cpf);
-                if (form.amountLocal)    setAmountLocal(form.amountLocal);
-                if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
-                if (form.kycCustomerId)  setKycCustomerId(form.kycCustomerId);
-                setPendingKycRetry(true);
-              }
-            })
-            .catch(() => {
-              // Network error — fall back to full checkout
-              tosModeRef.current = true;
-              if (form.nombre)         setNombre(form.nombre);
-              if (form.email)          setEmail(form.email);
-              if (form.country)        setCountry(form.country);
-              if (form.account)        setAccount(form.account);
-              if (form.bic)            setBic(form.bic);
-              if (form.cpf)            setCpf(form.cpf);
-              if (form.amountLocal)    setAmountLocal(form.amountLocal);
-              if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
-              if (form.kycCustomerId)  setKycCustomerId(form.kycCustomerId);
-              setPendingKycRetry(true);
-            });
+          tosModeRef.current = true;
+          if (form.nombre)         setNombre(form.nombre);
+          if (form.email)          setEmail(form.email);
+          if (form.country)        setCountry(form.country);
+          if (form.account)        setAccount(form.account);
+          if (form.bic)            setBic(form.bic);
+          if (form.cpf)            setCpf(form.cpf);
+          if (form.amountLocal)    setAmountLocal(form.amountLocal);
+          if (form.recipientPhone) setRecipientPhone(form.recipientPhone);
+          if (form.kycCustomerId)  setKycCustomerId(form.kycCustomerId);
+          setPendingKycRetry(true);
         } else if (tosDone) {
           // tos_done=1 but no kycCustomerId saved — fall back to checkout with from_tos
           tosModeRef.current = true;
           window.history.replaceState({}, "", "/p2p");
           setPendingKycRetry(true);
         } else if (kycDone) {
-          // KYC (or ToS without kycCustomerId) — restore form and let checkout handle final step.
-          // If returning from ToS set tosModeRef so auto-retry auto-navigates to KYC.
-          if (tosDone) tosModeRef.current = true;
+          // KYC completed — restore form and show polling until Bridge approves.
           if (form.nombre)         setNombre(form.nombre);
           if (form.email)          setEmail(form.email);
           if (form.country)        setCountry(form.country);

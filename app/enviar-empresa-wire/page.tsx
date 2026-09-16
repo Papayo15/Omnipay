@@ -144,62 +144,23 @@ export default function EnviarEmpresaWirePage() {
     if (!savedRaw) return;
     try {
       const snap = JSON.parse(savedRaw) as FormSnapshot;
-      if (tosDone && snap.kybCustomerId) {
-        // ToS just accepted — retry up to 5× (10s) waiting for Bridge to update, then navigate to KYB.
-        const kybRedirectUri = `${window.location.origin}/enviar-empresa-wire?kyb_done=1`;
-        const url = `/api/bridge/kyc-link?customer_id=${encodeURIComponent(snap.kybCustomerId)}&redirect_uri=${encodeURIComponent(kybRedirectUri)}`;
-        let retries = 0;
-        const restoreAndRetry = () => {
-          fromTosReturnRef.current = true;
-          setSenderBusinessName(snap.senderBusinessName ?? "");
-          setSenderEmail(snap.senderEmail ?? "");
-          setSourceCurrency(snap.sourceCurrency ?? "USD");
-          setRecipientBusinessName(snap.recipientBusinessName ?? "");
-          setRecipientCountry(snap.recipientCountry ?? "MX");
-          setAccountField(snap.accountField ?? "");
-          setRoutingField(snap.routingField ?? "");
-          setBicField(snap.bicField ?? "");
-          setAmount(snap.amount ?? "");
-          if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
-          sessionStorage.removeItem("b2b_send_form");
-          setAutoRetry(true);
-        };
-        const tryLink = () => {
-          fetch(url).then(r => r.json()).then((d: Record<string, string>) => {
-            if (d.kyc_url) {
-              sessionStorage.setItem("b2b_send_form", savedRaw);
-              window.location.href = d.kyc_url;
-            } else if (retries < 5) {
-              retries++;
-              setTimeout(tryLink, 2000);
-            } else {
-              restoreAndRetry();
-            }
-          }).catch(() => {
-            if (retries < 5) { retries++; setTimeout(tryLink, 2000); }
-            else restoreAndRetry();
-          });
-        };
-        tryLink();
-        window.history.replaceState({}, "", "/enviar-empresa-wire");
-      } else {
-        // KYB done (or ToS without kybCustomerId) — restore form and let handleSubmit handle final step.
-        // If returning from ToS set fromTosReturnRef so handleSubmit auto-navigates to KYB.
-        if (tosDone) fromTosReturnRef.current = true;
-        setSenderBusinessName(snap.senderBusinessName ?? "");
-        setSenderEmail(snap.senderEmail ?? "");
-        setSourceCurrency(snap.sourceCurrency ?? "USD");
-        setRecipientBusinessName(snap.recipientBusinessName ?? "");
-        setRecipientCountry(snap.recipientCountry ?? "MX");
-        setAccountField(snap.accountField ?? "");
-        setRoutingField(snap.routingField ?? "");
-        setBicField(snap.bicField ?? "");
-        setAmount(snap.amount ?? "");
-        if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
-        sessionStorage.removeItem("b2b_send_form");
-        setAutoRetry(true);
-        window.history.replaceState({}, "", "/enviar-empresa-wire");
-      }
+      // ToS or KYB return — restore form and call handleSubmit directly.
+      // For ToS: set fromTosReturnRef=true so handleSubmit navigates to KYB (not polling).
+      // Bypassing /api/bridge/kyc-link avoids failures for brand-new customers.
+      if (tosDone) fromTosReturnRef.current = true;
+      setSenderBusinessName(snap.senderBusinessName ?? "");
+      setSenderEmail(snap.senderEmail ?? "");
+      setSourceCurrency(snap.sourceCurrency ?? "USD");
+      setRecipientBusinessName(snap.recipientBusinessName ?? "");
+      setRecipientCountry(snap.recipientCountry ?? "MX");
+      setAccountField(snap.accountField ?? "");
+      setRoutingField(snap.routingField ?? "");
+      setBicField(snap.bicField ?? "");
+      setAmount(snap.amount ?? "");
+      if (snap.kybCustomerId) setKybCustomerId(snap.kybCustomerId);
+      sessionStorage.removeItem("b2b_send_form");
+      setAutoRetry(true);
+      window.history.replaceState({}, "", "/enviar-empresa-wire");
     } catch { /* malformed snapshot */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
