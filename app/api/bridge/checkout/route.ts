@@ -108,8 +108,8 @@ export async function POST(req: NextRequest): Promise<Response> {
       try {
         const c  = await getCustomer(existing_customer_id);
         const c2 = c as unknown as Record<string, unknown>;
-        const kycApproved = c.status === "active" || c.status === "approved"
-          || c2.kyc_status === "approved" || c.status === "deposits_restricted";
+        const isOk = (s?: unknown) => s === "active" || s === "approved" || s === "granted" || s === "deposits_restricted";
+        const kycApproved = isOk(c.status) || isOk(c2.kyc_status);
         customer           = c;
         needsKyc           = !kycApproved;
         isNew              = false;

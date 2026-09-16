@@ -133,8 +133,8 @@ export async function POST(req: NextRequest): Promise<Response> {
       try {
         const c = await getCustomer(existing_customer_id);
         const c2 = c as unknown as Record<string, unknown>;
-        const kycApproved = c.status === "active" || c.status === "approved"
-          || c2.kyc_status === "approved";
+        const isOk = (s?: unknown) => s === "active" || s === "approved" || s === "granted";
+        const kycApproved = isOk(c.status) || isOk(c2.kyc_status) || isOk(c2.kyb_status);
         senderCustomer = c;
         needsKyc       = !kycApproved;
         isSenderNew    = false; // already exists — skip ToS gate
@@ -176,8 +176,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (isSandbox && !isSenderNew && needsKyc) {
       try {
         const fresh = await getCustomer(senderCustomer.id);
-        const freshActive = fresh.status === "active" || fresh.status === "approved"
-          || fresh.kyc_status === "approved";
+        const isOk2 = (s?: unknown) => s === "active" || s === "approved" || s === "granted";
+        const freshActive = isOk2(fresh.status) || isOk2(fresh.kyc_status);
         if (freshActive) kycStillNeeded = false;
       } catch { /* best-effort */ }
     }

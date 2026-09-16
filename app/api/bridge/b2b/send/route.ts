@@ -128,7 +128,8 @@ export async function POST(req: NextRequest): Promise<Response> {
       try {
         const c  = await getCustomer(existing_customer_id);
         const c2 = c as unknown as Record<string, unknown>;
-        const kybApproved = c2.kyb_status === "approved";
+        const isOk = (s?: unknown) => s === "approved" || s === "granted" || s === "active";
+        const kybApproved = isOk(c2.kyb_status) || isOk(c.status);
         senderCustomer = c;
         needsKyb       = !kybApproved;
         isNew          = false;
@@ -172,8 +173,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (isSandbox && !isNew && needsKyb) {
       try {
         const fresh = await getCustomer(senderCustomer.id);
-        const freshActive = fresh.status === "active" || fresh.status === "approved"
-          || (fresh as unknown as Record<string, string>).kyb_status === "approved";
+        const isOk2 = (s?: unknown) => s === "active" || s === "approved" || s === "granted";
+        const freshActive = isOk2(fresh.status) || isOk2((fresh as unknown as Record<string, unknown>).kyb_status);
         if (freshActive) kybStillNeeded = false;
       } catch { /* best-effort */ }
     }
