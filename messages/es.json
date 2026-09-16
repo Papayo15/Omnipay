@@ -467,7 +467,7 @@
     "kyc_submitted_body": "Bridge está procesando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.",
     "kyc_long_review_title": "Documento en revisión",
     "kyc_long_review_body": "Puede tomar unos minutos. Esta pantalla avanzará sola.",
-    "kyc_rejected_error": "Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos. Contacta soporte en support@omnipay.solutions",
+    "kyc_rejected_error": "Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos. Contacta soporte.",
     "email_verifying": "Verificando…",
     "email_verified": "✓ Cuenta verificada",
     "kyc_review_countdown": "Validando verificación con nuestro proveedor… ({seconds}s)"
@@ -566,7 +566,7 @@
     "kyc_submitted_body": "Bridge está procesando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.",
     "kyc_long_review_title": "Documento en revisión",
     "kyc_long_review_body": "Puede tomar unos minutos. Esta pantalla avanzará sola.",
-    "kyc_rejected_error": "Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos. Contacta soporte en support@omnipay.solutions"
+    "kyc_rejected_error": "Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos. Contacta soporte."
   },
   "seguimiento": {
     "page_title": "Estado del envío",
@@ -766,7 +766,7 @@
     "kyc_submitted_body": "Bridge está procesando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.",
     "kyc_long_review_title": "Tu documento está en validación",
     "kyc_long_review_body": "Bridge está revisando tu identidad. Esta pantalla avanzará sola cuando quede aprobado.",
-    "kyc_rejected_error": "Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos (teléfono o email). Contacta soporte en support@omnipay.solutions",
+    "kyc_rejected_error": "Tu verificación fue rechazada por Bridge. Puede ser que ya exista una cuenta con tus datos (teléfono o email). Contacta soporte.",
     "tos_verifying": "Verificando automáticamente…",
     "tos_popup_blocked_link": "¿El popup fue bloqueado? Haz clic aquí para abrirlo",
     "email_verifying": "Verificando…",
@@ -974,7 +974,7 @@
     "kyb_submitted_body": "Bridge está procesando la verificación de tu empresa. Esta pantalla avanzará sola cuando quede aprobada.",
     "kyb_long_review_title": "Empresa en revisión",
     "kyb_long_review_body": "Bridge está revisando la documentación de tu empresa. Esta pantalla avanzará sola.",
-    "kyb_rejected_error": "La verificación de tu empresa fue rechazada por Bridge. Puede ser que ya exista una cuenta con esos datos. Contacta soporte en support@omnipay.solutions",
+    "kyb_rejected_error": "La verificación de tu empresa fue rechazada por Bridge. Puede ser que ya exista una cuenta con esos datos. Contacta soporte.",
     "kyb_polling_title": "Verifica tu empresa en la ventana abierta",
     "kyb_already_done": "✓ Ya completé la verificación de empresa",
     "email_verifying": "Verificando…",

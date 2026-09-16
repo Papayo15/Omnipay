@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Zap, ArrowLeft, Send, Copy, Check, AlertCircle, Loader2, CheckCircle } from "lucide-react";
 import { SEPA_COUNTRIES } from "@/lib/wise-accounts";
 
-type Step = "form" | "sending" | "tos" | "kyc" | "instructions" | "error";
+type Step = "form" | "sending" | "tos" | "kyc" | "instructions" | "receipt" | "error";
 
 interface VaInfo {
   bank_name?:      string | null;
@@ -274,6 +274,7 @@ export default function EnviarPage() {
       const saved = JSON.parse(raw) as {
         page?: string; vaInfo?: VaInfo; confirmedAmount?: number; targetCurrency?: string;
         depositAmount?: string | null; orderId?: string; destinationRail?: string; savedAt?: number;
+        recipientName?: string; recipientCountry?: string; paymentConfirmed?: boolean;
       };
       if (saved.page !== "enviar") return;
       if (Date.now() - (saved.savedAt ?? 0) > 86_400_000) { localStorage.removeItem("omnipay_active_transfer"); return; }
@@ -284,7 +285,10 @@ export default function EnviarPage() {
       setDepositAmount(saved.depositAmount ?? null);
       setOrderId(saved.orderId ?? "");
       setDestinationRail(saved.destinationRail ?? "");
-      setStep("instructions");
+      if (saved.recipientName)    setRecipientName(saved.recipientName);
+      if (saved.recipientCountry) setRecipientCountry(saved.recipientCountry);
+      if (saved.paymentConfirmed) { setSandboxDone(true); setStep("receipt"); }
+      else setStep("instructions");
     } catch { try { localStorage.removeItem("omnipay_active_transfer"); } catch { /* ignore */ } }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -487,7 +491,7 @@ export default function EnviarPage() {
         if (!res.ok || !active) return;
         const d = await res.json() as { status?: string };
         if (!active) return;
-        if (d.status === "COMPLETED") { setSandboxDone(true); return; }
+        if (d.status === "COMPLETED") { setSandboxDone(true); setStep("receipt"); return; }
       } catch { /* silent — retry next tick */ }
       if (active) timer = setTimeout(poll, 10_000);
     };
@@ -495,6 +499,17 @@ export default function EnviarPage() {
     poll();
     return () => { active = false; if (timer) clearTimeout(timer); };
   }, [step, orderId, sandboxDone]);
+
+  // Persist paymentConfirmed flag when receipt step is reached
+  useEffect(() => {
+    if (step !== "receipt") return;
+    try {
+      const raw = localStorage.getItem("omnipay_active_transfer");
+      if (!raw) return;
+      const saved = JSON.parse(raw) as Record<string, unknown>;
+      localStorage.setItem("omnipay_active_transfer", JSON.stringify({ ...saved, paymentConfirmed: true }));
+    } catch { /* ignore */ }
+  }, [step]);
 
   const handleSubmit = useCallback(async (isAutoRetry = false, fromTos = false) => {
     setError("");
@@ -616,6 +631,7 @@ export default function EnviarPage() {
           page: "enviar", vaInfo: newVaInfo, confirmedAmount: newAmount,
           targetCurrency: newTargetCcy, depositAmount: newDepositAmt,
           orderId: newOrderId, destinationRail: newRail, savedAt: Date.now(),
+          recipientName, recipientCountry,
         }));
       } catch { /* localStorage unavailable */ }
       setStep("instructions");
@@ -640,7 +656,7 @@ export default function EnviarPage() {
     try {
       const res  = await fetch(`/api/bridge/sandbox/advance?order_id=${orderId}`);
       const data = await res.json() as { ok?: boolean; error?: string };
-      if (data.ok) setSandboxDone(true);
+      if (data.ok) { setSandboxDone(true); setStep("receipt"); }
       else setError(data.error ?? "Error sandbox");
     } finally {
       setSandboxAdvancing(false);
@@ -689,13 +705,13 @@ export default function EnviarPage() {
               { key: "instructions", label: t("step_deposito") },
               { key: "done",         label: t("step_listo") },
             ].map(({ key, label }, i) => {
-              const done   = (key === "form"         && (step === "kyc" || step === "instructions"))
-                          || (key === "kyc"          && step === "instructions")
-                          || (key === "instructions" && sandboxDone);
+              const done   = (key === "form"         && (step === "kyc" || step === "instructions" || step === "receipt"))
+                          || (key === "kyc"          && (step === "instructions" || step === "receipt"))
+                          || (key === "instructions" && step === "receipt");
               const active = (key === "form"         && (step === "form" || step === "sending"))
                           || (key === "kyc"          && step === "kyc")
-                          || (key === "instructions" && step === "instructions" && !sandboxDone)
-                          || (key === "done"         && sandboxDone);
+                          || (key === "instructions" && step === "instructions")
+                          || (key === "done"         && step === "receipt");
               return (
                 <div key={key} className="flex items-center flex-1 last:flex-none">
                   <div className="flex flex-col items-center gap-1">
@@ -1123,156 +1139,145 @@ export default function EnviarPage() {
         {/* INSTRUCTIONS — VA bancario listo para depositar */}
         {step === "instructions" && vaInfo && (
           <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-white mb-1">{t("instructions_title")}</h1>
+              <p className="text-slate-400 text-sm">{t("instructions_body", { name: recipientName })}</p>
+            </div>
 
-            {/* Instrucciones de depósito — se ocultan cuando ya se completó */}
-            {!sandboxDone && (
-              <>
-                <div>
-                  <h1 className="text-2xl font-bold text-white mb-1">{t("instructions_title")}</h1>
-                  <p className="text-slate-400 text-sm">{t("instructions_body", { name: recipientName })}</p>
-                </div>
-
-                <div className="bg-slate-800/60 border border-emerald-500/20 rounded-2xl p-5 space-y-0">
-                  {vaInfo.bank_name && (
-                    <VaRow label={t("va_bank")} value={vaInfo.bank_name} copyId="bank" />
-                  )}
-                  {vaInfo.beneficiary && (
-                    <VaRow label={t("va_beneficiary")} value={vaInfo.beneficiary} copyId="bene" />
-                  )}
-                  {vaInfo.routing_number && (
-                    <VaRow label={t("va_routing")} value={vaInfo.routing_number} copyId="routing" />
-                  )}
-                  {vaInfo.account_number && (
-                    <VaRow label={t("va_account")} value={vaInfo.account_number} copyId="account" />
-                  )}
-                  {vaInfo.iban && (
-                    <VaRow label={t("va_iban")} value={vaInfo.iban} copyId="iban" />
-                  )}
-                  {vaInfo.bic && (
-                    <VaRow label="BIC / SWIFT" value={vaInfo.bic} copyId="bic" />
-                  )}
-                  {vaInfo.sort_code && (
-                    <VaRow label="Sort Code" value={vaInfo.sort_code} copyId="sort" />
-                  )}
-                  {vaInfo.clabe && (
-                    <VaRow label="CLABE" value={vaInfo.clabe} copyId="clabe" />
-                  )}
-                  {vaInfo.pix && (
-                    <VaRow label="PIX" value={vaInfo.pix} copyId="pix" />
-                  )}
-                  <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-xs">{t("va_recipient_gets")}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-emerald-400 font-bold text-lg font-mono">
-                          {confirmedAmount.toLocaleString()} {targetCurrency.toUpperCase()}
-                        </span>
-                        <CopyButton text={String(confirmedAmount)} id="amount" label={t("copy")} />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-xs">{t("va_deposit_currency")}</span>
-                      <span className="text-slate-300 text-sm font-mono">
-                        {(vaInfo.currency ?? "USD").toUpperCase()}
-                      </span>
-                    </div>
-                    {depositAmount && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-400 text-xs">{t("va_deposit_amount")}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-white font-bold text-base font-mono">
-                            {depositAmount} {(vaInfo.currency ?? "USD").toUpperCase()}
-                          </span>
-                          <CopyButton text={depositAmount} id="deposit_amount" label={t("copy")} />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ETA badge — cuánto tarda en llegar al banco del receptor */}
-                {destinationRail && (
-                  <div className="flex items-center justify-between bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-2.5">
-                    <span className="text-slate-400 text-xs">{t("eta_label")}</span>
-                    <span className="text-sm font-medium" style={{ color: ["spei","pix","fednow","sepa_instant"].includes(destinationRail) ? "#34d399" : ["fps","cop","wire"].includes(destinationRail) ? "#fbbf24" : "#94a3b8" }}>
-                      {t(`eta_${destinationRail}` as "eta_ach")}
+            <div className="bg-slate-800/60 border border-emerald-500/20 rounded-2xl p-5 space-y-0">
+              {vaInfo.bank_name && <VaRow label={t("va_bank")} value={vaInfo.bank_name} copyId="bank" />}
+              {vaInfo.beneficiary && <VaRow label={t("va_beneficiary")} value={vaInfo.beneficiary} copyId="bene" />}
+              {vaInfo.routing_number && <VaRow label={t("va_routing")} value={vaInfo.routing_number} copyId="routing" />}
+              {vaInfo.account_number && <VaRow label={t("va_account")} value={vaInfo.account_number} copyId="account" />}
+              {vaInfo.iban && <VaRow label={t("va_iban")} value={vaInfo.iban} copyId="iban" />}
+              {vaInfo.bic && <VaRow label="BIC / SWIFT" value={vaInfo.bic} copyId="bic" />}
+              {vaInfo.sort_code && <VaRow label="Sort Code" value={vaInfo.sort_code} copyId="sort" />}
+              {vaInfo.clabe && <VaRow label="CLABE" value={vaInfo.clabe} copyId="clabe" />}
+              {vaInfo.pix && <VaRow label="PIX" value={vaInfo.pix} copyId="pix" />}
+              <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 text-xs">{t("va_recipient_gets")}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400 font-bold text-lg font-mono">
+                      {confirmedAmount.toLocaleString()} {targetCurrency.toUpperCase()}
                     </span>
-                  </div>
-                )}
-
-                <p className="text-slate-500 text-xs text-center leading-relaxed px-2">
-                  {t("instructions_note")}
-                </p>
-
-                {/* Sandbox: botón para simular el pago */}
-                {showSandboxBtn && orderId && (
-                  <button
-                    onClick={advanceSandbox}
-                    disabled={sandboxAdvancing}
-                    className="w-full bg-purple-800 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
-                  >
-                    {sandboxAdvancing && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {t("sandbox_advance")}
-                  </button>
-                )}
-              </>
-            )}
-
-            {/* Comprobante — solo después de completarse */}
-            {sandboxDone && (
-              <div className="space-y-4">
-                {/* Comprobante estilo bancario */}
-                <div className="bg-slate-800/80 border border-emerald-500/40 rounded-2xl overflow-hidden">
-                  <div className="bg-emerald-600/20 px-5 py-3 border-b border-emerald-500/20 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    <span className="text-emerald-400 font-semibold text-sm">{t("receipt_title")}</span>
-                  </div>
-                  <div className="px-5 py-4 space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">{t("receipt_to")}</span>
-                      <span className="text-white font-medium">{recipientName}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">{t("receipt_country")}</span>
-                      <span className="text-white">{BRIDGE_COUNTRIES.find(c => c.code === recipientCountry)?.flag} {recipientCountry}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">{t("receipt_amount")}</span>
-                      <span className="text-white font-mono font-bold">{confirmedAmount.toLocaleString()} {targetCurrency.toUpperCase()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">{t("receipt_ref")}</span>
-                      <span className="text-white font-mono text-xs">{orderId}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">{t("receipt_date")}</span>
-                      <span className="text-white text-xs">{new Date().toLocaleString()}</span>
-                    </div>
-                    <div className="pt-2 border-t border-slate-700">
-                      <p className="text-emerald-400 text-xs text-center font-medium">{t("receipt_status_complete")}</p>
-                    </div>
+                    <CopyButton text={String(confirmedAmount)} id="amount" label={t("copy")} />
                   </div>
                 </div>
-                <p className="text-slate-500 text-[10px] text-center">
-                  ✉️ {t("receipt_emails_sent")}
-                </p>
-                <button
-                  onClick={async () => {
-                    const receiptUrl = `${window.location.origin}/seguimiento?order_id=${orderId}`;
-                    const shareData = { title: "Comprobante OmniPay", text: `Comprobante de envío a ${recipientName} — ${confirmedAmount.toLocaleString()} ${targetCurrency}`, url: receiptUrl };
-                    if (typeof navigator !== "undefined" && "share" in navigator && navigator.canShare?.(shareData)) {
-                      try { await navigator.share(shareData); } catch { /* cancelado */ }
-                    } else {
-                      copyText(`${window.location.origin}/seguimiento?order_id=${orderId}`, "receipt");
-                    }
-                  }}
-                  className="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2.5 rounded-xl transition-all text-sm"
-                >
-                  {copied === "receipt" ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                  {t("receipt_share")}
-                </button>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 text-xs">{t("va_deposit_currency")}</span>
+                  <span className="text-slate-300 text-sm font-mono">{(vaInfo.currency ?? "USD").toUpperCase()}</span>
+                </div>
+                {depositAmount && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400 text-xs">{t("va_deposit_amount")}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-bold text-base font-mono">
+                        {depositAmount} {(vaInfo.currency ?? "USD").toUpperCase()}
+                      </span>
+                      <CopyButton text={depositAmount} id="deposit_amount" label={t("copy")} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {destinationRail && (
+              <div className="flex items-center justify-between bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-2.5">
+                <span className="text-slate-400 text-xs">{t("eta_label")}</span>
+                <span className="text-sm font-medium" style={{ color: ["spei","pix","fednow","sepa_instant"].includes(destinationRail) ? "#34d399" : ["fps","cop","wire"].includes(destinationRail) ? "#fbbf24" : "#94a3b8" }}>
+                  {t(`eta_${destinationRail}` as "eta_ach")}
+                </span>
               </div>
             )}
+
+            <p className="text-slate-500 text-xs text-center leading-relaxed px-2">
+              {t("instructions_note")}
+            </p>
+
+            {showSandboxBtn && orderId && (
+              <button
+                onClick={advanceSandbox}
+                disabled={sandboxAdvancing}
+                className="w-full bg-purple-800 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+              >
+                {sandboxAdvancing && <Loader2 className="w-4 h-4 animate-spin" />}
+                {t("sandbox_advance")}
+              </button>
+            )}
+
+            {error && (
+              <div className="bg-red-900/20 border border-red-500/30 rounded-xl px-4 py-3 text-red-300 text-sm">
+                {error}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* RECEIPT — Comprobante una vez que Bridge confirma el pago */}
+        {step === "receipt" && (
+          <div className="space-y-6">
+            <div className="flex flex-col items-center gap-3 pt-2">
+              <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <CheckCircle className="w-7 h-7 text-emerald-400" />
+              </div>
+              <div className="text-center">
+                <h1 className="text-xl font-bold text-white mb-1">{t("receipt_title")}</h1>
+                <p className="text-slate-400 text-sm">{t("receipt_status_complete")}</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/80 border border-emerald-500/40 rounded-2xl overflow-hidden">
+              <div className="bg-emerald-600/20 px-5 py-3 border-b border-emerald-500/20 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-400 font-semibold text-sm">{t("receipt_title")}</span>
+              </div>
+              <div className="px-5 py-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{t("receipt_to")}</span>
+                  <span className="text-white font-medium">{recipientName}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{t("receipt_country")}</span>
+                  <span className="text-white">{BRIDGE_COUNTRIES.find(c => c.code === recipientCountry)?.flag} {recipientCountry}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{t("receipt_amount")}</span>
+                  <span className="text-white font-mono font-bold">{confirmedAmount.toLocaleString()} {targetCurrency.toUpperCase()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{t("receipt_ref")}</span>
+                  <span className="text-white font-mono text-xs">{orderId}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{t("receipt_date")}</span>
+                  <span className="text-white text-xs">{new Date().toLocaleString()}</span>
+                </div>
+                <div className="pt-2 border-t border-slate-700">
+                  <p className="text-emerald-400 text-xs text-center font-medium">{t("receipt_status_complete")}</p>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-slate-500 text-[10px] text-center">
+              ✉️ {t("receipt_emails_sent")}
+            </p>
+
+            <button
+              onClick={async () => {
+                const receiptUrl = `${window.location.origin}/seguimiento?order_id=${orderId}`;
+                const shareData = { title: "Comprobante OmniPay", text: `Comprobante de envío a ${recipientName} — ${confirmedAmount.toLocaleString()} ${targetCurrency}`, url: receiptUrl };
+                if (typeof navigator !== "undefined" && "share" in navigator && navigator.canShare?.(shareData)) {
+                  try { await navigator.share(shareData); } catch { /* cancelado */ }
+                } else {
+                  copyText(`${window.location.origin}/seguimiento?order_id=${orderId}`, "receipt");
+                }
+              }}
+              className="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2.5 rounded-xl transition-all text-sm"
+            >
+              {copied === "receipt" ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+              {t("receipt_share")}
+            </button>
 
             <button
               onClick={() => {
@@ -1283,12 +1288,6 @@ export default function EnviarPage() {
             >
               ← {t("new_transfer")}
             </button>
-
-            {error && (
-              <div className="bg-red-900/20 border border-red-500/30 rounded-xl px-4 py-3 text-red-300 text-sm">
-                {error}
-              </div>
-            )}
           </div>
         )}
 

@@ -24,7 +24,7 @@ const BRIDGE_COUNTRIES = [
   { code: "SE", flag: "🇸🇪", rail: "SEPA" },
 ];
 
-type Step = "form" | "submitting" | "tos" | "kyb" | "instructions" | "error";
+type Step = "form" | "submitting" | "tos" | "kyb" | "instructions" | "receipt" | "error";
 
 interface VaInfo {
   bank_name?:      string | null;
@@ -216,6 +216,7 @@ export default function EnviarEmpresaWirePage() {
       const saved = JSON.parse(raw) as {
         page?: string; vaInfo?: VaInfo; confirmedAmount?: number; targetCurrency?: string;
         orderId?: string; destinationRail?: string; savedAt?: number;
+        recipientBusinessName?: string; recipientCountry?: string; paymentConfirmed?: boolean;
       };
       if (saved.page !== "b2b") return;
       if (Date.now() - (saved.savedAt ?? 0) > 86_400_000) { localStorage.removeItem("omnipay_active_transfer"); return; }
@@ -225,7 +226,10 @@ export default function EnviarEmpresaWirePage() {
       setTargetCurrency(saved.targetCurrency ?? "MXN");
       setOrderId(saved.orderId ?? "");
       setDestinationRail(saved.destinationRail ?? "");
-      setStep("instructions");
+      if (saved.recipientBusinessName) setRecipientBusinessName(saved.recipientBusinessName);
+      if (saved.recipientCountry)      setRecipientCountry(saved.recipientCountry);
+      if (saved.paymentConfirmed) { setSandboxDone(true); setStep("receipt"); }
+      else setStep("instructions");
     } catch { try { localStorage.removeItem("omnipay_active_transfer"); } catch { /* ignore */ } }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -494,6 +498,7 @@ export default function EnviarEmpresaWirePage() {
           page: "b2b", vaInfo: newVaInfo, confirmedAmount: newAmount,
           targetCurrency: newTargetCcy, orderId: newOrderId,
           destinationRail: newRail, savedAt: Date.now(),
+          recipientBusinessName, recipientCountry,
         }));
       } catch { /* localStorage unavailable */ }
       setStep("instructions");
@@ -571,7 +576,7 @@ export default function EnviarEmpresaWirePage() {
         if (!res.ok || !active) return;
         const d = await res.json() as { status?: string };
         if (!active) return;
-        if (d.status === "COMPLETED") { setSandboxDone(true); return; }
+        if (d.status === "COMPLETED") { setSandboxDone(true); setStep("receipt"); return; }
       } catch { /* silent */ }
       if (active) timer = setTimeout(poll, 10_000);
     };
@@ -579,13 +584,24 @@ export default function EnviarEmpresaWirePage() {
     return () => { active = false; if (timer) clearTimeout(timer); };
   }, [step, orderId, sandboxDone]);
 
+  // Persist paymentConfirmed flag when receipt step is reached
+  useEffect(() => {
+    if (step !== "receipt") return;
+    try {
+      const raw = localStorage.getItem("omnipay_active_transfer");
+      if (!raw) return;
+      const saved = JSON.parse(raw) as Record<string, unknown>;
+      localStorage.setItem("omnipay_active_transfer", JSON.stringify({ ...saved, paymentConfirmed: true }));
+    } catch { /* ignore */ }
+  }, [step]);
+
   const advanceSandbox = useCallback(async () => {
     if (!orderId) return;
     setSandboxAdvancing(true);
     try {
       const res  = await fetch(`/api/bridge/sandbox/advance?order_id=${orderId}`);
       const data = await res.json() as { ok?: boolean; error?: string };
-      if (data.ok) setSandboxDone(true);
+      if (data.ok) { setSandboxDone(true); setStep("receipt"); }
       else setError(data.error ?? "Error sandbox");
     } finally {
       setSandboxAdvancing(false);
@@ -909,8 +925,7 @@ export default function EnviarEmpresaWirePage() {
 
             <p className="text-slate-500 text-xs text-center leading-relaxed px-2">{t("instructions_note")}</p>
 
-            {/* Sandbox: simulate payment button */}
-            {showSandboxBtn && orderId && !sandboxDone && (
+            {showSandboxBtn && orderId && (
               <button
                 onClick={advanceSandbox}
                 disabled={sandboxAdvancing}
@@ -922,40 +937,52 @@ export default function EnviarEmpresaWirePage() {
                 {sandboxAdvancing ? t("sandbox_simulating") : t("sandbox_simulate_payment")}
               </button>
             )}
+          </div>
+        )}
 
-            {/* Sandbox receipt */}
-            {sandboxDone && (
-              <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-2xl p-5 space-y-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle className="w-5 h-5 text-emerald-400" />
-                  <span className="text-emerald-400 font-semibold text-sm">{t("sandbox_payment_done")}</span>
+        {/* RECEIPT — Comprobante una vez que Bridge confirma el pago */}
+        {step === "receipt" && (
+          <div className="space-y-6">
+            <div className="flex flex-col items-center gap-3 pt-2">
+              <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <CheckCircle className="w-7 h-7 text-emerald-400" />
+              </div>
+              <div className="text-center">
+                <h1 className="text-xl font-bold text-white mb-1">{t("sandbox_payment_done")}</h1>
+                <p className="text-slate-400 text-sm">{t("receipt_completed")}</p>
+              </div>
+            </div>
+
+            <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-2xl p-5 space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle className="w-5 h-5 text-emerald-400" />
+                <span className="text-emerald-400 font-semibold text-sm">{t("sandbox_payment_done")}</span>
+              </div>
+              <div className="space-y-2 text-xs font-mono">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">{t("va_beneficiary")}</span>
+                  <span className="text-slate-200">{recipientBusinessName}</span>
                 </div>
-                <div className="space-y-2 text-xs font-mono">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">{t("va_recipient_gets")}</span>
+                  <span className="text-emerald-400 font-bold">{confirmedAmount.toLocaleString()} {targetCurrency.toUpperCase()}</span>
+                </div>
+                {orderId && (
                   <div className="flex justify-between">
-                    <span className="text-slate-400">{t("va_beneficiary")}</span>
-                    <span className="text-slate-200">{recipientBusinessName}</span>
+                    <span className="text-slate-400">Ref</span>
+                    <span className="text-slate-400">{orderId}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">{t("va_recipient_gets")}</span>
-                    <span className="text-emerald-400 font-bold">{confirmedAmount.toLocaleString()} {targetCurrency.toUpperCase()}</span>
-                  </div>
-                  {orderId && (
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Ref</span>
-                      <span className="text-slate-400">{orderId}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">{t("receipt_date")}</span>
-                    <span className="text-slate-300">{new Date().toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">{t("receipt_status")}</span>
-                    <span className="text-emerald-400 font-semibold">{t("receipt_completed")}</span>
-                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-slate-400">{t("receipt_date")}</span>
+                  <span className="text-slate-300">{new Date().toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">{t("receipt_status")}</span>
+                  <span className="text-emerald-400 font-semibold">{t("receipt_completed")}</span>
                 </div>
               </div>
-            )}
+            </div>
 
             <button
               onClick={() => {
