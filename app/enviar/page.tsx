@@ -43,6 +43,32 @@ const BRIDGE_COUNTRIES = [
 ];
 
 
+type EnviarApiData = {
+  needs_tos?: boolean; tos_url?: string; customer_id?: string;
+  needs_kyc?: boolean; kyc_url?: string; is_sandbox?: boolean;
+  order_id?: string; deposit_instructions?: Record<string, unknown>;
+  amount_target?: number; target_currency?: string; error?: string;
+};
+
+function buildSnapBodyEnviar(snap: Record<string, string>, origin: string): Record<string, unknown> {
+  const rc        = snap.recipientCountry ?? "MX";
+  const isSepaSnap = SEPA_COUNTRIES.has(rc);
+  const base: Record<string, unknown> = {
+    sender_name:          snap.senderName?.trim()   ?? "",
+    sender_email:         snap.senderEmail?.trim().toLowerCase() ?? "",
+    source_currency:      (snap.senderCurrency ?? "USD").toLowerCase(),
+    recipient_name:       snap.recipientName?.trim() ?? "",
+    recipient_country:    rc,
+    amount_target:        parseFloat(snap.amountTarget ?? "0"),
+    redirect_uri:         `${origin}/enviar?kyc_done=1`,
+    existing_customer_id: snap.kycCustomerId,
+  };
+  if (rc === "MX") return { ...base, clabe: snap.accountField?.trim() ?? "" };
+  if (rc === "GB") return { ...base, sort_code: snap.accountField?.split("/")[0]?.trim(), account_number: snap.accountField?.split("/")[1]?.trim() };
+  if (isSepaSnap) return { ...base, iban: snap.accountField?.trim() ?? "", bic: snap.bicField?.trim() ?? "" };
+  return { ...base, routing_number: snap.routingField?.trim() ?? "", account_number: snap.accountField?.trim() ?? "" };
+}
+
 export default function EnviarPage() {
   const t    = useTranslations("enviar");
   const tF   = useTranslations("p2p");
@@ -110,6 +136,12 @@ export default function EnviarPage() {
   // Polling countdown (Patch 2)
   const [reviewCountdown, setReviewCountdown] = useState(10);
   const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Optimistic Async Prefetch
+  const prefetchPromise  = useRef<Promise<EnviarApiData | null> | null>(null);
+  const prefetchKey      = useRef<string>("");
+  const prefetchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [prefetchAwaiting, setPrefetchAwaiting] = useState(false);
 
   // Fetch active rail for selected destination country (respects BRIDGE_USE_FEDNOW etc.)
   useEffect(() => {
@@ -204,6 +236,24 @@ export default function EnviarPage() {
     return () => { if (emailDebounce.current) clearTimeout(emailDebounce.current); };
   }, [senderEmail]);
 
+  // Phase A: fire prefetch when user is verified + form complete + quote ready (1500ms debounce)
+  useEffect(() => {
+    if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current);
+    if (emailStatus !== "verified" || !quoteReady) return;
+    if (!senderName.trim() || !senderEmail.trim() || !recipientName.trim() || !accountField.trim()) return;
+    prefetchDebounce.current = setTimeout(() => {
+      const body    = buildBody();
+      const bodyKey = JSON.stringify(body);
+      if (prefetchKey.current === bodyKey) return;
+      prefetchKey.current     = bodyKey;
+      prefetchPromise.current = fetch("/api/bridge/send", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      }).then(r => r.json() as Promise<EnviarApiData>).catch((): null => null);
+    }, 1500);
+    return () => { if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emailStatus, quoteReady, senderName, senderEmail, recipientName, accountField, buildBody]);
+
   // Review countdown: 10s loop while kycLongReview is active (Patch 2)
   useEffect(() => {
     if (countdownTimer.current) clearInterval(countdownTimer.current);
@@ -226,6 +276,13 @@ export default function EnviarPage() {
     try {
       const snap = JSON.parse(saved) as { kycCustomerId?: string } & Record<string, string>;
       if (!snap.kycCustomerId) { sessionStorage.removeItem("enviar_form_state"); return; }
+      // Phase B: fire API call in parallel with form restoration
+      const pBody = buildSnapBodyEnviar(snap as Record<string, string>, window.location.origin);
+      const pKey  = JSON.stringify(pBody);
+      prefetchKey.current     = pKey;
+      prefetchPromise.current = fetch("/api/bridge/send", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pBody),
+      }).then(r => r.json() as Promise<EnviarApiData>).catch((): null => null);
       window.history.replaceState({}, "", "/enviar");
       setSenderName(snap.senderName ?? ""); setSenderEmail(snap.senderEmail ?? "");
       setSenderCurrency(snap.senderCurrency ?? "USD"); setRecipientName(snap.recipientName ?? "");
@@ -435,17 +492,23 @@ export default function EnviarPage() {
       } catch { /* ignore — cross-origin write not allowed after navigation */ }
     }
     try {
-      const res = await fetch("/api/bridge/send", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(buildBody()),
-      });
-      const data = await res.json() as {
-        needs_tos?: boolean; tos_url?: string; customer_id?: string;
-        needs_kyc?: boolean; kyc_url?: string;
-        order_id?: string; deposit_instructions?: Record<string, unknown>;
-        amount_target?: number; target_currency?: string; error?: string;
-      };
+      const body    = buildBody();
+      const bodyKey = JSON.stringify(body);
+      const freshFetch = (): Promise<EnviarApiData | null> =>
+        fetch("/api/bridge/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+          .then(r => r.json() as Promise<EnviarApiData>).catch((): null => null);
+      const usePrefetch = prefetchPromise.current !== null
+        && prefetchKey.current === bodyKey
+        && (!isAutoRetry || fromTos);
+      if (usePrefetch) setPrefetchAwaiting(true);
+      const data = await (usePrefetch ? prefetchPromise.current! : freshFetch()) ?? await freshFetch();
+      setPrefetchAwaiting(false);
+      prefetchPromise.current = null;
+      prefetchKey.current     = "";
+      if (!data) {
+        if (prePopup && !prePopup.closed) prePopup.close();
+        setError("Error de conexión. Verifica tu internet."); setStep("error"); return;
+      }
 
       if (data.needs_tos && data.tos_url) {
         // Full-page navigation — works on mobile and desktop; no popup needed.
@@ -493,7 +556,7 @@ export default function EnviarPage() {
         return;
       }
 
-      if (!res.ok || data.error) {
+      if (data.error) {
         if (prePopup && !prePopup.closed) prePopup.close();
         setError(data.error ?? "Error desconocido"); setStep("error"); return;
       }
@@ -827,7 +890,9 @@ export default function EnviarPage() {
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
             <Zap className="w-10 h-10 text-[#00C9C8] animate-pulse" />
             <p className="text-white font-semibold">{t("checking")}</p>
-            <p className="text-slate-400 text-sm text-center">{t("checking_sub")}</p>
+            <p className="text-slate-400 text-sm text-center">
+              {prefetchAwaiting ? "Iniciando verificación segura…" : t("checking_sub")}
+            </p>
           </div>
         )}
 

@@ -122,6 +122,32 @@ function calcBridgeFees(amtLocal: number, localCurrency: string, fxRate: number)
 }
 
 
+type P2pApiData = {
+  pay_link?: string; needs_tos?: boolean; tos_url?: string; customer_id?: string;
+  needs_kyc?: boolean; kyc_url?: string; error?: string; message?: string;
+};
+
+function buildP2pSnapBody(form: Record<string, string>): Record<string, unknown> {
+  const rc = form.country ?? "MX";
+  const body: Record<string, unknown> = {
+    nombre:          form.nombre?.trim() ?? "",
+    email:           form.email?.toLowerCase().trim() ?? "",
+    country:         rc,
+    receive_method:  "bank",
+    amount_target:   parseFloat(form.amountLocal ?? "0"),
+    recipient_phone: form.recipientPhone || undefined,
+    from_tos:        true,
+    existing_customer_id: form.kycCustomerId,
+  };
+  if (rc === "MX")                    body.clabe = form.account;
+  else if (SEPA_COUNTRIES.has(rc)) { body.iban = form.account; if (form.bic?.trim()) body.bic = form.bic.trim().toUpperCase(); }
+  else if (rc === "BR")             { body.pix_key = form.account; body.document_number = form.cpf?.replace(/\D/g, "") ?? ""; }
+  else if (rc === "GB")             { const p = (form.account ?? "").split("/"); body.sort_code = p[0]?.trim(); body.account_number = p[1]?.trim(); }
+  else if (rc === "US")             { const p = (form.account ?? "").split("/"); body.routing_number = p[0]?.trim(); body.account_number = p[1]?.trim(); }
+  else                                body.account_number = form.account;
+  return body;
+}
+
 export default function P2PPage() {
   const t      = useTranslations("p2p");
   const router = useRouter();
@@ -170,6 +196,12 @@ export default function P2PPage() {
   // Polling countdown (Patch 2)
   const [reviewCountdown, setReviewCountdown] = useState(10);
   const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Optimistic Async Prefetch
+  const prefetchPromise  = useRef<Promise<P2pApiData | null> | null>(null);
+  const prefetchKey      = useRef<string>("");
+  const prefetchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [prefetchAwaiting, setPrefetchAwaiting] = useState(false);
 
   useEffect(() => {
     fetch("/api/alchemypay/status")
@@ -259,6 +291,13 @@ export default function P2PPage() {
       if (saved) {
         const form = JSON.parse(saved) as Record<string, string>;
         if (tosDone && form.kycCustomerId) {
+          // Phase B: fire prefetch immediately using snap data
+          const pBody = buildP2pSnapBody(form);
+          const pKey  = JSON.stringify(pBody);
+          prefetchKey.current     = pKey;
+          prefetchPromise.current = fetch("/api/bridge/checkout", {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pBody),
+          }).then(r => r.json() as Promise<P2pApiData>).catch((): null => null);
           // ToS accepted — call checkout directly with from_tos=true (via tosModeRef).
           // Bypassing /api/bridge/kyc-link avoids failures for brand-new customers
           // and ensures checkout navigates straight to Persona.
@@ -408,6 +447,45 @@ export default function P2PPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kycPolling, kycCustomerId]);
 
+  const buildCheckoutBody = useCallback((): Record<string, unknown> => {
+    const amt  = parseFloat(amountLocal);
+    const body: Record<string, unknown> = {
+      nombre:          nombre.trim(),
+      email:           email.toLowerCase().trim(),
+      country,
+      receive_method:  "bank",
+      amount_target:   amt,
+      recipient_phone: recipientPhone || undefined,
+    };
+    if (country === "MX")                    body.clabe          = account;
+    else if (SEPA_COUNTRIES.has(country)) { body.iban = account; if (bic.trim()) body.bic = bic.trim().toUpperCase(); }
+    else if (country === "BR")             { body.pix_key = account; body.document_number = cpf.replace(/\D/g, ""); }
+    else if (country === "GB")             { const p = account.split("/"); body.sort_code = p[0]?.trim(); body.account_number = p[1]?.trim(); }
+    else if (country === "US")             { const p = account.split("/"); body.routing_number = p[0]?.trim(); body.account_number = p[1]?.trim(); }
+    else                                     body.account_number = account;
+    if (kycCustomerId) body.existing_customer_id = kycCustomerId;
+    if (tosModeRef.current) body.from_tos = true;
+    return body;
+  }, [nombre, email, country, account, bic, cpf, amountLocal, recipientPhone, kycCustomerId]);
+
+  // Phase A: fire prefetch when user is verified + form ready (1500ms debounce)
+  useEffect(() => {
+    if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current);
+    if (emailStatus !== "verified" || !fxRate) return;
+    if (!nombre.trim() || !email.includes("@") || !account.trim() || parseFloat(amountLocal) < 20) return;
+    prefetchDebounce.current = setTimeout(() => {
+      const body    = buildCheckoutBody();
+      const bodyKey = JSON.stringify(body);
+      if (prefetchKey.current === bodyKey) return;
+      prefetchKey.current     = bodyKey;
+      prefetchPromise.current = fetch("/api/bridge/checkout", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      }).then(r => r.json() as Promise<P2pApiData>).catch((): null => null);
+    }, 1500);
+    return () => { if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emailStatus, fxRate, nombre, email, account, amountLocal, buildCheckoutBody]);
+
   // Bridge link generation — gets real fees from Bridge at submit time
   const generateLink = useCallback(async () => {
     // Capture before any async — used to distinguish ToS→KYC transition from KYC-processing retry
@@ -476,45 +554,22 @@ export default function P2PPage() {
         }
       } catch { /* estimado local ya visible, continuar */ }
 
-      // 2. Generate payment link
-      const body: Record<string, unknown> = {
-        nombre:          nombre.trim(),
-        email:           email.toLowerCase().trim(),
-        country,
-        receive_method:  "bank",
-        amount_target:   amt,
-        recipient_phone: recipientPhone || undefined,
-      };
-      if (country === "MX")                 body.clabe          = account;
-      else if (SEPA_COUNTRIES.has(country)) {
-        body.iban = account;
-        if (bic.trim()) body.bic = bic.trim().toUpperCase();
-      }
-      else if (country === "BR") {
-        body.pix_key         = account;
-        body.document_number = cpf.replace(/\D/g, "");
-      }
-      else if (country === "GB") {
-        const p = account.split("/");
-        body.sort_code = p[0]?.trim(); body.account_number = p[1]?.trim();
-      } else if (country === "US") {
-        const p = account.split("/");
-        body.routing_number = p[0]?.trim(); body.account_number = p[1]?.trim();
-      } else {
-        body.account_number = account;
-      }
-      // Card support kept in code for future activation
-      // body.card_number = ...
-
-      if (kycCustomerId) body.existing_customer_id = kycCustomerId;
-      if (tosModeRef.current) body.from_tos = true; // skip ToS gate — user already accepted
-      const res  = await fetch("/api/bridge/checkout", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json() as CheckoutResponse & { error?: string; message?: string };
-      if (res.status !== 202 && (!res.ok || data.error)) throw new Error(data.error ?? "Error");
-      if (data.needs_kyc || data.needs_tos || res.status === 202) {
+      // 2. Generate payment link (use prefetch if body matches)
+      const body    = buildCheckoutBody();
+      const bodyKey = JSON.stringify(body);
+      const freshFetch = (): Promise<P2pApiData | null> =>
+        fetch("/api/bridge/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+          .then(r => r.json() as Promise<P2pApiData>).catch((): null => null);
+      const usePrefetch = prefetchPromise.current !== null && prefetchKey.current === bodyKey;
+      if (usePrefetch) setPrefetchAwaiting(true);
+      const rawData = await (usePrefetch ? prefetchPromise.current! : freshFetch()) ?? await freshFetch();
+      setPrefetchAwaiting(false);
+      prefetchPromise.current = null;
+      prefetchKey.current     = "";
+      if (!rawData) throw new Error("Error de conexión");
+      const data = rawData as CheckoutResponse & P2pApiData;
+      if (data.error) throw new Error(data.error ?? "Error");
+      if (data.needs_kyc || data.needs_tos || !data.pay_link) {
         if (!kycAutoRetryRef.current) setKycSubmitted(false);
         if (data.kyc_url)  { setKycUrl(data.kyc_url); tosModeRef.current = false; }
         if (data.tos_url)  { setKycUrl(data.tos_url); tosModeRef.current = true; }
@@ -574,7 +629,7 @@ export default function P2PPage() {
     } finally {
       setSubmitting(false);
     }
-  }, [nombre, email, country, account, bic, cpf, amountLocal, recipientPhone, fxRate, t]);
+  }, [nombre, email, country, account, bic, cpf, amountLocal, recipientPhone, fxRate, t, buildCheckoutBody]);
 
   // Listen for KYC/ToS completion from popup or new tab.
   // postMessage: works when window.opener is intact (desktop, Android Chrome).
@@ -625,7 +680,6 @@ export default function P2PPage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [shareLink]);
-
 
   const accountValid      = account.trim().length >= 5;
   const amtUSDLocal       = fxRate && parseFloat(amountLocal) >= 1
@@ -778,7 +832,9 @@ export default function P2PPage() {
       <main className="min-h-screen bg-[#0f172a] flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-slate-400 text-sm">{t("generate_button")}…</p>
+          <p className="text-slate-400 text-sm">
+            {prefetchAwaiting ? "Iniciando verificación segura…" : `${t("generate_button")}…`}
+          </p>
         </div>
       </main>
     );

@@ -53,6 +53,34 @@ interface FormSnapshot {
   kybCustomerId?:     string;
 }
 
+type B2bApiData = {
+  needs_tos?: boolean; tos_url?: string; customer_id?: string;
+  needs_kyb?: boolean; kyb_url?: string; is_sandbox?: boolean;
+  order_id?: string; deposit_instructions?: Record<string, string | null>;
+  amount_target?: number; target_currency?: string; error?: string;
+};
+
+function buildSnapBodyB2b(snap: FormSnapshot, origin: string): Record<string, unknown> {
+  const rc        = snap.recipientCountry ?? "MX";
+  const isSepaSnap = SEPA_COUNTRIES.has(rc);
+  const base: Record<string, unknown> = {
+    sender_business_name:    snap.senderBusinessName?.trim() ?? "",
+    sender_email:            snap.senderEmail?.trim().toLowerCase() ?? "",
+    source_currency:         (snap.sourceCurrency ?? "USD").toLowerCase(),
+    recipient_business_name: snap.recipientBusinessName?.trim() ?? "",
+    recipient_country:       rc,
+    amount_target:           parseFloat(snap.amount ?? "0"),
+    redirect_uri:            `${origin}/enviar-empresa-wire?kyb_done=1`,
+    from_tos:                true,
+    existing_customer_id:    snap.kybCustomerId,
+  };
+  if (rc === "MX") return { ...base, clabe: snap.accountField?.trim() ?? "" };
+  if (rc === "GB") return { ...base, sort_code: snap.accountField?.split("/")[0]?.trim(), account_number: snap.accountField?.split("/")[1]?.trim() };
+  if (isSepaSnap) return { ...base, iban: snap.accountField?.trim() ?? "", bic: snap.bicField?.trim() ?? "" };
+  if (rc === "CO") return { ...base, account_number: snap.accountField?.trim() ?? "" };
+  return { ...base, routing_number: snap.routingField?.trim() ?? "", account_number: snap.accountField?.trim() ?? "" };
+}
+
 export default function EnviarEmpresaWirePage() {
   const t  = useTranslations("enviar_empresa_wire");
   const tF = useTranslations("p2p");
@@ -96,6 +124,12 @@ export default function EnviarEmpresaWirePage() {
   // Polling countdown (Patch 2)
   const [reviewCountdown, setReviewCountdown] = useState(10);
   const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Optimistic Async Prefetch
+  const prefetchPromise  = useRef<Promise<B2bApiData | null> | null>(null);
+  const prefetchKey      = useRef<string>("");
+  const prefetchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [prefetchAwaiting, setPrefetchAwaiting] = useState(false);
 
   // Instructions state
   const [vaInfo, setVaInfo]               = useState<VaInfo | null>(null);
@@ -142,6 +176,9 @@ export default function EnviarEmpresaWirePage() {
     USD: 50, MXN: 900, EUR: 47, GBP: 40, COP: 210000, BRL: 280,
   };
   const minLocal = minLocalAmount[recipientCurrency] ?? 50;
+  const formReady = !!(senderBusinessName && senderEmail.includes("@") && recipientBusinessName && accountField
+    && amount && parseFloat(amount) >= minLocal
+    && (recipientCountry !== "US" || !!routingField));
 
   // Email prefetch: silent 800ms debounce check (Patch 1)
   useEffect(() => {
@@ -182,7 +219,16 @@ export default function EnviarEmpresaWirePage() {
       // ToS or KYB return — restore form and call handleSubmit directly.
       // For ToS: set fromTosReturnRef=true so handleSubmit navigates to KYB (not polling).
       // Bypassing /api/bridge/kyc-link avoids failures for brand-new customers.
-      if (tosDone) fromTosReturnRef.current = true;
+      if (tosDone) {
+        fromTosReturnRef.current = true;
+        // Phase B: fire prefetch in parallel with form restoration
+        const pBody = buildSnapBodyB2b(snap, window.location.origin);
+        const pKey  = JSON.stringify(pBody);
+        prefetchKey.current     = pKey;
+        prefetchPromise.current = fetch("/api/bridge/b2b/send", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pBody),
+        }).then(r => r.json() as Promise<B2bApiData>).catch((): null => null);
+      }
       setSenderBusinessName(snap.senderBusinessName ?? "");
       setSenderEmail(snap.senderEmail ?? "");
       setSourceCurrency(snap.sourceCurrency ?? "USD");
@@ -315,22 +361,41 @@ export default function EnviarEmpresaWirePage() {
     return { ...base, routing_number: routingField.trim(), account_number: accountField.trim() };
   }, [senderBusinessName, senderEmail, sourceCurrency, recipientBusinessName, recipientCountry, accountField, routingField, bicField, amount, isSepa, tosCustomerId, kybCustomerId]);
 
+  // Phase A: fire prefetch when user is verified + form complete (1500ms debounce)
+  useEffect(() => {
+    if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current);
+    if (emailStatus !== "verified" || !formReady) return;
+    prefetchDebounce.current = setTimeout(() => {
+      const body    = buildBody({ from_tos: false });
+      const bodyKey = JSON.stringify(body);
+      if (prefetchKey.current === bodyKey) return;
+      prefetchKey.current     = bodyKey;
+      prefetchPromise.current = fetch("/api/bridge/b2b/send", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      }).then(r => r.json() as Promise<B2bApiData>).catch((): null => null);
+    }, 1500);
+    return () => { if (prefetchDebounce.current) clearTimeout(prefetchDebounce.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emailStatus, formReady, buildBody]);
+
   const handleSubmit = useCallback(async (isAutoRetry = false) => {
     setStep("submitting");
     setError("");
     try {
-      const res = await fetch("/api/bridge/b2b/send", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(buildBody({ from_tos: fromTosReturnRef.current })),
-      });
-      const data = await res.json() as {
-        needs_tos?: boolean; tos_url?: string;
-        needs_kyb?: boolean; kyb_url?: string; customer_id?: string; is_sandbox?: boolean;
-        deposit_instructions?: Record<string, string | null>;
-        amount_target?: number; target_currency?: string;
-        order_id?: string; error?: string;
-      };
+      const body    = buildBody({ from_tos: fromTosReturnRef.current });
+      const bodyKey = JSON.stringify(body);
+      const freshFetch = (): Promise<B2bApiData | null> =>
+        fetch("/api/bridge/b2b/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+          .then(r => r.json() as Promise<B2bApiData>).catch((): null => null);
+      const usePrefetch = prefetchPromise.current !== null
+        && prefetchKey.current === bodyKey
+        && (!isAutoRetry || fromTosReturnRef.current);
+      if (usePrefetch) setPrefetchAwaiting(true);
+      const data = await (usePrefetch ? prefetchPromise.current! : freshFetch()) ?? await freshFetch();
+      setPrefetchAwaiting(false);
+      prefetchPromise.current = null;
+      prefetchKey.current     = "";
+      if (!data) { setError("Error de conexión. Verifica tu internet."); setStep("error"); return; }
 
       if (data.needs_tos && data.tos_url) {
         sessionStorage.setItem("b2b_send_form", JSON.stringify({
@@ -374,7 +439,7 @@ export default function EnviarEmpresaWirePage() {
         return;
       }
 
-      if (!res.ok || data.error) {
+      if (data.error) {
         setError(data.error ?? "Error desconocido"); setStep("error"); return;
       }
 
@@ -635,7 +700,9 @@ export default function EnviarEmpresaWirePage() {
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
             <Zap className="w-10 h-10 text-[#00C9C8] animate-pulse" />
             <p className="text-white font-semibold">{t("creating_account")}</p>
-            <p className="text-slate-400 text-sm text-center">{t("creating_account_sub")}</p>
+            <p className="text-slate-400 text-sm text-center">
+              {prefetchAwaiting ? "Iniciando verificación segura…" : t("creating_account_sub")}
+            </p>
           </div>
         )}
 
